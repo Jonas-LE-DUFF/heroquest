@@ -1,0 +1,28 @@
+{
+  "name": "heroquest",
+  "version": "1.0.0",
+  "description": "reproduction du jeu de société heroquest : https://fr.wikipedia.org/wiki/HeroQuest_(jeu_de_soci%C3%A9t%C3%A9)",
+  "main": "index.js",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm start",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jonas-LE-DUFF/heroquest.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jonas-LE-DUFF/heroquest/issues"
+  },
+  "homepage": "https://github.com/Jonas-LE-DUFF/heroquest#readme"
+}
