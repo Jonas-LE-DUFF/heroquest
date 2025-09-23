@@ -52,3 +52,13 @@ button {
   border-radius: 10px;
   cursor: pointer;
 }
+
+form {
+  margin-bottom: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
