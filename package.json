@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/Jonas-LE-DUFF/heroquest/issues"
   },
-  "homepage": "https://github.com/Jonas-LE-DUFF/heroquest#readme"
+  "homepage": "https://github.com/Jonas-LE-DUFF/heroquest#readme",
+  "dependencies": {
+    "mui": "^0.0.1"
+  }
 }

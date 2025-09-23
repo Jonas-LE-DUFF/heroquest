@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import Board from "./Board";
 
 interface GamePageProps {
   socket: any;
@@ -73,6 +74,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             🏰 Plateau de jeu en construction...
           </div>
         </div>
+
+        <div className="Board">{Board({ size: 5 })}</div>
 
         <div className="game-controls">
           <h3>Actions</h3>
