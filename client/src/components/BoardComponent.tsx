@@ -1,4 +1,4 @@
-import "./Board.css";
+import "./BoardComponent.css";
 import {
   Table,
   TableBody,
@@ -9,23 +9,24 @@ import {
 } from "@mui/material";
 
 interface BoardProps {
-  size: number;
+  rows: number;
+  columns: number;
 }
 
-const Board = ({ size }: BoardProps) => {
+const Board = ({ rows, columns }: BoardProps) => {
   const renderGrid = () => {
     const grid = [];
 
-    for (let row = 0; row < size; row++) {
+    for (let row = 0; row < rows; row++) {
       const cells = [];
-      for (let col = 0; col < size; col++) {
+      for (let col = 0; col < columns; col++) {
         cells.push(
           <TableCell
             key={col}
             className="tile"
             sx={{
-              width: 50,
-              height: 50,
+              width: 10,
+              height: 10,
               border: "1px solid #ccc",
               cursor: "pointer",
               "&:hover": { backgroundColor: "#f5f5f5" },
@@ -42,7 +43,7 @@ const Board = ({ size }: BoardProps) => {
   };
 
   return (
-    <TableContainer component={Paper} sx={{ maxWidth: "fit-content" }}>
+    <TableContainer component={Paper} sx={{ width: "100%" }}>
       <Table>
         <TableBody>{renderGrid()}</TableBody>
       </Table>

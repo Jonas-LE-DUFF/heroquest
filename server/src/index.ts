@@ -2,56 +2,79 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import path from "path";
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  SocketData,
+  GameState,
+  Player,
+  PlayerRole,
+  Tile,
+} from "../src/shared/type";
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
+const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
+  httpServer,
+  {
+    cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST"],
+    },
+  }
+);
 
 app.use(express.static(path.join(__dirname, "../../client/build")));
 
-const games = new Map();
+const games = new Map<string, GameState>();
 
 io.on("connection", (socket) => {
   console.log("Un utilisateur connecté:", socket.id);
 
   socket.on(
     "join-game",
-    (data: { gameId: string; playerName: string; role: string }) => {
-      console.log("🎮 Demande de connexion:", data);
-
-      const { gameId, playerName, role } = data;
-
+    (gameId: string, playerName: string, role: PlayerRole) => {
       if (!gameId || !playerName) {
         socket.emit("join-error", "Données manquantes");
         return;
       }
 
       socket.join(gameId);
-      console.log(`${playerName} a rejoint la partie ${gameId}`);
 
+      let game: GameState | undefined;
       if (!games.has(gameId)) {
-        games.set(gameId, {
+        game = {
+          id: gameId,
+          status: "waiting",
           players: [],
+          monsters: [],
           board: initializeBoard(),
-          currentTurn: "heroes",
-        });
+        };
+        games.set(gameId, game);
+      } else {
+        game = games.get(gameId);
+        if (role === "game-master" && game) {
+          if (!checkOnlyOneGameMaster(game)) {
+            console.log(
+              "two game-master isn't possible in a game connection interrupted"
+            );
+            socket.emit("error", "a game master is already in this game");
+          }
+        }
       }
-
-      const game = games.get(gameId);
-      game.players.push({
+      const newPlayer: Player = {
         id: socket.id,
-        name: playerName,
+        characterName: playerName,
         role: role,
         ready: false,
-      });
+      };
+      if (!game) {
+        console.log("fatal error : game couldn't be created");
+        return;
+      }
+      game.players.push(newPlayer);
 
       socket.emit("join-success", {
-        message: `Bienvenue dans la partie ${gameId}, ${playerName}!`,
         playerId: socket.id,
         gameState: game,
       });
@@ -62,15 +85,15 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("player-ready", (data: { gameId: string; ready: boolean }) => {
-    const game = games.get(data.gameId);
+  socket.on("player-ready", (gameId: string, ready: boolean) => {
+    const game = games.get(gameId);
     if (game) {
       const player = game.players.find(
         (p: { id: string }) => p.id === socket.id
       );
       if (player) {
-        player.ready = data.ready;
-        io.to(data.gameId).emit("lobby-update", { players: game.players });
+        player.ready = ready;
+        io.to(gameId).emit("lobby-update", { players: game.players });
       }
     }
   });
@@ -81,13 +104,6 @@ io.on("connection", (socket) => {
 
     const game = games.get(gameId);
     if (!game) {
-      games.forEach((g, id) => {
-        console.log(
-          `Partie ID: ${id.id}, Joueurs: ${g.players
-            .map((p: { name: any }) => p.name)
-            .join(", ")}`
-        );
-      });
       console.log("❌ Partie non trouvée");
       socket.emit("error", "Partie non trouvée");
       return;
@@ -101,14 +117,14 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (player.role !== "game-master") {
-      console.log("❌ Seul le maître du jeu peut lancer la partie");
-      socket.emit("error", "Seul le maître du jeu peut lancer la partie");
-      return;
-    }
+    // if (player.role !== "game-master") {
+    //   console.log("❌ Seul le maître du jeu peut lancer la partie");
+    //   socket.emit("error", "Seul le maître du jeu peut lancer la partie");
+    //   return;
+    // }
 
     // Vérifier le nombre minimum de joueurs
-    if (game.players.length < 1) {
+    if (game.players.length < 1 || game.players[0] === undefined) {
       console.log("❌ Pas assez de joueurs");
       socket.emit("error", "Il faut au moins 1 joueur");
       return;
@@ -118,7 +134,7 @@ io.on("connection", (socket) => {
 
     // Changer le statut de la partie
     game.status = "playing";
-    game.currentTurn = "heroes"; // Les héros commencent
+    game.currentTurn = game.players[0].id;
 
     // Notifier TOUS les joueurs de la partie
     io.to(gameId).emit("game-start", game);
@@ -126,15 +142,8 @@ io.on("connection", (socket) => {
 
     console.log(
       "🚀 Partie lancée avec succès! Joueurs:",
-      game.players.map((p: { name: any }) => p.name)
+      game.players.map((p: { characterName?: any }) => p.characterName)
     );
-  });
-
-  socket.on("get-lobby-state", (gameId: string) => {
-    const game = games.get(gameId);
-    if (game) {
-      socket.emit("lobby-update", { players: game.players });
-    }
   });
 
   socket.on("disconnect", () => {
@@ -143,16 +152,22 @@ io.on("connection", (socket) => {
 });
 
 function initializeBoard() {
-  return {
-    tiles: Array(10)
-      .fill(null)
-      .map(() => Array(10).fill("empty")),
-    heroes: [],
-    monsters: [],
-  };
+  return Array(26)
+    .fill(null)
+    .map(() => Array<Tile>(19).fill({ type: "empty", revealed: false }));
 }
 
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
 });
+
+function checkOnlyOneGameMaster(game: GameState) {
+  if (game?.players)
+    for (let player of game?.players) {
+      if (player.role === "game-master") {
+        return false;
+      }
+    }
+  return true;
+}

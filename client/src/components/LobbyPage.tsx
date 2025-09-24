@@ -118,11 +118,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           {isReady ? "Prêt" : "Se déclarer prêt"}
         </button>
 
-        {isGameMaster && (
-          <button onClick={startGame} className="start-button">
-            lancer la partie
-          </button>
-        )}
+        {/* {isGameMaster && ( */}
+        <button onClick={startGame} className="start-button">
+          lancer la partie
+        </button>
+        {/* )} */}
       </div>
 
       <div className="game-rules">

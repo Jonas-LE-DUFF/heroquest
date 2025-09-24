@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Board from "./Board";
+import Board from "./BoardComponent";
+import "./GamePage.css";
 
 interface GamePageProps {
   socket: any;
@@ -75,7 +76,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           </div>
         </div>
 
-        <div className="Board">{Board({ size: 5 })}</div>
+        <div className="Board">{Board({ rows: 19, columns: 26 })}</div>
 
         <div className="game-controls">
           <h3>Actions</h3>
