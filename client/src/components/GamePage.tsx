@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "./BoardComponent";
 import "./GamePage.css";
+import { GameState } from "../shared/type";
 
 interface GamePageProps {
   socket: any;
@@ -9,17 +10,22 @@ interface GamePageProps {
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
-  const { gameState, playerName, gameId, role } = location.state || {};
+  const { gameState } = location.state.gameState;
+  const gameId = location.state.gameId;
+  const role = location.state.role;
+  const playerName = location.state.playerName;
+  console.log("gameState : ", gameState);
+  console.log("socket : ", socket);
 
-  const [currentGameState, setCurrentGameState] = useState(gameState);
+  const [currentGameState, setCurrentGameState] =
+    useState<GameState>(gameState);
   const [message, setMessage] = useState("");
-
   useEffect(() => {
     if (!gameState) return;
 
     // Écouter les mises à jour du jeu
-    socket.on("game-update", (newGameState: any) => {
-      setCurrentGameState(newGameState);
+    socket.on("game-state-update", (data: { gameState: GameState }) => {
+      setCurrentGameState(data.gameState);
     });
 
     socket.on("player-moved", (data: any) => {
@@ -31,11 +37,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
 
     return () => {
-      socket.off("game-update");
+      socket.off("game-state-update");
       socket.off("player-moved");
       socket.off("monster-spawned");
     };
-  }, [socket, gameState]);
+  }, [socket, gameState, currentGameState]);
 
   const movePlayer = (direction: string) => {
     socket.emit("move-player", {
@@ -54,7 +60,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       });
     }
   };
-
+  console.log(currentGameState);
   if (!currentGameState) {
     return <div>Chargement du jeu...</div>;
   }
@@ -76,7 +82,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           </div>
         </div>
 
-        <div className="Board">{Board({ rows: 19, columns: 26 })}</div>
+        <div className="Board">{Board({ gameState: currentGameState })}</div>
 
         <div className="game-controls">
           <h3>Actions</h3>
@@ -102,12 +108,27 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
         <div className="game-info">
           <h3>Informations</h3>
-          <p>Tour actuel: {currentGameState.currentTurn}</p>
-          <p>Joueurs: {currentGameState.players.length}</p>
+          {currentGameState.currentTurn === socket.id ? (
+            <p>YOUR TURN !!!!!</p>
+          ) : (
+            <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
+          )}
+          {currentGameState.players ? (
+            <p>Joueurs: {currentGameState.players.length}</p>
+          ) : (
+            <p></p>
+          )}
         </div>
       </div>
     </div>
   );
 };
+
+function getPlayerNameToTurn(game: GameState) {
+  for (let player of game.players) {
+    if (player.id === game.currentTurn) return player.characterName;
+  }
+  return "something's went wrong";
+}
 
 export default GamePage;

@@ -19,13 +19,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       return;
     }
 
-    console.log("📤 Envoi des données:", { gameId, playerName, role });
+    console.log("📤 Envoi des données:", gameId, playerName, role);
     // Émettre l'événement de connexion au serveur
-    socket.emit("join-game", {
-      gameId: gameId,
-      playerName: playerName,
-      role: role,
-    });
+    socket.emit("join-game", { gameId, playerName, role });
 
     // Écouter la réponse du serveur
     socket.once("join-success", (data: any) => {

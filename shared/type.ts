@@ -24,22 +24,26 @@ export interface Player {
   ready: boolean;
 }
 
+export enum monsterClass {
+  "Goblin",
+  "Squelette",
+  "Zombie",
+  "Orc",
+  "Abomination",
+  "Momie",
+  "Guerrier de la terreur",
+  "Gargouille",
+}
+
 export interface Monster {
   id: string;
-  type:
-    | "Goblin"
-    | "Squelette"
-    | "Zombie"
-    | "Orc"
-    | "Abomination"
-    | "Momie"
-    | "Guerrier de la terreur"
-    | "Gargouille";
+  class: monsterClass;
   stats: Unit;
+  movements: number;
 }
 
 export interface Tile {
-  type: "empty" | "wall" | "treasure" | "trap" | "start";
+  type: "empty" | "wall" | "treasure" | "trap" | "start" | "hero" | "monster";
   revealed: boolean;
 }
 
@@ -50,9 +54,9 @@ export interface ServerToClientEvents {
   "join-error": (message: string) => void;
 
   // Mises à jour de jeu
-  "game-state-update": (gameState: GameState) => void;
+  "game-state-update": (data: { gameState: GameState }) => void;
   "lobby-update": (data: { players: Player[] }) => void;
-  "game-start": (gameState: GameState) => void;
+  "game-start": (data: { gameState: GameState }) => void;
 
   // Actions spécifiques
   "player-moved": (data: { playerId: string; newPosition: Position }) => void;
@@ -66,11 +70,15 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  "join-game": (gameId: string, playerName: string, role: PlayerRole) => void;
+  "join-game": (data: {
+    gameId: string;
+    playerName: string;
+    role: PlayerRole;
+  }) => void;
 
   //player actions
   //lobby actions
-  "player-ready": (gameId: string, ready: boolean) => void;
+  "player-ready": (data: { gameId: string; ready: boolean }) => void;
   //in-game actions
   "move-player": (data: {
     gameId: string;
@@ -86,11 +94,11 @@ export interface ClientToServerEvents {
 
   //game master actions
   //lobby actions
-  "start-game": (gameId: string) => void;
+  "start-game": (data: { gameId: string }) => void;
   //in-game actions
   "spawn-monster": (data: {
     gameId: string;
-    monsterType: Monster["type"];
+    monsterClass: monsterClass;
     position: Position;
   }) => void;
   //in-turn actions

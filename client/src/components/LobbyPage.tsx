@@ -44,13 +44,14 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
 
     // Écouter le début de la partie
-    socket.on("game-start", (gameState: any) => {
+    socket.on("game-start", (data: { gameState: any }) => {
+      const gameState = data.gameState;
       console.log("Game is starting...", gameState);
       navigate("/game", { state: { playerName, gameId, role, gameState } });
     });
 
     // Demander l'état actuel du lobby
-    socket.emit("get-lobby-state", gameId);
+    socket.emit("get-lobby-state", { gameId });
 
     return () => {
       socket.off("lobby-update");
@@ -70,7 +71,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     console.log("Game ID:", gameId);
     console.log("Socket ID:", socket.id);
 
-    socket.emit("start-game", gameId);
+    socket.emit("start-game", { gameId });
 
     // Ajouter un écouteur pour debug
     socket.once("game-start", (gameState: any) => {
