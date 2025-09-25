@@ -1,18 +1,26 @@
 import { GameState } from "./type";
 
-function getPlayerFromId(game: GameState) {
+function getPlayerFromId(game: GameState, playerId: string) {
   for (let player of game.players) {
-    if (player.id === game.currentTurn) return player;
+    if (player.id === playerId) return player;
   }
   return null;
 }
 
+function getCurrentPlayer(game: GameState) {
+  if (!game.currentTurn) {
+    console.log("no ones turn ?");
+    return;
+  }
+  return getPlayerFromId(game, game.currentTurn);
+}
+
 function getPlayerNameToTurn(game: GameState) {
-  return getPlayerFromId(game)?.characterName;
+  return getCurrentPlayer(game)?.characterName;
 }
 
 function getRoleToTurn(game: GameState) {
-  return getPlayerFromId(game)?.role;
+  return getCurrentPlayer(game)?.role;
 }
 
 function getPlayerRole(game: GameState, playerId: string | undefined) {
@@ -20,12 +28,18 @@ function getPlayerRole(game: GameState, playerId: string | undefined) {
     console.error("player has no ID ???");
     return;
   }
-  for (let player of game.players) {
-    if (player.id === playerId) {
-      return player.role;
-    }
-  }
-  return null;
+  return getPlayerFromId(game, playerId)?.role;
 }
 
-export { getPlayerNameToTurn, getRoleToTurn, getPlayerRole };
+function getAmountOfDices(
+  game: GameState,
+  playerId: string,
+  attOrDef: "att" | "def"
+) {
+  const player = getPlayerFromId(game, playerId);
+  return attOrDef === "att"
+    ? player?.stats?.nbAttackDice
+    : player?.stats?.nbDefenseDice;
+}
+
+export { getPlayerNameToTurn, getRoleToTurn, getPlayerRole, getAmountOfDices };

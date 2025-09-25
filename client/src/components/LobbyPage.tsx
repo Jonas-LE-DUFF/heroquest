@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { GameState, Player } from "../shared/type";
 
 interface LobbyPageProps {
   socket: any;
-}
-
-interface Player {
-  id: string;
-  name: string;
-  role: string;
-  ready: boolean;
 }
 
 const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { playerName, gameId, role } = location.state || {};
-
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [gameState, setGameState] = useState(location.state.gameState);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -39,8 +32,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       role
     );
     // Écouter les mises à jour des joueurs
-    socket.on("lobby-update", (data: { players: Player[] }) => {
-      setPlayers(data.players);
+    socket.on("lobby-update", (data: { players: Map<string, Player> }) => {
+      gameState.players = data.players;
     });
 
     // Écouter le début de la partie
@@ -48,6 +41,13 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       const gameState = data.gameState;
       console.log("Game is starting...", gameState);
       navigate("/game", { state: { playerName, gameId, role, gameState } });
+    });
+
+    socket.on("game-state-update", (data: { gameState: GameState }) => {
+      console.log("aaaaaaaaaaaaaaaaaaa update");
+
+      setGameState(data.gameState);
+      console.log("update on gamestate : ", gameState);
     });
 
     // Demander l'état actuel du lobby
@@ -85,8 +85,24 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
   };
 
-  const canStartGame = players.length >= 2 && players.every((p) => p.ready);
-  const isGameMaster = role === "game-master";
+  function renderStatus(players: Map<string, Player>) {
+    players.forEach((player: Player) => {
+      return (
+        <div key={player.id} className="player-item">
+          <span>{player.characterName}</span>
+          <span className={`status ${player.ready ? "ready" : "not-ready"}`}>
+            {player.ready ? "✅ Prêt" : "❌ Non prêt"}
+          </span>
+          <span className="role">
+            {player.role === "game-master" ? "👑" : "🎭"}
+          </span>
+        </div>
+      );
+    });
+  }
+
+  // const canStartGame = players.length >= 2 && players.every((p) => p.ready);
+  // const isGameMaster = role === "game-master";
 
   return (
     <div className="lobby-page">
@@ -97,18 +113,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       </p>
 
       <div className="players-list">
-        <h2>Joueurs connectés ({players.length}/5)</h2>
-        {players.map((player) => (
-          <div key={player.id} className="player-item">
-            <span>{player.name}</span>
-            <span className={`status ${player.ready ? "ready" : "not-ready"}`}>
-              {player.ready ? "✅ Prêt" : "❌ Non prêt"}
-            </span>
-            <span className="role">
-              {player.role === "game-master" ? "👑" : "🎭"}
-            </span>
-          </div>
-        ))}
+        <h2>
+          Joueurs connectés (
+          {gameState.players.values ? gameState.players.values.length : "0"}
+          /5)
+        </h2>
       </div>
 
       <div className="lobby-actions">

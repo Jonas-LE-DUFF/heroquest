@@ -4,6 +4,12 @@ export interface Position {
   y: number;
 }
 
+export enum diceFace {
+  "WhiteShield",
+  "BlackShield",
+  "Hit",
+}
+
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
@@ -68,6 +74,7 @@ export interface ServerToClientEvents {
 
   // Mises à jour de jeu
   "game-state-update": (data: { gameState: GameState }) => void;
+  "dice-update": (data: { listResults: diceFace[] }) => void;
   "lobby-update": (data: { players: Player[] }) => void;
   "game-start": (data: { gameState: GameState }) => void;
 
@@ -126,6 +133,12 @@ export interface ClientToServerEvents {
     position: Position;
     selectedType: tileType;
     playerId: string;
+  }) => void;
+
+  "roll-dice": (data: {
+    gameId: string;
+    playerId: string;
+    numberOfDice: number;
   }) => void;
 }
 

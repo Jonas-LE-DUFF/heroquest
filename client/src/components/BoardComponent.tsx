@@ -174,7 +174,7 @@ const Board = ({
       sx={{ maxWidth: "fit-content", margin: "20px auto" }}
     >
       <Typography variant="h6" sx={{ textAlign: "center", padding: 1 }}>
-        Plateau de jeu - {gameState?.players.length} joueur(s)
+        Plateau de jeu - {gameState?.players.values.length} joueur(s)
         {selectedPosition &&
           ` - Case sélectionnée: ${selectedPosition.x},${selectedPosition.y}`}
       </Typography>

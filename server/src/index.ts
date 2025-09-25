@@ -15,9 +15,10 @@ import {
   Monster,
   Unit,
   tileType,
+  diceFace,
 } from "../src/shared/type";
 import { stat } from "fs";
-import { getPlayerRole, getRoleToTurn } from "./shared/util";
+import { getAmountOfDices, getPlayerRole, getRoleToTurn } from "./shared/util";
 
 const app = express();
 const httpServer = createServer(app);
@@ -199,6 +200,38 @@ io.on("connection", (socket) => {
 
       tile.type = selectedType;
       io.to(gameId).emit("game-state-update", { gameState });
+    }
+  );
+
+  socket.on(
+    "roll-dice",
+    (data: { gameId: string; playerId: string; numberOfDice: number }) => {
+      const gameState = games.get(data.gameId);
+      let numberOfDices: number | undefined;
+      if (!gameState) {
+        console.error("game couldn't be found");
+        return;
+      }
+      const playerRole = getPlayerRole(gameState, data.playerId);
+      if (playerRole === "hero") {
+        numberOfDices = getAmountOfDices(
+          gameState,
+          data.playerId,
+          "att" //TODO : need to know if we attack or defend !!
+        );
+      }
+      const randomNumber = Math.floor(Math.random() * 6 + 1);
+      let face: diceFace = diceFace.Hit;
+      if (randomNumber === 1) {
+        face = diceFace.BlackShield;
+      } else if (randomNumber < 3) {
+        face = diceFace.WhiteShield;
+      } else {
+        face = diceFace.Hit;
+      }
+      const results: diceFace[] = [];
+      results.push(face);
+      io.to(data.gameId).emit("dice-update", { listResults: results });
     }
   );
 });
