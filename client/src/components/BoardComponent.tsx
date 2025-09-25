@@ -1,4 +1,6 @@
-import { GameState } from "../shared/type";
+import React, { useState } from "react";
+import { GameState, Position } from "../shared/type";
+import { getPlayerRole } from "../shared/util";
 import "./BoardComponent.css";
 import {
   Table,
@@ -7,13 +9,60 @@ import {
   TableContainer,
   TableRow,
   Paper,
+  Typography,
 } from "@mui/material";
+import { Socket } from "socket.io-client";
 
 interface BoardProps {
   gameState: GameState | null;
+  socket: Socket;
 }
 
-const Board = ({ gameState }: BoardProps) => {
+const Board = ({ gameState, socket }: BoardProps) => {
+  let [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const handleTileClick = (position: Position) => {
+    const tile = gameState?.board[position.x]?.[position.y];
+    if (!tile) return;
+
+    // Vérifier si la case est occupée
+    const occupantType = tile.type;
+
+    // Vérifier si l'occupant appartient au joueur actuel
+    if (occupantType === "monster") {
+      if (getPlayerRole(gameState, socket.id) !== "game-master") {
+        console.log("cant select a monster as hero");
+        return;
+      }
+    } else {
+      if (getPlayerRole(gameState, socket.id) !== "hero") {
+        console.log("cant select a hero as game master");
+        return;
+      }
+    }
+    if (gameState.currentTurn !== socket.id) {
+      console.log("please wait your turn");
+      return;
+    }
+
+    // Émettre l'événement avec les informations
+    // onTileClick(position, { isOccupied, occupantId });
+
+    // Gestion de la sélection visuelle
+
+    // Sélectionner/déselectionner une unité du joueur
+    setSelectedPosition(
+      selectedPosition?.x === position.x && selectedPosition?.y === position.y
+        ? null
+        : position
+    );
+    if (selectedPosition) {
+      // Déjà une unité sélectionnée, tentative de mouvement/action
+      setSelectedPosition(null);
+    }
+
+    console.log("selectedPosition : ", selectedPosition);
+  };
+
   const renderGrid = () => {
     const grid = [];
     if (!gameState) {
@@ -31,13 +80,8 @@ const Board = ({ gameState }: BoardProps) => {
           <TableCell
             key={col}
             className="tile"
-            sx={{
-              width: 10,
-              height: 10,
-              border: "1px solid #ccc",
-              cursor: "pointer",
-              "&:hover": { backgroundColor: "#f5f5f5" },
-            }}
+            sx={getTileStyle(row, col)}
+            onClick={() => handleTileClick({ x: row, y: col })}
           >
             {tileType === "empty" ? `${row},${col}` : tileType}
           </TableCell>
@@ -49,8 +93,46 @@ const Board = ({ gameState }: BoardProps) => {
     return grid;
   };
 
+  const getTileStyle = (x: number, y: number) => {
+    const tile = gameState?.board[x]?.[y];
+    const isSelected = selectedPosition?.x === x && selectedPosition?.y === y;
+    if (isSelected) console.log("style on : ", x, y);
+
+    const baseStyle = {
+      width: 40,
+      height: 40,
+      border: "1px solid #ccc",
+      cursor: "pointer",
+      fontSize: "20px",
+      textAlign: "center" as const,
+      verticalAlign: "middle" as const,
+    };
+
+    if (isSelected) {
+      return {
+        ...baseStyle,
+        backgroundColor: "#4CAF50",
+        border: "2px solid #2E7D32",
+      };
+    }
+
+    return {
+      ...baseStyle,
+      backgroundColor: tile?.revealed ? "#F5F5F5" : "#7E57C2",
+      "&:hover": { backgroundColor: "#E0E0E0" },
+    };
+  };
+
   return (
-    <TableContainer component={Paper} sx={{ width: "100%" }}>
+    <TableContainer
+      component={Paper}
+      sx={{ maxWidth: "fit-content", margin: "20px auto" }}
+    >
+      <Typography variant="h6" sx={{ textAlign: "center", padding: 1 }}>
+        Plateau de jeu - {gameState?.players.length} joueur(s)
+        {selectedPosition &&
+          ` - Case sélectionnée: ${selectedPosition.x},${selectedPosition.y}`}
+      </Typography>
       <Table>
         <TableBody>{renderGrid()}</TableBody>
       </Table>

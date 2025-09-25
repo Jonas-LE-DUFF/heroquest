@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Board from "./BoardComponent";
 import "./GamePage.css";
 import { GameState } from "../shared/type";
+import { getPlayerNameToTurn } from "../shared/util";
 
 interface GamePageProps {
   socket: any;
@@ -82,7 +83,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           </div>
         </div>
 
-        <div className="Board">{Board({ gameState: currentGameState })}</div>
+        <div className="Board">
+          {Board({ gameState: currentGameState, socket: socket })}
+        </div>
 
         <div className="game-controls">
           <h3>Actions</h3>
@@ -123,12 +126,5 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     </div>
   );
 };
-
-function getPlayerNameToTurn(game: GameState) {
-  for (let player of game.players) {
-    if (player.id === game.currentTurn) return player.characterName;
-  }
-  return "something's went wrong";
-}
 
 export default GamePage;
