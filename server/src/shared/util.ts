@@ -37,9 +37,13 @@ function getAmountOfDices(
   attOrDef: "att" | "def"
 ) {
   const player = getPlayerFromId(game, playerId);
+  if (!player?.stats) {
+    console.error("no stats on player");
+    return;
+  }
   return attOrDef === "att"
-    ? player?.stats?.nbAttackDice
-    : player?.stats?.nbDefenseDice;
+    ? player.stats.nbAttackDice
+    : player.stats.nbDefenseDice;
 }
 
 export { getPlayerNameToTurn, getRoleToTurn, getPlayerRole, getAmountOfDices };

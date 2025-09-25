@@ -46,6 +46,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
 
     socket.on("dice-update", (data: { listResults: diceFace[] }) => {
+      for (let result of data.listResults) {
+        console.log("result : ", result);
+      }
+
       console.log("liste des résultats : " + data.listResults);
       setCurrentDiceFaces(data.listResults);
     });
@@ -217,7 +221,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
           )}
           {currentGameState.players ? (
-            <p>Joueurs: {currentGameState.players.values.length}</p>
+            <p>Joueurs: {currentGameState.players.length}</p>
           ) : (
             <p></p>
           )}

@@ -219,18 +219,26 @@ io.on("connection", (socket) => {
           data.playerId,
           "att" //TODO : need to know if we attack or defend !!
         );
-      }
-      const randomNumber = Math.floor(Math.random() * 6 + 1);
-      let face: diceFace = diceFace.Hit;
-      if (randomNumber === 1) {
-        face = diceFace.BlackShield;
-      } else if (randomNumber < 3) {
-        face = diceFace.WhiteShield;
       } else {
-        face = diceFace.Hit;
+        numberOfDices = data.numberOfDice;
       }
       const results: diceFace[] = [];
-      results.push(face);
+      if (numberOfDices === undefined) {
+        console.log("no amount of dice to throw defined");
+        return;
+      }
+      for (let i = 0; i < numberOfDices; i++) {
+        const randomNumber = Math.floor(Math.random() * 6 + 1);
+        let face: diceFace = diceFace.Hit;
+        if (randomNumber === 1) {
+          face = diceFace.BlackShield;
+        } else if (randomNumber < 3) {
+          face = diceFace.WhiteShield;
+        } else {
+          face = diceFace.Hit;
+        }
+        results.push(face);
+      }
       io.to(data.gameId).emit("dice-update", { listResults: results });
     }
   );
