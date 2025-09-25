@@ -42,8 +42,19 @@ export interface Monster {
   movements: number;
 }
 
+export enum tileType {
+  "empty",
+  "wall",
+  "treasure",
+  "trap",
+  "start",
+  "hero",
+  "monster",
+  "furniture",
+}
+
 export interface Tile {
-  type: "empty" | "wall" | "treasure" | "trap" | "start" | "hero" | "monster";
+  type: tileType;
   revealed: boolean;
 }
 
@@ -52,6 +63,8 @@ export interface ServerToClientEvents {
   // Réponses de connexion
   "join-success": (data: { gameState: GameState; playerId: string }) => void;
   "join-error": (message: string) => void;
+
+  "player-reconnected": (data: { playerId: string }) => void;
 
   // Mises à jour de jeu
   "game-state-update": (data: { gameState: GameState }) => void;

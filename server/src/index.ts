@@ -14,6 +14,7 @@ import {
   monsterClass,
   Monster,
   Unit,
+  tileType,
 } from "../src/shared/type";
 import { stat } from "fs";
 
@@ -194,15 +195,15 @@ io.on("connection", (socket) => {
       };
       game.monsters.push(monster);
       const tile = game.board?.[data.position.x]?.[data.position.y];
-      if (!tile?.type) {
+      if (tile?.type === undefined) {
         console.warn("Position invalide:", data.position);
         return;
       }
-      if (tile.type != "empty") {
+      if (tile.type !== tileType.empty) {
         console.warn("Position invalide : case non vide");
         return;
       }
-      tile.type = "monster";
+      tile.type = tileType.monster;
 
       console.log("envoi de l'update");
       io.to(socket.id).emit("game-state-update", { gameState: game });
@@ -219,7 +220,7 @@ function initializeBoard(): Tile[][] {
     const row: Tile[] = [];
     for (let j = 0; j < cols; j++) {
       row.push({
-        type: "empty",
+        type: tileType.empty,
         revealed: false,
       });
     }

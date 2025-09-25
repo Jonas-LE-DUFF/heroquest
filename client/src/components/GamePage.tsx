@@ -2,21 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "./BoardComponent";
 import "./GamePage.css";
-import { GameState } from "../shared/type";
-import { getPlayerNameToTurn } from "../shared/util";
+import { GameState, Position, tileType } from "../shared/type";
+import { getPlayerNameToTurn, getPlayerRole } from "../shared/util";
+import { useSocketContext } from "../contexts/SocketContext";
 
 interface GamePageProps {
   socket: any;
 }
 
-const GamePage: React.FC<GamePageProps> = ({ socket }) => {
+const GamePage: React.FC = () => {
   const location = useLocation();
   const { gameState } = location.state.gameState;
   const gameId = location.state.gameId;
   const role = location.state.role;
   const playerName = location.state.playerName;
-  console.log("gameState : ", gameState);
-  console.log("socket : ", socket);
+
+  const [selectedType, setSelectedType] = useState<tileType | null>(null);
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);
@@ -61,10 +62,42 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       });
     }
   };
-  console.log(currentGameState);
   if (!currentGameState) {
     return <div>Chargement du jeu...</div>;
   }
+
+  const putWall = () => {
+    console.log("mur");
+    setSelectedType(tileType.wall);
+  };
+
+  const putHero = () => {
+    setSelectedType(tileType.hero);
+  };
+
+  const putFurniture = () => {
+    setSelectedType(tileType.furniture);
+  };
+
+  const unSelect = () => {
+    setSelectedType(null);
+  };
+
+  const handleTileClick = (gameState: GameState, position: Position) => {
+    console.log("Tile clicked in GamePage:", position, selectedType);
+    if (getPlayerRole(gameState, socket?.id) !== "game-master") {
+      console.log("seul le maitre du jeu peut placer des objets");
+      return;
+    }
+    let tile = gameState.board[position.x][position.y];
+
+    if (tile.type !== tileType.empty) {
+      console.log("case non vide rien à placé...");
+      return;
+    }
+    if (selectedType !== null) tile.type = selectedType;
+    setSelectedType(null);
+  };
 
   return (
     <div className="game-page">
@@ -76,15 +109,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       </header>
 
       <div className="game-container">
-        <div className="game-board">
-          {/* Ici vous mettrez votre composant de plateau */}
-          <div className="board-placeholder">
-            🏰 Plateau de jeu en construction...
-          </div>
-        </div>
-
         <div className="Board">
-          {Board({ gameState: currentGameState, socket: socket })}
+          {socket !== null &&
+            Board({
+              gameState: currentGameState,
+              socket: socket,
+              onTileClick: handleTileClick,
+            })}
         </div>
 
         <div className="game-controls">
@@ -103,6 +134,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               <button onClick={spawnMonster}>
                 👹 Faire apparaître un Gobelin
               </button>
+              <button onClick={putWall}>Faire apparaître un mur</button>
+              <button onClick={putHero}>placer un héro</button>
+              <button onClick={putFurniture}>placer un trésor</button>
+              <button onClick={unSelect}>Annuler</button>
             </div>
           )}
 

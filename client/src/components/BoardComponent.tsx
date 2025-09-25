@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GameState, Position } from "../shared/type";
+import { GameState, Position, tileType } from "../shared/type";
 import { getPlayerRole } from "../shared/util";
 import "./BoardComponent.css";
 import {
@@ -16,9 +16,10 @@ import { Socket } from "socket.io-client";
 interface BoardProps {
   gameState: GameState | null;
   socket: Socket;
+  onTileClick: (gameState: GameState, position: Position) => void;
 }
 
-const Board = ({ gameState, socket }: BoardProps) => {
+const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
   let [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const handleTileClick = (position: Position) => {
     const tile = gameState?.board[position.x]?.[position.y];
@@ -28,12 +29,12 @@ const Board = ({ gameState, socket }: BoardProps) => {
     const occupantType = tile.type;
 
     // Vérifier si l'occupant appartient au joueur actuel
-    if (occupantType === "monster") {
+    if (occupantType === tileType.monster) {
       if (getPlayerRole(gameState, socket.id) !== "game-master") {
         console.log("cant select a monster as hero");
         return;
       }
-    } else {
+    } else if (occupantType === tileType.hero) {
       if (getPlayerRole(gameState, socket.id) !== "hero") {
         console.log("cant select a hero as game master");
         return;
@@ -45,7 +46,7 @@ const Board = ({ gameState, socket }: BoardProps) => {
     }
 
     // Émettre l'événement avec les informations
-    // onTileClick(position, { isOccupied, occupantId });
+    onTileClick(gameState, position);
 
     // Gestion de la sélection visuelle
 
@@ -74,7 +75,6 @@ const Board = ({ gameState, socket }: BoardProps) => {
       for (let col = 0; col < gameState?.board[row]?.length; col++) {
         const tileType = gameState.board[row]?.[col]?.type || "empty";
         if (row === 5 && col === 5) {
-          console.log("row : ", row, "column : ", col, tileType);
         }
         cells.push(
           <TableCell
@@ -96,7 +96,10 @@ const Board = ({ gameState, socket }: BoardProps) => {
   const getTileStyle = (x: number, y: number) => {
     const tile = gameState?.board[x]?.[y];
     const isSelected = selectedPosition?.x === x && selectedPosition?.y === y;
-    if (isSelected) console.log("style on : ", x, y);
+    const isMonster = tile?.type === tileType.monster;
+    const isHero = tile?.type === tileType.hero;
+    const isFurniture = tile?.type === tileType.furniture;
+    const isWall = tile?.type === tileType.wall;
 
     const baseStyle = {
       width: 40,
@@ -113,6 +116,35 @@ const Board = ({ gameState, socket }: BoardProps) => {
         ...baseStyle,
         backgroundColor: "#4CAF50",
         border: "2px solid #2E7D32",
+      };
+    }
+
+    if (isHero) {
+      return {
+        ...baseStyle,
+        backgroundColor: "#2196F3",
+        border: "2px solid #1976D2",
+      };
+    }
+    if (isMonster) {
+      return {
+        ...baseStyle,
+        backgroundColor: "#F44336",
+        border: "2px solid #D32F2F",
+      };
+    }
+    if (isWall) {
+      return {
+        ...baseStyle,
+        backgroundColor: "#4e4e4e93",
+        border: "2px solid #201e1eff",
+      };
+    }
+    if (isFurniture) {
+      return {
+        ...baseStyle,
+        backgroundColor: "#583423ff",
+        border: "2px solid #422319ff",
       };
     }
 
