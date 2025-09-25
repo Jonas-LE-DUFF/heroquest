@@ -120,6 +120,13 @@ export interface ClientToServerEvents {
     monsterMoved: Monster;
     newPosition: Position;
   }) => void;
+
+  "place-element": (data: {
+    gameId: string;
+    position: Position;
+    selectedType: tileType;
+    playerId: string;
+  }) => void;
 }
 
 // État du jeu

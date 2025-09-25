@@ -4,13 +4,12 @@ import Board from "./BoardComponent";
 import "./GamePage.css";
 import { GameState, Position, tileType } from "../shared/type";
 import { getPlayerNameToTurn, getPlayerRole } from "../shared/util";
-import { useSocketContext } from "../contexts/SocketContext";
 
 interface GamePageProps {
   socket: any;
 }
 
-const GamePage: React.FC = () => {
+const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const { gameState } = location.state.gameState;
   const gameId = location.state.gameId;
@@ -54,13 +53,7 @@ const GamePage: React.FC = () => {
   };
 
   const spawnMonster = () => {
-    if (role === "game-master") {
-      socket.emit("spawn-monster", {
-        gameId,
-        monsterType: "goblin",
-        position: { x: 5, y: 5 },
-      });
-    }
+    setSelectedType(tileType.monster);
   };
   if (!currentGameState) {
     return <div>Chargement du jeu...</div>;
@@ -83,20 +76,21 @@ const GamePage: React.FC = () => {
     setSelectedType(null);
   };
 
-  const handleTileClick = (gameState: GameState, position: Position) => {
-    console.log("Tile clicked in GamePage:", position, selectedType);
-    if (getPlayerRole(gameState, socket?.id) !== "game-master") {
-      console.log("seul le maitre du jeu peut placer des objets");
-      return;
-    }
-    let tile = gameState.board[position.x][position.y];
+  const erase = () => {
+    setSelectedType(tileType.empty);
+  };
 
-    if (tile.type !== tileType.empty) {
-      console.log("case non vide rien à placé...");
+  const handleTileClick = (gameId: string, position: Position) => {
+    if (selectedType === undefined) {
+      //nothing to place
       return;
     }
-    if (selectedType !== null) tile.type = selectedType;
-    setSelectedType(null);
+    socket.emit("place-element", {
+      gameId,
+      position,
+      selectedType,
+      playerId: socket.id,
+    });
   };
 
   return (
@@ -115,6 +109,7 @@ const GamePage: React.FC = () => {
               gameState: currentGameState,
               socket: socket,
               onTileClick: handleTileClick,
+              selectedType: selectedType,
             })}
         </div>
 
@@ -138,6 +133,7 @@ const GamePage: React.FC = () => {
               <button onClick={putHero}>placer un héro</button>
               <button onClick={putFurniture}>placer un trésor</button>
               <button onClick={unSelect}>Annuler</button>
+              <button onClick={erase}>Effacer</button>
             </div>
           )}
 

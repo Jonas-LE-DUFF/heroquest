@@ -16,12 +16,22 @@ import { Socket } from "socket.io-client";
 interface BoardProps {
   gameState: GameState | null;
   socket: Socket;
-  onTileClick: (gameState: GameState, position: Position) => void;
+  onTileClick: (gameId: string, position: Position) => void;
+  selectedType: tileType | null;
 }
 
-const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
+const Board = ({
+  gameState,
+  socket,
+  onTileClick,
+  selectedType,
+}: BoardProps) => {
   let [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
-  const handleTileClick = (position: Position) => {
+
+  const handleTileClick = (
+    position: Position,
+    selectedType: tileType | null
+  ) => {
     const tile = gameState?.board[position.x]?.[position.y];
     if (!tile) return;
 
@@ -34,19 +44,22 @@ const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
         console.log("cant select a monster as hero");
         return;
       }
-    } else if (occupantType === tileType.hero) {
-      if (getPlayerRole(gameState, socket.id) !== "hero") {
-        console.log("cant select a hero as game master");
-        return;
-      }
     }
-    if (gameState.currentTurn !== socket.id) {
+    if (
+      getPlayerRole(gameState, socket.id) === "hero" &&
+      gameState.currentTurn !== socket.id
+    ) {
       console.log("please wait your turn");
+      console.log(getPlayerRole(gameState, socket.id));
       return;
     }
 
     // Émettre l'événement avec les informations
-    onTileClick(gameState, position);
+    onTileClick(gameState.id, position);
+
+    if (selectedType !== null) {
+      return;
+    }
 
     // Gestion de la sélection visuelle
 
@@ -60,8 +73,6 @@ const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
       // Déjà une unité sélectionnée, tentative de mouvement/action
       setSelectedPosition(null);
     }
-
-    console.log("selectedPosition : ", selectedPosition);
   };
 
   const renderGrid = () => {
@@ -73,7 +84,7 @@ const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
     for (let row = 0; row < gameState.board.length; row++) {
       const cells = [];
       for (let col = 0; col < gameState?.board[row]?.length; col++) {
-        const tileType = gameState.board[row]?.[col]?.type || "empty";
+        const tile: tileType = gameState.board[row]?.[col]?.type;
         if (row === 5 && col === 5) {
         }
         cells.push(
@@ -81,9 +92,9 @@ const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
             key={col}
             className="tile"
             sx={getTileStyle(row, col)}
-            onClick={() => handleTileClick({ x: row, y: col })}
+            onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
           >
-            {tileType === "empty" ? `${row},${col}` : tileType}
+            {tile === tileType.empty ? `${row},${col}` : tileType[tile]}
           </TableCell>
         );
       }
@@ -114,6 +125,8 @@ const Board = ({ gameState, socket, onTileClick }: BoardProps) => {
     if (isSelected) {
       return {
         ...baseStyle,
+        width: 38,
+        height: 38,
         backgroundColor: "#4CAF50",
         border: "2px solid #2E7D32",
       };

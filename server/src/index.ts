@@ -17,6 +17,7 @@ import {
   tileType,
 } from "../src/shared/type";
 import { stat } from "fs";
+import { getPlayerRole, getRoleToTurn } from "./shared/util";
 
 const app = express();
 const httpServer = createServer(app);
@@ -161,52 +162,43 @@ io.on("connection", (socket) => {
   });
 
   socket.on(
-    "spawn-monster",
+    "place-element",
     (data: {
       gameId: string;
-      monsterClass: monsterClass;
       position: Position;
+      selectedType: tileType;
+      playerId: string;
     }) => {
-      console.log("création de monstre");
-      const game = games.get(data.gameId);
-      const x = data.position.x;
-      const y = data.position.y;
-      if (!game) {
-        socket.emit("error", "partie introuvable");
-        console.log(
-          "erreur lors de l'ajout d'un monstre. : la partie n'a pas pu être trouvée"
+      const { gameId, position, selectedType, playerId } = data;
+
+      const gameState = games.get(gameId);
+      if (!gameState) {
+        console.error("no game found");
+        return;
+      }
+      if (getPlayerRole(gameState, playerId) !== "game-master") {
+        console.error(
+          "you are no game master therefore you can't place pieces on the board"
         );
         return;
       }
-      const stats: Unit = {
-        position: data.position,
-        health: 1,
-        maxHealth: 1,
-        spiritStats: 1,
-        nbAttackDice: 2,
-        nbDefenseDice: 1,
-      };
-      const id = generateMonsterId(game);
-      const monster: Monster = {
-        id: id,
-        class: monsterClass.Goblin,
-        stats: stats,
-        movements: 10,
-      };
-      game.monsters.push(monster);
-      const tile = game.board?.[data.position.x]?.[data.position.y];
-      if (tile?.type === undefined) {
-        console.warn("Position invalide:", data.position);
+      let tile = gameState?.board?.[position.x]?.[position.y];
+      if (tile === undefined) {
+        console.error("tile undefined in index.ts");
         return;
       }
-      if (tile.type !== tileType.empty) {
-        console.warn("Position invalide : case non vide");
+      if (tile?.type !== tileType.empty && selectedType !== tileType.empty) {
+        console.error("tile is occupied");
         return;
       }
-      tile.type = tileType.monster;
 
-      console.log("envoi de l'update");
-      io.to(socket.id).emit("game-state-update", { gameState: game });
+      if (selectedType === null) {
+        console.error("nothing to place");
+        return;
+      }
+
+      tile.type = selectedType;
+      io.to(gameId).emit("game-state-update", { gameState });
     }
   );
 });
