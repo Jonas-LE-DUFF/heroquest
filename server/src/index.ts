@@ -18,7 +18,12 @@ import {
   diceFace,
 } from "../src/shared/type";
 import { stat } from "fs";
-import { getAmountOfDices, getPlayerRole, getRoleToTurn } from "./shared/util";
+import {
+  getAmountOfDices,
+  getPlayerFromId,
+  getPlayerRole,
+  getRoleToTurn,
+} from "./shared/util";
 
 const app = express();
 const httpServer = createServer(app);
@@ -159,6 +164,30 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    const gameWithFoundPlayer = new Map<string, GameState>();
+    games.forEach((gameState: GameState, gameId: string) => {
+      if (getPlayerFromId(gameState, socket.id) !== null)
+        gameWithFoundPlayer.set(gameId, gameState);
+    });
+    const gameId = gameWithFoundPlayer.keys().next().value;
+    if (gameId === undefined) {
+      console.error("no game with player");
+      return;
+    }
+
+    const game = games.get(gameId);
+    if (!game) return;
+    const player = getPlayerFromId(game, socket.id);
+    if (player === null) return;
+    const index = game.players.indexOf(player, 0);
+    if (index > -1) {
+      console.log("removing player because of deconnection");
+      game.players.splice(index, 1);
+    }
+    if (game.players.length === 0) {
+      console.log("no player connected to game deleting...");
+      games.delete(gameId);
+    }
     console.log("Utilisateur déconnecté:", socket.id);
   });
 
