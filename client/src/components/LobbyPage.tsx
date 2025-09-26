@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameState, Player } from "../shared/type";
+import { JSX } from "react/jsx-runtime";
 
 interface LobbyPageProps {
   socket: any;
@@ -32,10 +33,27 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       role
     );
     // Écouter les mises à jour des joueurs
-    socket.on("lobby-update", (data: { players: Map<string, Player> }) => {
+    socket.on("lobby-update", (data: { players: Player[] }) => {
       gameState.players = data.players;
-    });
+      console.log("🔍 lobby-update reçu - données brutes:", data);
+      console.log("🔍 Type de players:", typeof data.players);
+      console.log("🔍 Est un array?", Array.isArray(data.players));
 
+      if (data.players && data.players[0]) {
+        console.log("🔍 Premier joueur:", data.players[0]);
+        console.log("🔍 Premier joueur.ready:", data.players[0].ready);
+        console.log("🔍 Keys du premier joueur:", Object.keys(data.players[0]));
+      }
+
+      setGameState((prevState: GameState) => {
+        if (!prevState) return prevState;
+
+        return {
+          ...prevState,
+          players: data.players,
+        };
+      });
+    });
     // Écouter le début de la partie
     socket.on("game-start", (data: { gameState: any }) => {
       const gameState = data.gameState;
@@ -50,20 +68,23 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       console.log("update on gamestate : ", gameState);
     });
 
-    // Demander l'état actuel du lobby
-    socket.emit("get-lobby-state", { gameId });
-
     return () => {
       socket.off("lobby-update");
       socket.off("game-start");
+      socket.off("game-state-update");
     };
-  }, [location.state, navigate, playerName, gameId, role, socket]);
+  }, [location.state, navigate, playerName, gameId, role, socket, gameState]);
 
   const toggleReady = () => {
     console.log("Toggling ready state...");
     const newReadyState = !isReady;
     setIsReady(newReadyState);
-    socket.emit("player-ready", { gameId, ready: newReadyState });
+    socket.emit("player-ready", {
+      gameId,
+      newReadyState,
+      ready: newReadyState,
+      playerId: socket.id,
+    });
   };
 
   const startGame = () => {
@@ -85,20 +106,33 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
   };
 
-  function renderStatus(players: Map<string, Player>) {
-    players.forEach((player: Player) => {
-      return (
-        <div key={player.id} className="player-item">
-          <span>{player.characterName}</span>
-          <span className={`status ${player.ready ? "ready" : "not-ready"}`}>
-            {player.ready ? "✅ Prêt" : "❌ Non prêt"}
-          </span>
-          <span className="role">
-            {player.role === "game-master" ? "👑" : "🎭"}
-          </span>
-        </div>
-      );
-    });
+  function renderStatus(players: Player[]) {
+    console.log("render status", players);
+    if (!players || !Array.isArray(players)) {
+      return <div>Aucun Joueur</div>;
+    }
+    return players
+      .map((player: Player) => {
+        // ✅ Vérification complète
+        if (!player || typeof player !== "object") {
+          return null;
+        }
+
+        const isReady = Boolean(player.ready);
+        const characterName = player.characterName || "Joueur sans nom";
+        const role = player.role || "hero";
+
+        return (
+          <div key={player.id} className="player-item">
+            <span>{characterName}</span>
+            <span className={`status ${isReady ? "ready" : "not-ready"}`}>
+              {isReady ? "✅ Prêt" : "❌ Non prêt"}
+            </span>
+            <span className="role">{role === "game-master" ? "👑" : "🎭"}</span>
+          </div>
+        );
+      })
+      .filter(Boolean); // Retire les null
   }
 
   // const canStartGame = players.length >= 2 && players.every((p) => p.ready);
@@ -111,7 +145,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         Bienvenue, <strong>{playerName}</strong> (
         {role === "game-master" ? "👑 Maître du Jeu" : "🎭 Héros"})
       </p>
-
+      {renderStatus(gameState.players)}
       <div className="players-list">
         <h2>
           Joueurs connectés (
@@ -125,7 +159,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           onClick={toggleReady}
           className={`ready-button ${isReady ? "ready" : ""}`}
         >
-          {isReady ? "Prêt" : "Se déclarer prêt"}
+          {isReady === false ? "Se déclarer prêt" : "Prêt"}
         </button>
 
         {/* {isGameMaster && ( */}

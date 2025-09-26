@@ -103,16 +103,30 @@ io.on("connection", (socket) => {
   );
 
   socket.on("player-ready", (data: { gameId: string; ready: boolean }) => {
-    const game = games.get(data.gameId);
-    if (game) {
-      const player = game.players.find(
-        (p: { id: string }) => p.id === socket.id
+    if (data.ready === undefined) {
+      console.error(
+        "property ready is undefined please give a value to update your status"
       );
-      if (player) {
-        player.ready = data.ready;
-        io.to(data.gameId).emit("lobby-update", { players: game.players });
-      }
+      return;
     }
+    const game = games.get(data.gameId);
+
+    if (!game) {
+      console.error("no game found related to socket in index.ts");
+      return;
+    }
+    const player = getPlayerFromId(game, socket.id);
+    if (!player) {
+      console.error("no player found related to socket");
+      return;
+    }
+    player.ready = data.ready;
+    console.log(
+      "envoie d'update du lobby avec les nouveaux players",
+      game.players
+    );
+
+    io.to(data.gameId).emit("lobby-update", { players: game.players });
   });
 
   // Écouter le démarrage de partie

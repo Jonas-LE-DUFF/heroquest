@@ -34,6 +34,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
     // Écouter les mises à jour du jeu
     socket.on("game-state-update", (data: { gameState: GameState }) => {
+      console.log("c'est l'update du gamePage", gameState);
+
       setCurrentGameState(data.gameState);
     });
 
@@ -72,9 +74,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const spawnMonster = () => {
     setSelectedType(tileType.monster);
   };
-  if (!currentGameState) {
-    return <div>Chargement du jeu...</div>;
-  }
 
   const putWall = () => {
     console.log("mur");
@@ -147,6 +146,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       playerId: socket.id,
     });
   };
+  console.log("juste avant le return", currentGameState);
 
   return (
     <div className="game-page">
@@ -157,76 +157,78 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         </p>
       </header>
 
-      <div className="game-container">
-        <div className="Board">
-          {socket !== null &&
-            Board({
-              gameState: currentGameState,
-              socket: socket,
-              onTileClick: handleTileClick,
-              selectedType: selectedType,
-            })}
-        </div>
+      {currentGameState && (
+        <div className="game-container">
+          <div className="Board">
+            {socket !== null &&
+              Board({
+                gameState: currentGameState,
+                socket: socket,
+                onTileClick: handleTileClick,
+                selectedType: selectedType,
+              })}
+          </div>
 
-        <div className="game-controls">
-          <h3>Actions</h3>
-          {role === "hero" && (
-            <div className="movement-controls">
-              <button onClick={() => movePlayer("up")}>⬆️ Haut</button>
-              <button onClick={() => movePlayer("down")}>⬇️ Bas</button>
-              <button onClick={() => movePlayer("left")}>⬅️ Gauche</button>
-              <button onClick={() => movePlayer("right")}>➡️ Droite</button>
-            </div>
-          )}
-
-          {role === "game-master" && (
-            <div className="master-controls">
-              <button onClick={spawnMonster}>
-                👹 Faire apparaître un Gobelin
-              </button>
-              <button onClick={putWall}>Faire apparaître un mur</button>
-              <button onClick={putHero}>placer un héro</button>
-              <button onClick={putFurniture}>placer un trésor</button>
-              <button onClick={unSelect}>Annuler</button>
-              <button onClick={erase}>Effacer</button>
-              <div className="container">
-                <Paper
-                  className="dice-container"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                  }}
-                >
-                  {renderDices(currentDiceFaces, currentNumberOfDices)}
-                </Paper>
-                <button onClick={rollDice}>lancer les dés</button>
-                <input
-                  type="number"
-                  onChange={(e) =>
-                    setCurrentNumberOfDices(Number(e.currentTarget.value))
-                  }
-                />
+          <div className="game-controls">
+            <h3>Actions</h3>
+            {role === "hero" && (
+              <div className="movement-controls">
+                <button onClick={() => movePlayer("up")}>⬆️ Haut</button>
+                <button onClick={() => movePlayer("down")}>⬇️ Bas</button>
+                <button onClick={() => movePlayer("left")}>⬅️ Gauche</button>
+                <button onClick={() => movePlayer("right")}>➡️ Droite</button>
               </div>
-            </div>
-          )}
+            )}
 
-          {message && <div className="game-message">{message}</div>}
-        </div>
+            {role === "game-master" && (
+              <div className="master-controls">
+                <button onClick={spawnMonster}>
+                  👹 Faire apparaître un Gobelin
+                </button>
+                <button onClick={putWall}>Faire apparaître un mur</button>
+                <button onClick={putHero}>placer un héro</button>
+                <button onClick={putFurniture}>placer un trésor</button>
+                <button onClick={unSelect}>Annuler</button>
+                <button onClick={erase}>Effacer</button>
+                <div className="container">
+                  <Paper
+                    className="dice-container"
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                    }}
+                  >
+                    {renderDices(currentDiceFaces, currentNumberOfDices)}
+                  </Paper>
+                  <button onClick={rollDice}>lancer les dés</button>
+                  <input
+                    type="number"
+                    onChange={(e) =>
+                      setCurrentNumberOfDices(Number(e.currentTarget.value))
+                    }
+                  />
+                </div>
+              </div>
+            )}
 
-        <div className="game-info">
-          <h3>Informations</h3>
-          {currentGameState.currentTurn === socket.id ? (
-            <p>YOUR TURN !!!!!</p>
-          ) : (
-            <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
-          )}
-          {currentGameState.players ? (
-            <p>Joueurs: {currentGameState.players.length}</p>
-          ) : (
-            <p></p>
-          )}
+            {message && <div className="game-message">{message}</div>}
+          </div>
+
+          <div className="game-info">
+            <h3>Informations</h3>
+            {currentGameState.currentTurn === socket.id ? (
+              <p>YOUR TURN !!!!!</p>
+            ) : (
+              <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
+            )}
+            {currentGameState.players ? (
+              <p>Joueurs: {currentGameState.players.length}</p>
+            ) : (
+              <p></p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

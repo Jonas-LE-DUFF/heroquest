@@ -42,4 +42,10 @@ function getAmountOfDices(
     : player?.stats?.nbDefenseDice;
 }
 
-export { getPlayerNameToTurn, getRoleToTurn, getPlayerRole, getAmountOfDices };
+export {
+  getPlayerNameToTurn,
+  getRoleToTurn,
+  getPlayerRole,
+  getAmountOfDices,
+  getPlayerFromId,
+};
