@@ -4,10 +4,7 @@ import Board from "./BoardComponent";
 import "./GamePage.css";
 import { diceFace, GameState, Position, tileType } from "../shared/type";
 import { getPlayerNameToTurn } from "../shared/util";
-import { Paper } from "@mui/material";
-import deFaceNoir from "./images/deFaceNoir.jpeg";
-import deFaceBlanche from "./images/deFaceBlanche.jpeg";
-import deFaceMort from "./images/deFaceMort.jpeg";
+import Dices from "./DicesComponent";
 
 interface GamePageProps {
   socket: any;
@@ -21,10 +18,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const playerName = location.state.playerName;
 
   const [selectedType, setSelectedType] = useState<tileType | null>(null);
-  const [currentDiceFaces, setCurrentDiceFaces] = useState<diceFace[] | null>(
-    Array.of(diceFace.Hit)
-  );
-  const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);
@@ -45,15 +38,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
     socket.on("monster-spawned", (data: any) => {
       setMessage(`Un ${data.monsterType} est apparu !`);
-    });
-
-    socket.on("dice-update", (data: { listResults: diceFace[] }) => {
-      for (let result of data.listResults) {
-        console.log("result : ", result);
-      }
-
-      console.log("liste des résultats : " + data.listResults);
-      setCurrentDiceFaces(data.listResults);
     });
 
     return () => {
@@ -95,44 +79,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const erase = () => {
     setSelectedType(tileType.empty);
   };
-
-  const rollDice = () => {
-    socket.emit("roll-dice", {
-      gameId,
-      playerId: socket.id,
-      numberOfDice: currentNumberOfDices,
-    });
-  };
-
-  function getDiceFace(face: diceFace) {
-    if (face === diceFace.BlackShield)
-      return <img src={deFaceNoir} alt="dé face noir" />;
-    if (face === diceFace.WhiteShield)
-      return <img src={deFaceBlanche} alt="dé face blanche" />;
-    if (face === diceFace.Hit)
-      return <img src={deFaceMort} alt="dé face mort" />;
-  }
-
-  function renderDices(
-    currentDiceFaces: Array<diceFace> | null,
-    currentNumberOfDices: number
-  ) {
-    if (currentDiceFaces === null) {
-      console.log("no dice faces given");
-      return;
-    }
-    const dices = [];
-    for (let i = 0; i < currentNumberOfDices; i++) {
-      dices.push(
-        <div className="dice" key={"dice number" + i}>
-          {currentDiceFaces[i] !== null
-            ? getDiceFace(currentDiceFaces[i])
-            : "noFace"}
-        </div>
-      );
-    }
-    return dices;
-  }
 
   const handleTileClick = (gameId: string, position: Position) => {
     if (selectedType === undefined) {
@@ -189,24 +135,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                 <button onClick={putFurniture}>placer un trésor</button>
                 <button onClick={unSelect}>Annuler</button>
                 <button onClick={erase}>Effacer</button>
-                <div className="container">
-                  <Paper
-                    className="dice-container"
-                    sx={{
-                      display: "flex",
-                      flexDirection: "row",
-                    }}
-                  >
-                    {renderDices(currentDiceFaces, currentNumberOfDices)}
-                  </Paper>
-                  <button onClick={rollDice}>lancer les dés</button>
-                  <input
-                    type="number"
-                    onChange={(e) =>
-                      setCurrentNumberOfDices(Number(e.currentTarget.value))
-                    }
-                  />
-                </div>
+                {Dices({ socket, gameId })}
               </div>
             )}
 
