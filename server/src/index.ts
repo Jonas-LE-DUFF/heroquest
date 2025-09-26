@@ -141,7 +141,7 @@ io.on("connection", (socket) => {
     }
 
     // Vérifier que c'est bien le maître du jeu qui lance
-    const player = game.players.find((p: { id: string }) => p.id === socket.id);
+    const player = getPlayerFromId(game, socket.id);
     if (!player) {
       console.log("❌ Joueur non trouvé dans la partie");
       socket.emit("error", "Joueur non trouvé");
@@ -169,6 +169,7 @@ io.on("connection", (socket) => {
 
     // Notifier TOUS les joueurs de la partie
     io.to(data.gameId).emit("game-start", { gameState: game });
+    io.to(data.gameId).emit("game-state-update", { gameState: game });
     console.log("📢 Notification game-start envoyée à tous les joueurs");
 
     console.log(

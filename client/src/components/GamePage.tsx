@@ -15,7 +15,7 @@ interface GamePageProps {
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
-  const { gameState } = location.state.gameState;
+  const gameState = location.state.gameState;
   const gameId = location.state.gameId;
   const role = location.state.role;
   const playerName = location.state.playerName;
@@ -146,7 +146,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       playerId: socket.id,
     });
   };
-  console.log("juste avant le return", currentGameState);
 
   return (
     <div className="game-page">

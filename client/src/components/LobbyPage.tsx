@@ -55,10 +55,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       });
     });
     // Écouter le début de la partie
-    socket.on("game-start", (data: { gameState: any }) => {
-      const gameState = data.gameState;
-      console.log("Game is starting...", gameState);
-      navigate("/game", { state: { playerName, gameId, role, gameState } });
+    socket.on("game-start", (data: { gameState: GameState }) => {
+      console.log("Game is starting...", data.gameState);
+      navigate("/game", {
+        state: { playerName, gameId, role, gameState: data.gameState },
+      });
     });
 
     socket.on("game-state-update", (data: { gameState: GameState }) => {
@@ -93,12 +94,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     console.log("Socket ID:", socket.id);
 
     socket.emit("start-game", { gameId });
-
-    // Ajouter un écouteur pour debug
-    socket.once("game-start", (gameState: any) => {
-      console.log("✅ Réception game-start:", gameState);
-      navigate("/game", { state: { gameState, playerName, gameId, role } });
-    });
 
     socket.once("error", (error: any) => {
       console.log("❌ Erreur:", error);
