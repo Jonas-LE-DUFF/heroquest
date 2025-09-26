@@ -115,7 +115,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       <div className="players-list">
         <h2>
           Joueurs connectés (
-          {gameState.players.values ? gameState.players.values.length : "0"}
+          {gameState.players ? gameState.players.length : "0"}
           /5)
         </h2>
       </div>
