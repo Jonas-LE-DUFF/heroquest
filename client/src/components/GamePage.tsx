@@ -60,7 +60,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   };
 
   const putWall = () => {
-    console.log("mur");
     setSelectedType(tileType.wall);
   };
 

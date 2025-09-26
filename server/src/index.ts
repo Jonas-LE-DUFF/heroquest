@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import path, { posix } from "path";
+import path from "path";
 import {
   ClientToServerEvents,
   ServerToClientEvents,
@@ -11,18 +11,13 @@ import {
   PlayerRole,
   Tile,
   Position,
-  monsterClass,
-  Monster,
-  Unit,
   tileType,
   diceFace,
 } from "../src/shared/type";
-import { stat } from "fs";
 import {
   getAmountOfDices,
   getPlayerFromId,
   getPlayerRole,
-  getRoleToTurn,
 } from "./shared/util";
 
 const app = express();
@@ -247,9 +242,16 @@ io.on("connection", (socket) => {
     }
   );
 
+  const sleep = (ms: number) => {
+    return new Promise((r) => setTimeout(r, ms));
+  };
   socket.on(
     "roll-dice",
-    (data: { gameId: string; playerId: string; numberOfDice: number }) => {
+    async (data: {
+      gameId: string;
+      playerId: string;
+      numberOfDice: number;
+    }) => {
       const gameState = games.get(data.gameId);
       let numberOfDices: number | undefined;
       if (!gameState) {
@@ -266,24 +268,31 @@ io.on("connection", (socket) => {
       } else {
         numberOfDices = data.numberOfDice;
       }
-      const results: diceFace[] = [];
       if (numberOfDices === undefined) {
         console.log("no amount of dice to throw defined");
         return;
       }
-      for (let i = 0; i < numberOfDices; i++) {
-        const randomNumber = Math.floor(Math.random() * 6 + 1);
-        let face: diceFace = diceFace.Hit;
-        if (randomNumber === 1) {
-          face = diceFace.BlackShield;
-        } else if (randomNumber < 3) {
-          face = diceFace.WhiteShield;
-        } else {
-          face = diceFace.Hit;
+      for (let j = 0; j < 15; j++) {
+        console.log("trowing dices");
+        let results: diceFace[] = [];
+        for (let i = 0; i < numberOfDices; i++) {
+          const randomNumber = Math.floor(Math.random() * 6 + 1);
+          let face: diceFace = diceFace.Hit;
+          if (randomNumber === 1) {
+            face = diceFace.BlackShield;
+          } else if (randomNumber < 3) {
+            face = diceFace.WhiteShield;
+          } else {
+            face = diceFace.Hit;
+          }
+          results.push(face);
         }
-        results.push(face);
+        io.to(data.gameId).emit("dice-update", { listResults: results });
+        await sleep(75);
+        console.log("waiting...");
+
+        results = [];
       }
-      io.to(data.gameId).emit("dice-update", { listResults: results });
     }
   );
 });

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameState, Player } from "../shared/type";
-import { JSX } from "react/jsx-runtime";
 
 interface LobbyPageProps {
   socket: any;
@@ -35,15 +34,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     // Écouter les mises à jour des joueurs
     socket.on("lobby-update", (data: { players: Player[] }) => {
       gameState.players = data.players;
-      console.log("🔍 lobby-update reçu - données brutes:", data);
-      console.log("🔍 Type de players:", typeof data.players);
-      console.log("🔍 Est un array?", Array.isArray(data.players));
-
-      if (data.players && data.players[0]) {
-        console.log("🔍 Premier joueur:", data.players[0]);
-        console.log("🔍 Premier joueur.ready:", data.players[0].ready);
-        console.log("🔍 Keys du premier joueur:", Object.keys(data.players[0]));
-      }
 
       setGameState((prevState: GameState) => {
         if (!prevState) return prevState;
@@ -63,10 +53,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
 
     socket.on("game-state-update", (data: { gameState: GameState }) => {
-      console.log("aaaaaaaaaaaaaaaaaaa update");
-
       setGameState(data.gameState);
-      console.log("update on gamestate : ", gameState);
     });
 
     return () => {
@@ -90,8 +77,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const startGame = () => {
     console.log("🔄 Tentative de lancement de la partie...");
-    console.log("Game ID:", gameId);
-    console.log("Socket ID:", socket.id);
 
     socket.emit("start-game", { gameId });
 
@@ -169,7 +154,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         <ul>
           <li>Les héros coopèrent pour accomplir des quêtes</li>
           <li>Le Maître du Jeu contrôle les monstres et les pièges</li>
-          <li>Chaque héros a 3 actions par tour</li>
+          <li>Il ne peut y avoir qu'un seul Maitre du jeu</li>
         </ul>
       </div>
     </div>
