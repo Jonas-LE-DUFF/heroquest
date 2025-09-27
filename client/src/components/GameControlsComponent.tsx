@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { GameState, tileType } from "../shared/type";
 import Dices from "./DicesComponent";
+import "./GameControlsComponent.css";
 
 interface GameControlsProps {
   socket: any;

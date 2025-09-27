@@ -113,8 +113,8 @@ const Board = ({
     const isWall = tile?.type === tileType.wall;
 
     const baseStyle = {
-      width: 40,
-      height: 40,
+      width: 20,
+      height: 20,
       border: "1px solid #ccc",
       cursor: "pointer",
       fontSize: "20px",
@@ -125,8 +125,8 @@ const Board = ({
     if (isSelected) {
       return {
         ...baseStyle,
-        width: 38,
-        height: 38,
+        width: 20,
+        height: 20,
         backgroundColor: "#4CAF50",
         border: "2px solid #2E7D32",
       };
@@ -163,7 +163,7 @@ const Board = ({
 
     return {
       ...baseStyle,
-      backgroundColor: tile?.revealed ? "#F5F5F5" : "#7E57C2",
+      backgroundColor: tile?.revealed ? "#F5F5F5" : "#8b8692ff",
       "&:hover": { backgroundColor: "#E0E0E0" },
     };
   };

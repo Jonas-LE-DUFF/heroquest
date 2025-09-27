@@ -69,21 +69,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                 selectedType: selectedType,
               })}
           </div>
+          <div className="info-on-the-side">
+            {GameControls({ socket, setSelectedType })}
 
-          {GameControls({ socket, setSelectedType })}
-
-          <div className="game-info">
-            <h3>Informations</h3>
-            {currentGameState.currentTurn === socket.id ? (
-              <p>YOUR TURN !!!!!</p>
-            ) : (
-              <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
-            )}
-            {currentGameState.players ? (
-              <p>Joueurs: {currentGameState.players.length}</p>
-            ) : (
-              <p></p>
-            )}
+            <div className="game-info">
+              <h3>Informations</h3>
+              {currentGameState.currentTurn === socket.id ? (
+                <p>YOUR TURN !!!!!</p>
+              ) : (
+                <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
+              )}
+              {currentGameState.players ? (
+                <p>Joueurs: {currentGameState.players.length}</p>
+              ) : (
+                <p></p>
+              )}
+            </div>
           </div>
         </div>
       )}
