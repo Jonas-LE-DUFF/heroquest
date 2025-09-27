@@ -273,7 +273,6 @@ io.on("connection", (socket) => {
         return;
       }
       for (let j = 0; j < 15; j++) {
-        console.log("trowing dices");
         let results: diceFace[] = [];
         for (let i = 0; i < numberOfDices; i++) {
           const randomNumber = Math.floor(Math.random() * 6 + 1);
@@ -289,8 +288,6 @@ io.on("connection", (socket) => {
         }
         io.to(data.gameId).emit("dice-update", { listResults: results });
         await sleep(75);
-        console.log("waiting...");
-
         results = [];
       }
     }

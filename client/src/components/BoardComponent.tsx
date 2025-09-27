@@ -113,20 +113,20 @@ const Board = ({
     const isWall = tile?.type === tileType.wall;
 
     const baseStyle = {
-      width: 20,
-      height: 20,
+      width: 15,
+      height: 5,
       border: "1px solid #ccc",
       cursor: "pointer",
-      fontSize: "20px",
       textAlign: "center" as const,
       verticalAlign: "middle" as const,
+      padding: "5px 10px 5px 10px",
     };
 
     if (isSelected) {
       return {
         ...baseStyle,
-        width: 20,
-        height: 20,
+        width: 5,
+        height: 5,
         backgroundColor: "#4CAF50",
         border: "2px solid #2E7D32",
       };
@@ -169,10 +169,7 @@ const Board = ({
   };
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{ maxWidth: "fit-content", margin: "20px auto" }}
-    >
+    <TableContainer component={Paper} sx={{ marginLeft: "10%" }}>
       <Typography variant="h6" sx={{ textAlign: "center", padding: 1 }}>
         Plateau de jeu - {gameState?.players.values.length} joueur(s)
         {selectedPosition &&

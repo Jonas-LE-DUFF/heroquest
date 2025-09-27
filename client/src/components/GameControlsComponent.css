@@ -3,4 +3,10 @@
   margin: 3%;
   border-radius: 10px;
   box-shadow: 2px 2px 2px gray;
+  margin-right: 0;
+}
+
+.master-controls {
+  display: flex;
+  flex-direction: column;
 }

@@ -79,7 +79,7 @@ export interface ServerToClientEvents {
   "game-start": (data: { gameState: GameState }) => void;
 
   // Actions spécifiques
-  "player-moved": (data: { playerId: string; newPosition: Position }) => void;
+  "unit-moved": (data: { playerId: string; newPosition: Position }) => void;
   "monster-spawned": (data: {
     monsterType: string;
     position: Position;
