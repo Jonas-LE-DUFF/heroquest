@@ -6,9 +6,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import LoginPage from "./components/LoginPage";
-import LobbyPage from "./components/LobbyPage";
-import GamePage from "./components/GamePage";
+import LoginPage from "./view/LoginPageView";
+import LobbyPage from "./view/LobbyPageView";
+import GamePage from "./view/GamePageView";
 import "./App.css";
 
 function App() {

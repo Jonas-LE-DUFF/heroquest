@@ -54,7 +54,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       console.log("UPDTAE", data.gameState.players);
 
       setGameState(data.gameState);
-      console.log("aaaa", data.gameState.players);
     });
   };
 
