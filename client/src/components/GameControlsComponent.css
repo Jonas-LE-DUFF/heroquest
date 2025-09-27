@@ -1,12 +1,26 @@
 .game-controls {
+  width: 100%;
   border: solid 2px black;
   margin: 3%;
   border-radius: 10px;
   box-shadow: 2px 2px 2px gray;
-  margin-right: 0;
 }
 
-.master-controls {
+.gridElem {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+}
+
+.master-controls button {
+  align-self: center;
+  width: 90%;
+}
+
+.two-button-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }

@@ -163,13 +163,13 @@ const Board = ({
 
     return {
       ...baseStyle,
-      backgroundColor: tile?.revealed ? "#F5F5F5" : "#8b8692ff",
+      backgroundColor: tile?.revealed ? "#F5F5F5" : "#7b7a7cff",
       "&:hover": { backgroundColor: "#E0E0E0" },
     };
   };
 
   return (
-    <TableContainer component={Paper} sx={{ marginLeft: "10%" }}>
+    <TableContainer component={Paper} sx={{ width: "fit-content" }}>
       <Typography variant="h6" sx={{ textAlign: "center", padding: 1 }}>
         Plateau de jeu - {gameState?.players.values.length} joueur(s)
         {selectedPosition &&

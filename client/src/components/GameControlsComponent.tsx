@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { GameState, tileType } from "../shared/type";
 import Dices from "./DicesComponent";
 import "./GameControlsComponent.css";
+import { Grid } from "@mui/material";
 
 interface GameControlsProps {
   socket: any;
@@ -88,13 +89,33 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
       )}
 
       {role === "game-master" && (
-        <div className="master-controls">
-          <button onClick={spawnMonster}>👹 Faire apparaître un Gobelin</button>
-          <button onClick={putWall}>Faire apparaître un mur</button>
-          <button onClick={putHero}>placer un héro</button>
-          <button onClick={putFurniture}>placer un trésor</button>
-          <button onClick={unSelect}>Annuler</button>
-          <button onClick={erase}>Effacer</button>
+        <div>
+          <Grid
+            container
+            className="master-controls"
+            sx={{
+              width: "100%",
+              justifyContent: "space-evenly",
+              padding: "10px",
+            }}
+          >
+            <Grid className="gridElem" size={3}>
+              <button onClick={spawnMonster}>Monstre</button>
+            </Grid>
+            <Grid className="gridElem" size={3}>
+              <button onClick={putHero}>Héro</button>
+            </Grid>
+            <Grid className="gridElem" size={3}>
+              <button onClick={putWall}>Mur</button>
+            </Grid>
+            <Grid className="gridElem" size={3}>
+              <button onClick={putFurniture}>Meuble</button>
+            </Grid>
+          </Grid>
+          <div className="two-button-container">
+            <button onClick={unSelect}>Annuler</button>
+            <button onClick={erase}>Effacer</button>
+          </div>
           {Dices({ socket, gameId })}
         </div>
       )}
