@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { GameState, tileType } from "../shared/type";
+import { GameState, monsterClass, tileType } from "../shared/type";
 import Dices from "./DicesComponent";
 import "./GameControlsComponent.css";
 import { Grid } from "@mui/material";
+import gobelinPicture from "./images/goblin.png";
+import skeletonPicture from "./images/skeleton.png";
+import zombiePicture from "./images/zombie.png";
+import orcPicture from "./images/orc.png";
+import abominationPicture from "./images/abomination.png";
+import mummyPicture from "./images/mummy.png";
+import dreadWarriorPicture from "./images/dreadwarrior.png";
+import gargoylePicture from "./images/gargoyle.png";
 
 interface GameControlsProps {
   socket: any;
@@ -15,6 +23,10 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
   const gameState = location.state.gameState;
   const gameId = location.state.gameId;
   const role = location.state.role;
+
+  const [selectedMonster, setSelectedMonster] = useState<monsterClass | null>(
+    null
+  );
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);
@@ -52,20 +64,23 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
     });
   };
 
-  const spawnMonster = () => {
+  const selectMonster = () => {
     setSelectedType(tileType.monster);
   };
 
   const putWall = () => {
     setSelectedType(tileType.wall);
+    setSelectedMonster(null);
   };
 
   const putHero = () => {
     setSelectedType(tileType.hero);
+    setSelectedMonster(null);
   };
 
   const putFurniture = () => {
     setSelectedType(tileType.furniture);
+    setSelectedMonster(null);
   };
 
   const unSelect = () => {
@@ -74,6 +89,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
 
   const erase = () => {
     setSelectedType(tileType.empty);
+    setSelectedMonster(null);
   };
 
   return (
@@ -99,8 +115,67 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
               padding: "10px",
             }}
           >
-            <Grid className="gridElem" size={3}>
-              <button onClick={spawnMonster}>Monstre</button>
+            <Grid className="gridElem" size={6}>
+              <button
+                onClick={selectMonster}
+                disabled={selectedMonster === null}
+              >
+                {selectedMonster !== null
+                  ? `Créer ${monsterClass[selectedMonster]}`
+                  : "Sélectionnez un monstre"}
+              </button>
+            </Grid>
+            <Grid container spacing={1} sx={{ margin: "10px 0" }}>
+              {[
+                {
+                  type: monsterClass.Goblin,
+                  img: gobelinPicture,
+                  name: "Gobelin",
+                },
+                {
+                  type: monsterClass.Squelette,
+                  img: skeletonPicture,
+                  name: "Squelette",
+                },
+                {
+                  type: monsterClass.Zombie,
+                  img: zombiePicture,
+                  name: "Zombie",
+                },
+                { type: monsterClass.Orc, img: orcPicture, name: "Orc" },
+                {
+                  type: monsterClass.Abomination,
+                  img: abominationPicture,
+                  name: "Abomination",
+                },
+                {
+                  type: monsterClass.Momie,
+                  img: mummyPicture,
+                  name: "Momie",
+                },
+                {
+                  type: monsterClass["Guerrier de la terreur"],
+                  img: dreadWarriorPicture,
+                  name: "Guerrier terreur",
+                },
+                {
+                  type: monsterClass.Gargouille,
+                  img: gargoylePicture,
+                  name: "Gargouille",
+                },
+              ].map((monster) => (
+                <Grid key={monster.type} size={4}>
+                  <button
+                    className={`monster-button ${
+                      selectedMonster === monster.type ? "selected" : ""
+                    }`}
+                    onClick={() => setSelectedMonster(monster.type)}
+                  >
+                    <img src={monster.img} alt={monster.name} />
+                    <span>{monster.name}</span>
+                  </button>
+                </Grid>
+              ))}
             </Grid>
             <Grid className="gridElem" size={3}>
               <button onClick={putHero}>Héro</button>

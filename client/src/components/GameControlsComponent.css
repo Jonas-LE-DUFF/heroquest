@@ -24,3 +24,30 @@
   justify-content: center;
   align-items: center;
 }
+
+select {
+  padding: 10px;
+  border-radius: 10px;
+  height: fit-content;
+  width: fit-content;
+}
+
+button img {
+  width: 40px;
+  height: 40px;
+}
+
+button span {
+  width: 100%;
+  align-self: center;
+}
+
+.monster-button {
+  display: flex;
+  flex-direction: row;
+}
+
+.selected {
+  background-color: darkgray;
+  border-color: black;
+}
