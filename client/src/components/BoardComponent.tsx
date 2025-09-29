@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { GameState, Position, tileType } from "../shared/type";
-import { getPlayerRole } from "../shared/util";
 import "./BoardComponent.css";
 import {
   Table,
@@ -32,25 +31,32 @@ const Board = ({
     position: Position,
     selectedType: tileType | null
   ) => {
-    const tile = gameState?.board[position.x]?.[position.y];
-    if (!tile) return;
+    if (!gameState || !gameState.board[position.x]) {
+      console.error("gameState is not defined");
+      return;
+    }
+    const tile = gameState.board[position.x][position.y];
+    if (!tile || !socket.id) return;
 
     // Vérifier si la case est occupée
     const occupantType = tile.type;
+    console.log("before");
+
+    console.log("players", gameState.players);
 
     // Vérifier si l'occupant appartient au joueur actuel
     if (occupantType === tileType.monster) {
-      if (getPlayerRole(gameState, socket.id) !== "game-master") {
+      if (gameState.players.get(socket.id)?.role !== "game-master") {
         console.log("cant select a monster as hero");
         return;
       }
     }
     if (
-      getPlayerRole(gameState, socket.id) === "hero" &&
+      gameState.players.get(socket.id)?.role === "hero" &&
       gameState.currentTurn !== socket.id
     ) {
       console.log("please wait your turn");
-      console.log(getPlayerRole(gameState, socket.id));
+      console.log(gameState.players.get(socket.id)?.role);
       return;
     }
 
@@ -171,7 +177,7 @@ const Board = ({
   return (
     <TableContainer component={Paper} sx={{ width: "fit-content" }}>
       <Typography variant="h6" sx={{ textAlign: "center", padding: 1 }}>
-        Plateau de jeu - {gameState?.players.values.length} joueur(s)
+        Plateau de jeu - {gameState?.players.size} joueur(s)
         {selectedPosition &&
           ` - Case sélectionnée: ${selectedPosition.x},${selectedPosition.y}`}
       </Typography>

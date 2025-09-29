@@ -13,11 +13,11 @@ import {
   Position,
   tileType,
   diceFace,
+  Monster,
 } from "../src/shared/type";
 import {
+  convertGameStateAsSendableGameState,
   getAmountOfDices,
-  getPlayerFromId,
-  getPlayerRole,
 } from "./shared/util";
 
 const app = express();
@@ -57,9 +57,12 @@ io.on("connection", (socket) => {
         game = {
           id: gameId,
           status: "waiting",
-          players: [],
-          monsters: [],
+          players: new Map<string, Player>(),
+          monsters: new Map<string, Monster>(),
+          entityPositions: new Map<string, Position>(),
+          positionEntities: new Map<Position, string>(),
           board: initializeBoard(),
+          currentTurn: socket.id,
         };
         games.set(gameId, game);
       } else {
@@ -84,44 +87,41 @@ io.on("connection", (socket) => {
         console.log("fatal error : game couldn't be created");
         return;
       }
-      game.players.push(newPlayer);
+      game.players.set(socket.id, newPlayer);
 
       socket.emit("join-success", {
         playerId: socket.id,
-        gameState: game,
+        game: convertGameStateAsSendableGameState(game),
       });
 
-      io.to(gameId).emit("game-state-update", { gameState: game });
+      io.to(gameId).emit("game-state-update", {
+        gameState: convertGameStateAsSendableGameState(game),
+      });
 
       console.log(`${playerName} a rejoint la partie ${gameId}`);
     }
   );
 
   socket.on("player-ready", (data: { gameId: string; ready: boolean }) => {
-    if (data.ready === undefined) {
-      console.error(
-        "property ready is undefined please give a value to update your status"
-      );
-      return;
-    }
+    console.log("player-ready received:", data);
+
     const game = games.get(data.gameId);
 
     if (!game) {
       console.error("no game found related to socket in index.ts");
       return;
     }
-    const player = getPlayerFromId(game, socket.id);
+    const player = game.players.get(socket.id);
     if (!player) {
       console.error("no player found related to socket");
       return;
     }
     player.ready = data.ready;
-    console.log(
-      "envoie d'update du lobby avec les nouveaux players",
-      game.players
-    );
+    console.log(`Player ${socket.id} ready status: ${data.ready}`);
 
-    io.to(data.gameId).emit("lobby-update", { players: game.players });
+    io.to(data.gameId).emit("game-state-update", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
   });
 
   // Écouter le démarrage de partie
@@ -136,7 +136,7 @@ io.on("connection", (socket) => {
     }
 
     // Vérifier que c'est bien le maître du jeu qui lance
-    const player = getPlayerFromId(game, socket.id);
+    const player = game.players.get(socket.id);
     if (!player) {
       console.log("❌ Joueur non trouvé dans la partie");
       socket.emit("error", "Joueur non trouvé");
@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
     // }
 
     // Vérifier le nombre minimum de joueurs
-    if (game.players.length < 1 || game.players[0] === undefined) {
+    if (game.players.size < 1) {
       console.log("❌ Pas assez de joueurs");
       socket.emit("error", "Il faut au moins 1 joueur");
       return;
@@ -160,23 +160,23 @@ io.on("connection", (socket) => {
 
     // Changer le statut de la partie
     game.status = "playing";
-    game.currentTurn = game.players[0].id;
 
     // Notifier TOUS les joueurs de la partie
-    io.to(data.gameId).emit("game-start", { gameState: game });
-    io.to(data.gameId).emit("game-state-update", { gameState: game });
+    io.to(data.gameId).emit("game-start", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
     console.log("📢 Notification game-start envoyée à tous les joueurs");
-
-    console.log(
-      "🚀 Partie lancée avec succès! Joueurs:",
-      game.players.map((p: { characterName?: any }) => p.characterName)
-    );
+    console.log(game.players);
+    console.log("list of players : ");
+    for (let key of game.players) {
+      console.log("", key[1].characterName);
+    }
   });
 
   socket.on("disconnect", () => {
     const gameWithFoundPlayer = new Map<string, GameState>();
     games.forEach((gameState: GameState, gameId: string) => {
-      if (getPlayerFromId(gameState, socket.id) !== null)
+      if (gameState.players.get(socket.id) !== null)
         gameWithFoundPlayer.set(gameId, gameState);
     });
     const gameId = gameWithFoundPlayer.keys().next().value;
@@ -186,15 +186,23 @@ io.on("connection", (socket) => {
     }
 
     const game = games.get(gameId);
-    if (!game) return;
-    const player = getPlayerFromId(game, socket.id);
-    if (player === null) return;
-    const index = game.players.indexOf(player, 0);
-    if (index > -1) {
-      console.log("removing player because of deconnection");
-      game.players.splice(index, 1);
+    if (!game) {
+      console.log("no game on disconnect");
+      return;
     }
-    if (game.players.length === 0) {
+    const player = game.players.get(socket.id);
+    if (!player) {
+      console.log("no player found");
+      return;
+    }
+    if (player.id !== undefined) {
+      console.log("removing player because of deconnection");
+      game.players.delete(player.id);
+      io.to(gameId).emit("game-state-update", {
+        gameState: convertGameStateAsSendableGameState(game),
+      });
+    }
+    if (game.players.size === 0) {
       console.log("no player connected to game deleting...");
       games.delete(gameId);
     }
@@ -216,7 +224,7 @@ io.on("connection", (socket) => {
         console.error("no game found");
         return;
       }
-      if (getPlayerRole(gameState, playerId) !== "game-master") {
+      if (gameState.players.get(playerId)?.role !== "game-master") {
         console.error(
           "you are no game master therefore you can't place pieces on the board"
         );
@@ -238,7 +246,9 @@ io.on("connection", (socket) => {
       }
 
       tile.type = selectedType;
-      io.to(gameId).emit("game-state-update", { gameState });
+      io.to(gameId).emit("game-state-update", {
+        gameState: convertGameStateAsSendableGameState(gameState),
+      });
     }
   );
 
@@ -258,7 +268,7 @@ io.on("connection", (socket) => {
         console.error("game couldn't be found");
         return;
       }
-      const playerRole = getPlayerRole(gameState, data.playerId);
+      const playerRole = gameState.players.get(data.playerId)?.role;
       if (playerRole === "hero") {
         numberOfDices = getAmountOfDices(
           gameState,
@@ -292,6 +302,17 @@ io.on("connection", (socket) => {
       }
     }
   );
+
+  socket.on("asking-for-game-state", (data: { gameId: string }) => {
+    const game = games.get(data.gameId);
+    if (!game) {
+      console.error("game couln't be found : ", data.gameId);
+      return;
+    }
+    socket.emit("game-state-update", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
+  });
 });
 
 function initializeBoard(): Tile[][] {
@@ -319,7 +340,7 @@ httpServer.listen(PORT, () => {
 
 function checkOnlyOneGameMaster(game: GameState) {
   if (game?.players)
-    for (let player of game?.players) {
+    for (let player of game?.players.values()) {
       if (player.role === "game-master") {
         return false;
       }
@@ -330,7 +351,7 @@ function checkOnlyOneGameMaster(game: GameState) {
 function generateMonsterId(game: GameState) {
   let id = "idMonster" + Math.random().toString(16).slice(2);
   //checking the id is unique among monsters
-  for (let monster of game.monsters) {
+  for (let monster of game.monsters.values()) {
     if (monster.id === id) {
       id = generateMonsterId(game);
     }

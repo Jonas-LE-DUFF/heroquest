@@ -62,21 +62,21 @@ export enum tileType {
 export interface Tile {
   type: tileType;
   revealed: boolean;
+  entityId?: string;
 }
 
 // Événements Socket.io
 export interface ServerToClientEvents {
   // Réponses de connexion
-  "join-success": (data: { gameState: GameState; playerId: string }) => void;
+  "join-success": (data: { playerId: string; game: SendableGameState }) => void;
   "join-error": (message: string) => void;
 
   "player-reconnected": (data: { playerId: string }) => void;
 
   // Mises à jour de jeu
-  "game-state-update": (data: { gameState: GameState }) => void;
+  "game-state-update": (data: { gameState: SendableGameState }) => void;
   "dice-update": (data: { listResults: diceFace[] }) => void;
-  "lobby-update": (data: { players: Player[] }) => void;
-  "game-start": (data: { gameState: GameState }) => void;
+  "game-start": (data: { gameState: SendableGameState }) => void;
 
   // Actions spécifiques
   "unit-moved": (data: { playerId: string; newPosition: Position }) => void;
@@ -140,15 +140,34 @@ export interface ClientToServerEvents {
     playerId: string;
     numberOfDice: number;
   }) => void;
+
+  "asking-for-game-state": (data: { gameId: string }) => void;
 }
 
 // État du jeu
 export interface GameState {
   id: string;
-  players: Player[];
-  monsters: Monster[];
   board: Tile[][];
-  currentTurn?: string; // the id of the player
+  players: Map<string, Player>; // Id -> Player
+  monsters: Map<string, Monster>; // Id -> Monster
+  entityPositions: Map<string, Position>; // entityId -> position
+  positionEntities: Map<Position, string>; // "x,y" -> entityId
+
+  currentTurn: string; // the id of the player
+  status: "waiting" | "playing" | "finished";
+}
+
+export interface SendableGameState {
+  id: string;
+  board: Tile[][];
+  players: Player[]; // Id -> Player
+  monsters: Monster[]; // Id -> Monster
+
+  ids: string[]; // ids of the different units on the board
+  positions: Position[]; // the different positions of the units on the board
+  // the two arrays up here should be organized as the ids[0] => position[0] in order to remake the Map
+
+  currentTurn: string; // the id of the player
   status: "waiting" | "playing" | "finished";
 }
 

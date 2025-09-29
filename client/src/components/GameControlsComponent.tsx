@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { GameState, monsterClass, tileType } from "../shared/type";
+import {
+  GameState,
+  monsterClass,
+  SendableGameState,
+  tileType,
+} from "../shared/type";
 import Dices from "./DicesComponent";
 import "./GameControlsComponent.css";
 import { Grid } from "@mui/material";
@@ -12,6 +17,7 @@ import abominationPicture from "./images/abomination.png";
 import mummyPicture from "./images/mummy.png";
 import dreadWarriorPicture from "./images/dreadwarrior.png";
 import gargoylePicture from "./images/gargoyle.png";
+import { convertSendableGameStateAsGameState } from "../shared/utils";
 
 interface GameControlsProps {
   socket: any;
@@ -35,10 +41,10 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
     if (!gameState) return;
 
     // Écouter les mises à jour du jeu
-    socket.on("game-state-update", (data: { gameState: GameState }) => {
+    socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       console.log("c'est l'update du gamePage", gameState);
 
-      setCurrentGameState(data.gameState);
+      setCurrentGameState(convertSendableGameStateAsGameState(data.gameState));
     });
 
     socket.on("player-moved", (data: any) => {

@@ -2,9 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/BoardComponent";
 import "./GamePageView.css";
-import { GameState, Position, tileType } from "../shared/type";
-import { getPlayerNameToTurn } from "../shared/util";
+import {
+  GameState,
+  Position,
+  SendableGameState,
+  tileType,
+} from "../shared/type";
 import { GameControls } from "../components/GameControlsComponent";
+import { convertSendableGameStateAsGameState } from "../shared/utils";
 
 interface GamePageProps {
   socket: any;
@@ -21,14 +26,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);
+
   useEffect(() => {
     if (!gameState) return;
 
     // Écouter les mises à jour du jeu
-    socket.on("game-state-update", (data: { gameState: GameState }) => {
+    socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       console.log("c'est l'update du gamePage", gameState);
 
-      setCurrentGameState(data.gameState);
+      setCurrentGameState(convertSendableGameStateAsGameState(data.gameState));
     });
 
     return () => {
@@ -77,10 +83,16 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               {currentGameState.currentTurn === socket.id ? (
                 <p>YOUR TURN !!!!!</p>
               ) : (
-                <p>Tour actuel: {getPlayerNameToTurn(currentGameState)}</p>
+                <p>
+                  Tour actuel:{" "}
+                  {currentGameState.currentTurn &&
+                    currentGameState.players &&
+                    currentGameState.players.get(currentGameState.currentTurn)
+                      ?.characterName}
+                </p>
               )}
               {currentGameState.players ? (
-                <p>Joueurs: {currentGameState.players.length}</p>
+                <p>Joueurs: {currentGameState.players.size}</p>
               ) : (
                 <p></p>
               )}

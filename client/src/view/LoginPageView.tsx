@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GameState } from "../shared/type";
+import { SendableGameState } from "../shared/type";
+import { convertSendableGameStateAsGameState } from "../shared/utils";
 interface LoginPageProps {
   socket: any;
 }
@@ -10,7 +11,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const [playerName, setPlayerName] = useState("");
   const [gameId, setGameId] = useState("");
   const [role, setRole] = useState<"hero" | "game-master">("hero");
-  const [gameState, setGameState] = useState<GameState | null>(null);
 
   const handleJoinGame = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,17 +27,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
     // Écouter la réponse du serveur
     socket.once(
       "join-success",
-      (data: { gameState: any; playerId: string }) => {
-        // Naviguer vers la page du lobby/jeu
-        console.log("data.gameState : ", data.gameState);
-        setGameState(data.gameState);
-        console.log("gameState : ", gameState);
+      (data: { playerId: string; game: SendableGameState }) => {
         navigate("/lobby", {
           state: {
             playerName: playerName,
-            gameId: gameId,
-            role: role,
-            gameState: data.gameState,
+            game: convertSendableGameStateAsGameState(data.game),
           },
         });
       }
@@ -45,15 +39,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
 
     socket.once("join-error", (error: string) => {
       alert(`Erreur: ${error}`);
-    });
-
-    socket.on("game-state-update", (data: { gameState: GameState }) => {
-      console.log(data);
-
-      if (!data.gameState) return;
-      console.log("UPDTAE", data.gameState.players);
-
-      setGameState(data.gameState);
     });
   };
 

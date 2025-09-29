@@ -28,7 +28,6 @@ const Dices = ({ socket, gameId }: DicesProps) => {
     });
 
     return () => {
-      socket.off("game-state-update");
       socket.off("dice-update");
     };
   }, [socket]);
