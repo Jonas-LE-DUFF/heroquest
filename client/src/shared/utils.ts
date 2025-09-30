@@ -39,6 +39,7 @@ function convertSendableGameStateAsGameState(
     monsters: monsters,
     entityPositions: entityPositions,
     positionEntities: positionEntities,
+    turnOrder: game.turnOrder,
     currentTurn: game.currentTurn,
     status: game.status,
     walls: game.walls,

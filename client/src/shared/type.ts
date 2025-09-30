@@ -145,6 +145,8 @@ export interface ClientToServerEvents {
     playerId: string;
     numberOfDice: number;
   }) => void;
+
+  "end-turn": (data: { gameId: string }) => void;
 }
 
 // État du jeu
@@ -156,6 +158,8 @@ export interface GameState {
   monsters: Map<string, Monster>; // Id -> Monster
   entityPositions: Map<string, Position>; // entityId -> position
   positionEntities: Map<Position, string>; // "x,y" -> entityId
+
+  turnOrder: string[]; // order of turn with the ids of players; game master should always be last player
 
   currentTurn: string; // the id of the player
   status: "waiting" | "playing" | "finished";
@@ -172,6 +176,7 @@ export interface SendableGameState {
   positions: Position[]; // the different positions of the units on the board
   // the two arrays up here should be organized as the ids[0] => position[0] in order to remake the Map
 
+  turnOrder: string[]; // order of turn with the ids of players; game master should always be last player
   currentTurn: string; // the id of the player
   status: "waiting" | "playing" | "finished";
 }

@@ -8,8 +8,8 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const navigate = useNavigate();
-  const [playerName, setPlayerName] = useState("");
-  const [gameId, setGameId] = useState("");
+  const [playerName, setPlayerName] = useState("a");
+  const [gameId, setGameId] = useState("a");
   const [role, setRole] = useState<"hero" | "game-master">("hero");
 
   const handleJoinGame = (e: React.FormEvent) => {

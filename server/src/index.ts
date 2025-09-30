@@ -19,11 +19,12 @@ import {
 import {
   checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
+  fiveHeroPlayers,
   getAmountOfDices,
-  initializeBoard,
-  initializeWalls,
 } from "./shared/util";
+
 import { canMove, getPositionAfterMove, hasWall } from "./shared/wallFunctions";
+import { initializeBoard, initializeWalls } from "./shared/initializator";
 
 const app = express();
 const httpServer = createServer(app);
@@ -70,6 +71,7 @@ io.on("connection", (socket) => {
           board: initializeBoard(),
           currentTurn: socket.id,
           walls: initializeWalls(),
+          turnOrder: [],
         };
         games.set(gameId, game);
       } else {
@@ -83,6 +85,26 @@ io.on("connection", (socket) => {
             return;
           }
         }
+        if (game.players.size >= 5) {
+          console.log("game is full of players");
+          socket.emit("error", "game is full of players");
+          return;
+        }
+        if (game.status === "playing") {
+          console.log("game is already launched you can't join");
+          socket.emit("error", "game is already launched");
+          return;
+        }
+        if (fiveHeroPlayers(game, role)) {
+          console.log(
+            "there's already 4 hero players and there can't be a fifth one"
+          );
+          socket.emit(
+            "error",
+            "there's already 4 heros in this game and there can't be a fifth one... please select game master or choose another gameId"
+          );
+          return;
+        }
       }
       const newPlayer: Player = {
         id: socket.id,
@@ -95,6 +117,29 @@ io.on("connection", (socket) => {
         return;
       }
       game.players.set(socket.id, newPlayer);
+
+      if (role === "game-master") {
+        game.turnOrder[4] = socket.id;
+      } else {
+        if (game.turnOrder[4] === undefined) {
+          game.turnOrder.push(socket.id);
+          console.log("just pushing");
+        } else {
+          for (let i = 0; i < 4; i++) {
+            // there's never more than 5 players
+            if (game.turnOrder[i] === undefined) {
+              game.turnOrder[i] = socket.id;
+              console.log("inserting");
+              break;
+            }
+          }
+        }
+      }
+      console.log("turn order : ", game.turnOrder);
+
+      if (game.turnOrder[0]) {
+        game.currentTurn = game.turnOrder[0];
+      }
 
       socket.emit("join-success", {
         playerId: socket.id,
@@ -340,6 +385,10 @@ io.on("connection", (socket) => {
         console.error("game couldn't be found in move-player-one-step");
         return;
       }
+      if (gameState.currentTurn !== data.playerId) {
+        console.error("not your turn");
+        return;
+      }
       const player = gameState.players.get(data.playerId);
       if (!player) {
         console.error("player couldn't be found in move-player-one-step");
@@ -391,6 +440,40 @@ io.on("connection", (socket) => {
       });
     }
   );
+
+  //end-turn
+  socket.on("end-turn", (data: { gameId: string }) => {
+    console.log("end-turn");
+
+    const game = games.get(data.gameId);
+    if (!game) return;
+    if (game.currentTurn !== socket.id) return;
+
+    console.log("check passed", game.currentTurn);
+    console.log(game.turnOrder);
+
+    for (let i = 0; i < game.turnOrder.length; i++) {
+      console.log(i);
+      let nextPlayer = game.turnOrder[i + 1];
+      if (i === 4) {
+        //last element of the list going back to first
+        nextPlayer = game.turnOrder[0];
+        game.currentTurn = nextPlayer ?? "";
+      }
+      if (game.turnOrder[i] === game.currentTurn) {
+        if (nextPlayer !== undefined) {
+          console.log("new player found ! : ", nextPlayer);
+          game.currentTurn = nextPlayer;
+          break;
+        }
+      }
+    }
+    console.log("nouveau current turn", game.currentTurn);
+
+    io.to(data.gameId).emit("game-state-update", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
+  });
 });
 
 const PORT = process.env.PORT || 5000;

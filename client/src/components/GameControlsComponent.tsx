@@ -73,8 +73,9 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
     });
   };
 
-  const selectMonster = () => {
+  const selectMonster = (monster: monsterClass) => {
     setSelectedType(tileType.monster);
+    setSelectedMonster(monster);
   };
 
   const putWall = () => {
@@ -101,10 +102,14 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
     setSelectedMonster(null);
   };
 
+  const endTurn = () => {
+    socket.emit("end-turn", { gameId: gameId });
+  };
+
   return (
     <div className="game-controls">
       <h3>Actions</h3>
-      {role === "hero" && (
+      {role === "hero" && gameState.currentTurn === socket.id && (
         <div className="movement-controls">
           <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
           <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
@@ -124,16 +129,6 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
               padding: "10px",
             }}
           >
-            <Grid className="gridElem" size={6}>
-              <button
-                onClick={selectMonster}
-                disabled={selectedMonster === null}
-              >
-                {selectedMonster !== null
-                  ? `Créer ${monsterClass[selectedMonster]}`
-                  : "Sélectionnez un monstre"}
-              </button>
-            </Grid>
             <Grid container spacing={1} sx={{ margin: "10px 0" }}>
               {[
                 {
@@ -178,7 +173,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
                     className={`monster-button ${
                       selectedMonster === monster.type ? "selected" : ""
                     }`}
-                    onClick={() => setSelectedMonster(monster.type)}
+                    onClick={() => selectMonster(monster.type)}
                   >
                     <img src={monster.img} alt={monster.name} />
                     <span>{monster.name}</span>
@@ -205,6 +200,12 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
       )}
 
       {message && <div className="game-message">{message}</div>}
+
+      {currentGameState.currentTurn === socket.id && (
+        <div>
+          <button onClick={endTurn}>END TURN</button>
+        </div>
+      )}
     </div>
   );
 };
