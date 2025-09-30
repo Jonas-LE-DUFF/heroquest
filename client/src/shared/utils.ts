@@ -41,6 +41,7 @@ function convertSendableGameStateAsGameState(
     positionEntities: positionEntities,
     currentTurn: game.currentTurn,
     status: game.status,
+    walls: game.walls,
   };
 }
 

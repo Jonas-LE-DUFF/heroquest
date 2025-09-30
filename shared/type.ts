@@ -65,6 +65,11 @@ export interface Tile {
   entityId?: string;
 }
 
+export interface WallGrid {
+  horizontal: boolean[][]; // Murs entre les cases horizontalement
+  vertical: boolean[][]; // Murs entre les cases verticalement
+}
+
 // Événements Socket.io
 export interface ServerToClientEvents {
   // Réponses de connexion
@@ -148,6 +153,7 @@ export interface ClientToServerEvents {
 export interface GameState {
   id: string;
   board: Tile[][];
+  walls: WallGrid;
   players: Map<string, Player>; // Id -> Player
   monsters: Map<string, Monster>; // Id -> Monster
   entityPositions: Map<string, Position>; // entityId -> position
@@ -160,6 +166,7 @@ export interface GameState {
 export interface SendableGameState {
   id: string;
   board: Tile[][];
+  walls: WallGrid;
   players: Player[]; // Id -> Player
   monsters: Monster[]; // Id -> Monster
 
@@ -169,6 +176,13 @@ export interface SendableGameState {
 
   currentTurn: string; // the id of the player
   status: "waiting" | "playing" | "finished";
+}
+
+export enum Direction {
+  UP = "up",
+  DOWN = "down",
+  LEFT = "left",
+  RIGHT = "right",
 }
 
 export interface SocketData {

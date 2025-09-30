@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Socket } from "socket.io-client";
+import { BorderBottom, BorderLeft, BorderRight } from "@mui/icons-material";
 
 interface BoardProps {
   gameState: GameState | null;
@@ -118,7 +119,7 @@ const Board = ({
     const isFurniture = tile?.type === tileType.furniture;
     const isWall = tile?.type === tileType.wall;
 
-    const baseStyle = {
+    let style = {
       width: 15,
       height: 5,
       border: "1px solid #ccc",
@@ -126,11 +127,16 @@ const Board = ({
       textAlign: "center" as const,
       verticalAlign: "middle" as const,
       padding: "5px 10px 5px 10px",
+      backgroundColor: "white",
+      borderTop: "0px",
+      borderBottom: "0px",
+      borderLeft: "0px",
+      borderRight: "0px",
     };
 
     if (isSelected) {
-      return {
-        ...baseStyle,
+      style = {
+        ...style,
         width: 5,
         height: 5,
         backgroundColor: "#4CAF50",
@@ -139,39 +145,60 @@ const Board = ({
     }
 
     if (isHero) {
-      return {
-        ...baseStyle,
+      style = {
+        ...style,
         backgroundColor: "#2196F3",
         border: "2px solid #1976D2",
       };
     }
     if (isMonster) {
-      return {
-        ...baseStyle,
+      style = {
+        ...style,
         backgroundColor: "#F44336",
         border: "2px solid #D32F2F",
       };
     }
     if (isWall) {
-      return {
-        ...baseStyle,
+      style = {
+        ...style,
         backgroundColor: "#4e4e4e93",
         border: "2px solid #201e1eff",
       };
     }
     if (isFurniture) {
-      return {
-        ...baseStyle,
+      style = {
+        ...style,
         backgroundColor: "#583423ff",
         border: "2px solid #422319ff",
       };
     }
+    const walls = gameState?.walls;
+    if (walls?.horizontal[x][y]) {
+      style = {
+        ...style,
+        borderTop: "4px solid rgba(0,0,0,1)",
+      };
+    }
+    if (walls?.horizontal[x + 1][y]) {
+      style = {
+        ...style,
+        borderBottom: "4px solid rgba(0,0,0,1)",
+      };
+    }
+    if (walls?.vertical[x][y]) {
+      style = {
+        ...style,
+        borderLeft: "4px solid rgba(0,0,0,1)",
+      };
+    }
+    if (walls?.vertical[x][y + 1]) {
+      style = {
+        ...style,
+        borderRight: "4px solid rgba(0,0,0,1)",
+      };
+    }
 
-    return {
-      ...baseStyle,
-      backgroundColor: tile?.revealed ? "#F5F5F5" : "#7b7a7cff",
-      "&:hover": { backgroundColor: "#E0E0E0" },
-    };
+    return style;
   };
 
   return (

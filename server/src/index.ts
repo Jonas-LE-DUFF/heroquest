@@ -9,15 +9,17 @@ import {
   GameState,
   Player,
   PlayerRole,
-  Tile,
   Position,
   tileType,
   diceFace,
   Monster,
 } from "../src/shared/type";
 import {
+  checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
   getAmountOfDices,
+  initializeBoard,
+  initializeWalls,
 } from "./shared/util";
 
 const app = express();
@@ -63,6 +65,7 @@ io.on("connection", (socket) => {
           positionEntities: new Map<Position, string>(),
           board: initializeBoard(),
           currentTurn: socket.id,
+          walls: initializeWalls(),
         };
         games.set(gameId, game);
       } else {
@@ -315,46 +318,7 @@ io.on("connection", (socket) => {
   });
 });
 
-function initializeBoard(): Tile[][] {
-  const board: Tile[][] = [];
-  const rows = 26;
-  const cols = 19;
-
-  for (let i = 0; i < rows; i++) {
-    const row: Tile[] = [];
-    for (let j = 0; j < cols; j++) {
-      row.push({
-        type: tileType.empty,
-        revealed: false,
-      });
-    }
-    board.push(row);
-  }
-  return board;
-}
-
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
 });
-
-function checkOnlyOneGameMaster(game: GameState) {
-  if (game?.players)
-    for (let player of game?.players.values()) {
-      if (player.role === "game-master") {
-        return false;
-      }
-    }
-  return true;
-}
-
-function generateMonsterId(game: GameState) {
-  let id = "idMonster" + Math.random().toString(16).slice(2);
-  //checking the id is unique among monsters
-  for (let monster of game.monsters.values()) {
-    if (monster.id === id) {
-      id = generateMonsterId(game);
-    }
-  }
-  return id;
-}
