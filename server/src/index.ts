@@ -13,6 +13,8 @@ import {
   tileType,
   diceFace,
   Monster,
+  Tile,
+  Direction,
 } from "../src/shared/type";
 import {
   checkOnlyOneGameMaster,
@@ -21,6 +23,7 @@ import {
   initializeBoard,
   initializeWalls,
 } from "./shared/util";
+import { canMove, getPositionAfterMove, hasWall } from "./shared/wallFunctions";
 
 const app = express();
 const httpServer = createServer(app);
@@ -41,6 +44,7 @@ const games = new Map<string, GameState>();
 io.on("connection", (socket) => {
   console.log("Un utilisateur connecté:", socket.id);
 
+  // join game
   socket.on(
     "join-game",
     (data: { gameId: string; playerName: string; role: PlayerRole }) => {
@@ -105,6 +109,7 @@ io.on("connection", (socket) => {
     }
   );
 
+  //player-ready
   socket.on("player-ready", (data: { gameId: string; ready: boolean }) => {
     console.log("player-ready received:", data);
 
@@ -127,7 +132,7 @@ io.on("connection", (socket) => {
     });
   });
 
-  // Écouter le démarrage de partie
+  // start-game
   socket.on("start-game", (data: { gameId: string }) => {
     console.log("🎯 Demande de démarrage pour la partie:", data.gameId);
 
@@ -163,6 +168,20 @@ io.on("connection", (socket) => {
 
     // Changer le statut de la partie
     game.status = "playing";
+    let pos: Position = { x: 9, y: 9 };
+    for (let player of game.players.values()) {
+      if (player.role === "game-master") {
+        // no hero to place on the board for this player
+      } else {
+        const tile: Tile | undefined = game.board[pos.x]?.[pos.y];
+        if (!tile) return;
+        tile.entityId = player.id;
+        tile.type = tileType.hero;
+        game.entityPositions.set(player.id, pos);
+        game.positionEntities.set(pos, player.id);
+        pos = { x: pos.x + 1, y: pos.y };
+      }
+    }
 
     // Notifier TOUS les joueurs de la partie
     io.to(data.gameId).emit("game-start", {
@@ -176,6 +195,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // disconnect
   socket.on("disconnect", () => {
     const gameWithFoundPlayer = new Map<string, GameState>();
     games.forEach((gameState: GameState, gameId: string) => {
@@ -212,6 +232,7 @@ io.on("connection", (socket) => {
     console.log("Utilisateur déconnecté:", socket.id);
   });
 
+  // place-element
   socket.on(
     "place-element",
     (data: {
@@ -221,7 +242,7 @@ io.on("connection", (socket) => {
       playerId: string;
     }) => {
       const { gameId, position, selectedType, playerId } = data;
-
+      if (selectedType === undefined || selectedType === null) return;
       const gameState = games.get(gameId);
       if (!gameState) {
         console.error("no game found");
@@ -258,6 +279,8 @@ io.on("connection", (socket) => {
   const sleep = (ms: number) => {
     return new Promise((r) => setTimeout(r, ms));
   };
+
+  // roll-dice
   socket.on(
     "roll-dice",
     async (data: {
@@ -306,16 +329,68 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("asking-for-game-state", (data: { gameId: string }) => {
-    const game = games.get(data.gameId);
-    if (!game) {
-      console.error("game couln't be found : ", data.gameId);
-      return;
+  // move-player-one-step
+  socket.on(
+    "move-player-one-step",
+    (data: { gameId: string; playerId: string; direction: Direction }) => {
+      console.log("handling movement");
+
+      const gameState = games.get(data.gameId);
+      if (!gameState) {
+        console.error("game couldn't be found in move-player-one-step");
+        return;
+      }
+      const player = gameState.players.get(data.playerId);
+      if (!player) {
+        console.error("player couldn't be found in move-player-one-step");
+        return;
+      }
+      const position = gameState.entityPositions.get(player.id);
+      if (!position) {
+        console.error(
+          "position of player couldn't be found in move-player-one-step"
+        );
+        return;
+      }
+
+      if (!canMove(gameState, position, data.direction)) {
+        console.error(
+          "movement isn't valid SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
+        );
+        return;
+      }
+      const newPosition = getPositionAfterMove(position, data.direction);
+      if (newPosition === position) {
+        console.error(
+          "no movement SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
+        );
+        return;
+      }
+      const tile = gameState.board[position.x]?.[position.y];
+      const newTile = gameState.board[newPosition.x]?.[newPosition.y];
+
+      if (!tile || !newTile) {
+        console.error("tiles not found in board");
+        return;
+      }
+
+      console.log("movement handled should update");
+
+      // make the hero lose 1 movement point
+      newTile.entityId = player.id;
+      newTile.type = tileType.hero;
+      tile.entityId = undefined;
+      tile.type = tileType.empty;
+      gameState.entityPositions.set(player.id, newPosition);
+      gameState.positionEntities.set(newPosition, player.id);
+      const oldPositionKey = { x: position.x, y: position.y };
+      gameState.positionEntities.delete(oldPositionKey);
+
+      io.to(data.gameId).emit("game-state-update", {
+        gameState: convertGameStateAsSendableGameState(gameState),
+      });
     }
-    socket.emit("game-state-update", {
-      gameState: convertGameStateAsSendableGameState(game),
-    });
-  });
+  );
 });
 
 const PORT = process.env.PORT || 5000;

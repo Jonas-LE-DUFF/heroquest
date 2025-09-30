@@ -39,12 +39,8 @@ export const canMove = (
   // Vérifier la position de destination
   const to = getPositionAfterMove(from, direction);
   if (gameState.board[to.x]?.[to.y]?.type !== tileType.empty) {
-    return false;
-  }
+    console.error("occupied spot");
 
-  // Vérifier si la case destination est occupée
-  const destinationTile = gameState.board[to.x]?.[to.y];
-  if (destinationTile?.type !== tileType.empty) {
     return false;
   }
 
@@ -66,20 +62,5 @@ export const getPositionAfterMove = (
       return { x: from.x, y: from.y + 1 };
     default:
       return from;
-  }
-};
-
-export const setWall = (
-  walls: WallGrid,
-  position: Position,
-  value: boolean,
-  type: "horizontal" | "vertical"
-): void => {
-  const { x, y } = position;
-
-  if (type === "horizontal" && walls.horizontal[x]?.[y] !== undefined) {
-    walls.horizontal[x][y] = value;
-  } else if (type === "vertical" && walls.vertical[x]?.[y] !== undefined) {
-    walls.vertical[x][y] = value;
   }
 };

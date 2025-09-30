@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
+  Direction,
   GameState,
   monsterClass,
   SendableGameState,
@@ -62,11 +63,13 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
     };
   }, [socket, gameState, currentGameState]);
 
-  const movePlayer = (direction: string) => {
-    socket.emit("move-player", {
+  const movePlayer = (direction: Direction) => {
+    console.log("movement");
+
+    socket.emit("move-player-one-step", {
       gameId,
-      direction,
       playerId: socket.id,
+      direction: direction,
     });
   };
 
@@ -103,10 +106,10 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
       <h3>Actions</h3>
       {role === "hero" && (
         <div className="movement-controls">
-          <button onClick={() => movePlayer("up")}>⬆️ Haut</button>
-          <button onClick={() => movePlayer("down")}>⬇️ Bas</button>
-          <button onClick={() => movePlayer("left")}>⬅️ Gauche</button>
-          <button onClick={() => movePlayer("right")}>➡️ Droite</button>
+          <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
+          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
+          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️ Gauche</button>
+          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️ Droite</button>
         </div>
       )}
 

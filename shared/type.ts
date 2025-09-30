@@ -62,7 +62,7 @@ export enum tileType {
 export interface Tile {
   type: tileType;
   revealed: boolean;
-  entityId?: string;
+  entityId?: string | undefined;
 }
 
 export interface WallGrid {
@@ -105,10 +105,10 @@ export interface ClientToServerEvents {
   //lobby actions
   "player-ready": (data: { gameId: string; ready: boolean }) => void;
   //in-game actions
-  "move-player": (data: {
+  "move-player-one-step": (data: {
     gameId: string;
-    playerMoved: Player;
-    newPosition: Position;
+    playerId: string;
+    direction: Direction;
   }) => void;
   "attack-monster": (data: { gameId: string; monsterId: string }) => void;
   "cast-spell": (data: { gameId: string; targetId: string }) => void;
@@ -145,8 +145,6 @@ export interface ClientToServerEvents {
     playerId: string;
     numberOfDice: number;
   }) => void;
-
-  "asking-for-game-state": (data: { gameId: string }) => void;
 }
 
 // État du jeu

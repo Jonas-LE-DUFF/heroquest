@@ -11,7 +11,6 @@ import {
   Typography,
 } from "@mui/material";
 import { Socket } from "socket.io-client";
-import { BorderBottom, BorderLeft, BorderRight } from "@mui/icons-material";
 
 interface BoardProps {
   gameState: GameState | null;
@@ -41,9 +40,6 @@ const Board = ({
 
     // Vérifier si la case est occupée
     const occupantType = tile.type;
-    console.log("before");
-
-    console.log("players", gameState.players);
 
     // Vérifier si l'occupant appartient au joueur actuel
     if (occupantType === tileType.monster) {
