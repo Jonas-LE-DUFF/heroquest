@@ -154,6 +154,33 @@ io.on("connection", (socket) => {
     }
   );
 
+  //leave-lobby
+  socket.on("leave-lobby", (data: { gameId: string }) => {
+    console.log("leaving detected");
+
+    const game = games.get(data.gameId);
+    if (!game) return;
+    game.players.delete(socket.id);
+    game.turnOrder = game.turnOrder.filter(
+      (playerId) => playerId !== socket.id
+    );
+    // we shouldn't have to remove that many informations but just making sure
+    const pos = game.entityPositions.get(socket.id);
+    game.entityPositions.delete(socket.id);
+    if (pos) {
+      game.positionEntities.delete(pos);
+      const tile = game.board[pos.x]?.[pos.y];
+      if (tile) {
+        tile.entityId = undefined;
+        tile.type = tileType.empty;
+      }
+    }
+    io.to(data.gameId).emit("game-state-update", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
+    return;
+  });
+
   //player-ready
   socket.on("player-ready", (data: { gameId: string; ready: boolean }) => {
     console.log("player-ready received:", data);
@@ -373,6 +400,21 @@ io.on("connection", (socket) => {
       }
     }
   );
+
+  //roll-red-dice
+  socket.on("roll-red-dice", async (data: { gameId: string }) => {
+    const numberOfDices = 2;
+    for (let j = 0; j < 15; j++) {
+      let results: number[] = [];
+      for (let i = 0; i < numberOfDices; i++) {
+        const randomNumber = Math.floor(Math.random() * 6 + 1);
+        results.push(randomNumber);
+      }
+      io.to(data.gameId).emit("red-dice-update", { listResults: results });
+      await sleep(75);
+      results = [];
+    }
+  });
 
   // move-player-one-step
   socket.on(

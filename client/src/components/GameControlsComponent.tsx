@@ -7,7 +7,7 @@ import {
   SendableGameState,
   tileType,
 } from "../shared/type";
-import Dices from "./DicesComponent";
+import Dices from "./HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import { Grid } from "@mui/material";
 import gobelinPicture from "./images/goblin.png";
@@ -19,6 +19,7 @@ import mummyPicture from "./images/mummy.png";
 import dreadWarriorPicture from "./images/dreadwarrior.png";
 import gargoylePicture from "./images/gargoyle.png";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
+import RedDices from "./RedDicesComponent";
 
 interface GameControlsProps {
   socket: any;
@@ -27,7 +28,6 @@ interface GameControlsProps {
 
 const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
   const location = useLocation();
-  const gameState = location.state.gameState;
   const gameId = location.state.gameId;
   const role = location.state.role;
 
@@ -35,17 +35,16 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
     null
   );
 
-  const [currentGameState, setCurrentGameState] =
-    useState<GameState>(gameState);
+  const [game, setgame] = useState<GameState>(location.state.gameState);
   const [message, setMessage] = useState("");
   useEffect(() => {
-    if (!gameState) return;
+    if (!game) return;
 
     // Écouter les mises à jour du jeu
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
-      console.log("c'est l'update du gamePage", gameState);
+      console.log("c'est l'update du gamePage", game);
 
-      setCurrentGameState(convertSendableGameStateAsGameState(data.gameState));
+      setgame(convertSendableGameStateAsGameState(data.gameState));
     });
 
     socket.on("player-moved", (data: any) => {
@@ -61,7 +60,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
       socket.off("player-moved");
       socket.off("monster-spawned");
     };
-  }, [socket, gameState, currentGameState]);
+  }, [socket, game]);
 
   const movePlayer = (direction: Direction) => {
     console.log("movement");
@@ -109,7 +108,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
   return (
     <div className="game-controls">
       <h3>Actions</h3>
-      {role === "hero" && gameState.currentTurn === socket.id && (
+      {role === "hero" && game.currentTurn === socket.id && (
         <div className="movement-controls">
           <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
           <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
@@ -198,10 +197,15 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
           {Dices({ socket, gameId })}
         </div>
       )}
-
+      {role === "hero" &&
+        game.currentTurn === socket.id &&
+        RedDices({ socket, gameId })}
+      {role === "hero" &&
+        game.currentTurn === socket.id &&
+        Dices({ socket, gameId })}
       {message && <div className="game-message">{message}</div>}
 
-      {currentGameState.currentTurn === socket.id && (
+      {game.currentTurn === socket.id && (
         <div>
           <button onClick={endTurn}>END TURN</button>
         </div>

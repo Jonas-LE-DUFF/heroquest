@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameState, Player, SendableGameState } from "../shared/type";
-import { convertSendableGameStateAsGameState } from "../shared/utils";
+import {
+  convertSendableGameStateAsGameState,
+  everyOneReady,
+} from "../shared/utils";
 
 interface LobbyPageProps {
   socket: any;
@@ -89,6 +92,13 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
   };
 
+  const leaveLobby = () => {
+    console.log("leaving lobby");
+    socket.emit("leave-lobby", { gameId });
+
+    navigate("/");
+  };
+
   function renderStatus(players: Map<string, Player>) {
     if (!players || players.size === 0) {
       return <div>Aucun Joueur</div>;
@@ -119,9 +129,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       })
       .filter(Boolean);
   }
-
-  // const canStartGame = players.length >= 2 && players.every((p) => p.ready);
-  // const isGameMaster = role === "game-master";
+  if (!gameState) return <div>le gameState existe pu...</div>;
+  const canStartGame = gameState.players.size >= 2 && everyOneReady(gameState);
+  const isGameMaster = role === "game-master";
 
   return (
     <div className="lobby-page">
@@ -144,14 +154,17 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           onClick={toggleReady}
           className={`ready-button ${isReady ? "ready" : ""}`}
         >
-          {isReady === false ? "Se déclarer prêt" : "Prêt"}
+          {isReady === false ? "Se déclarer prêt" : "Se déclarer non prêt"}
         </button>
 
-        {/* {isGameMaster && ( */}
-        <button onClick={startGame} className="start-button">
-          lancer la partie
+        {isGameMaster && canStartGame && (
+          <button onClick={startGame} className="start-button">
+            lancer la partie
+          </button>
+        )}
+        <button onClick={leaveLobby} className="leave-button">
+          Sortir du Lobby
         </button>
-        {/* )} */}
       </div>
 
       <div className="game-rules">

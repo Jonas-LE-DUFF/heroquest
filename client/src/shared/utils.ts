@@ -46,4 +46,12 @@ function convertSendableGameStateAsGameState(
   };
 }
 
-export { convertSendableGameStateAsGameState };
+function everyOneReady(game: GameState) {
+  const players = game.players.values();
+  for (let player of players) {
+    if (!player.ready) return false;
+  }
+  return true;
+}
+
+export { convertSendableGameStateAsGameState, everyOneReady };

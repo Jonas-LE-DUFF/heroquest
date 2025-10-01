@@ -4,7 +4,7 @@ import { Paper } from "@mui/material";
 import deFaceNoir from "./images/deFaceNoir.jpeg";
 import deFaceBlanche from "./images/deFaceBlanche.jpeg";
 import deFaceMort from "./images/deFaceMort.jpeg";
-import "./DicesComponent.css";
+import "./HeroQuestDicesComponent.css";
 
 interface DicesProps {
   socket: any;

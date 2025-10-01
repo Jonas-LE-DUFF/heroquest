@@ -10,6 +10,13 @@ export enum diceFace {
   "Hit",
 }
 
+export enum heroClass {
+  "Barbarian",
+  "Dwarf",
+  "Elf",
+  "Cleric",
+}
+
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
@@ -24,7 +31,7 @@ export interface Unit {
 export interface Player {
   id: string;
   characterName?: string;
-  class?: "Barbare" | "Nain" | "Elfe" | "Clerc";
+  class?: heroClass;
   role: PlayerRole;
   stats?: Unit;
   ready: boolean;
@@ -90,6 +97,8 @@ export interface ServerToClientEvents {
     position: Position;
   }) => void;
 
+  "red-dice-update": (data: { listResults: number[] }) => void;
+
   // Erreurs
   error: (message: string) => void;
 }
@@ -100,6 +109,8 @@ export interface ClientToServerEvents {
     playerName: string;
     role: PlayerRole;
   }) => void;
+
+  "leave-lobby": (data: { gameId: string }) => void;
 
   //player actions
   //lobby actions
@@ -146,6 +157,8 @@ export interface ClientToServerEvents {
     numberOfDice: number;
   }) => void;
 
+  "roll-red-dice": (data: { gameId: string }) => void;
+
   "end-turn": (data: { gameId: string }) => void;
 }
 
@@ -159,7 +172,7 @@ export interface GameState {
   entityPositions: Map<string, Position>; // entityId -> position
   positionEntities: Map<Position, string>; // "x,y" -> entityId
 
-  turnOrder: string[]; // order of turn with the ids of players; game master should always be last player
+  turnOrder: (string | undefined)[]; // order of turn with the ids of players; game master should always be last player
 
   currentTurn: string; // the id of the player
   status: "waiting" | "playing" | "finished";
@@ -176,7 +189,7 @@ export interface SendableGameState {
   positions: Position[]; // the different positions of the units on the board
   // the two arrays up here should be organized as the ids[0] => position[0] in order to remake the Map
 
-  turnOrder: string[]; // order of turn with the ids of players; game master should always be last player
+  turnOrder: (string | undefined)[]; // order of turn with the ids of players; game master should always be last player
   currentTurn: string; // the id of the player
   status: "waiting" | "playing" | "finished";
 }
