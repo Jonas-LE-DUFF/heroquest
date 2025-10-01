@@ -5,6 +5,7 @@ import {
   convertSendableGameStateAsGameState,
   everyOneReady,
 } from "../shared/utils";
+import ChooseCharacter from "./ChooseCharacterView";
 
 interface LobbyPageProps {
   socket: any;
@@ -99,6 +100,13 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     navigate("/");
   };
 
+  const chooseCharacter = () => {
+    console.log("choosing character");
+    navigate("/charaterChoice", {
+      state: { playerName, gameId, role, gameState: gameState },
+    });
+  };
+
   function renderStatus(players: Map<string, Player>) {
     if (!players || players.size === 0) {
       return <div>Aucun Joueur</div>;
@@ -164,6 +172,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         )}
         <button onClick={leaveLobby} className="leave-button">
           Sortir du Lobby
+        </button>
+        <button onClick={chooseCharacter} className="hooseCharacter">
+          Choisir son personnage
         </button>
       </div>
 

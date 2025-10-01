@@ -1,10 +1,15 @@
 import {
   GameState,
+  heroClass,
   Monster,
   Player,
   Position,
   SendableGameState,
 } from "./type";
+import iconBarbarian from "./../components/images/barbarian.png";
+import iconCleric from "./../components/images/wizard.png";
+import iconDwarf from "./../components/images/dwarf.png";
+import iconElf from "./../components/images/elf.png";
 
 function convertSendableGameStateAsGameState(
   game: SendableGameState
@@ -54,4 +59,22 @@ function everyOneReady(game: GameState) {
   return true;
 }
 
-export { convertSendableGameStateAsGameState, everyOneReady };
+function getHeroClassIconPath(heroType: heroClass): string {
+  switch (heroType) {
+    case heroClass.Barbarian:
+      return iconBarbarian;
+    case heroClass.Cleric:
+      return iconCleric;
+    case heroClass.Dwarf:
+      return iconDwarf;
+    case heroClass.Elf:
+      return iconElf;
+    default:
+      return ""; // or a default icon
+  }
+}
+export {
+  convertSendableGameStateAsGameState,
+  everyOneReady,
+  getHeroClassIconPath,
+};
