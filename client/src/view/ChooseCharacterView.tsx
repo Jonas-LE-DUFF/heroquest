@@ -25,18 +25,30 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const gameState = location.state?.gameState || null;
   const { playerName, gameId, role } = location.state || {};
 
-  const [heroType, setHeroType] = useState<heroClass>(heroClass.Barbarian);
+  const [heroType, setHeroType] = useState<heroClass>(getAvailableClasses()[0]);
   const [formErrors, setFormErrors] = useState<{ [key: string]: boolean }>({});
   const [selectedSpellElements, setSelectedSpellElements] = useState<
     spellElement[]
   >([]);
 
-  function renderMenuItems() {
-    const selectedClasses = new Set(
+  function getSelectedClasses() {
+    return new Set(
       Array.from(gameState.players.values()).map(
         (player) => (player as Player).class
       )
     );
+  }
+
+  function getAvailableClasses() {
+    const selectedClasses = getSelectedClasses();
+    const allClasses = Object.values(heroClass).filter(
+      (value) => typeof value === "number"
+    ) as number[];
+    return allClasses.filter((cls) => !selectedClasses.has(cls));
+  }
+
+  function renderMenuItems() {
+    const selectedClasses = getSelectedClasses();
 
     return Object.entries(heroClass)
       .filter(([key, value]) => isNaN(Number(key)))
