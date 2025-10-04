@@ -17,6 +17,13 @@ export enum heroClass {
   "Cleric",
 }
 
+export enum spellElement {
+  "Fire",
+  "Water",
+  "Earth",
+  "Air",
+}
+
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
@@ -35,6 +42,7 @@ export interface Player {
   role: PlayerRole;
   stats?: Unit;
   ready: boolean;
+  spells?: spellElement[]; // Added spells property to Player interface
 }
 
 export enum monsterClass {
@@ -110,12 +118,27 @@ export interface ClientToServerEvents {
     role: PlayerRole;
   }) => void;
 
+  // lobby actions
   "leave-lobby": (data: { gameId: string }) => void;
-
-  //player actions
-  //lobby actions
   "player-ready": (data: { gameId: string; ready: boolean }) => void;
-  //in-game actions
+  "choose-character": (
+    data: {
+      gameId: string;
+      playerId: string;
+      heroType: heroClass;
+      stats: {
+        attackDice: number;
+        defenseDice: number;
+        hp: number;
+        sp: number;
+        gold: number;
+      };
+      spells: spellElement[];
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void; // Updated choose-character event definition
+
+  // in-game actions
   "move-player-one-step": (data: {
     gameId: string;
     playerId: string;
@@ -128,16 +151,16 @@ export interface ClientToServerEvents {
   "check-secret-doors": (data: { gameId: string; postion: Position }) => void;
   "disarm-trap": (data: { gameId: string; trapTargeted: Position }) => void;
 
-  //game master actions
-  //lobby actions
+  // game master actions
+  // lobby actions
   "start-game": (data: { gameId: string }) => void;
-  //in-game actions
+  // in-game actions
   "spawn-monster": (data: {
     gameId: string;
     monsterClass: monsterClass;
     position: Position;
   }) => void;
-  //in-turn actions
+  // in-turn actions
   "move-monster": (data: {
     gameId: string;
     monsterMoved: Monster;
@@ -175,7 +198,7 @@ export interface GameState {
   turnOrder: (string | undefined)[]; // order of turn with the ids of players; game master should always be last player
 
   currentTurn: string; // the id of the player
-  status: "waiting" | "playing" | "finished";
+  status: "lobby" | "playing" | "finished";
 }
 
 export interface SendableGameState {
@@ -191,7 +214,7 @@ export interface SendableGameState {
 
   turnOrder: (string | undefined)[]; // order of turn with the ids of players; game master should always be last player
   currentTurn: string; // the id of the player
-  status: "waiting" | "playing" | "finished";
+  status: "lobby" | "playing" | "finished";
 }
 
 export enum Direction {

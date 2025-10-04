@@ -15,6 +15,7 @@ import {
   Monster,
   Tile,
   Direction,
+  heroClass,
 } from "../src/shared/type";
 import {
   checkOnlyOneGameMaster,
@@ -63,7 +64,7 @@ io.on("connection", (socket) => {
       if (!isThereGame) {
         game = {
           id: gameId,
-          status: "waiting",
+          status: "lobby",
           players: new Map<string, Player>(),
           monsters: new Map<string, Monster>(),
           entityPositions: new Map<string, Position>(),
@@ -516,6 +517,85 @@ io.on("connection", (socket) => {
       gameState: convertGameStateAsSendableGameState(game),
     });
   });
+
+  // choose-character
+  socket.on(
+    "choose-character",
+    (
+      data: {
+        gameId: string;
+        playerId: string;
+        heroType: heroClass;
+        stats: any;
+        spells: any;
+      },
+      callback
+    ) => {
+      const { gameId, playerId, heroType, stats, spells } = data;
+      const game = games.get(gameId);
+
+      if (!game) {
+        return callback({ success: false, error: "Game not found." });
+      }
+
+      const player = game.players.get(playerId);
+      if (!player) {
+        return callback({ success: false, error: "Player not found." });
+      }
+
+      if (game.status !== "lobby") {
+        return callback({
+          success: false,
+          error: "Cannot change character during the game.",
+        });
+      }
+
+      if (Array.from(game.players.values()).some((p) => p.class === heroType)) {
+        return callback({
+          success: false,
+          error: "Class already selected by another player.",
+        });
+      }
+
+      if (heroType === heroClass.Elf && spells.length !== 1) {
+        return callback({
+          success: false,
+          error: "Elf must select exactly one spell.",
+        });
+      }
+
+      if (heroType === heroClass.Cleric && spells.length !== 4) {
+        return callback({
+          success: false,
+          error: "Cleric must select exactly four spells.",
+        });
+      }
+
+      if (
+        Object.values(stats).some(
+          (value) => value === null || value === undefined || Number(value) < 0
+        )
+      ) {
+        return callback({ success: false, error: "Invalid stats values." });
+      }
+
+      player.class = heroType;
+      // player.stats = {
+      //   ...player.stats,
+      //   nbAttackDice: stats.attackDice,
+      //   nbDefenseDice: stats.defenseDice,
+      //   health: stats.hp,
+      //   maxHealth: stats.hp,
+      //   spiritStats: stats.sp,
+      // };
+      // player.spells = spells;
+
+      io.to(gameId).emit("game-state-update", {
+        gameState: convertGameStateAsSendableGameState(game),
+      });
+      callback({ success: true });
+    }
+  );
 });
 
 const PORT = process.env.PORT || 5000;

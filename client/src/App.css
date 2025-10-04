@@ -92,7 +92,8 @@ form {
 .ready-button,
 .start-button,
 .leave-button,
-.choose-character {
+.choose-character,
+.button {
   padding: 12px 24px;
   background: #4caf50;
   color: white;

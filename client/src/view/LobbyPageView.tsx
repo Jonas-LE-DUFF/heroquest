@@ -5,7 +5,6 @@ import {
   convertSendableGameStateAsGameState,
   everyOneReady,
 } from "../shared/utils";
-import ChooseCharacter from "./ChooseCharacterView";
 
 interface LobbyPageProps {
   socket: any;
@@ -14,7 +13,7 @@ interface LobbyPageProps {
 const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  console.log(location);
+  console.log("loaction", location);
 
   const playerName = location.state.playerName;
   const [gameState, setGameState] = useState<GameState | null>(
@@ -32,6 +31,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   useEffect(() => {
     if (!gameState || !playerName) {
+      console.log("trucs qui marchent pas", playerName, gameState);
+
       console.log("❌ Données manquantes, redirection...");
       navigate("/");
       return;
@@ -101,9 +102,18 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   };
 
   const chooseCharacter = () => {
-    console.log("choosing character");
+    if (!gameState) {
+      alert("Game state is missing. Cannot proceed to character selection.");
+      return;
+    }
+
     navigate("/charaterChoice", {
-      state: { playerName, gameId, role, gameState: gameState },
+      state: {
+        gameState,
+        playerName,
+        gameId,
+        role,
+      },
     });
   };
 
@@ -173,9 +183,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         <button onClick={leaveLobby} className="leave-button">
           Sortir du Lobby
         </button>
-        <button onClick={chooseCharacter} className="hooseCharacter">
-          Choisir son personnage
-        </button>
+        {!isGameMaster && (
+          <button onClick={chooseCharacter} className="hooseCharacter">
+            Choisir son personnage
+          </button>
+        )}
       </div>
 
       <div className="game-rules">
