@@ -5,11 +5,13 @@ import {
   Player,
   Position,
   SendableGameState,
+  spellElement,
 } from "./type";
 import iconBarbarian from "./../components/images/barbarian.png";
 import iconCleric from "./../components/images/wizard.png";
 import iconDwarf from "./../components/images/dwarf.png";
 import iconElf from "./../components/images/elf.png";
+import { heroClassFr, spellElementFr } from "./frenchEnums";
 
 function convertSendableGameStateAsGameState(
   game: SendableGameState
@@ -73,8 +75,19 @@ function getHeroClassIconPath(heroType: heroClass): string {
       return ""; // or a default icon
   }
 }
+
+function getElementName(element: spellElement) {
+  return spellElementFr[element];
+}
+
+function getHeroClassName(classHero: heroClass) {
+  return heroClassFr[classHero];
+}
+
 export {
   convertSendableGameStateAsGameState,
   everyOneReady,
   getHeroClassIconPath,
+  getElementName,
+  getHeroClassName,
 };

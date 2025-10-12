@@ -5,20 +5,20 @@ export interface Position {
 }
 
 export enum diceFace {
-  "WhiteShield",
+  "WhiteShield" = 1,
   "BlackShield",
   "Hit",
 }
 
 export enum heroClass {
-  "Barbarian",
+  "Barbarian" = 1,
   "Dwarf",
   "Elf",
   "Cleric",
 }
 
 export enum spellElement {
-  "Fire",
+  "Fire" = 1,
   "Water",
   "Earth",
   "Air",
@@ -27,26 +27,26 @@ export enum spellElement {
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
-  health: number;
-  maxHealth: number;
-  spiritStats: number;
+  hp: number;
+  maxHp: number;
+  spiritPoints: number;
   nbAttackDice: number;
   nbDefenseDice: number;
-  position: Position;
 }
 
 export interface Player {
   id: string;
   characterName?: string;
-  class?: heroClass;
+  class?: heroClass | undefined;
   role: PlayerRole;
-  stats?: Unit;
+  stats?: Unit | undefined;
   ready: boolean;
-  spells?: spellElement[]; // Added spells property to Player interface
+  spells?: spellElement[] | undefined;
+  gold?: number | undefined;
 }
 
 export enum monsterClass {
-  "Goblin",
+  "Goblin" = 1,
   "Squelette",
   "Zombie",
   "Orc",
@@ -120,23 +120,22 @@ export interface ClientToServerEvents {
 
   // lobby actions
   "leave-lobby": (data: { gameId: string }) => void;
-  "player-ready": (data: { gameId: string; ready: boolean }) => void;
   "choose-character": (
     data: {
       gameId: string;
       playerId: string;
       heroType: heroClass;
-      stats: {
-        attackDice: number;
-        defenseDice: number;
-        hp: number;
-        sp: number;
-        gold: number;
-      };
+      stats: Unit;
       spells: spellElement[];
     },
-    callback: (response: { success: boolean; error?: string }) => void
+    callback: (response: {
+      success: boolean;
+      error?: string;
+      gameState?: SendableGameState;
+    }) => void
   ) => void; // Updated choose-character event definition
+
+  "unselect-character": (data: { gameId: string }) => void;
 
   // in-game actions
   "move-player-one-step": (data: {

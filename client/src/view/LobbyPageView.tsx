@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { GameState, Player, SendableGameState } from "../shared/type";
+import {
+  GameState,
+  Player,
+  SendableGameState,
+  spellElement,
+} from "../shared/type";
 import {
   convertSendableGameStateAsGameState,
   everyOneReady,
+  getElementName,
+  getHeroClassName,
 } from "../shared/utils";
 
 interface LobbyPageProps {
@@ -21,13 +28,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   );
   const gameId = gameState?.id;
   const role = gameState?.players.get(socket.id)?.role;
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    if (gameState?.players?.get(socket.id)) {
-      setIsReady(gameState.players.get(socket.id)!.ready);
-    }
-  }, [gameState, socket.id]);
 
   useEffect(() => {
     if (!gameState || !playerName) {
@@ -73,16 +73,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     };
   }, [navigate, playerName, socket, gameState, gameId, role]);
 
-  const toggleReady = () => {
-    console.log("Toggling ready state...");
-    const newReadyState = !isReady;
-    setIsReady(newReadyState);
-    socket.emit("player-ready", {
-      gameId,
-      ready: newReadyState,
-    });
-  };
-
   const startGame = () => {
     console.log("🔄 Tentative de lancement de la partie...");
 
@@ -117,6 +107,19 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
   };
 
+  const unselectCharacter = () => {
+    if (!gameState) {
+      alert("Game state is missing. Cannot proceed to character unselection.");
+      return;
+    }
+    socket.emit("unselect-character", { gameId });
+  };
+
+  function renderSpellElements(spells: spellElement[]) {
+    if (spells.length === 0) return "Aucun";
+    return spells.map((spell) => getElementName(spell)).join(", ");
+  }
+
   function renderStatus(players: Map<string, Player>) {
     if (!players || players.size === 0) {
       return <div>Aucun Joueur</div>;
@@ -129,19 +132,35 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           return null;
         }
 
-        const isReady = Boolean(player.ready);
-        const characterName = player.characterName || "Joueur sans nom";
-        const playerRole = player.role || "hero";
+        let characterName = player.characterName || "Joueur sans nom";
+        let playerClass;
+        if (player.class === undefined) {
+          playerClass = "Non choisi";
+        } else {
+          playerClass = getHeroClassName(player.class);
+        }
+        let spells = player.spells || [];
+        const isGameMaster = player.role === "game-master";
 
         return (
           <div key={player.id} className="player-item">
             <span>{characterName}</span>
-            <span className={`status ${isReady ? "ready" : "not-ready"}`}>
-              {isReady ? "✅ Prêt" : "❌ Non prêt"}
-            </span>
-            <span className="role">
-              {playerRole === "game-master" ? "👑" : "🎭"}
-            </span>
+            {!isGameMaster && (
+              <span
+                className={`status ${player.ready ? "ready" : "not-ready"}`}
+              >
+                {player.ready ? "✅ Prêt" : "❌ Non prêt"}
+              </span>
+            )}
+            <span className="role">{isGameMaster ? "👑" : "🎭"}</span>
+            {!isGameMaster && <span className="class"> - {playerClass}</span>}
+            {!isGameMaster && (
+              <span className="spells">
+                {" "}
+                - Sorts: {renderSpellElements(spells)}
+              </span>
+            )}
+            {isGameMaster && <span></span>}
           </div>
         );
       })
@@ -168,13 +187,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       </div>
 
       <div className="lobby-actions">
-        <button
-          onClick={toggleReady}
-          className={`ready-button ${isReady ? "ready" : ""}`}
-        >
-          {isReady === false ? "Se déclarer prêt" : "Se déclarer non prêt"}
-        </button>
-
         {isGameMaster && canStartGame && (
           <button onClick={startGame} className="start-button">
             lancer la partie
@@ -184,10 +196,16 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           Sortir du Lobby
         </button>
         {!isGameMaster && (
-          <button onClick={chooseCharacter} className="hooseCharacter">
+          <button onClick={chooseCharacter} className="chooseCharacter">
             Choisir son personnage
           </button>
         )}
+        {!isGameMaster &&
+          gameState.players.get(socket.id)?.class !== undefined && (
+            <button onClick={unselectCharacter} className="unselectCharacter">
+              Retirer son personnage
+            </button>
+          )}
       </div>
 
       <div className="game-rules">

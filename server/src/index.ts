@@ -16,16 +16,20 @@ import {
   Tile,
   Direction,
   heroClass,
+  Unit,
+  spellElement,
 } from "../src/shared/type";
 import {
   checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
+  convertSendableGameStateAsGameState,
   fiveHeroPlayers,
   getAmountOfDices,
 } from "./shared/util";
 
 import { canMove, getPositionAfterMove, hasWall } from "./shared/wallFunctions";
 import { initializeBoard, initializeWalls } from "./shared/initializator";
+import { Stats } from "fs";
 
 const app = express();
 const httpServer = createServer(app);
@@ -111,7 +115,7 @@ io.on("connection", (socket) => {
         id: socket.id,
         characterName: playerName,
         role: role,
-        ready: false,
+        ready: role === "game-master",
       };
       if (!game) {
         console.log("fatal error : game couldn't be created");
@@ -180,29 +184,6 @@ io.on("connection", (socket) => {
       gameState: convertGameStateAsSendableGameState(game),
     });
     return;
-  });
-
-  //player-ready
-  socket.on("player-ready", (data: { gameId: string; ready: boolean }) => {
-    console.log("player-ready received:", data);
-
-    const game = games.get(data.gameId);
-
-    if (!game) {
-      console.error("no game found related to socket in index.ts");
-      return;
-    }
-    const player = game.players.get(socket.id);
-    if (!player) {
-      console.error("no player found related to socket");
-      return;
-    }
-    player.ready = data.ready;
-    console.log(`Player ${socket.id} ready status: ${data.ready}`);
-
-    io.to(data.gameId).emit("game-state-update", {
-      gameState: convertGameStateAsSendableGameState(game),
-    });
   });
 
   // start-game
@@ -526,12 +507,13 @@ io.on("connection", (socket) => {
         gameId: string;
         playerId: string;
         heroType: heroClass;
-        stats: any;
-        spells: any;
+        stats: Unit;
+        spells: spellElement[];
+        gold?: number;
       },
       callback
     ) => {
-      const { gameId, playerId, heroType, stats, spells } = data;
+      const { gameId, playerId, heroType, stats, spells, gold } = data;
       const game = games.get(gameId);
 
       if (!game) {
@@ -543,6 +525,24 @@ io.on("connection", (socket) => {
         return callback({ success: false, error: "Player not found." });
       }
 
+      // Validate stats
+      for (const value of Object.values(stats)) {
+        if (
+          value === null ||
+          value === undefined ||
+          isNaN(value) ||
+          Number(value) < 0
+        ) {
+          return callback({ success: false, error: "Invalid stats values." });
+        }
+      }
+
+      // Validate gold
+      if (gold === undefined || gold < 0 || isNaN(gold)) {
+        return callback({ success: false, error: "Invalid gold value." });
+      }
+
+      // Ensure game is in the lobby state
       if (game.status !== "lobby") {
         return callback({
           success: false,
@@ -550,13 +550,33 @@ io.on("connection", (socket) => {
         });
       }
 
-      if (Array.from(game.players.values()).some((p) => p.class === heroType)) {
+      // Check if the hero class is already selected
+      if (
+        Array.from(game.players.values()).some(
+          (p) => p.class === heroType && p.id !== playerId
+        )
+      ) {
         return callback({
           success: false,
           error: "Class already selected by another player.",
         });
       }
 
+      // Validate spells
+      for (const spell of spells) {
+        if (
+          Array.from(game.players.values()).some(
+            (p) => p.spells?.includes(spell) && p.id !== playerId
+          )
+        ) {
+          return callback({
+            success: false,
+            error: `Spell ${spell} already selected by another player.`,
+          });
+        }
+      }
+
+      // Specific validations for Elf and Cleric
       if (heroType === heroClass.Elf && spells.length !== 1) {
         return callback({
           success: false,
@@ -564,38 +584,43 @@ io.on("connection", (socket) => {
         });
       }
 
-      if (heroType === heroClass.Cleric && spells.length !== 4) {
+      if (heroType === heroClass.Cleric && spells.length !== 3) {
         return callback({
           success: false,
-          error: "Cleric must select exactly four spells.",
+          error: "Cleric must select exactly three spells.",
         });
       }
 
-      if (
-        Object.values(stats).some(
-          (value) => value === null || value === undefined || Number(value) < 0
-        )
-      ) {
-        return callback({ success: false, error: "Invalid stats values." });
-      }
-
+      // If all validations pass, update the player's class and spells
       player.class = heroType;
-      // player.stats = {
-      //   ...player.stats,
-      //   nbAttackDice: stats.attackDice,
-      //   nbDefenseDice: stats.defenseDice,
-      //   health: stats.hp,
-      //   maxHealth: stats.hp,
-      //   spiritStats: stats.sp,
-      // };
-      // player.spells = spells;
+      player.spells = spells;
+      player.ready = true;
 
       io.to(gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(game),
       });
-      callback({ success: true });
+      return callback({
+        success: true,
+        gameState: convertGameStateAsSendableGameState(game),
+      });
     }
   );
+
+  //unselect-character
+  socket.on("unselect-character", (data: { gameId: string }) => {
+    const { gameId } = data;
+    const game = games.get(gameId);
+    const player = game?.players.get(socket.id);
+    if (!game || !player) return;
+
+    player.class = undefined;
+    player.spells = undefined;
+    player.ready = false;
+
+    io.to(gameId).emit("game-state-update", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
+  });
 });
 
 const PORT = process.env.PORT || 5000;
