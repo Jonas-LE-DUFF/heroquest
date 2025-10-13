@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { diceFace } from "../shared/type";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import face1 from "./images/redDice1.png";
@@ -12,9 +11,10 @@ import face6 from "./images/redDice6.png";
 interface RedDicesProps {
   socket: any;
   gameId: string;
+  throwable: boolean;
 }
 
-const RedDices = ({ socket, gameId }: RedDicesProps) => {
+const RedDices = ({ socket, gameId, throwable }: RedDicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
     Array.of(1, 1)
   );
@@ -83,7 +83,7 @@ const RedDices = ({ socket, gameId }: RedDicesProps) => {
       >
         {renderDices(currentDiceFaces)}
       </Paper>
-      <button onClick={rollDice}>lancer les dés rouges</button>
+      {throwable && <button onClick={rollDice}>lancer les dés rouges</button>}
     </div>
   );
 };

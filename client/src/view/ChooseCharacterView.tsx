@@ -263,7 +263,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       }) => {
         if (response.success && response.gameState) {
           const game = convertSendableGameStateAsGameState(response.gameState);
-          alert("Character successfully chosen!");
           navigate("/lobby", {
             state: { playerName: playerName, game: game },
           });

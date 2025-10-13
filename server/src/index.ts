@@ -22,14 +22,12 @@ import {
 import {
   checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
-  convertSendableGameStateAsGameState,
   fiveHeroPlayers,
   getAmountOfDices,
 } from "./shared/util";
 
 import { canMove, getPositionAfterMove, hasWall } from "./shared/wallFunctions";
 import { initializeBoard, initializeWalls } from "./shared/initializator";
-import { Stats } from "fs";
 
 const app = express();
 const httpServer = createServer(app);
@@ -197,7 +195,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Vérifier que c'est bien le maître du jeu qui lance
     const player = game.players.get(socket.id);
     if (!player) {
       console.log("❌ Joueur non trouvé dans la partie");
@@ -205,13 +202,12 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // if (player.role !== "game-master") {
-    //   console.log("❌ Seul le maître du jeu peut lancer la partie");
-    //   socket.emit("error", "Seul le maître du jeu peut lancer la partie");
-    //   return;
-    // }
+    if (player.role !== "game-master") {
+      console.log("❌ Seul le maître du jeu peut lancer la partie");
+      socket.emit("error", "Seul le maître du jeu peut lancer la partie");
+      return;
+    }
 
-    // Vérifier le nombre minimum de joueurs
     if (game.players.size < 1) {
       console.log("❌ Pas assez de joueurs");
       socket.emit("error", "Il faut au moins 1 joueur");
@@ -220,7 +216,6 @@ io.on("connection", (socket) => {
 
     console.log("✅ Conditions remplies, lancement de la partie...");
 
-    // Changer le statut de la partie
     game.status = "playing";
     let pos: Position = { x: 9, y: 9 };
     for (let player of game.players.values()) {
@@ -237,7 +232,6 @@ io.on("connection", (socket) => {
       }
     }
 
-    // Notifier TOUS les joueurs de la partie
     io.to(data.gameId).emit("game-start", {
       gameState: convertGameStateAsSendableGameState(game),
     });

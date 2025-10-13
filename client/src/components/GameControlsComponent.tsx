@@ -194,15 +194,14 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
             <button onClick={unSelect}>Annuler</button>
             <button onClick={erase}>Effacer</button>
           </div>
-          {Dices({ socket, gameId })}
         </div>
       )}
-      {role === "hero" &&
-        game.currentTurn === socket.id &&
-        RedDices({ socket, gameId })}
-      {role === "hero" &&
-        game.currentTurn === socket.id &&
-        Dices({ socket, gameId })}
+      {RedDices({
+        socket,
+        gameId,
+        throwable: game.currentTurn === socket.id && role === "hero",
+      })}
+      {Dices({ socket, gameId })}
       {message && <div className="game-message">{message}</div>}
 
       {game.currentTurn === socket.id && (

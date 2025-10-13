@@ -153,7 +153,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
               </span>
             )}
             <span className="role">{isGameMaster ? "👑" : "🎭"}</span>
-            {!isGameMaster && <span className="class"> - {playerClass}</span>}
+            {!isGameMaster && (
+              <span className="class">Classe - {playerClass}</span>
+            )}
             {!isGameMaster && (
               <span className="spells">
                 {" "}
