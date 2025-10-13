@@ -36,8 +36,10 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const [gameState, setGameState] = useState(location.state?.gameState || null);
   const { playerName, gameId } = location.state || {};
-
-  const [heroType, setHeroType] = useState<heroClass>(getAvailableClasses()[0]);
+  const player: Player | undefined = gameState.players.get(socket.id);
+  const [heroType, setHeroType] = useState<heroClass>(
+    player?.class ?? getAvailableClasses()[0]
+  );
   const [formErrors, setFormErrors] = useState({
     attackDice: false,
     defenseDice: false,
@@ -46,15 +48,14 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     gold: false,
   });
 
-  const [formValues, setFormValues] = useState<Unit>({
-    nbAttackDice: 1,
-    nbDefenseDice: 1,
-    hp: 1,
-    maxHp: 1,
-    spiritPoints: 1,
+  const [formValues, setFormValues] = useState({
+    nbAttackDice: player?.stats?.nbAttackDice ?? "1",
+    nbDefenseDice: player?.stats?.nbDefenseDice ?? "1",
+    hp: player?.stats?.hp ?? "1",
+    spiritPoints: player?.stats?.spiritPoints ?? "1",
   });
 
-  const [goldValue,setGoldValue] = useState(1)
+  const [goldValue, setGoldValue] = useState(player?.gold ?? "1");
 
   const [selectedSpellElements, setSelectedSpellElements] = useState<
     spellElement[]
@@ -127,39 +128,35 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     if (isValid && value !== "") {
       console.log(`${fieldName}:`, numericValue);
-    } else {
-      switch (fieldName) {
-        case "attackDice":
-          setFormValues({
-            ...formValues,
-            nbAttackDice: Number(value),
-          });
-          break;
-        case "defenseDice":
-          setFormValues({
-            ...formValues,
-            nbDefenseDice: Number(value),
-          });
-          break;
-        case "hp":
-          setFormValues({
-            ...formValues,
-            hp: Number(value),
-            maxHp: Number(value)
-          });
-          break;
-        case "sp":
-          setFormValues({
-            ...formValues,
-            spiritPoints: Number(value),
-          });
-          break;
-        case "gold":
-          setGoldValue(
-            Number(value),
-          );
-          break;
-      }
+    }
+    switch (fieldName) {
+      case "attackDice":
+        setFormValues({
+          ...formValues,
+          nbAttackDice: value,
+        });
+        break;
+      case "defenseDice":
+        setFormValues({
+          ...formValues,
+          nbDefenseDice: value,
+        });
+        break;
+      case "hp":
+        setFormValues({
+          ...formValues,
+          hp: value,
+        });
+        break;
+      case "sp":
+        setFormValues({
+          ...formValues,
+          spiritPoints: value,
+        });
+        break;
+      case "gold":
+        setGoldValue(value);
+        break;
     }
   };
 
@@ -279,7 +276,14 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       alert(`Erreur : toutes les valeurs ne sont pas complétées`);
       return;
     }
-    const stats: Unit = formValues
+    const { nbAttackDice, nbDefenseDice, hp, spiritPoints } = formValues;
+    const stats: Unit = {
+      nbAttackDice: Number(nbAttackDice),
+      nbDefenseDice: Number(nbDefenseDice),
+      hp: Number(hp),
+      maxHp: Number(hp),
+      spiritPoints: Number(spiritPoints),
+    };
 
     const payload = {
       gameId,
