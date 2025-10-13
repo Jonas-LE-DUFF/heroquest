@@ -30,7 +30,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   useEffect(() => {
     if (!gameState) return;
 
-    // Écouter les mises à jour du jeu
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       console.log("c'est l'update du gamePage", gameState);
 

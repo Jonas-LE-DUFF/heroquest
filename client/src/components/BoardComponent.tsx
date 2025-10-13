@@ -38,10 +38,8 @@ const Board = ({
     const tile = gameState.board[position.x][position.y];
     if (!tile || !socket.id) return;
 
-    // Vérifier si la case est occupée
     const occupantType = tile.type;
 
-    // Vérifier si l'occupant appartient au joueur actuel
     if (occupantType === tileType.monster) {
       if (gameState.players.get(socket.id)?.role !== "game-master") {
         console.log("cant select a monster as hero");
@@ -57,23 +55,17 @@ const Board = ({
       return;
     }
 
-    // Émettre l'événement avec les informations
     onTileClick(gameState.id, position);
 
     if (selectedType !== null) {
       return;
     }
-
-    // Gestion de la sélection visuelle
-
-    // Sélectionner/déselectionner une unité du joueur
     setSelectedPosition(
       selectedPosition?.x === position.x && selectedPosition?.y === position.y
         ? null
         : position
     );
     if (selectedPosition) {
-      // Déjà une unité sélectionnée, tentative de mouvement/action
       setSelectedPosition(null);
     }
   };
