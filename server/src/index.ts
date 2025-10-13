@@ -245,7 +245,7 @@ io.on("connection", (socket) => {
     console.log(game.players);
     console.log("list of players : ");
     for (let key of game.players) {
-      console.log("", key[1].characterName);
+      console.log("", key[1].stats);
     }
   });
 
@@ -595,6 +595,8 @@ io.on("connection", (socket) => {
       player.class = heroType;
       player.spells = spells;
       player.ready = true;
+      player.gold = gold;
+      player.stats = stats;
 
       io.to(gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(game),

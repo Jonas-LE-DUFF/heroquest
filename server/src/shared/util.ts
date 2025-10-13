@@ -5,6 +5,7 @@ import {
   PlayerRole,
   Position,
   SendableGameState,
+  Unit,
 } from "./type";
 
 function getAmountOfDices(
@@ -13,13 +14,14 @@ function getAmountOfDices(
   attOrDef: "att" | "def"
 ) {
   const player = game.players.get(playerId);
-  if (!player?.stats) {
+  if (player?.stats === null || player?.stats === undefined) {
     console.error("no stats on player");
     return;
   }
+  const stats : Unit = player.stats;
   return attOrDef === "att"
-    ? player.stats.nbAttackDice
-    : player.stats.nbDefenseDice;
+    ? stats.nbAttackDice
+    : stats.nbDefenseDice;
 }
 
 function convertGameStateAsSendableGameState(

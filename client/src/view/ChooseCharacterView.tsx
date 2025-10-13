@@ -45,6 +45,17 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     sp: false,
     gold: false,
   });
+
+  const [formValues, setFormValues] = useState<Unit>({
+    nbAttackDice: 1,
+    nbDefenseDice: 1,
+    hp: 1,
+    maxHp: 1,
+    spiritPoints: 1,
+  });
+
+  const [goldValue,setGoldValue] = useState(1)
+
   const [selectedSpellElements, setSelectedSpellElements] = useState<
     spellElement[]
   >([]);
@@ -116,6 +127,39 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     if (isValid && value !== "") {
       console.log(`${fieldName}:`, numericValue);
+    } else {
+      switch (fieldName) {
+        case "attackDice":
+          setFormValues({
+            ...formValues,
+            nbAttackDice: Number(value),
+          });
+          break;
+        case "defenseDice":
+          setFormValues({
+            ...formValues,
+            nbDefenseDice: Number(value),
+          });
+          break;
+        case "hp":
+          setFormValues({
+            ...formValues,
+            hp: Number(value),
+            maxHp: Number(value)
+          });
+          break;
+        case "sp":
+          setFormValues({
+            ...formValues,
+            spiritPoints: Number(value),
+          });
+          break;
+        case "gold":
+          setGoldValue(
+            Number(value),
+          );
+          break;
+      }
     }
   };
 
@@ -235,14 +279,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       alert(`Erreur : toutes les valeurs ne sont pas complétées`);
       return;
     }
-
-    const stats: Unit = {
-      nbAttackDice: Number(formErrors.attackDice),
-      nbDefenseDice: Number(formErrors.defenseDice),
-      hp: Number(formErrors.hp),
-      maxHp: Number(formErrors.hp),
-      spiritPoints: Number(formErrors.sp),
-    };
+    const stats: Unit = formValues
 
     const payload = {
       gameId,
@@ -250,7 +287,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       heroType: heroType,
       stats: stats,
       spells: selectedSpellElements,
-      gold: formErrors.gold ? null : Number(formErrors.gold),
+      gold: goldValue,
     };
 
     socket.emit(
@@ -300,7 +337,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             helperText={
               formErrors.attackDice ? "Doit être un nombre entre 0 et 10" : ""
             }
-            defaultValue={1}
+            value={formValues.nbAttackDice}
           />
         </div>
         <div className="formElement">
@@ -313,7 +350,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             helperText={
               formErrors.defenseDice ? "Doit être un nombre entre 0 et 10" : ""
             }
-            defaultValue={1}
+            value={formValues.nbDefenseDice}
           />
         </div>
         <div className="formElement">
@@ -326,7 +363,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             helperText={
               formErrors.hp ? "Doit être un nombre entre 0 et 10" : ""
             }
-            defaultValue={1}
+            value={formValues.hp}
           />
         </div>
         <div className="formElement">
@@ -339,7 +376,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             helperText={
               formErrors.sp ? "Doit être un nombre entre 0 et 10" : ""
             }
-            defaultValue={1}
+            value={formValues.spiritPoints}
           />
         </div>
         <div className="formElement">
@@ -352,7 +389,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             helperText={
               formErrors.gold ? "Doit être un nombre entre 0 et 10" : ""
             }
-            defaultValue={1}
+            value={goldValue}
           />
         </div>
         {[heroClass.Cleric, heroClass.Elf].includes(heroType) && (
