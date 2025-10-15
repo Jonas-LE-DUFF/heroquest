@@ -127,5 +127,5 @@ export {
   checkOnlyOneGameMaster,
   generateMonsterId,
   fiveHeroPlayers,
-  positionKey
+  positionKey,
 };

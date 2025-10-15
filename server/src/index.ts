@@ -281,6 +281,12 @@ io.on("connection", (socket) => {
       console.log("no player connected to game deleting...");
       games.delete(gameId);
     }
+    game.turnOrder = game.turnOrder.filter((playerId) => playerId !== socket.id);
+    const pos = game.entityPositions.get(socket.id);
+    game.entityPositions.delete(socket.id);
+    if(pos){
+      game.positionEntities.delete(positionKey(pos));
+    }
     console.log("Utilisateur déconnecté:", socket.id);
   });
 
