@@ -4,6 +4,7 @@ import Board from "../components/BoardComponent";
 import "./GamePageView.css";
 import {
   GameState,
+  monsterClass,
   Position,
   SendableGameState,
   tileType,
@@ -21,6 +22,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const gameId = location.state.gameId;
   const role = location.state.role;
   const playerName = location.state.playerName;
+
+  const [monsterType, setMonsterType] = useState<monsterClass | null>(null)
 
   const [selectedType, setSelectedType] = useState<tileType | null>(null);
 
@@ -41,9 +44,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     };
   }, [socket, gameState, currentGameState]);
 
-  const handleTileClick = (gameId: string, position: Position) => {
+  const handleTileClick = (gameId: string, position: Position, monsterType: monsterClass | null) => {
     if (selectedType === undefined) {
       //nothing to place
+      return;
+    }
+    if (selectedType === tileType.monster && !monsterType) {
+      console.error("monsterType must be defined when placing a monster");
       return;
     }
     socket.emit("place-element", {
@@ -51,6 +58,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       position,
       selectedType,
       playerId: socket.id,
+      monsterType: monsterType,
     });
   };
 
@@ -72,10 +80,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                 socket: socket,
                 onTileClick: handleTileClick,
                 selectedType: selectedType,
+                monsterType: monsterType,
               })}
           </div>
           <div className="info-on-the-side">
-            {GameControls({ socket, setSelectedType })}
+            {GameControls({ socket, setSelectedType, monsterType, setMonsterType })}
 
             <div className="game-info">
               <h3>Informations</h3>

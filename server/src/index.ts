@@ -18,16 +18,20 @@ import {
   heroClass,
   Unit,
   spellElement,
+  monsterClass,
 } from "../src/shared/type";
 import {
   checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
   fiveHeroPlayers,
+  generateMonsterId,
   getAmountOfDices,
+  positionKey,
 } from "./shared/util";
 
 import { canMove, getPositionAfterMove, hasWall } from "./shared/wallFunctions";
 import { initializeBoard, initializeWalls } from "./shared/initializator";
+import { generateMonster } from "./shared/monsterGenerate";
 
 const app = express();
 const httpServer = createServer(app);
@@ -70,7 +74,7 @@ io.on("connection", (socket) => {
           players: new Map<string, Player>(),
           monsters: new Map<string, Monster>(),
           entityPositions: new Map<string, Position>(),
-          positionEntities: new Map<Position, string>(),
+          positionEntities: new Map<string, string>(),
           board: initializeBoard(),
           currentTurn: socket.id,
           walls: initializeWalls(),
@@ -171,7 +175,7 @@ io.on("connection", (socket) => {
     const pos = game.entityPositions.get(socket.id);
     game.entityPositions.delete(socket.id);
     if (pos) {
-      game.positionEntities.delete(pos);
+      game.positionEntities.delete(positionKey(pos));
       const tile = game.board[pos.x]?.[pos.y];
       if (tile) {
         tile.entityId = undefined;
@@ -227,7 +231,7 @@ io.on("connection", (socket) => {
         tile.entityId = player.id;
         tile.type = tileType.hero;
         game.entityPositions.set(player.id, pos);
-        game.positionEntities.set(pos, player.id);
+        game.positionEntities.set(positionKey(pos), player.id);
         pos = { x: pos.x + 1, y: pos.y };
       }
     }
@@ -288,6 +292,7 @@ io.on("connection", (socket) => {
       position: Position;
       selectedType: tileType;
       playerId: string;
+      monsterType: monsterClass;
     }) => {
       const { gameId, position, selectedType, playerId } = data;
       if (selectedType === undefined || selectedType === null) return;
@@ -318,6 +323,14 @@ io.on("connection", (socket) => {
       }
 
       tile.type = selectedType;
+      if(selectedType === tileType.monster){
+        const newMonsterId = generateMonsterId(gameState)
+
+        gameState.entityPositions.set(newMonsterId, position);
+        gameState.positionEntities.set(positionKey(position), newMonsterId);
+        const monster = generateMonster(newMonsterId, data.monsterType)
+        gameState.monsters.set(newMonsterId, monster);
+      }
       io.to(gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(gameState),
       });
@@ -449,9 +462,9 @@ io.on("connection", (socket) => {
       tile.entityId = undefined;
       tile.type = tileType.empty;
       gameState.entityPositions.set(player.id, newPosition);
-      gameState.positionEntities.set(newPosition, player.id);
+      gameState.positionEntities.set(positionKey(newPosition), player.id);
       const oldPositionKey = { x: position.x, y: position.y };
-      gameState.positionEntities.delete(oldPositionKey);
+      gameState.positionEntities.delete(positionKey(oldPositionKey));
 
       io.to(data.gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(gameState),

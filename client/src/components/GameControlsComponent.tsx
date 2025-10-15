@@ -24,16 +24,14 @@ import RedDices from "./RedDicesComponent";
 interface GameControlsProps {
   socket: any;
   setSelectedType: (type: tileType | null) => void;
+  monsterType: monsterClass | null;
+  setMonsterType: (type: monsterClass | null) => void;
 }
 
-const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
+const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
   const role = location.state.role;
-
-  const [selectedMonster, setSelectedMonster] = useState<monsterClass | null>(
-    null
-  );
 
   const [game, setgame] = useState<GameState>(location.state.gameState);
   const [message, setMessage] = useState("");
@@ -51,14 +49,9 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
       setMessage(`${data.playerName} s'est déplacé`);
     });
 
-    socket.on("monster-spawned", (data: any) => {
-      setMessage(`Un ${data.monsterType} est apparu !`);
-    });
-
     return () => {
       socket.off("game-state-update");
       socket.off("player-moved");
-      socket.off("monster-spawned");
     };
   }, [socket, game]);
 
@@ -74,31 +67,32 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
 
   const selectMonster = (monster: monsterClass) => {
     setSelectedType(tileType.monster);
-    setSelectedMonster(monster);
+    setMonsterType(monster);
   };
 
   const putWall = () => {
     setSelectedType(tileType.wall);
-    setSelectedMonster(null);
+    setMonsterType(null);
   };
 
   const putHero = () => {
     setSelectedType(tileType.hero);
-    setSelectedMonster(null);
+    setMonsterType(null);
   };
 
   const putFurniture = () => {
     setSelectedType(tileType.furniture);
-    setSelectedMonster(null);
+    setMonsterType(null);
   };
 
   const unSelect = () => {
     setSelectedType(null);
+    setMonsterType(null)
   };
 
   const erase = () => {
     setSelectedType(tileType.empty);
-    setSelectedMonster(null);
+    setMonsterType(null);
   };
 
   const endTurn = () => {
@@ -129,7 +123,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
             }}
           >
             <Grid container spacing={1} sx={{ margin: "10px 0" }}>
-              {[
+              {[ //TODO : optimize this with the enum and getmonsterIcon
                 {
                   type: monsterClass.Goblin,
                   img: gobelinPicture,
@@ -157,7 +151,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
                   name: "Momie",
                 },
                 {
-                  type: monsterClass["Guerrier de la terreur"],
+                  type: monsterClass.Guerrier_de_la_terreur,
                   img: dreadWarriorPicture,
                   name: "Guerrier terreur",
                 },
@@ -170,7 +164,7 @@ const GameControls = ({ socket, setSelectedType }: GameControlsProps) => {
                 <Grid key={monster.type} size={4}>
                   <button
                     className={`monster-button ${
-                      selectedMonster === monster.type ? "selected" : ""
+                      monsterType === monster.type ? "selected" : ""
                     }`}
                     onClick={() => selectMonster(monster.type)}
                   >

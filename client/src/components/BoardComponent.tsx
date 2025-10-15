@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GameState, Position, tileType } from "../shared/type";
+import { GameState, heroClass, Monster, monsterClass, Player, Position, Tile, tileType } from "../shared/type";
 import "./BoardComponent.css";
 import {
   Table,
@@ -11,12 +11,14 @@ import {
   Typography,
 } from "@mui/material";
 import { Socket } from "socket.io-client";
+import { getHeroClassIconPath, getMonsterIconPath, positionKey } from "../shared/utils";
 
 interface BoardProps {
   gameState: GameState | null;
   socket: Socket;
-  onTileClick: (gameId: string, position: Position) => void;
+  onTileClick: (gameId: string, position: Position, monsterType : monsterClass | null) => void;
   selectedType: tileType | null;
+  monsterType: monsterClass | null;
 }
 
 const Board = ({
@@ -24,12 +26,14 @@ const Board = ({
   socket,
   onTileClick,
   selectedType,
+  monsterType,
 }: BoardProps) => {
   let [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
 
   const handleTileClick = (
     position: Position,
-    selectedType: tileType | null
+    selectedType: tileType | null,
+    monsterType: monsterClass | null,
   ) => {
     if (!gameState || !gameState.board[position.x]) {
       console.error("gameState is not defined");
@@ -55,7 +59,7 @@ const Board = ({
       return;
     }
 
-    onTileClick(gameState.id, position);
+    onTileClick(gameState.id, position, monsterType);
 
     if (selectedType !== null) {
       return;
@@ -87,9 +91,9 @@ const Board = ({
             key={col}
             className="tile"
             sx={getTileStyle(row, col)}
-            onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
+            onClick={() => handleTileClick({ x: row, y: col }, selectedType, monsterType)}
           >
-            {tile === tileType.empty ? `${row},${col}` : tileType[tile]}
+            {tile === tileType.empty ? `${row},${col}` : getTileContent(row,col)}
           </TableCell>
         );
       }
@@ -98,6 +102,30 @@ const Board = ({
 
     return grid;
   };
+
+  const getTileContent = (x: number, y: number) => {
+    
+    const tile : Tile | undefined = gameState?.board[x]?.[y];
+    if (!tile) return null;
+    const pos : Position = { x : x, y : y}
+    const entityId = gameState?.positionEntities.get(positionKey(pos));
+    if(!entityId) return tileType[tile.type];
+
+    const entityPlayer :Player|undefined = gameState?.players.get(entityId);
+    const entityMonster : Monster| undefined = gameState?.monsters.get(entityId);
+    
+    if (entityPlayer && entityPlayer.class){
+      console.log("entity in rendering board : ",entityPlayer.class);
+      return <img className="boardImg" src={getHeroClassIconPath(entityPlayer.class)} alt={heroClass[entityPlayer.class]}/>
+    }
+    if (entityMonster && entityMonster.class){
+      console.log("entity monster in rendering board : ",entityMonster.class);
+      return <img className="boardImg" src={getMonsterIconPath(entityMonster.class)} alt={monsterClass[entityMonster.class]}/>
+    }
+    console.log("tile type returned  : ",tileType[tile.type]);
+    
+    return tileType[tile.type];
+  }
 
   const getTileStyle = (x: number, y: number) => {
     const tile = gameState?.board[x]?.[y];
@@ -108,6 +136,7 @@ const Board = ({
     const isWall = tile?.type === tileType.wall;
 
     let style = {
+      alignItems:"center",
       width: 15,
       height: 5,
       border: "1px solid #ccc",

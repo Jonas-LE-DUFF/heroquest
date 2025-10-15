@@ -84,7 +84,7 @@ function convertSendableGameStateAsGameState(
   const players: Map<string, Player> = new Map<string, Player>();
   const monsters: Map<string, Monster> = new Map<string, Monster>();
   const entityPositions: Map<string, Position> = new Map<string, Position>();
-  const positionEntities: Map<Position, string> = new Map<Position, string>();
+  const positionEntities: Map<string, string> = new Map<string, string>();
 
   game.players.forEach((player: Player) => {
     players.set(player.id, player);
@@ -99,7 +99,7 @@ function convertSendableGameStateAsGameState(
       const position = game.positions[index];
       if (id && position) {
         entityPositions.set(id, position);
-        positionEntities.set(position, id);
+        positionEntities.set(positionKey(position), id);
       }
     });
   }
@@ -118,6 +118,8 @@ function convertSendableGameStateAsGameState(
   };
 }
 
+const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
+
 export {
   getAmountOfDices,
   convertGameStateAsSendableGameState,
@@ -125,4 +127,5 @@ export {
   checkOnlyOneGameMaster,
   generateMonsterId,
   fiveHeroPlayers,
+  positionKey
 };

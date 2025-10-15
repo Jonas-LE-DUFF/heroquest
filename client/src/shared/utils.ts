@@ -2,6 +2,7 @@ import {
   GameState,
   heroClass,
   Monster,
+  monsterClass,
   Player,
   Position,
   SendableGameState,
@@ -11,6 +12,14 @@ import iconBarbarian from "./../components/images/barbarian.png";
 import iconCleric from "./../components/images/wizard.png";
 import iconDwarf from "./../components/images/dwarf.png";
 import iconElf from "./../components/images/elf.png";
+import iconGobelin from "./../components/images/goblin.png";
+import iconSkeleton from "./../components/images/skeleton.png";
+import iconZombie from "./../components/images/zombie.png";
+import iconOrc from "./../components/images/orc.png";
+import iconAbomination from "./../components/images/abomination.png";
+import iconMummy from "./../components/images/mummy.png";
+import iconDreadWarrior from "./../components/images/dreadwarrior.png";
+import iconGargoyle from "./../components/images/gargoyle.png";
 import { heroClassFr, spellElementFr } from "./frenchEnums";
 
 function convertSendableGameStateAsGameState(
@@ -19,7 +28,7 @@ function convertSendableGameStateAsGameState(
   const players: Map<string, Player> = new Map<string, Player>();
   const monsters: Map<string, Monster> = new Map<string, Monster>();
   const entityPositions: Map<string, Position> = new Map<string, Position>();
-  const positionEntities: Map<Position, string> = new Map<Position, string>();
+  const positionEntities: Map<string, string> = new Map<string, string>();
 
   game.players.forEach((player: Player) => {
     players.set(player.id, player);
@@ -34,7 +43,7 @@ function convertSendableGameStateAsGameState(
       const position = game.positions[index];
       if (id && position) {
         entityPositions.set(id, position);
-        positionEntities.set(position, id);
+        positionEntities.set(positionKey(position), id);
       }
     });
   }
@@ -72,7 +81,30 @@ function getHeroClassIconPath(heroType: heroClass): string {
     case heroClass.Elf:
       return iconElf;
     default:
-      return ""; // or a default icon
+      return "hero"; // or a default icon
+  }
+}
+
+function getMonsterIconPath(monsterType : monsterClass) :string {
+  switch (monsterType) {
+    case monsterClass.Abomination:
+      return iconAbomination;
+    case monsterClass.Gargouille:
+      return iconGargoyle;
+    case monsterClass.Goblin:
+      return iconGobelin;
+    case monsterClass.Guerrier_de_la_terreur:
+      return iconDreadWarrior;
+    case monsterClass.Squelette:
+      return iconSkeleton;
+    case monsterClass.Zombie:
+      return iconZombie;
+    case monsterClass.Orc:
+      return iconOrc;
+    case monsterClass.Momie:
+      return iconMummy;
+    default:
+      return "monster"; // or a default icon
   }
 }
 
@@ -84,10 +116,14 @@ function getHeroClassName(classHero: heroClass) {
   return heroClassFr[classHero];
 }
 
+const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
+
 export {
   convertSendableGameStateAsGameState,
   everyOneReady,
   getHeroClassIconPath,
+  getMonsterIconPath,
   getElementName,
   getHeroClassName,
+  positionKey
 };

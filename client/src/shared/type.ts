@@ -46,14 +46,14 @@ export interface Player {
 }
 
 export enum monsterClass {
-  "Goblin" = 1,
-  "Squelette",
-  "Zombie",
-  "Orc",
-  "Abomination",
-  "Momie",
-  "Guerrier de la terreur",
-  "Gargouille",
+  Goblin = 1,
+  Squelette,
+  Zombie,
+  Orc,
+  Abomination,
+  Momie,
+  Guerrier_de_la_terreur,
+  Gargouille,
 }
 
 export interface Monster {
@@ -153,12 +153,6 @@ export interface ClientToServerEvents {
   // game master actions
   // lobby actions
   "start-game": (data: { gameId: string }) => void;
-  // in-game actions
-  "spawn-monster": (data: {
-    gameId: string;
-    monsterClass: monsterClass;
-    position: Position;
-  }) => void;
   // in-turn actions
   "move-monster": (data: {
     gameId: string;
@@ -171,6 +165,7 @@ export interface ClientToServerEvents {
     position: Position;
     selectedType: tileType;
     playerId: string;
+    monsterType: monsterClass;
   }) => void;
 
   "roll-dice": (data: {
@@ -192,7 +187,7 @@ export interface GameState {
   players: Map<string, Player>; // Id -> Player
   monsters: Map<string, Monster>; // Id -> Monster
   entityPositions: Map<string, Position>; // entityId -> position
-  positionEntities: Map<Position, string>; // "x,y" -> entityId
+  positionEntities: Map<string, string>; // "x,y" -> entityId
 
   turnOrder: (string | undefined)[]; // order of turn with the ids of players; game master should always be last player
 
