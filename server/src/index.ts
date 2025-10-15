@@ -23,6 +23,7 @@ import {
 import {
   checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
+  convertSendableGameStateAsGameState,
   fiveHeroPlayers,
   generateMonsterId,
   getAmountOfDices,
@@ -163,25 +164,12 @@ io.on("connection", (socket) => {
 
   //leave-lobby
   socket.on("leave-lobby", (data: { gameId: string }) => {
-    console.log("leaving detected");
-
     const game = games.get(data.gameId);
     if (!game) return;
-    game.players.delete(socket.id);
-    game.turnOrder = game.turnOrder.filter(
-      (playerId) => playerId !== socket.id
-    );
+
+    removePlayerFromGame(socket.id, game);
+    
     // we shouldn't have to remove that many informations but just making sure
-    const pos = game.entityPositions.get(socket.id);
-    game.entityPositions.delete(socket.id);
-    if (pos) {
-      game.positionEntities.delete(positionKey(pos));
-      const tile = game.board[pos.x]?.[pos.y];
-      if (tile) {
-        tile.entityId = undefined;
-        tile.type = tileType.empty;
-      }
-    }
     io.to(data.gameId).emit("game-state-update", {
       gameState: convertGameStateAsSendableGameState(game),
     });
@@ -235,7 +223,17 @@ io.on("connection", (socket) => {
         pos = { x: pos.x + 1, y: pos.y };
       }
     }
-
+    const firstPlayerId = game.turnOrder.find((elem) => {
+      console.log(elem);
+      return elem !== undefined
+      
+    })
+    if(!firstPlayerId){
+      console.error("no first player could be found");
+      return;
+    }
+    game.currentTurn = firstPlayerId;
+    console.log("game turnorder : ", game.turnOrder)
     io.to(data.gameId).emit("game-start", {
       gameState: convertGameStateAsSendableGameState(game),
     });
@@ -250,6 +248,8 @@ io.on("connection", (socket) => {
   // disconnect
   socket.on("disconnect", () => {
     const gameWithFoundPlayer = new Map<string, GameState>();
+
+    // finding the games in which the player is present (there should be only one)
     games.forEach((gameState: GameState, gameId: string) => {
       if (gameState.players.get(socket.id) !== null)
         gameWithFoundPlayer.set(gameId, gameState);
@@ -259,35 +259,15 @@ io.on("connection", (socket) => {
       console.error("no game with player");
       return;
     }
-
     const game = games.get(gameId);
-    if (!game) {
-      console.log("no game on disconnect");
-      return;
-    }
-    const player = game.players.get(socket.id);
-    if (!player) {
-      console.log("no player found");
-      return;
-    }
-    if (player.id !== undefined) {
-      console.log("removing player because of deconnection");
-      game.players.delete(player.id);
-      io.to(gameId).emit("game-state-update", {
-        gameState: convertGameStateAsSendableGameState(game),
-      });
-    }
-    if (game.players.size === 0) {
-      console.log("no player connected to game deleting...");
-      games.delete(gameId);
-    }
-    game.turnOrder = game.turnOrder.filter((playerId) => playerId !== socket.id);
-    const pos = game.entityPositions.get(socket.id);
-    game.entityPositions.delete(socket.id);
-    if(pos){
-      game.positionEntities.delete(positionKey(pos));
-    }
-    console.log("Utilisateur déconnecté:", socket.id);
+    if(!game) return;
+
+    removePlayerFromGame(socket.id, game);
+
+    io.to(gameId).emit("game-state-update", {
+      gameState: convertGameStateAsSendableGameState(game),
+    });
+    return;
   });
 
   // place-element
@@ -484,29 +464,42 @@ io.on("connection", (socket) => {
 
     const game = games.get(data.gameId);
     if (!game) return;
-    if (game.currentTurn !== socket.id) return;
-
-    console.log("check passed", game.currentTurn);
+    if (game.currentTurn !== socket.id){
+      console.error("can't end turn it's not your turn...");
+      
+      return;
+    }
     console.log(game.turnOrder);
+    
+    let playerFound = false;
 
     for (let i = 0; i < game.turnOrder.length; i++) {
-      console.log(i);
       let nextPlayer = game.turnOrder[i + 1];
+      console.log(i);
+      console.log(game.turnOrder[i]);
+      console.log(game.currentTurn);
       if (i === 4) {
         //last element of the list going back to first
-        nextPlayer = game.turnOrder[0];
+        nextPlayer = game.turnOrder.find((elem) => {
+          return elem !== undefined;
+        });
         game.currentTurn = nextPlayer ?? "";
       }
       if (game.turnOrder[i] === game.currentTurn) {
+        playerFound = true;
         if (nextPlayer !== undefined) {
-          console.log("new player found ! : ", nextPlayer);
           game.currentTurn = nextPlayer;
           break;
         }
       }
+      if(playerFound && nextPlayer){
+        console.log("new player found ! : ", nextPlayer);
+        game.currentTurn = nextPlayer;
+        break;
+      }
     }
-    console.log("nouveau current turn", game.currentTurn);
 
+    
     io.to(data.gameId).emit("game-state-update", {
       gameState: convertGameStateAsSendableGameState(game),
     });
@@ -642,3 +635,33 @@ const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
 });
+
+function removePlayerFromGame(playerId: string, game: GameState) {
+  
+    const player = game.players.get(playerId);
+    if (!player) {
+      console.log("no player found");
+      return;
+    }
+    if (player.id !== undefined) {
+      console.log("removing player because of deconnection");
+      game.players.delete(player.id);
+    }
+    if (game.players.size === 0) {
+      console.log("no player connected to game deleting...");
+      games.delete(game.id);
+    }
+    for(let i = 0; i < game.turnOrder.length ; i++){
+      if(game.turnOrder[i] == player.id){
+        game.turnOrder[i] = undefined;
+      }
+    }
+    console.log("turn order after deconnection : ", game.turnOrder);
+    
+    const pos = game.entityPositions.get(playerId);
+    game.entityPositions.delete(playerId);
+    if(pos){
+      game.positionEntities.delete(positionKey(pos));
+    }
+    console.log("Utilisateur déconnecté:", playerId);
+}

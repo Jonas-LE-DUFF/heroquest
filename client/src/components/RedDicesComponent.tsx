@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import face1 from "./images/redDice1.png";
