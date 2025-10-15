@@ -29,7 +29,7 @@ import {
   positionKey,
 } from "./shared/util";
 
-import { canMove, getPositionAfterMove, hasWall } from "./shared/wallFunctions";
+import { canMove, getPositionAfterMove } from "./shared/wallFunctions";
 import { initializeBoard, initializeWalls } from "./shared/initializator";
 import { generateMonster } from "./shared/monsterGenerate";
 
