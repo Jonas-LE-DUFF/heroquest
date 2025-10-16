@@ -30,6 +30,7 @@ function App() {
 
   return (
     <Router>
+      <title>HeroQuest</title>
       <div className="App">
         <Routes>
           <Route path="/" element={<LoginPage socket={socket} />} />

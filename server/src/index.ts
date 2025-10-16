@@ -23,7 +23,6 @@ import {
 import {
   checkOnlyOneGameMaster,
   convertGameStateAsSendableGameState,
-  convertSendableGameStateAsGameState,
   fiveHeroPlayers,
   generateMonsterId,
   getAmountOfDices,
