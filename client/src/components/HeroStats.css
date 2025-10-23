@@ -1,0 +1,16 @@
+.heroStats{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.closeButton{
+    color: red;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.content{
+    position: relative;
+}

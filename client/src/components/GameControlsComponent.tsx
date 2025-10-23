@@ -197,7 +197,6 @@ const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: 
       })}
       {Dices({ socket, gameId })}
       {message && <div className="game-message">{message}</div>}
-
       {game.currentTurn === socket.id && (
         <div>
           <button onClick={endTurn}>END TURN</button>

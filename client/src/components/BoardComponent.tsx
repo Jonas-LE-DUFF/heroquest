@@ -115,11 +115,9 @@ const Board = ({
     const entityMonster : Monster| undefined = gameState?.monsters.get(entityId);
     
     if (entityPlayer && entityPlayer.class){
-      console.log("entity in rendering board : ",entityPlayer.class);
       return <img className="boardImg" src={getHeroClassIconPath(entityPlayer.class)} alt={heroClass[entityPlayer.class]}/>
     }
     if (entityMonster && entityMonster.class){
-      console.log("entity monster in rendering board : ",entityMonster.class);
       return <img className="boardImg" src={getMonsterIconPath(entityMonster.class)} alt={monsterClass[entityMonster.class]}/>
     }
     console.log("tile type returned  : ",tileType[tile.type]);

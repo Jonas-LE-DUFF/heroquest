@@ -11,6 +11,7 @@ import {
 } from "../shared/type";
 import { GameControls } from "../components/GameControlsComponent";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
+import HeroStats from "../components/HeroStats";
 
 interface GamePageProps {
   socket: any;
@@ -23,12 +24,20 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const role = location.state.role;
   const playerName = location.state.playerName;
 
-  const [monsterType, setMonsterType] = useState<monsterClass | null>(null)
+  const [monsterType, setMonsterType] = useState<monsterClass | null>(null);
 
   const [selectedType, setSelectedType] = useState<tileType | null>(null);
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);
+
+  const player = gameState.players.get(socket.id);
+  const [statsVisible, setStatsVisible] = useState(false);
+  const [visibleStatsTotal, setVisibleStatsTotal] = useState(false);
+
+  useEffect(() => {
+    setVisibleStatsTotal(role === "hero" && player && statsVisible);
+  }, [role, player, statsVisible]);
 
   useEffect(() => {
     if (!gameState) return;
@@ -44,7 +53,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     };
   }, [socket, gameState, currentGameState]);
 
-  const handleTileClick = (gameId: string, position: Position, monsterType: monsterClass | null) => {
+  const handleTileClick = (
+    gameId: string,
+    position: Position,
+    monsterType: monsterClass | null
+  ) => {
     if (selectedType === undefined) {
       //nothing to place
       return;
@@ -73,18 +86,34 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
       {currentGameState && (
         <div className="game-container">
+          <div className={visibleStatsTotal ? "HeroStats" : "hidden"}>
+            {visibleStatsTotal &&
+              HeroStats({ socket, player, setStatsVisible })}
+          </div>
           <div className="Board">
-            {socket !== null &&
-              Board({
-                gameState: currentGameState,
-                socket: socket,
-                onTileClick: handleTileClick,
-                selectedType: selectedType,
-                monsterType: monsterType,
-              })}
+            <div>
+              {socket !== null &&
+                Board({
+                  gameState: currentGameState,
+                  socket: socket,
+                  onTileClick: handleTileClick,
+                  selectedType: selectedType,
+                  monsterType: monsterType,
+                })}
+            </div>
+            <div>
+              {role === "hero" && <button onClick={() => setStatsVisible(!statsVisible)}>
+                {!statsVisible ? "Montrer stats" : "Cacher stats"}
+              </button>}
+            </div>
           </div>
           <div className="info-on-the-side">
-            {GameControls({ socket, setSelectedType, monsterType, setMonsterType })}
+            {GameControls({
+              socket,
+              setSelectedType,
+              monsterType,
+              setMonsterType,
+            })}
 
             <div className="game-info">
               <h3>Informations</h3>
