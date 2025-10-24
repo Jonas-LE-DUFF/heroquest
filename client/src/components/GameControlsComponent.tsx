@@ -138,10 +138,10 @@ const GameControls = ({
                 );
               })}
             </Grid>
-            <Grid className="gridElem" size={3}>
+            <Grid className="gridElem" size={4}>
               <button onClick={putWall}>Mur</button>
             </Grid>
-            <Grid className="gridElem" size={3}>
+            <Grid className="gridElem" size={4}>
               <button onClick={putFurniture}>Meuble</button>
             </Grid>
           </Grid>
