@@ -10,16 +10,12 @@ import {
 import Dices from "./HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import { Grid } from "@mui/material";
-import gobelinPicture from "./images/goblin.png";
-import skeletonPicture from "./images/skeleton.png";
-import zombiePicture from "./images/zombie.png";
-import orcPicture from "./images/orc.png";
-import abominationPicture from "./images/abomination.png";
-import mummyPicture from "./images/mummy.png";
-import dreadWarriorPicture from "./images/dreadwarrior.png";
-import gargoylePicture from "./images/gargoyle.png";
-import { convertSendableGameStateAsGameState } from "../shared/utils";
+import {
+  convertSendableGameStateAsGameState,
+  getMonsterIconPath,
+} from "../shared/utils";
 import RedDices from "./RedDicesComponent";
+import { monsterClassFr } from "../shared/frenchEnums";
 
 interface GameControlsProps {
   socket: any;
@@ -28,7 +24,12 @@ interface GameControlsProps {
   setMonsterType: (type: monsterClass | null) => void;
 }
 
-const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: GameControlsProps) => {
+const GameControls = ({
+  socket,
+  setSelectedType,
+  monsterType,
+  setMonsterType,
+}: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
   const role = location.state.role;
@@ -75,11 +76,6 @@ const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: 
     setMonsterType(null);
   };
 
-  const putHero = () => {
-    setSelectedType(tileType.hero);
-    setMonsterType(null);
-  };
-
   const putFurniture = () => {
     setSelectedType(tileType.furniture);
     setMonsterType(null);
@@ -87,7 +83,7 @@ const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: 
 
   const unSelect = () => {
     setSelectedType(null);
-    setMonsterType(null)
+    setMonsterType(null);
   };
 
   const erase = () => {
@@ -122,60 +118,25 @@ const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: 
               padding: "10px",
             }}
           >
+            {/* monster selector: generate buttons from the enum values */}
             <Grid container spacing={1} sx={{ margin: "10px 0" }}>
-              {[ //TODO : optimize this with the enum and getmonsterIcon
-                {
-                  type: monsterClass.Goblin,
-                  img: gobelinPicture,
-                  name: "Gobelin",
-                },
-                {
-                  type: monsterClass.Squelette,
-                  img: skeletonPicture,
-                  name: "Squelette",
-                },
-                {
-                  type: monsterClass.Zombie,
-                  img: zombiePicture,
-                  name: "Zombie",
-                },
-                { type: monsterClass.Orc, img: orcPicture, name: "Orc" },
-                {
-                  type: monsterClass.Abomination,
-                  img: abominationPicture,
-                  name: "Abomination",
-                },
-                {
-                  type: monsterClass.Momie,
-                  img: mummyPicture,
-                  name: "Momie",
-                },
-                {
-                  type: monsterClass.Guerrier_de_la_terreur,
-                  img: dreadWarriorPicture,
-                  name: "Guerrier terreur",
-                },
-                {
-                  type: monsterClass.Gargouille,
-                  img: gargoylePicture,
-                  name: "Gargouille",
-                },
-              ].map((monster) => (
-                <Grid key={monster.type} size={4}>
-                  <button
-                    className={`monster-button ${
-                      monsterType === monster.type ? "selected" : ""
-                    }`}
-                    onClick={() => selectMonster(monster.type)}
-                  >
-                    <img src={monster.img} alt={monster.name} />
-                    <span>{monster.name}</span>
-                  </button>
-                </Grid>
-              ))}
-            </Grid>
-            <Grid className="gridElem" size={3}>
-              <button onClick={putHero}>Héro</button>
+              {MONSTER_TYPES.map((mType) => {
+                const img = getMonsterIconPath(mType);
+                const name = monsterClassFr[mType];
+                return (
+                  <Grid key={mType} size={4}>
+                    <button
+                      className={`monster-button ${
+                        monsterType === mType ? "selected" : ""
+                      }`}
+                      onClick={() => selectMonster(mType)}
+                    >
+                      <img src={img} alt={name} />
+                      <span>{name}</span>
+                    </button>
+                  </Grid>
+                );
+              })}
             </Grid>
             <Grid className="gridElem" size={3}>
               <button onClick={putWall}>Mur</button>
@@ -205,5 +166,10 @@ const GameControls = ({ socket, setSelectedType, monsterType, setMonsterType }: 
     </div>
   );
 };
+
+// module-scope helper: list numeric enum values for monsterClass
+const MONSTER_TYPES: monsterClass[] = Object.values(monsterClass).filter(
+  (v) => typeof v === "number"
+) as monsterClass[];
 
 export { GameControls };

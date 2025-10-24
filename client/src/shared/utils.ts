@@ -8,18 +8,18 @@ import {
   SendableGameState,
   spellElement,
 } from "./type";
-import iconBarbarian from "./../components/images/barbarian.png";
-import iconCleric from "./../components/images/wizard.png";
-import iconDwarf from "./../components/images/dwarf.png";
-import iconElf from "./../components/images/elf.png";
-import iconGobelin from "./../components/images/goblin.png";
-import iconSkeleton from "./../components/images/skeleton.png";
-import iconZombie from "./../components/images/zombie.png";
-import iconOrc from "./../components/images/orc.png";
-import iconAbomination from "./../components/images/abomination.png";
-import iconMummy from "./../components/images/mummy.png";
-import iconDreadWarrior from "./../components/images/dreadwarrior.png";
-import iconGargoyle from "./../components/images/gargoyle.png";
+import iconBarbarian from "./../components/images/icons/hero/barbarian.png";
+import iconCleric from "./../components/images/icons/hero/wizard.png";
+import iconDwarf from "./../components/images/icons/hero/dwarf.png";
+import iconElf from "./../components/images/icons/hero/elf.png";
+import iconGobelin from "./../components/images/icons/monster/goblin.png";
+import iconSkeleton from "./../components/images/icons/monster/skeleton.png";
+import iconZombie from "./../components/images/icons/monster/zombie.png";
+import iconOrc from "./../components/images/icons/monster/orc.png";
+import iconAbomination from "./../components/images/icons/monster/abomination.png";
+import iconMummy from "./../components/images/icons/monster/mummy.png";
+import iconDreadWarrior from "./../components/images/icons/monster/dreadwarrior.png";
+import iconGargoyle from "./../components/images/icons/monster/gargoyle.png";
 import { heroClassFr, spellElementFr } from "./frenchEnums";
 
 function convertSendableGameStateAsGameState(
