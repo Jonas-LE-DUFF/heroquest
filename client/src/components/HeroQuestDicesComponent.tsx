@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { diceFace } from "../shared/type";
 import { Paper } from "@mui/material";
-import deFaceNoir from "./images/deFaceNoir.jpeg";
-import deFaceBlanche from "./images/deFaceBlanche.jpeg";
-import deFaceMort from "./images/deFaceMort.jpeg";
 import "./HeroQuestDicesComponent.css";
+import { getFightDiceFace } from "../shared/utils";
 
 interface DicesProps {
   socket: any;
@@ -40,15 +38,6 @@ const Dices = ({ socket, gameId }: DicesProps) => {
     });
   };
 
-  function getDiceFace(face: diceFace) {
-    if (face === diceFace.BlackShield)
-      return <img src={deFaceNoir} alt="dé face noir" />;
-    if (face === diceFace.WhiteShield)
-      return <img src={deFaceBlanche} alt="dé face blanche" />;
-    if (face === diceFace.Hit)
-      return <img src={deFaceMort} alt="dé face mort" />;
-  }
-
   function renderDices(
     currentDiceFaces: Array<diceFace> | null,
     currentNumberOfDices: number
@@ -62,7 +51,7 @@ const Dices = ({ socket, gameId }: DicesProps) => {
       dices.push(
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null
-            ? getDiceFace(currentDiceFaces[i])
+            ? <img src={getFightDiceFace(currentDiceFaces[i])} alt={` `} />
             : "noFace"}
         </div>
       );

@@ -24,12 +24,14 @@
 }
 
 .HeroStats {
-  width: 40%;
-  height: 40%;
+  width: 30%;
+  height: 100%;
   position: absolute;
   margin-left: 0;
   min-height: 400px;
   align-self: flex-start;
+  left: 0;
+  top: 250px;
 
 }
 

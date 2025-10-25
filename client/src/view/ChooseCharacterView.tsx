@@ -97,6 +97,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         >
           <div className="selectHeroClass">
             <img
+            className="heroFaceimage"
               src={getHeroClassIconPath(value as heroClass)}
               alt={"icon" + value}
             ></img>
