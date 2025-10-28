@@ -95,7 +95,10 @@ export interface ServerToClientEvents {
 
   // Mises à jour de jeu
   "game-state-update": (data: { gameState: SendableGameState }) => void;
-  "dice-update": (data: { listResults: diceFace[] }) => void;
+  "dice-update": (data: {
+    listResults: diceFace[];
+    role: "hero" | "game-master";
+  }) => void;
   "game-start": (data: { gameState: SendableGameState }) => void;
 
   // Actions spécifiques

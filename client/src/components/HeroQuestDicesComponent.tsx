@@ -7,23 +7,28 @@ import { getFightDiceFace } from "../shared/utils";
 interface DicesProps {
   socket: any;
   gameId: string;
+  role: "hero" | "game-master";
 }
 
-const Dices = ({ socket, gameId }: DicesProps) => {
+const Dices = ({ socket, gameId, role }: DicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<diceFace[] | null>(
     Array.of(diceFace.Hit)
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
 
   useEffect(() => {
-    socket.on("dice-update", (data: { listResults: diceFace[] }) => {
-      for (let result of data.listResults) {
-        console.log("result : ", result);
-      }
+    socket.on(
+      "dice-update",
+      (data: { listResults: diceFace[]; role: "hero" | "game-master" }) => {
+        if (data.role !== role) return; // updates is not for us
+        for (let result of data.listResults) {
+          console.log("result : ", result);
+        }
 
-      console.log("liste des résultats : " + data.listResults);
-      setCurrentDiceFaces(data.listResults);
-    });
+        console.log("liste des résultats : " + data.listResults);
+        setCurrentDiceFaces(data.listResults);
+      }
+    );
 
     return () => {
       socket.off("dice-update");
@@ -50,9 +55,11 @@ const Dices = ({ socket, gameId }: DicesProps) => {
     for (let i = 0; i < currentNumberOfDices; i++) {
       dices.push(
         <div className="dice" key={"dice number" + i}>
-          {currentDiceFaces[i] !== null
-            ? <img src={getFightDiceFace(currentDiceFaces[i])} alt={` `} />
-            : "noFace"}
+          {currentDiceFaces[i] !== null ? (
+            <img src={getFightDiceFace(currentDiceFaces[i])} alt={` `} />
+          ) : (
+            "noFace"
+          )}
         </div>
       );
     }

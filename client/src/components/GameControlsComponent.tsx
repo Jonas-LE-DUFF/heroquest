@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, JSX } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Direction,
@@ -95,6 +95,37 @@ const GameControls = ({
     socket.emit("end-turn", { gameId: gameId });
   };
 
+  // module-scope helper: list numeric enum values for monsterClass
+  const MONSTER_TYPES: monsterClass[] = Object.values(monsterClass).filter(
+    (v) => typeof v === "number"
+  ) as monsterClass[];
+
+  const renderMonsterButtons = () => {
+    if (MONSTER_TYPES.length === 0) {
+      return null;
+    }
+
+    const buttons: JSX.Element[] = [];
+    for (const mType of MONSTER_TYPES) {
+      const img = getMonsterIconPath(mType);
+      const name = monsterClassFr[mType];
+      buttons.push(
+        <Grid key={mType} size={4}>
+          <button
+            className={`monster-button ${
+              monsterType === mType ? "selected" : ""
+            }`}
+            onClick={() => selectMonster(mType)}
+          >
+            <img src={img} alt={name} />
+            <span>{name}</span>
+          </button>
+        </Grid>
+      );
+    }
+    return buttons;
+  };
+
   return (
     <div className="game-controls">
       <h3>Actions</h3>
@@ -120,23 +151,7 @@ const GameControls = ({
           >
             {/* monster selector: generate buttons from the enum values */}
             <Grid container spacing={1} sx={{ margin: "10px 0" }}>
-              {MONSTER_TYPES.map((mType) => {
-                const img = getMonsterIconPath(mType);
-                const name = monsterClassFr[mType];
-                return (
-                  <Grid key={mType} size={4}>
-                    <button
-                      className={`monster-button ${
-                        monsterType === mType ? "selected" : ""
-                      }`}
-                      onClick={() => selectMonster(mType)}
-                    >
-                      <img src={img} alt={name} />
-                      <span>{name}</span>
-                    </button>
-                  </Grid>
-                );
-              })}
+              {renderMonsterButtons()}
             </Grid>
             <Grid className="gridElem" size={4}>
               <button onClick={putWall}>Mur</button>
@@ -156,7 +171,8 @@ const GameControls = ({
         gameId,
         throwable: game.currentTurn === socket.id && role === "hero",
       })}
-      {Dices({ socket, gameId })}
+      {Dices({ socket, gameId, role: "hero" })}
+      {Dices({ socket, gameId, role: "game-master" })}
       {message && <div className="game-message">{message}</div>}
       {game.currentTurn === socket.id && (
         <div>
@@ -166,10 +182,5 @@ const GameControls = ({
     </div>
   );
 };
-
-// module-scope helper: list numeric enum values for monsterClass
-const MONSTER_TYPES: monsterClass[] = Object.values(monsterClass).filter(
-  (v) => typeof v === "number"
-) as monsterClass[];
 
 export { GameControls };
