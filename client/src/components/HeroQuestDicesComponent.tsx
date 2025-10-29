@@ -3,6 +3,7 @@ import { diceFace } from "../shared/type";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../shared/utils";
+import { useLocation } from "react-router-dom";
 
 interface DicesProps {
   socket: any;
@@ -15,6 +16,8 @@ const Dices = ({ socket, gameId, role }: DicesProps) => {
     Array.of(diceFace.Hit)
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
+  const location = useLocation();
+  const playerRole = location.state.role;
 
   useEffect(() => {
     socket.on(
@@ -26,6 +29,7 @@ const Dices = ({ socket, gameId, role }: DicesProps) => {
         }
 
         console.log("liste des résultats : " + data.listResults);
+        setCurrentNumberOfDices(data.listResults.length);
         setCurrentDiceFaces(data.listResults);
       }
     );
@@ -33,7 +37,7 @@ const Dices = ({ socket, gameId, role }: DicesProps) => {
     return () => {
       socket.off("dice-update");
     };
-  }, [socket]);
+  }, [socket, role]);
 
   const rollDice = () => {
     socket.emit("roll-dice", {
@@ -67,7 +71,7 @@ const Dices = ({ socket, gameId, role }: DicesProps) => {
   }
 
   return (
-    <div className="container">
+    <div className={"container " + role}>
       <Paper
         className="dice-container"
         sx={{
@@ -77,11 +81,17 @@ const Dices = ({ socket, gameId, role }: DicesProps) => {
       >
         {renderDices(currentDiceFaces, currentNumberOfDices)}
       </Paper>
-      <button onClick={rollDice}>lancer les dés</button>
-      <input
-        type="number"
-        onChange={(e) => setCurrentNumberOfDices(Number(e.currentTarget.value))}
-      />
+      {playerRole === role && (
+        <div className="container">
+          <button onClick={rollDice}>lancer les dés</button>
+          <input
+            type="number"
+            onChange={(e) =>
+              setCurrentNumberOfDices(Number(e.currentTarget.value))
+            }
+          />
+        </div>
+      )}
     </div>
   );
 };
