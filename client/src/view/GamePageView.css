@@ -14,10 +14,11 @@
 .info-on-the-side {
   display: flex;
   flex-direction: column;
+  width: 25%;
 }
 
 .Board {
-  width: 60%;
+  width: auto;
   display: flex;
   margin-left: 20px;
   flex-direction: column;
@@ -32,7 +33,6 @@
   align-self: flex-start;
   left: 0;
   top: 250px;
-
 }
 
 .hidden {

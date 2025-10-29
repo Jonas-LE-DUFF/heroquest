@@ -9,7 +9,7 @@ import {
 } from "../shared/type";
 import Dices from "./HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
-import { Grid } from "@mui/material";
+import { Grid, Tooltip } from "@mui/material";
 import {
   convertSendableGameStateAsGameState,
   getMonsterIconPath,
@@ -110,16 +110,17 @@ const GameControls = ({
       const img = getMonsterIconPath(mType);
       const name = monsterClassFr[mType];
       buttons.push(
-        <Grid key={mType} size={4}>
-          <button
-            className={`monster-button ${
-              monsterType === mType ? "selected" : ""
-            }`}
-            onClick={() => selectMonster(mType)}
-          >
-            <img src={img} alt={name} />
-            <span>{name}</span>
-          </button>
+        <Grid key={mType} size={3}>
+          <Tooltip title={name} arrow>
+            <button
+              className={`monster-button ${
+                monsterType === mType ? "selected" : ""
+              }`}
+              onClick={() => selectMonster(mType)}
+            >
+              <img src={img} alt={name} className="monster-img" />
+            </button>
+          </Tooltip>
         </Grid>
       );
     }
@@ -127,58 +128,63 @@ const GameControls = ({
   };
 
   return (
-    <div className="game-controls">
-      <h3>Actions</h3>
-      {role === "hero" && game.currentTurn === socket.id && (
-        <div className="movement-controls">
-          <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
-          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
-          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️ Gauche</button>
-          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️ Droite</button>
-        </div>
-      )}
-
-      {role === "game-master" && (
-        <div>
-          <Grid
-            container
-            className="master-controls"
-            sx={{
-              width: "100%",
-              justifyContent: "space-evenly",
-              padding: "10px",
-            }}
-          >
-            {/* monster selector: generate buttons from the enum values */}
-            <Grid container spacing={1} sx={{ margin: "10px 0" }}>
-              {renderMonsterButtons()}
-            </Grid>
-            <Grid className="gridElem" size={4}>
-              <button onClick={putWall}>Mur</button>
-            </Grid>
-            <Grid className="gridElem" size={4}>
-              <button onClick={putFurniture}>Meuble</button>
-            </Grid>
-          </Grid>
-          <div className="two-button-container">
-            <button onClick={unSelect}>Annuler</button>
-            <button onClick={erase}>Effacer</button>
+    <div>
+      <div className="game-controls hero">
+        <h3>Actions</h3>
+        {role === "hero" && game.currentTurn === socket.id && (
+          <div className="movement-controls">
+            <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
+            <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
+            <button onClick={() => movePlayer(Direction.LEFT)}>
+              ⬅️ Gauche
+            </button>
+            <button onClick={() => movePlayer(Direction.RIGHT)}>
+              ➡️ Droite
+            </button>
           </div>
-        </div>
-      )}
-      {RedDices({
-        socket,
-        gameId,
-        throwable: game.currentTurn === socket.id && role === "hero",
-      })}
-      {Dices({ socket, gameId, role: "hero" })}
-      {Dices({ socket, gameId, role: "game-master" })}
-      {message && <div className="game-message">{message}</div>}
-      {game.currentTurn === socket.id && (
-        <div>
-          <button onClick={endTurn}>END TURN</button>
-        </div>
-      )}
+        )}
+
+        {RedDices({
+          socket,
+          gameId,
+          role: "hero",
+        })}
+        {Dices({ socket, gameId, role: "hero" })}
+        {message && <div className="game-message">{message}</div>}
+        {game.currentTurn === socket.id && (
+          <div>
+            <button onClick={endTurn}>END TURN</button>
+          </div>
+        )}
+      </div>
+      <div className="game-controls game-master">
+        {role === "game-master" && (
+          <div>
+            <Grid container sx={{ width: "fit-content" }}>
+              {/* monster selector: generate buttons from the enum values */}
+              <Grid container spacing={1} sx={{ margin: "10px 0" }}>
+                {renderMonsterButtons()}
+              </Grid>
+              <Grid className="gridElem" size={4}>
+                <button onClick={putWall}>Mur</button>
+              </Grid>
+              <Grid className="gridElem" size={4}>
+                <button onClick={putFurniture}>Meuble</button>
+              </Grid>
+            </Grid>
+            <div className="two-button-container">
+              <button onClick={unSelect}>Annuler</button>
+              <button onClick={erase}>Effacer</button>
+            </div>
+          </div>
+        )}
+        {RedDices({
+          socket,
+          gameId,
+          role: "game-master",
+        })}
+        {Dices({ socket, gameId, role: "game-master" })}
+      </div>
     </div>
   );
 };

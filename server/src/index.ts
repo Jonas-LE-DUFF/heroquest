@@ -384,13 +384,21 @@ io.on("connection", (socket) => {
   //roll-red-dice
   socket.on("roll-red-dice", async (data: { gameId: string }) => {
     const numberOfDices = 2;
+    const role = games.get(data.gameId)?.players.get(socket.id)?.role;
+    if (!role) {
+      console.error("no role found for player rolling red dices");
+      return;
+    }
     for (let j = 0; j < 15; j++) {
       let results: number[] = [];
       for (let i = 0; i < numberOfDices; i++) {
         const randomNumber = Math.floor(Math.random() * 6 + 1);
         results.push(randomNumber);
       }
-      io.to(data.gameId).emit("red-dice-update", { listResults: results });
+      io.to(data.gameId).emit("red-dice-update", {
+        listResults: results,
+        role: role,
+      });
       await sleep(75);
       results = [];
     }
