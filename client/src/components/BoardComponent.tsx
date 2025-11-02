@@ -17,7 +17,6 @@ import {
   TableContainer,
   TableRow,
   Paper,
-  Typography,
 } from "@mui/material";
 import { Socket } from "socket.io-client";
 import {
