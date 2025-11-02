@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { GameState, heroClass, Monster, monsterClass, Player, Position, Tile, tileType } from "../shared/type";
+import {
+  GameState,
+  heroClass,
+  Monster,
+  monsterClass,
+  Player,
+  Position,
+  Tile,
+  tileType,
+} from "../shared/type";
 import "./BoardComponent.css";
 import {
   Table,
@@ -11,12 +20,21 @@ import {
   Typography,
 } from "@mui/material";
 import { Socket } from "socket.io-client";
-import { getHeroClassIconPath, getMonsterIconPath, positionKey } from "../shared/utils";
+import {
+  getHeroClassIconPath,
+  getMonsterIconPath,
+  positionKey,
+} from "../shared/utils";
+import { getTileStyle } from "../shared/tileStyle";
 
 interface BoardProps {
   gameState: GameState | null;
   socket: Socket;
-  onTileClick: (gameId: string, position: Position, monsterType : monsterClass | null) => void;
+  onTileClick: (
+    gameId: string,
+    position: Position,
+    monsterType: monsterClass | null
+  ) => void;
   selectedType: tileType | null;
   monsterType: monsterClass | null;
 }
@@ -33,7 +51,7 @@ const Board = ({
   const handleTileClick = (
     position: Position,
     selectedType: tileType | null,
-    monsterType: monsterClass | null,
+    monsterType: monsterClass | null
   ) => {
     if (!gameState || !gameState.board[position.x]) {
       console.error("gameState is not defined");
@@ -90,10 +108,12 @@ const Board = ({
           <TableCell
             key={col}
             className="tile"
-            sx={getTileStyle(row, col)}
-            onClick={() => handleTileClick({ x: row, y: col }, selectedType, monsterType)}
+            sx={getTileStyle(row, col, gameState, selectedPosition)}
+            onClick={() =>
+              handleTileClick({ x: row, y: col }, selectedType, monsterType)
+            }
           >
-            {tile === tileType.empty ? `${row},${col}` : getTileContent(row,col)}
+            {tile !== tileType.empty && getTileContent(row, col)}
           </TableCell>
         );
       }
@@ -104,125 +124,41 @@ const Board = ({
   };
 
   const getTileContent = (x: number, y: number) => {
-    
-    const tile : Tile | undefined = gameState?.board[x]?.[y];
+    const tile: Tile | undefined = gameState?.board[x]?.[y];
     if (!tile) return null;
-    const pos : Position = { x : x, y : y}
+    const pos: Position = { x: x, y: y };
     const entityId = gameState?.positionEntities.get(positionKey(pos));
-    if(!entityId) return tileType[tile.type];
+    if (!entityId) return tileType[tile.type];
 
-    const entityPlayer :Player|undefined = gameState?.players.get(entityId);
-    const entityMonster : Monster| undefined = gameState?.monsters.get(entityId);
-    
-    if (entityPlayer && entityPlayer.class){
-      return <img className="boardImg" src={getHeroClassIconPath(entityPlayer.class)} alt={heroClass[entityPlayer.class]}/>
+    const entityPlayer: Player | undefined = gameState?.players.get(entityId);
+    const entityMonster: Monster | undefined =
+      gameState?.monsters.get(entityId);
+
+    if (entityPlayer && entityPlayer.class) {
+      return (
+        <img
+          className="boardImg"
+          src={getHeroClassIconPath(entityPlayer.class)}
+          alt={heroClass[entityPlayer.class]}
+        />
+      );
     }
-    if (entityMonster && entityMonster.class){
-      return <img className="boardImg" src={getMonsterIconPath(entityMonster.class)} alt={monsterClass[entityMonster.class]}/>
+    if (entityMonster && entityMonster.class) {
+      return (
+        <img
+          className="boardImg"
+          src={getMonsterIconPath(entityMonster.class)}
+          alt={monsterClass[entityMonster.class]}
+        />
+      );
     }
-    console.log("tile type returned  : ",tileType[tile.type]);
-    
+    console.log("tile type returned  : ", tileType[tile.type]);
+
     return tileType[tile.type];
-  }
-
-  const getTileStyle = (x: number, y: number) => {
-    const tile = gameState?.board[x]?.[y];
-    const isSelected = selectedPosition?.x === x && selectedPosition?.y === y;
-    const isMonster = tile?.type === tileType.monster;
-    const isHero = tile?.type === tileType.hero;
-    const isFurniture = tile?.type === tileType.furniture;
-    const isWall = tile?.type === tileType.wall;
-
-    let style = {
-      alignItems:"center",
-      width: 15,
-      height: 5,
-      border: "1px solid #ccc",
-      cursor: "pointer",
-      textAlign: "center" as const,
-      verticalAlign: "middle" as const,
-      padding: "5px 10px 5px 10px",
-      backgroundColor: "white",
-      borderTop: "0px",
-      borderBottom: "0px",
-      borderLeft: "0px",
-      borderRight: "0px",
-    };
-
-    if (isSelected) {
-      style = {
-        ...style,
-        width: 5,
-        height: 5,
-        backgroundColor: "#4CAF50",
-        border: "2px solid #2E7D32",
-      };
-    }
-
-    if (isHero) {
-      style = {
-        ...style,
-        backgroundColor: "#2196F3",
-        border: "2px solid #1976D2",
-      };
-    }
-    if (isMonster) {
-      style = {
-        ...style,
-        backgroundColor: "#F44336",
-        border: "2px solid #D32F2F",
-      };
-    }
-    if (isWall) {
-      style = {
-        ...style,
-        backgroundColor: "#4e4e4e93",
-        border: "2px solid #201e1eff",
-      };
-    }
-    if (isFurniture) {
-      style = {
-        ...style,
-        backgroundColor: "#583423ff",
-        border: "2px solid #422319ff",
-      };
-    }
-    const walls = gameState?.walls;
-    if (walls?.horizontal[x][y]) {
-      style = {
-        ...style,
-        borderTop: "4px solid rgba(0,0,0,1)",
-      };
-    }
-    if (walls?.horizontal[x + 1][y]) {
-      style = {
-        ...style,
-        borderBottom: "4px solid rgba(0,0,0,1)",
-      };
-    }
-    if (walls?.vertical[x][y]) {
-      style = {
-        ...style,
-        borderLeft: "4px solid rgba(0,0,0,1)",
-      };
-    }
-    if (walls?.vertical[x][y + 1]) {
-      style = {
-        ...style,
-        borderRight: "4px solid rgba(0,0,0,1)",
-      };
-    }
-
-    return style;
   };
 
   return (
     <TableContainer component={Paper} sx={{ width: "fit-content" }}>
-      <Typography variant="h6" sx={{ textAlign: "center", padding: 1 }}>
-        Plateau de jeu - {gameState?.players.size} joueur(s)
-        {selectedPosition &&
-          ` - Case sélectionnée: ${selectedPosition.x},${selectedPosition.y}`}
-      </Typography>
       <Table>
         <TableBody>{renderGrid()}</TableBody>
       </Table>

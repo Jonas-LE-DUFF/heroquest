@@ -20,9 +20,7 @@ interface GamePageProps {
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const gameState = location.state.gameState;
-  const gameId = location.state.gameId;
   const role = location.state.role;
-  const playerName = location.state.playerName;
 
   const [monsterType, setMonsterType] = useState<monsterClass | null>(null);
 
@@ -77,13 +75,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   return (
     <div className="game-page">
-      <header className="game-header">
-        <h1>🎮 Partie en cours - {gameId}</h1>
-        <p>
-          Joueur: {playerName} | Rôle: {role}
-        </p>
-      </header>
-
       {currentGameState && (
         <div className="game-container">
           <div className={visibleStatsTotal ? "HeroStats" : "hidden"}>
@@ -102,9 +93,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                 })}
             </div>
             <div>
-              {role === "hero" && <button onClick={() => setStatsVisible(!statsVisible)}>
-                {!statsVisible ? "Montrer stats" : "Cacher stats"}
-              </button>}
+              {role === "hero" && (
+                <button onClick={() => setStatsVisible(!statsVisible)}>
+                  {!statsVisible ? "Montrer stats" : "Cacher stats"}
+                </button>
+              )}
             </div>
           </div>
           <div className="info-on-the-side">
