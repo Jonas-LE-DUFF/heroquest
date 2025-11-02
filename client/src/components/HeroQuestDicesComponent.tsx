@@ -3,32 +3,41 @@ import { diceFace } from "../shared/type";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../shared/utils";
+import { useLocation } from "react-router-dom";
 
 interface DicesProps {
   socket: any;
   gameId: string;
+  role: "hero" | "game-master";
 }
 
-const Dices = ({ socket, gameId }: DicesProps) => {
+const Dices = ({ socket, gameId, role }: DicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<diceFace[] | null>(
     Array.of(diceFace.Hit)
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
+  const location = useLocation();
+  const playerRole = location.state.role;
 
   useEffect(() => {
-    socket.on("dice-update", (data: { listResults: diceFace[] }) => {
-      for (let result of data.listResults) {
-        console.log("result : ", result);
-      }
+    socket.on(
+      "dice-update",
+      (data: { listResults: diceFace[]; role: "hero" | "game-master" }) => {
+        if (data.role !== role) return; // updates is not for us
+        for (let result of data.listResults) {
+          console.log("result : ", result);
+        }
 
-      console.log("liste des résultats : " + data.listResults);
-      setCurrentDiceFaces(data.listResults);
-    });
+        console.log("liste des résultats : " + data.listResults);
+        setCurrentNumberOfDices(data.listResults.length);
+        setCurrentDiceFaces(data.listResults);
+      }
+    );
 
     return () => {
       socket.off("dice-update");
     };
-  }, [socket]);
+  }, [socket, role]);
 
   const rollDice = () => {
     socket.emit("roll-dice", {
@@ -50,9 +59,11 @@ const Dices = ({ socket, gameId }: DicesProps) => {
     for (let i = 0; i < currentNumberOfDices; i++) {
       dices.push(
         <div className="dice" key={"dice number" + i}>
-          {currentDiceFaces[i] !== null
-            ? <img src={getFightDiceFace(currentDiceFaces[i])} alt={` `} />
-            : "noFace"}
+          {currentDiceFaces[i] !== null ? (
+            <img src={getFightDiceFace(currentDiceFaces[i])} alt={` `} />
+          ) : (
+            "noFace"
+          )}
         </div>
       );
     }
@@ -60,7 +71,7 @@ const Dices = ({ socket, gameId }: DicesProps) => {
   }
 
   return (
-    <div className="container">
+    <div className={"container " + role}>
       <Paper
         className="dice-container"
         sx={{
@@ -70,11 +81,17 @@ const Dices = ({ socket, gameId }: DicesProps) => {
       >
         {renderDices(currentDiceFaces, currentNumberOfDices)}
       </Paper>
-      <button onClick={rollDice}>lancer les dés</button>
-      <input
-        type="number"
-        onChange={(e) => setCurrentNumberOfDices(Number(e.currentTarget.value))}
-      />
+      {playerRole === role && (
+        <div className="container">
+          <button onClick={rollDice}>lancer les dés</button>
+          <input
+            type="number"
+            onChange={(e) =>
+              setCurrentNumberOfDices(Number(e.currentTarget.value))
+            }
+          />
+        </div>
+      )}
     </div>
   );
 };

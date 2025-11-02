@@ -1,5 +1,4 @@
 .game-controls {
-  width: 100%;
   border: solid 2px black;
   margin: 3%;
   border-radius: 10px;
@@ -13,9 +12,10 @@
   width: fit-content;
 }
 
-.master-controls button {
-  align-self: center;
-  width: 90%;
+.monster-button {
+  display: flex;
+  flex-direction: row;
+  width: fit-content;
 }
 
 .two-button-container {
@@ -32,22 +32,20 @@ select {
   width: fit-content;
 }
 
-button img {
+.monster-img {
   width: 40px;
   height: 40px;
-}
-
-button span {
-  width: 100%;
-  align-self: center;
-}
-
-.monster-button {
-  display: flex;
-  flex-direction: row;
 }
 
 .selected {
   background-color: darkgray;
   border-color: black;
+}
+
+.hero {
+  background-color: #cfb898;
+}
+
+.game-master {
+  background-color: #5a141b;
 }

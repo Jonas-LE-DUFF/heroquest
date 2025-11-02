@@ -7,27 +7,34 @@ import face3 from "./images/redDice3.png";
 import face4 from "./images/redDice4.png";
 import face5 from "./images/redDice5.png";
 import face6 from "./images/redDice6.png";
+import { useLocation } from "react-router-dom";
 
 interface RedDicesProps {
   socket: any;
   gameId: string;
-  throwable: boolean;
+  role: "hero" | "game-master";
 }
 
-const RedDices = ({ socket, gameId, throwable }: RedDicesProps) => {
+const RedDices = ({ socket, gameId, role }: RedDicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
     Array.of(1, 1)
   );
+  const location = useLocation();
+  const playerRole = location.state.role;
 
   useEffect(() => {
-    socket.on("red-dice-update", (data: { listResults: number[] }) => {
-      setCurrentDiceFaces(data.listResults);
-    });
+    socket.on(
+      "red-dice-update",
+      (data: { listResults: number[]; role: "hero" | "game-master" }) => {
+        if (data.role !== role) return; // updates is not for us
+        setCurrentDiceFaces(data.listResults);
+      }
+    );
 
     return () => {
       socket.off("red-dice-update");
     };
-  }, [socket]);
+  }, [socket, role]);
 
   const rollDice = () => {
     socket.emit("roll-red-dice", {
@@ -83,7 +90,9 @@ const RedDices = ({ socket, gameId, throwable }: RedDicesProps) => {
       >
         {renderDices(currentDiceFaces)}
       </Paper>
-      {throwable && <button onClick={rollDice}>lancer les dés rouges</button>}
+      {playerRole === role && (
+        <button onClick={rollDice}>lancer les dés rouges</button>
+      )}
     </div>
   );
 };

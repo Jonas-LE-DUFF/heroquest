@@ -1,9 +1,10 @@
 import { Tile, tileType, WallGrid } from "./type";
 
+const rows = 19;
+const cols = 26;
+
 function initializeBoard(): Tile[][] {
   const board: Tile[][] = [];
-  const rows = 26;
-  const cols = 19;
 
   for (let i = 0; i < rows; i++) {
     const row: Tile[] = [];
@@ -19,10 +20,16 @@ function initializeBoard(): Tile[][] {
 }
 
 function initializeWalls(): WallGrid {
-  const walls: WallGrid = {
-    horizontal: [],
-    vertical: [],
-  };
+  // The original generation logic produced arrays in a transposed orientation.
+  // To preserve the original wall pattern while returning walls in the
+  // conventional shapes expected by the client, we first build the original
+  // arrays (oldHorizontal: 27x19 and oldVertical: 26x20) using the same
+  // conditions, then remap/transpose them into
+  // horizontal: (rows+1) x cols  -> 20 x 26
+  // vertical: rows x (cols+1)    -> 19 x 27
+
+  // build old arrays exactly as before
+  const oldHorizontal: boolean[][] = [];
   for (let i = 0; i < 27; i++) {
     const row: boolean[] = [];
     for (let j = 0; j < 19; j++) {
@@ -34,7 +41,7 @@ function initializeWalls(): WallGrid {
       } else if (
         [12, 14].includes(i) &&
         ![0, 18].includes(j) &&
-        (j < 6 || j > 12) // horizontal corriors
+        (j < 6 || j > 12) // horizontal corridors
       ) {
         row.push(true);
       } else if (i === 17 && j >= 6 && ![0, 9, 18].includes(j)) {
@@ -50,9 +57,10 @@ function initializeWalls(): WallGrid {
         row.push(false);
       }
     }
-    walls.horizontal.push(row);
+    oldHorizontal.push(row);
   }
 
+  const oldVertical: boolean[][] = [];
   for (let i = 0; i < 26; i++) {
     const row: boolean[] = [];
     for (let j = 0; j < 20; j++) {
@@ -82,6 +90,31 @@ function initializeWalls(): WallGrid {
       } else {
         row.push(false);
       }
+    }
+    oldVertical.push(row);
+  }
+
+  // now remap into the conventional shapes
+  const walls: WallGrid = { horizontal: [], vertical: [] };
+
+  // horizontal: (rows+1) x cols  => indices r:0..rows, c:0..cols-1
+  for (let r = 0; r < rows + 1; r++) {
+    const row: boolean[] = [];
+    for (let c = 0; c < cols; c++) {
+      // map from oldVertical (26 x 20): oldVertical[c][r]
+      // oldVertical shape: i 0..25, j 0..19
+      row.push(!!oldVertical[c]?.[r]);
+    }
+    walls.horizontal.push(row);
+  }
+
+  // vertical: rows x (cols+1) => indices r:0..rows-1, c:0..cols
+  for (let r = 0; r < rows; r++) {
+    const row: boolean[] = [];
+    for (let c = 0; c < cols + 1; c++) {
+      // map from oldHorizontal (27 x 19): oldHorizontal[c][r]
+      // oldHorizontal shape: i 0..26, j 0..18
+      row.push(!!oldHorizontal[c]?.[r]);
     }
     walls.vertical.push(row);
   }
