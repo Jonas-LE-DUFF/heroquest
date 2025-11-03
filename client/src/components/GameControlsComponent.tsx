@@ -7,15 +7,16 @@ import {
   SendableGameState,
   tileType,
 } from "../shared/type";
-import Dices from "./HeroQuestDicesComponent";
+import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import { Grid, Tooltip } from "@mui/material";
 import {
   convertSendableGameStateAsGameState,
   getMonsterIconPath,
 } from "../shared/utils";
-import RedDices from "./RedDicesComponent";
+import RedDices from "./dices/RedDicesComponent";
 import { monsterClassFr } from "../shared/frenchEnums";
+import MasterControls from "./MasterControlsComponent";
 
 interface GameControlsProps {
   socket: any;
@@ -144,12 +145,18 @@ const GameControls = ({
           </div>
         )}
 
-        {RedDices({
-          socket,
-          gameId,
-          role: "hero",
-        })}
-        {Dices({ socket, gameId, role: "hero" })}
+        <RedDices
+          socket={socket}
+          gameId={gameId}
+          role={"hero"}
+          viewerRole={role}
+        />
+        <Dices
+          socket={socket}
+          gameId={gameId}
+          role={"hero"}
+          viewerRole={role}
+        />
         {message && <div className="game-message">{message}</div>}
         {game.currentTurn === socket.id && (
           <div>
@@ -178,12 +185,22 @@ const GameControls = ({
             </div>
           </div>
         )}
-        {RedDices({
-          socket,
-          gameId,
-          role: "game-master",
-        })}
-        {Dices({ socket, gameId, role: "game-master" })}
+        <RedDices
+          socket={socket}
+          gameId={gameId}
+          role={"game-master"}
+          viewerRole={role}
+        />
+        <Dices
+          socket={socket}
+          gameId={gameId}
+          role={"game-master"}
+          viewerRole={role}
+        />
+        <hr />
+        {role === "game-master" && (
+          <MasterControls socket={socket} gameId={gameId} />
+        )}
       </div>
     </div>
   );

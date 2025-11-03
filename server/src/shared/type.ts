@@ -105,6 +105,12 @@ export interface ServerToClientEvents {
   }) => void;
   "game-start": (data: { gameState: SendableGameState }) => void;
 
+  "special-authorization": (data: {
+    playerId: string;
+    amountOfDices: number;
+    typeOfDices: "red" | "fight";
+  }) => void;
+
   // Actions spécifiques
   "unit-moved": (data: { playerId: string; newPosition: Position }) => void;
   "monster-spawned": (data: {
@@ -182,6 +188,13 @@ export interface ClientToServerEvents {
   "roll-red-dice": (data: { gameId: string }) => void;
 
   "end-turn": (data: { gameId: string }) => void;
+
+  "authorize-special-throw-dices": (data: {
+    gameId: string;
+    numberOfDices: number;
+    typeOfDices: "red" | "fight";
+    playerClass: heroClass;
+  }) => void;
 }
 
 // État du jeu

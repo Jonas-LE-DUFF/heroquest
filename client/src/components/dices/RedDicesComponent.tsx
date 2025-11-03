@@ -1,38 +1,51 @@
 import { useState, useEffect } from "react";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
-import face1 from "./images/redDice1.png";
-import face2 from "./images/redDice2.png";
-import face3 from "./images/redDice3.png";
-import face4 from "./images/redDice4.png";
-import face5 from "./images/redDice5.png";
-import face6 from "./images/redDice6.png";
-import { useLocation } from "react-router-dom";
+import face1 from "./../images/redDice1.png";
+import face2 from "./../images/redDice2.png";
+import face3 from "./../images/redDice3.png";
+import face4 from "./../images/redDice4.png";
+import face5 from "./../images/redDice5.png";
+import face6 from "./../images/redDice6.png";
 
 interface RedDicesProps {
   socket: any;
   gameId: string;
   role: "hero" | "game-master";
+  viewerRole: "hero" | "game-master";
 }
 
-const RedDices = ({ socket, gameId, role }: RedDicesProps) => {
+const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
     Array.of(1, 1)
   );
-  const location = useLocation();
-  const playerRole = location.state.role;
+  const playerRole = viewerRole;
 
   useEffect(() => {
-    socket.on(
-      "red-dice-update",
-      (data: { listResults: number[]; role: "hero" | "game-master" }) => {
-        if (data.role !== role) return; // updates is not for us
-        setCurrentDiceFaces(data.listResults);
+    const onRedDiceUpdate = (data: {
+      listResults: number[];
+      role: "hero" | "game-master";
+    }) => {
+      if (data.role !== role) return; // update not for us
+      setCurrentDiceFaces(data.listResults);
+    };
+
+    const onSpecialAuthorization = (data: {
+      playerId: string;
+      amountOfDices: number;
+      diceType: string;
+    }) => {
+      if (data.playerId === socket.id && data.diceType === "red") {
+        setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1)));
       }
-    );
+    };
+
+    socket.on("red-dice-update", onRedDiceUpdate);
+    socket.on("special-authorization", onSpecialAuthorization);
 
     return () => {
-      socket.off("red-dice-update");
+      socket.off("red-dice-update", onRedDiceUpdate);
+      socket.off("special-authorization", onSpecialAuthorization);
     };
   }, [socket, role]);
 
@@ -67,7 +80,7 @@ const RedDices = ({ socket, gameId, role }: RedDicesProps) => {
       return;
     }
     const dices = [];
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < currentDiceFaces.length; i++) {
       dices.push(
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null

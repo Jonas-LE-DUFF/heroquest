@@ -45,6 +45,14 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
   }
 );
 
+interface SpecialAuthorizedPlayer {
+  playerId: string;
+  numberOfDices: number;
+  diceType: "red" | "fight";
+}
+
+let specialAuthorizedPlayer: SpecialAuthorizedPlayer | undefined = undefined;
+
 app.use(express.static(path.join(__dirname, "../../client/build")));
 
 const games = new Map<string, GameState>();
@@ -333,6 +341,8 @@ io.on("connection", (socket) => {
       playerId: string;
       numberOfDice: number;
     }) => {
+      console.log("roll-dice");
+
       const gameState = games.get(data.gameId);
       let numberOfDices: number | undefined;
       if (!gameState) {
@@ -344,19 +354,35 @@ io.on("connection", (socket) => {
         console.error("player role couldn't be found");
         return;
       }
-      if (playerRole === "hero") {
+      console.log(specialAuthorizedPlayer);
+
+      if (
+        specialAuthorizedPlayer &&
+        specialAuthorizedPlayer.playerId === data.playerId &&
+        specialAuthorizedPlayer.diceType === "fight"
+      ) {
+        console.log("using special authorized dices");
+        numberOfDices = specialAuthorizedPlayer.numberOfDices;
+        specialAuthorizedPlayer = undefined;
+      } else if (playerRole === "hero") {
+        console.log("using dice stats");
+
         numberOfDices = getAmountOfDices(
           gameState,
           data.playerId,
           "att" //TODO : need to know if we attack or defend !!
         );
       } else {
+        console.log("using dice given");
+
         numberOfDices = data.numberOfDice;
       }
       if (numberOfDices === undefined) {
         console.log("no amount of dice to throw defined");
         return;
       }
+      console.log("sending");
+
       for (let j = 0; j < 15; j++) {
         let results: diceFace[] = [];
         for (let i = 0; i < numberOfDices; i++) {
@@ -375,6 +401,8 @@ io.on("connection", (socket) => {
           listResults: results,
           role: playerRole,
         });
+        console.log("mini sent");
+
         await sleep(75);
         results = [];
       }
@@ -383,7 +411,15 @@ io.on("connection", (socket) => {
 
   //roll-red-dice
   socket.on("roll-red-dice", async (data: { gameId: string }) => {
-    const numberOfDices = 2;
+    console.log("roll-red-dice");
+    let numberOfDices: number = 2;
+    if (
+      specialAuthorizedPlayer &&
+      specialAuthorizedPlayer.playerId === socket.id &&
+      specialAuthorizedPlayer.diceType === "red"
+    ) {
+      numberOfDices = specialAuthorizedPlayer.numberOfDices;
+    }
     const role = games.get(data.gameId)?.players.get(socket.id)?.role;
     if (!role) {
       console.error("no role found for player rolling red dices");
@@ -403,6 +439,51 @@ io.on("connection", (socket) => {
       results = [];
     }
   });
+
+  socket.on(
+    "authorize-special-throw-dices",
+    (data: {
+      gameId: string;
+      numberOfDices: number;
+      typeOfDices: "fight" | "red";
+      playerClass: heroClass;
+    }) => {
+      console.log("authorizing special throw dices");
+      const { gameId, numberOfDices, typeOfDices, playerClass } = data;
+      const game = games.get(gameId);
+      if (!game) {
+        console.error("game couldn't be found");
+        return;
+      }
+      let playerId: string | undefined;
+      let playerName = game.players.keys().next().value;
+      while (playerName) {
+        if (game.players.get(playerName)?.class === playerClass) {
+          playerId = game.players.get(playerName)?.id;
+          break;
+        }
+        playerName = game.players.keys().next().value;
+        console.log("searching player for special dice authorization");
+      }
+      if (!playerId) {
+        console.error("player couldn't be found");
+        return;
+      }
+      specialAuthorizedPlayer = {
+        playerId,
+        numberOfDices,
+        diceType: typeOfDices,
+      };
+      console.log(specialAuthorizedPlayer);
+
+      console.log("emitting special-authorization to player :", playerId);
+      socket.to(gameId).emit("special-authorization", {
+        playerId,
+        amountOfDices: numberOfDices,
+        typeOfDices: typeOfDices,
+      });
+    }
+  );
 
   // move-player-one-step
   socket.on(

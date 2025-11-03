@@ -24,6 +24,7 @@ import {
   getHeroClassName,
 } from "../shared/utils";
 import "./ChooseCharacterView.css";
+import { renderHeroClassOptions } from "../shared/selectHeroClass";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -81,30 +82,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       (value) => typeof value === "number"
     ) as number[];
     return allClasses.filter((cls) => !selectedClasses.has(cls));
-  }
-
-  function renderMenuItems() {
-    const disabledClasses = getSelectedClasses();
-    disabledClasses.delete(gameState?.players.get(socket.id)?.class);
-
-    return Object.entries(heroClass)
-      .filter(([key, value]) => isNaN(Number(key)))
-      .map(([key, value]) => (
-        <MenuItem
-          key={value}
-          value={value}
-          disabled={disabledClasses.has(value as heroClass)}
-        >
-          <div className="selectHeroClass">
-            <img
-            className="heroFaceimage"
-              src={getHeroClassIconPath(value as heroClass)}
-              alt={"icon" + value}
-            ></img>
-            {getHeroClassName(Number(value))}
-          </div>
-        </MenuItem>
-      ));
   }
 
   const handleChangeHeroClass = (event: SelectChangeEvent<number>) => {
@@ -328,7 +305,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             onChange={handleChangeHeroClass}
             autoWidth
           >
-            {renderMenuItems()}
+            {renderHeroClassOptions(getSelectedClasses())}
           </Select>
         </div>
         <div className="formElement">
