@@ -19,6 +19,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
     Array.of(1, 1)
   );
+  const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(2);
   const playerRole = viewerRole;
 
   useEffect(() => {
@@ -52,6 +53,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   const rollDice = () => {
     socket.emit("roll-red-dice", {
       gameId,
+      currentNumberOfDices,
     });
   };
 
@@ -105,6 +107,14 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       </Paper>
       {playerRole === role && (
         <button onClick={rollDice}>lancer les dés rouges</button>
+      )}
+      {playerRole === "game-master" && role === "game-master" && (
+        <input
+          type="number"
+          onChange={(e) =>
+            setCurrentNumberOfDices(Number(e.currentTarget.value))
+          }
+        />
       )}
     </div>
   );

@@ -410,35 +410,46 @@ io.on("connection", (socket) => {
   );
 
   //roll-red-dice
-  socket.on("roll-red-dice", async (data: { gameId: string }) => {
-    console.log("roll-red-dice");
-    let numberOfDices: number = 2;
-    if (
-      specialAuthorizedPlayer &&
-      specialAuthorizedPlayer.playerId === socket.id &&
-      specialAuthorizedPlayer.diceType === "red"
-    ) {
-      numberOfDices = specialAuthorizedPlayer.numberOfDices;
-    }
-    const role = games.get(data.gameId)?.players.get(socket.id)?.role;
-    if (!role) {
-      console.error("no role found for player rolling red dices");
-      return;
-    }
-    for (let j = 0; j < 15; j++) {
-      let results: number[] = [];
-      for (let i = 0; i < numberOfDices; i++) {
-        const randomNumber = Math.floor(Math.random() * 6 + 1);
-        results.push(randomNumber);
+  socket.on(
+    "roll-red-dice",
+    async (data: { gameId: string; currentNumberOfDices: number }) => {
+      console.log("roll-red-dice");
+      let numberOfDices: number = 2;
+      const playerRole = games.get(data.gameId)?.players.get(socket.id)?.role;
+      if (
+        data.currentNumberOfDices !== undefined &&
+        data.currentNumberOfDices > 0 &&
+        playerRole === "game-master"
+      ) {
+        numberOfDices = data.currentNumberOfDices;
+      } else if (
+        specialAuthorizedPlayer &&
+        specialAuthorizedPlayer.playerId === socket.id &&
+        specialAuthorizedPlayer.diceType === "red"
+      ) {
+        numberOfDices = specialAuthorizedPlayer.numberOfDices;
+        specialAuthorizedPlayer = undefined;
       }
-      io.to(data.gameId).emit("red-dice-update", {
-        listResults: results,
-        role: role,
-      });
-      await sleep(75);
-      results = [];
+      const role = games.get(data.gameId)?.players.get(socket.id)?.role;
+      if (!role) {
+        console.error("no role found for player rolling red dices");
+        return;
+      }
+      for (let j = 0; j < 15; j++) {
+        let results: number[] = [];
+        for (let i = 0; i < numberOfDices; i++) {
+          const randomNumber = Math.floor(Math.random() * 6 + 1);
+          results.push(randomNumber);
+        }
+        io.to(data.gameId).emit("red-dice-update", {
+          listResults: results,
+          role: role,
+        });
+        await sleep(75);
+        results = [];
+      }
     }
-  });
+  );
 
   socket.on(
     "authorize-special-throw-dices",

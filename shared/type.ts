@@ -185,7 +185,10 @@ export interface ClientToServerEvents {
     numberOfDice: number;
   }) => void;
 
-  "roll-red-dice": (data: { gameId: string }) => void;
+  "roll-red-dice": (data: {
+    gameId: string;
+    currentNumberOfDices: number;
+  }) => void;
 
   "end-turn": (data: { gameId: string }) => void;
 
