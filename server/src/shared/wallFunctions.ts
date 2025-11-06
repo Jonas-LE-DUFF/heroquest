@@ -87,12 +87,11 @@ export const canMove = (
   from: Position,
   direction: Direction
 ): boolean => {
-  if (hasWall(gameState.walls, from, direction)) {
-    if (hasDoor(gameState.doors, from, direction)) {
-      openDoor(gameState.doors, gameState.walls, from, direction);
-    } else {
-      return false;
-    }
+  if (
+    hasWall(gameState.walls, from, direction) &&
+    !hasDoor(gameState.doors, from, direction)
+  ) {
+    return false;
   }
 
   const to = getPositionAfterMove(from, direction);
@@ -100,6 +99,10 @@ export const canMove = (
     console.error("occupied spot");
 
     return false;
+  }
+
+  if (hasDoor(gameState.doors, from, direction)) {
+    openDoor(gameState.doors, gameState.walls, from, direction);
   }
 
   return true;
