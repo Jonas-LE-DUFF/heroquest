@@ -59,7 +59,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     position: Position,
     monsterType: monsterClass | null
   ) => {
-    if (selectedType === undefined) {
+    if (!selectedType) {
       //nothing to place
       return;
     }

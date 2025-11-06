@@ -106,16 +106,6 @@ const Board = ({
     const tile = localGameState.board[position.x][position.y];
     if (!tile || !socket.id) return;
 
-    if (!selectedType && !monsterType) {
-      console.log("selectedType and monsterType are undefined");
-      return;
-    }
-
-    if (typeof selectedType === "string" && selectedType in Direction) {
-      console.log("door placement not implemented yet");
-      return;
-    }
-
     const occupantType = tile.type;
 
     if (occupantType === tileType.monster) {
