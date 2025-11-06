@@ -89,7 +89,6 @@ io.on("connection", (socket) => {
           doors: { horizontal: [], vertical: [] },
           turnOrder: [],
         };
-        game.doors.horizontal[0] = [true];
         games.set(gameId, game);
       } else {
         game = isThereGame;
