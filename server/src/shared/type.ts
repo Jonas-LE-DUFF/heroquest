@@ -64,14 +64,14 @@ export interface Monster {
 }
 
 export enum tileType {
-  "empty",
-  "wall",
-  "treasure",
-  "trap",
-  "start",
-  "hero",
-  "monster",
-  "furniture",
+  empty = 1,
+  wall,
+  treasure,
+  trap,
+  start,
+  hero,
+  monster,
+  furniture,
 }
 
 export interface Tile {
