@@ -15,6 +15,10 @@ export const getTileStyle = (
 
   const borderDirectionSet: Direction[] = [];
 
+  const DOOR_BORDER_COLOR = "#523838ff";
+  const DOOR_BORDER_WIDTH = "6px";
+  const DOOR_CORNER_WIDTH = "4px";
+
   // "borders" using background images
   const images: string[] = [];
   const sizes: string[] = [];
@@ -34,6 +38,47 @@ export const getTileStyle = (
     backgroundRepeat: "no-repeat",
   };
 
+  const doors = gameState?.doors;
+  // top door -> horizontal[x][y]
+  if (doors?.horizontal?.[x]?.[y]) {
+    setBorderTop(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
+  }
+  // bottom door -> horizontal[x+1][y]
+  if (doors?.horizontal?.[x + 1]?.[y]) {
+    setBorderBottom(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
+  }
+  // left door -> vertical[x][y]
+  if (doors?.vertical?.[x]?.[y]) {
+    setBorderLeft(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
+  }
+  // right door -> vertical[x][y+1]
+  if (doors?.vertical?.[x]?.[y + 1]) {
+    setBorderRight(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
+  }
+
+  if (doors?.horizontal?.[x]?.[y] === false) {
+    setAngleTopLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    console.log("top door opened");
+  }
+
+  if (doors?.horizontal?.[x + 1]?.[y] === false) {
+    setAngleBottomLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    console.log("bottom door opened");
+  }
+
+  if (doors?.vertical?.[x]?.[y] === false) {
+    setAngleTopLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    setAngleBottomLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    console.log("left door opened");
+  }
+
+  if (doors?.vertical?.[x]?.[y + 1] === false) {
+    setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
+    console.log("right door opened");
+  }
   const walls = gameState?.walls;
   // top wall -> horizontal[x][y]
   if (walls?.horizontal?.[x]?.[y]) {
@@ -124,6 +169,33 @@ export const getTileStyle = (
     images.push(`linear-gradient(to right, ${color} 0 100%)`);
     sizes.push(`100% ${width}`);
     positions.push("top left");
+  }
+
+  function setAngleTopLeft(color: string = "#8B4513", width: string = "6px") {
+    images.push(`linear-gradient(${color}, ${color})`);
+    sizes.push(`${width} ${width}`);
+    positions.push("left top");
+  }
+  function setAngleTopRight(color: string = "#8B4513", width: string = "6px") {
+    images.push(`linear-gradient(${color}, ${color})`);
+    sizes.push(`${width} ${width}`);
+    positions.push("right top");
+  }
+  function setAngleBottomRight(
+    color: string = "#8B4513",
+    width: string = "6px"
+  ) {
+    images.push(`linear-gradient(${color}, ${color})`);
+    sizes.push(`${width} ${width}`);
+    positions.push("right bottom");
+  }
+  function setAngleBottomLeft(
+    color: string = "#8B4513",
+    width: string = "6px"
+  ) {
+    images.push(`linear-gradient(${color}, ${color})`);
+    sizes.push(`${width} ${width}`);
+    positions.push("left bottom");
   }
 
   function setBorderAllSides(color: string, width: string = "2px") {

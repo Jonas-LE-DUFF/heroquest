@@ -20,7 +20,7 @@ import MasterControls from "./MasterControlsComponent";
 
 interface GameControlsProps {
   socket: any;
-  setSelectedType: (type: tileType | null) => void;
+  setSelectedType: (type: tileType | Direction | null) => void; //Direction -> door placement
   monsterType: monsterClass | null;
   setMonsterType: (type: monsterClass | null) => void;
 }
@@ -89,6 +89,26 @@ const GameControls = ({
 
   const erase = () => {
     setSelectedType(tileType.empty);
+    setMonsterType(null);
+  };
+
+  const putTopDoor = () => {
+    setSelectedType(Direction.UP);
+    setMonsterType(null);
+  };
+
+  const putBottomDoor = () => {
+    setSelectedType(Direction.DOWN);
+    setMonsterType(null);
+  };
+
+  const putLeftDoor = () => {
+    setSelectedType(Direction.LEFT);
+    setMonsterType(null);
+  };
+
+  const putRightDoor = () => {
+    setSelectedType(Direction.RIGHT);
     setMonsterType(null);
   };
 
@@ -183,6 +203,20 @@ const GameControls = ({
               <button onClick={unSelect}>Annuler</button>
               <button onClick={erase}>Effacer</button>
             </div>
+            <Grid container>
+              <Grid size={6}>
+                <button onClick={putTopDoor}>Porte Haut</button>
+              </Grid>
+              <Grid size={6}>
+                <button onClick={putBottomDoor}>Porte Bas</button>
+              </Grid>
+              <Grid size={6}>
+                <button onClick={putLeftDoor}>Porte Gauche</button>
+              </Grid>
+              <Grid size={6}>
+                <button onClick={putRightDoor}>Porte Droite</button>
+              </Grid>
+            </Grid>
           </div>
         )}
         <RedDices

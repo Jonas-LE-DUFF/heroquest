@@ -64,6 +64,7 @@ function convertSendableGameStateAsGameState(
     currentTurn: game.currentTurn,
     status: game.status,
     walls: game.walls,
+    doors: game.doors,
   };
 }
 
@@ -90,7 +91,7 @@ function getHeroClassIconPath(heroType: heroClass): string {
   }
 }
 
-function getMonsterIconPath(monsterType : monsterClass) :string {
+function getMonsterIconPath(monsterType: monsterClass): string {
   switch (monsterType) {
     case monsterClass.Abomination:
       return iconAbomination;
@@ -113,7 +114,7 @@ function getMonsterIconPath(monsterType : monsterClass) :string {
   }
 }
 
-function getFightDiceFace(face: diceFace){
+function getFightDiceFace(face: diceFace) {
   switch (face) {
     case diceFace.Hit:
       return diceDeathHead;
@@ -126,8 +127,8 @@ function getFightDiceFace(face: diceFace){
   }
 }
 
-function getFightDiceFaceNumber(face: number){
-  face = face%3
+function getFightDiceFaceNumber(face: number) {
+  face = face % 3;
   switch (face) {
     case 0:
       return diceDeathHead;
@@ -159,5 +160,5 @@ export {
   getFightDiceFaceNumber,
   getElementName,
   getHeroClassName,
-  positionKey
+  positionKey,
 };

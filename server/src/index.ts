@@ -86,14 +86,16 @@ io.on("connection", (socket) => {
           board: initializeBoard(),
           currentTurn: socket.id,
           walls: initializeWalls(),
+          doors: { horizontal: [], vertical: [] },
           turnOrder: [],
         };
+        game.doors.horizontal[0] = [true];
         games.set(gameId, game);
       } else {
         game = isThereGame;
         if (role === "game-master" && game) {
           if (!checkOnlyOneGameMaster(game)) {
-            console.log(
+            console.error(
               "two game-master isn't possible in a game connection interrupted"
             );
             socket.emit("error", "a game master is already in this game");
@@ -101,17 +103,17 @@ io.on("connection", (socket) => {
           }
         }
         if (game.players.size >= 5) {
-          console.log("game is full of players");
+          console.error("game is full of players");
           socket.emit("error", "game is full of players");
           return;
         }
         if (game.status === "playing") {
-          console.log("game is already launched you can't join");
+          console.error("game is already launched you can't join");
           socket.emit("error", "game is already launched");
           return;
         }
         if (fiveHeroPlayers(game, role)) {
-          console.log(
+          console.error(
             "there's already 4 hero players and there can't be a fifth one"
           );
           socket.emit(
@@ -128,7 +130,7 @@ io.on("connection", (socket) => {
         ready: role === "game-master",
       };
       if (!game) {
-        console.log("fatal error : game couldn't be created");
+        console.error("fatal error : game couldn't be created");
         return;
       }
       game.players.set(socket.id, newPlayer);
@@ -138,13 +140,13 @@ io.on("connection", (socket) => {
       } else {
         if (game.turnOrder[4] === undefined) {
           game.turnOrder.push(socket.id);
-          console.log("just pushing");
+          console.debug("just pushing");
         } else {
           for (let i = 0; i < 4; i++) {
             // there's never more than 5 players
             if (game.turnOrder[i] === undefined) {
               game.turnOrder[i] = socket.id;
-              console.log("inserting");
+              console.debug("inserting");
               break;
             }
           }
@@ -282,10 +284,11 @@ io.on("connection", (socket) => {
     (data: {
       gameId: string;
       position: Position;
-      selectedType: tileType;
+      selectedType: tileType | Direction;
       playerId: string;
       monsterType: monsterClass;
     }) => {
+      console.debug("placing element", data);
       const { gameId, position, selectedType, playerId } = data;
       if (selectedType === undefined || selectedType === null) return;
       const gameState = games.get(gameId);
@@ -304,17 +307,56 @@ io.on("connection", (socket) => {
         console.error("tile undefined in index.ts");
         return;
       }
-      if (tile?.type !== tileType.empty && selectedType !== tileType.empty) {
-        console.error("tile is occupied");
-        return;
-      }
 
       if (selectedType === null) {
         console.error("nothing to place");
         return;
       }
+      if (typeof selectedType === typeof Direction.UP) {
+        let positionSent = position;
+        let verticalOrHorizontal: "vertical" | "horizontal" = "horizontal";
+        if (selectedType === Direction.UP) {
+          positionSent = position;
+          verticalOrHorizontal = "horizontal";
+        }
 
-      tile.type = selectedType;
+        if (selectedType === Direction.DOWN) {
+          positionSent = { x: position.x + 1, y: position.y };
+          verticalOrHorizontal = "horizontal";
+        }
+
+        if (selectedType === Direction.LEFT) {
+          positionSent = { x: position.x, y: position.y };
+          verticalOrHorizontal = "vertical";
+        }
+        if (selectedType === Direction.RIGHT) {
+          positionSent = { x: position.x, y: position.y + 1 };
+          verticalOrHorizontal = "vertical";
+        }
+        console.log("emitting door placed");
+        if (verticalOrHorizontal === "horizontal") {
+          const row = gameState.doors.horizontal[positionSent.x] ?? [];
+          row[positionSent.y] = true;
+          gameState.doors.horizontal[positionSent.x] = row;
+        } else if (verticalOrHorizontal === "vertical") {
+          const row = gameState.doors.vertical[positionSent.x] ?? [];
+          row[positionSent.y] = true;
+          gameState.doors.vertical[positionSent.x] = row;
+        }
+        io.to(gameId).emit("door-placed", {
+          position: positionSent,
+          verticalOrHorizontal: verticalOrHorizontal,
+        });
+        return;
+      }
+
+      if (tile?.type !== tileType.empty && selectedType !== tileType.empty) {
+        console.error("tile is occupied");
+        return;
+      }
+
+      tile.type = selectedType as tileType;
+
       if (selectedType === tileType.monster) {
         const newMonsterId = generateMonsterId(gameState);
 
@@ -451,6 +493,7 @@ io.on("connection", (socket) => {
     }
   );
 
+  // authorize-special-throw-dices
   socket.on(
     "authorize-special-throw-dices",
     (data: {
@@ -500,8 +543,7 @@ io.on("connection", (socket) => {
   socket.on(
     "move-player-one-step",
     (data: { gameId: string; playerId: string; direction: Direction }) => {
-      console.log("handling movement");
-
+      console.debug("move-player-one-step", data);
       const gameState = games.get(data.gameId);
       if (!gameState) {
         console.error("game couldn't be found in move-player-one-step");

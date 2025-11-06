@@ -18,10 +18,8 @@ function getAmountOfDices(
     console.error("no stats on player");
     return;
   }
-  const stats : Unit = player.stats;
-  return attOrDef === "att"
-    ? stats.nbAttackDice
-    : stats.nbDefenseDice;
+  const stats: Unit = player.stats;
+  return attOrDef === "att" ? stats.nbAttackDice : stats.nbDefenseDice;
 }
 
 function convertGameStateAsSendableGameState(
@@ -44,6 +42,7 @@ function convertGameStateAsSendableGameState(
     currentTurn: game.currentTurn,
     status: game.status,
     walls: game.walls,
+    doors: game.doors,
   };
 }
 
@@ -115,6 +114,7 @@ function convertSendableGameStateAsGameState(
     currentTurn: game.currentTurn,
     status: game.status,
     walls: game.walls,
+    doors: game.doors,
   };
 }
 

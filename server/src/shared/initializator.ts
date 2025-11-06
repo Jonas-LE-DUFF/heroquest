@@ -87,7 +87,6 @@ function initializeWalls(): WallGrid {
     vertical.push(row);
   }
 
-  // now remap into the conventional shapes
   const walls: WallGrid = { horizontal: horizontal, vertical: vertical };
 
   return walls;

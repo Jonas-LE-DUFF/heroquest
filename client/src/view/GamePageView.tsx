@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Board from "../components/BoardComponent";
 import "./GamePageView.css";
 import {
+  Direction,
   GameState,
   monsterClass,
   Position,
@@ -24,7 +25,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   const [monsterType, setMonsterType] = useState<monsterClass | null>(null);
 
-  const [selectedType, setSelectedType] = useState<tileType | null>(null);
+  const [selectedType, setSelectedType] = useState<tileType | Direction | null>(
+    null
+  );
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);

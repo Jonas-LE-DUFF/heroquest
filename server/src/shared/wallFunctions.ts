@@ -10,19 +10,75 @@ export const hasWall = (
 
   switch (direction) {
     case Direction.UP:
-      return walls.horizontal[x]?.[y] ?? true; // Mur en haut
+      return walls.horizontal[x]?.[y] ?? true; // Top Wall
 
     case Direction.DOWN:
-      return walls.horizontal[x + 1]?.[y] ?? true; // Mur en bas
+      return walls.horizontal[x + 1]?.[y] ?? true; // Bottom Wall
 
     case Direction.LEFT:
-      return walls.vertical[x]?.[y] ?? true; // Mur à gauche
+      return walls.vertical[x]?.[y] ?? true; // Left Wall
 
     case Direction.RIGHT:
-      return walls.vertical[x]?.[y + 1] ?? true; // Mur à droite
+      return walls.vertical[x]?.[y + 1] ?? true; // Right Wall
 
     default:
       return true;
+  }
+};
+
+export const hasDoor = (
+  doors: { horizontal: boolean[][]; vertical: boolean[][] },
+  from: Position,
+  direction: Direction
+): boolean => {
+  return hasWall(doors, from, direction); // Same logic as walls
+};
+
+export const openDoor = (
+  doors: { horizontal: boolean[][]; vertical: boolean[][] },
+  walls: WallGrid,
+  from: Position,
+  direction: Direction
+): void => {
+  console.log("openning door");
+
+  const { x, y } = from;
+  switch (direction) {
+    case Direction.UP:
+      if (walls.horizontal[x]?.[y]) {
+        walls.horizontal[x][y] = false;
+      }
+      if (doors.horizontal[x]) {
+        doors.horizontal[x][y] = false;
+      }
+      break;
+    case Direction.DOWN: {
+      const wallRow = walls.horizontal[x + 1];
+      if (wallRow && y >= 0 && y < wallRow.length) {
+        wallRow[y] = false;
+      }
+      const row = doors.horizontal[x + 1];
+      if (row && y >= 0 && y < row.length) {
+        row[y] = false;
+      }
+      break;
+    }
+    case Direction.LEFT:
+      if (walls.vertical[x]?.[y]) {
+        walls.vertical[x][y] = false;
+      }
+      if (doors.vertical[x]?.[y]) {
+        doors.vertical[x][y] = false;
+      }
+      break;
+    case Direction.RIGHT:
+      if (walls.vertical[x]?.[y + 1]) {
+        walls.vertical[x][y + 1] = false;
+      }
+      if (doors.vertical[x]?.[y + 1]) {
+        doors.vertical[x][y + 1] = false;
+      }
+      break;
   }
 };
 
@@ -31,12 +87,14 @@ export const canMove = (
   from: Position,
   direction: Direction
 ): boolean => {
-  // Vérifier les murs
   if (hasWall(gameState.walls, from, direction)) {
-    return false;
+    if (hasDoor(gameState.doors, from, direction)) {
+      openDoor(gameState.doors, gameState.walls, from, direction);
+    } else {
+      return false;
+    }
   }
 
-  // Vérifier la position de destination
   const to = getPositionAfterMove(from, direction);
   if (gameState.board[to.x]?.[to.y]?.type !== tileType.empty) {
     console.error("occupied spot");

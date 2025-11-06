@@ -81,8 +81,13 @@ export interface Tile {
 }
 
 export interface WallGrid {
-  horizontal: boolean[][]; // Murs entre les cases horizontalement
-  vertical: boolean[][]; // Murs entre les cases verticalement
+  horizontal: boolean[][]; // walls between the tiles horizontally
+  vertical: boolean[][]; // walls between the tiles vertically
+}
+
+export interface DoorGrid {
+  horizontal: boolean[][]; // doors between the tiles horizontally
+  vertical: boolean[][]; // doors between the tiles vertically
 }
 
 // Événements Socket.io
@@ -116,6 +121,10 @@ export interface ServerToClientEvents {
   "monster-spawned": (data: {
     monsterType: string;
     position: Position;
+  }) => void;
+  "door-placed": (data: {
+    position: Position;
+    verticalOrHorizontal: "vertical" | "horizontal";
   }) => void;
 
   // Erreurs
@@ -205,6 +214,7 @@ export interface GameState {
   id: string;
   board: Tile[][];
   walls: WallGrid;
+  doors: DoorGrid;
   players: Map<string, Player>; // Id -> Player
   monsters: Map<string, Monster>; // Id -> Monster
   entityPositions: Map<string, Position>; // entityId -> position
@@ -220,6 +230,7 @@ export interface SendableGameState {
   id: string;
   board: Tile[][];
   walls: WallGrid;
+  doors: DoorGrid;
   players: Player[]; // Id -> Player
   monsters: Monster[]; // Id -> Monster
 
