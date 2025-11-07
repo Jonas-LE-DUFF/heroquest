@@ -27,16 +27,16 @@ export enum spellElement {
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
-  hp: number;
-  maxHp: number;
-  spiritPoints: number;
-  nbAttackDice: number;
-  nbDefenseDice: number;
+  hp?: number;
+  maxHp?: number;
+  spiritPoints?: number;
+  nbAttackDice?: number;
+  nbDefenseDice?: number;
+  name: string;
 }
 
 export interface Player {
   id: string;
-  characterName?: string;
   class?: heroClass | undefined;
   role: PlayerRole;
   stats?: Unit | undefined;

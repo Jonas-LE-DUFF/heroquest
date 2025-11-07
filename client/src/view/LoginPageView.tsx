@@ -37,7 +37,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       }
     );
 
-    socket.once("join-error", (error: string) => {
+    socket.on("join-error", (error: string) => {
       alert(`Erreur: ${error}`);
     });
   };

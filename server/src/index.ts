@@ -64,6 +64,8 @@ io.on("connection", (socket) => {
   socket.on(
     "join-game",
     (data: { gameId: string; playerName: string; role: PlayerRole }) => {
+      console.log("join-game caught");
+
       const { gameId, playerName, role } = data;
       console.log("gameId : ", gameId, "playerName : ", playerName);
       if (!gameId || !playerName) {
@@ -124,9 +126,11 @@ io.on("connection", (socket) => {
       }
       const newPlayer: Player = {
         id: socket.id,
-        characterName: playerName,
         role: role,
         ready: role === "game-master",
+        stats: {
+          name: playerName,
+        },
       };
       if (!game) {
         console.error("fatal error : game couldn't be created");
@@ -678,13 +682,21 @@ io.on("connection", (socket) => {
 
       // Validate stats
       for (const value of Object.values(stats)) {
+        const statName =
+          Object.keys(stats).find((k) => (stats as any)[k] === value) ??
+          "unknown";
         if (
-          value === null ||
-          value === undefined ||
-          isNaN(value) ||
-          Number(value) < 0
+          statName !== "name" &&
+          (value === null ||
+            value === undefined ||
+            isNaN(value) ||
+            Number(value) < 0)
         ) {
-          return callback({ success: false, error: "Invalid stats values." });
+          console.error(`Invalid stat "${statName}" value: `, value);
+          return callback({
+            success: false,
+            error: `Invalid stat "${statName}" value: ${value}`,
+          });
         }
       }
 
