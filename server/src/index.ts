@@ -446,7 +446,6 @@ io.on("connection", (socket) => {
           listResults: results,
           role: playerRole,
         });
-        console.log("mini sent");
 
         await sleep(75);
         results = [];
