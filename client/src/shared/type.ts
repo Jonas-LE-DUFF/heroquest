@@ -188,16 +188,22 @@ export interface ClientToServerEvents {
     monsterType: monsterClass;
   }) => void;
 
-  "roll-dice": (data: {
-    gameId: string;
-    playerId: string;
-    numberOfDice: number;
-  }) => void;
+  "roll-dice": (
+    data: {
+      gameId: string;
+      playerId: string;
+      numberOfDice: number;
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
 
-  "roll-red-dice": (data: {
-    gameId: string;
-    currentNumberOfDices: number;
-  }) => void;
+  "roll-red-dice": (
+    data: {
+      gameId: string;
+      currentNumberOfDices: number;
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
 
   "end-turn": (data: { gameId: string }) => void;
 

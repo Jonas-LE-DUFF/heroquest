@@ -59,10 +59,18 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   }, [socket, role, currentDiceFaces]);
 
   const rollDice = () => {
-    socket.emit("roll-red-dice", {
-      gameId,
-      currentNumberOfDices,
-    });
+    socket.emit(
+      "roll-red-dice",
+      {
+        gameId,
+        currentNumberOfDices,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert("Erreur lors du lancement des dés rouges : " + response.error);
+        }
+      }
+    );
   };
 
   function getDiceFace(face: number) {
