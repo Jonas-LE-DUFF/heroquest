@@ -5,6 +5,10 @@
     right: 0;
 }
 
+p{
+    color: black;
+}
+
 .content{
     background: url('./images/backgrounds/paperBackground.png') no-repeat center center; 
     background-size: 100% 100%;

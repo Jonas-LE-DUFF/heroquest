@@ -132,7 +132,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           return null;
         }
 
-        let characterName = player.characterName || "Joueur sans nom";
+        let characterName = player.stats?.name || "Joueur sans nom";
         let playerClass;
         if (player.class === undefined) {
           playerClass = "Non choisi";

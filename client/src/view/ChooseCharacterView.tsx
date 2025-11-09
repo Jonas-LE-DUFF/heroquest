@@ -11,7 +11,6 @@ import {
 } from "../shared/type";
 import {
   FormControlLabel,
-  MenuItem,
   Select,
   SelectChangeEvent,
   TextField,
@@ -20,8 +19,6 @@ import {
 import {
   convertSendableGameStateAsGameState,
   getElementName,
-  getHeroClassIconPath,
-  getHeroClassName,
 } from "../shared/utils";
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
@@ -255,15 +252,19 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       return;
     }
     const { nbAttackDice, nbDefenseDice, hp, spiritPoints } = formValues;
+
+    console.log("PLAYER NAME :", playerName);
+
     const stats: Unit = {
       nbAttackDice: Number(nbAttackDice),
       nbDefenseDice: Number(nbDefenseDice),
       hp: Number(hp),
       maxHp: Number(hp),
       spiritPoints: Number(spiritPoints),
+      name: playerName,
     };
 
-    const payload = {
+    const statsSent = {
       gameId,
       playerId: socket.id,
       heroType: heroType,
@@ -274,7 +275,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     socket.emit(
       "choose-character",
-      payload,
+      statsSent,
       (response: {
         success: boolean;
         error?: string;

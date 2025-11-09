@@ -12,7 +12,7 @@ import {
 } from "../shared/type";
 import { GameControls } from "../components/GameControlsComponent";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
-import HeroStats from "../components/HeroStats";
+import StatsComponent from "../components/StatsComponent";
 
 interface GamePageProps {
   socket: any;
@@ -82,7 +82,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <div className="game-container">
           <div className={visibleStatsTotal ? "HeroStats" : "hidden"}>
             {visibleStatsTotal &&
-              HeroStats({ socket, player, setStatsVisible })}
+              StatsComponent({ socket, unit: player, setStatsVisible })}
           </div>
           <div className="Board">
             <div>
@@ -121,7 +121,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                   {currentGameState.currentTurn &&
                     currentGameState.players &&
                     currentGameState.players.get(currentGameState.currentTurn)
-                      ?.characterName}
+                      ?.stats?.name}
                 </p>
               )}
               {currentGameState.players ? (

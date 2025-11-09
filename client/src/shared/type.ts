@@ -27,16 +27,16 @@ export enum spellElement {
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
-  hp: number;
-  maxHp: number;
-  spiritPoints: number;
-  nbAttackDice: number;
-  nbDefenseDice: number;
+  hp?: number;
+  maxHp?: number;
+  spiritPoints?: number;
+  nbAttackDice?: number;
+  nbDefenseDice?: number;
+  name: string;
 }
 
 export interface Player {
   id: string;
-  characterName?: string;
   class?: heroClass | undefined;
   role: PlayerRole;
   stats?: Unit | undefined;
@@ -188,16 +188,22 @@ export interface ClientToServerEvents {
     monsterType: monsterClass;
   }) => void;
 
-  "roll-dice": (data: {
-    gameId: string;
-    playerId: string;
-    numberOfDice: number;
-  }) => void;
+  "roll-dice": (
+    data: {
+      gameId: string;
+      playerId: string;
+      numberOfDice: number;
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
 
-  "roll-red-dice": (data: {
-    gameId: string;
-    currentNumberOfDices: number;
-  }) => void;
+  "roll-red-dice": (
+    data: {
+      gameId: string;
+      currentNumberOfDices: number;
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
 
   "end-turn": (data: { gameId: string }) => void;
 

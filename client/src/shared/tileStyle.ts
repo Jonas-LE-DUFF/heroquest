@@ -59,25 +59,21 @@ export const getTileStyle = (
   if (doors?.horizontal?.[x]?.[y] === false) {
     setAngleTopLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
-    console.log("top door opened");
   }
 
   if (doors?.horizontal?.[x + 1]?.[y] === false) {
     setAngleBottomLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
-    console.log("bottom door opened");
   }
 
   if (doors?.vertical?.[x]?.[y] === false) {
     setAngleTopLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
-    console.log("left door opened");
   }
 
   if (doors?.vertical?.[x]?.[y + 1] === false) {
     setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
-    console.log("right door opened");
   }
   const walls = gameState?.walls;
   // top wall -> horizontal[x][y]
