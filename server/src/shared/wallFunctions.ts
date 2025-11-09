@@ -10,19 +10,19 @@ export const hasWall = (
 
   switch (direction) {
     case Direction.UP:
-      return walls.horizontal[x]?.[y] ?? true; // Top Wall
+      return walls.horizontal[x]?.[y] ?? false; // Top Wall
 
     case Direction.DOWN:
-      return walls.horizontal[x + 1]?.[y] ?? true; // Bottom Wall
+      return walls.horizontal[x + 1]?.[y] ?? false; // Bottom Wall
 
     case Direction.LEFT:
-      return walls.vertical[x]?.[y] ?? true; // Left Wall
+      return walls.vertical[x]?.[y] ?? false; // Left Wall
 
     case Direction.RIGHT:
-      return walls.vertical[x]?.[y + 1] ?? true; // Right Wall
+      return walls.vertical[x]?.[y + 1] ?? false; // Right Wall
 
     default:
-      return true;
+      return false;
   }
 };
 
@@ -91,13 +91,13 @@ export const canMove = (
     hasWall(gameState.walls, from, direction) &&
     !hasDoor(gameState.doors, from, direction)
   ) {
+    console.error("wall in the way");
     return false;
   }
 
   const to = getPositionAfterMove(from, direction);
   if (gameState.board[to.x]?.[to.y]?.type !== tileType.empty) {
-    console.error("occupied spot");
-
+    console.error("tile is occupied");
     return false;
   }
 
