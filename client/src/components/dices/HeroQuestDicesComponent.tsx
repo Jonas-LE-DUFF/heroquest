@@ -65,11 +65,19 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
   }, [socket, role]);
 
   const rollDice = () => {
-    socket.emit("roll-dice", {
-      gameId,
-      playerId: socket.id,
-      numberOfDice: currentNumberOfDices,
-    });
+    socket.emit(
+      "roll-dice",
+      {
+        gameId,
+        playerId: socket.id,
+        numberOfDice: currentNumberOfDices,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert("Erreur lancement des dés de combat : " + response.error);
+        }
+      }
+    );
   };
 
   function renderDices(

@@ -64,6 +64,8 @@ io.on("connection", (socket) => {
   socket.on(
     "join-game",
     (data: { gameId: string; playerName: string; role: PlayerRole }) => {
+      console.log("join-game caught");
+
       const { gameId, playerName, role } = data;
       console.log("gameId : ", gameId, "playerName : ", playerName);
       if (!gameId || !playerName) {
@@ -124,9 +126,11 @@ io.on("connection", (socket) => {
       }
       const newPlayer: Player = {
         id: socket.id,
-        characterName: playerName,
         role: role,
         ready: role === "game-master",
+        stats: {
+          name: playerName,
+        },
       };
       if (!game) {
         console.error("fatal error : game couldn't be created");
@@ -377,35 +381,57 @@ io.on("connection", (socket) => {
   // roll-dice
   socket.on(
     "roll-dice",
-    async (data: {
-      gameId: string;
-      playerId: string;
-      numberOfDice: number;
-    }) => {
+    async (
+      data: {
+        gameId: string;
+        playerId: string;
+        numberOfDice: number;
+      },
+      callback
+    ) => {
       console.log("roll-dice");
 
       const gameState = games.get(data.gameId);
       let numberOfDices: number | undefined;
+
+      // checking if data needed exists
       if (!gameState) {
         console.error("game couldn't be found");
-        return;
+        return callback({
+          success: false,
+          error: "la partie n'a pas pu être trouvée",
+        });
       }
       const playerRole = gameState.players.get(data.playerId)?.role;
       if (!playerRole) {
         console.error("player role couldn't be found");
-        return;
+        return callback({
+          success: false,
+          error: "aucun rôle trouvé pour le joueur lançant les dés rouges",
+        });
       }
-      console.log(specialAuthorizedPlayer);
 
-      if (
+      if (playerRole === "game-master") {
+        // if player is game-master he can choose the amount of dices
+        numberOfDices = data.numberOfDice;
+      } else if (
         specialAuthorizedPlayer &&
         specialAuthorizedPlayer.playerId === data.playerId &&
         specialAuthorizedPlayer.diceType === "fight"
       ) {
+        // if player is specialy authorized to roll fight dices
         console.log("using special authorized dices");
         numberOfDices = specialAuthorizedPlayer.numberOfDices;
         specialAuthorizedPlayer = undefined;
-      } else if (playerRole === "hero") {
+      } else if (gameState.currentTurn !== socket.id) {
+        // checking if it's the player's turn
+        console.error("not your turn to roll red dices");
+        return callback({
+          success: false,
+          error: "Attends ton tour trou du q !",
+        });
+      } else {
+        // taking the amount of dices from the player's stats
         console.log("using dice stats");
 
         numberOfDices = getAmountOfDices(
@@ -413,14 +439,14 @@ io.on("connection", (socket) => {
           data.playerId,
           "att" //TODO : need to know if we attack or defend !!
         );
-      } else {
-        console.log("using dice given");
-
-        numberOfDices = data.numberOfDice;
       }
+
       if (numberOfDices === undefined) {
         console.log("no amount of dice to throw defined");
-        return;
+        return callback({
+          success: false,
+          error: "pas de nombre de dés à lancer défini",
+        });
       }
       console.log("sending");
 
@@ -442,40 +468,65 @@ io.on("connection", (socket) => {
           listResults: results,
           role: playerRole,
         });
-        console.log("mini sent");
 
         await sleep(75);
         results = [];
       }
+      return callback({ success: true });
     }
   );
 
   //roll-red-dice
   socket.on(
     "roll-red-dice",
-    async (data: { gameId: string; currentNumberOfDices: number }) => {
+    async (
+      data: { gameId: string; currentNumberOfDices: number },
+      callback
+    ) => {
       console.log("roll-red-dice");
-      let numberOfDices: number = 2;
-      const playerRole = games.get(data.gameId)?.players.get(socket.id)?.role;
+      let numberOfDices: number = 2; // default number of dices
+      const gameState = games.get(data.gameId);
+
+      // checking if data needed exists
+      if (!gameState) {
+        console.error("game couldn't be found");
+        return callback({
+          success: false,
+          error: "la partie n'a pas pu être trouvée",
+        });
+      }
+      const playerRole = gameState.players.get(socket.id)?.role;
+      if (!playerRole) {
+        console.error("no role found for player rolling red dices");
+        return callback({
+          success: false,
+          error: "aucun rôle trouvé pour le joueur lançant les dés rouges",
+        });
+      }
+
       if (
         data.currentNumberOfDices !== undefined &&
         data.currentNumberOfDices > 0 &&
-        playerRole === "game-master"
+        playerRole === "game-master" // if player is game-master he can choose the amount of dices
       ) {
         numberOfDices = data.currentNumberOfDices;
       } else if (
         specialAuthorizedPlayer &&
         specialAuthorizedPlayer.playerId === socket.id &&
         specialAuthorizedPlayer.diceType === "red"
+        // if player is specialy authorized to roll red dices
       ) {
         numberOfDices = specialAuthorizedPlayer.numberOfDices;
         specialAuthorizedPlayer = undefined;
+      } else if (gameState.currentTurn !== socket.id) {
+        // checking if it's the player's turn
+        console.error("not your turn to roll red dices");
+        return callback({
+          success: false,
+          error: "Attends ton tour trou du q !",
+        });
       }
-      const role = games.get(data.gameId)?.players.get(socket.id)?.role;
-      if (!role) {
-        console.error("no role found for player rolling red dices");
-        return;
-      }
+
       for (let j = 0; j < 15; j++) {
         let results: number[] = [];
         for (let i = 0; i < numberOfDices; i++) {
@@ -484,11 +535,12 @@ io.on("connection", (socket) => {
         }
         io.to(data.gameId).emit("red-dice-update", {
           listResults: results,
-          role: role,
+          role: playerRole,
         });
         await sleep(75);
         results = [];
       }
+      return callback({ success: true });
     }
   );
 
@@ -508,14 +560,15 @@ io.on("connection", (socket) => {
         console.error("game couldn't be found");
         return;
       }
-      let playerId: string | undefined;
-      let playerName = game.players.keys().next().value;
-      while (playerName) {
-        if (game.players.get(playerName)?.class === playerClass) {
-          playerId = game.players.get(playerName)?.id;
+      const playerIds = game.players.keys();
+      let playerId: string | undefined = playerIds.next().value;
+      console.log("start ID", playerId);
+
+      while (playerId !== undefined) {
+        if (game.players.get(playerId)?.class === playerClass) {
           break;
         }
-        playerName = game.players.keys().next().value;
+        playerId = playerIds.next().value;
         console.log("searching player for special dice authorization");
       }
       if (!playerId) {
@@ -678,13 +731,21 @@ io.on("connection", (socket) => {
 
       // Validate stats
       for (const value of Object.values(stats)) {
+        const statName =
+          Object.keys(stats).find((k) => (stats as any)[k] === value) ??
+          "unknown";
         if (
-          value === null ||
-          value === undefined ||
-          isNaN(value) ||
-          Number(value) < 0
+          statName !== "name" &&
+          (value === null ||
+            value === undefined ||
+            isNaN(value) ||
+            Number(value) < 0)
         ) {
-          return callback({ success: false, error: "Invalid stats values." });
+          console.error(`Invalid stat "${statName}" value: `, value);
+          return callback({
+            success: false,
+            error: `Invalid stat "${statName}" value: ${value}`,
+          });
         }
       }
 

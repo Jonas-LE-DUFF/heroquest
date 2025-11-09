@@ -34,11 +34,19 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     const onSpecialAuthorization = (data: {
       playerId: string;
       amountOfDices: number;
-      diceType: string;
+      typeOfDices: string;
     }) => {
-      if (data.playerId === socket.id && data.diceType === "red") {
+      console.log("special auth", data);
+
+      if (
+        data.playerId === socket.id &&
+        data.typeOfDices === "red" &&
+        role === "hero"
+      ) {
         setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1)));
+        console.log("filling");
       }
+      console.log("current dice faces", currentDiceFaces);
     };
 
     socket.on("red-dice-update", onRedDiceUpdate);
@@ -48,13 +56,21 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       socket.off("red-dice-update", onRedDiceUpdate);
       socket.off("special-authorization", onSpecialAuthorization);
     };
-  }, [socket, role]);
+  }, [socket, role, currentDiceFaces]);
 
   const rollDice = () => {
-    socket.emit("roll-red-dice", {
-      gameId,
-      currentNumberOfDices,
-    });
+    socket.emit(
+      "roll-red-dice",
+      {
+        gameId,
+        currentNumberOfDices,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert("Erreur lors du lancement des dés rouges : " + response.error);
+        }
+      }
+    );
   };
 
   function getDiceFace(face: number) {
