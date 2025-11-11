@@ -33,6 +33,9 @@ export interface Unit {
   nbAttackDice?: number;
   nbDefenseDice?: number;
   name: string;
+  movements?: number;
+  spells?: spellElement[] | undefined;
+  gold?: number | undefined;
 }
 
 export interface Player {
@@ -41,8 +44,6 @@ export interface Player {
   role: PlayerRole;
   stats?: Unit | undefined;
   ready: boolean;
-  spells?: spellElement[] | undefined;
-  gold?: number | undefined;
 }
 
 export enum monsterClass {
@@ -60,7 +61,6 @@ export interface Monster {
   id: string;
   class: monsterClass;
   stats: Unit;
-  movements: number;
 }
 
 export enum tileType {
@@ -133,6 +133,7 @@ export interface ServerToClientEvents {
   "stats-updated": (data: {
     entityId: string;
     newStats: Player | Monster;
+    isPlayer: boolean;
   }) => void;
 
   // errors

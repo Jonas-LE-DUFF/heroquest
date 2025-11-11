@@ -7,13 +7,15 @@ import {
   getUnitClassName,
 } from "../shared/utils";
 import { useState } from "react";
+import { Socket } from "socket.io-client";
 
 interface StatsComponentProps {
-  socket: string;
+  socket: Socket;
+  gameId: string;
+  position: Position;
   unit: Monster | Player | null;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
-  position: Position;
 }
 
 function isPlayer(u: Monster | Player): u is Player {
@@ -22,16 +24,15 @@ function isPlayer(u: Monster | Player): u is Player {
 
 const StatsComponent = ({
   socket,
+  gameId,
+  position,
   unit,
   setStatsVisible,
   isGameMaster,
-  position,
 }: StatsComponentProps) => {
   const [statsEdit, setStatsEdit] = useState<Unit>(
     unit?.stats ?? { name: "no stats found" }
   );
-
-  const [gold, setGold] = useState<number>((unit as Player)?.gold ?? 0);
 
   if (!unit?.stats) {
     console.log("no stats found");
@@ -154,12 +155,17 @@ const StatsComponent = ({
             <div>
               <div className="statElem">
                 <p>Or : </p>
-                {gold}
+                {statsEdit.gold}
               </div>
               {isGameMaster && (
                 <input
-                  value={gold}
-                  onChange={(e) => setGold(Number(e.target.value))}
+                  value={statsEdit.gold}
+                  onChange={(e) =>
+                    setStatsEdit({
+                      ...statsEdit,
+                      gold: Number(e.target.value),
+                    })
+                  }
                   type="number"
                 />
               )}
@@ -172,12 +178,20 @@ const StatsComponent = ({
       </div>
     </Paper>
   );
+  function sendNewStats(newStats: Unit) {
+    // Send the new stats to the server or update the state
+    console.log("New stats to be saved: ", newStats);
+    socket.emit(
+      "update-stats-unit",
+      { gameId, newStats, position },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert("Erreur lors de la mise à jour des stats : " + response.error);
+        }
+      }
+    );
+  }
 };
-
-function sendNewStats(newStats: Unit) {
-  // Send the new stats to the server or update the state
-  console.log("New stats to be saved: ", newStats);
-}
 
 function getDices(numDices: number) {
   const dices = [];

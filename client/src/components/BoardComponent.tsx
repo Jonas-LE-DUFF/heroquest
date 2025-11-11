@@ -35,6 +35,7 @@ interface BoardProps {
     position: Position,
     monsterType: monsterClass | null
   ) => void;
+  selectedPosition: Position | null;
   selectedType: tileType | Direction | null;
   monsterType: monsterClass | null;
 }
@@ -43,10 +44,10 @@ const Board = ({
   gameState,
   socket,
   onTileClick,
+  selectedPosition,
   selectedType,
   monsterType,
 }: BoardProps) => {
-  let [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [localGameState, setLocalGameState] = useState<GameState | null>(
     gameState
   );
@@ -127,14 +128,6 @@ const Board = ({
 
     if (selectedType !== null) {
       return;
-    }
-    setSelectedPosition(
-      selectedPosition?.x === position.x && selectedPosition?.y === position.y
-        ? null
-        : position
-    );
-    if (selectedPosition) {
-      setSelectedPosition(null);
     }
   };
 

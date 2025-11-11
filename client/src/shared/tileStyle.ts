@@ -130,6 +130,12 @@ export const getTileStyle = (
       backgroundColor: "#583423ff",
     };
   }
+  if (isSelected) {
+    style = {
+      ...style,
+      backgroundColor: "#4CAF50",
+    };
+  }
   setMissingBorders("rgba(153, 143, 143, 0.51)");
 
   style.backgroundImage = images.join(", ");

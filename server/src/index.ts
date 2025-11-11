@@ -411,7 +411,7 @@ io.on("connection", (socket) => {
         console.error("player role couldn't be found");
         return callback({
           success: false,
-          error: "aucun rôle trouvé pour le joueur lançant les dés rouges",
+          error: "aucun rôle trouvé pour le joueur lançant les dés de combat",
         });
       }
 
@@ -869,6 +869,8 @@ io.on("connection", (socket) => {
       const entityIdAtPosition = game.positionEntities.get(
         positionKey(position)
       );
+
+      console.debug("entityId found : ", entityIdAtPosition);
       if (!entityIdAtPosition) {
         return callback({
           success: false,
@@ -880,17 +882,28 @@ io.on("connection", (socket) => {
       const existingPlayer = game.players.get(entityIdAtPosition);
       const existingMonster = game.monsters.get(entityIdAtPosition);
       if (existingPlayer) {
-        game.players.set(entityIdAtPosition, newStats as Player);
+        game.players.set(entityIdAtPosition, {
+          ...existingPlayer,
+          ...newStats,
+        } as Player);
         socket.to(gameId).emit("stats-updated", {
           entityId: entityIdAtPosition,
           newStats: newStats as Player,
+          isPlayer: true,
         });
+        console.log("emitting stats-updated for player :", entityIdAtPosition);
+        console.log("newStats", game.players.get(entityIdAtPosition));
+
         return callback({ success: true });
       } else if (existingMonster) {
-        game.monsters.set(entityIdAtPosition, newStats as Monster);
+        game.monsters.set(entityIdAtPosition, {
+          ...existingMonster,
+          ...newStats,
+        } as Monster);
         socket.to(gameId).emit("stats-updated", {
           entityId: entityIdAtPosition,
           newStats: newStats as Monster,
+          isPlayer: false,
         });
         return callback({ success: true });
       } else {

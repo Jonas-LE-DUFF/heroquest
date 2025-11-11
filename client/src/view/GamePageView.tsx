@@ -5,7 +5,9 @@ import "./GamePageView.css";
 import {
   Direction,
   GameState,
+  Monster,
   monsterClass,
+  Player,
   Position,
   SendableGameState,
   tileType,
@@ -46,6 +48,35 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setCurrentGameState(convertSendableGameStateAsGameState(data.gameState));
     });
 
+    socket.on(
+      "stats-updated",
+      (data: {
+        entityId: string;
+        newStats: Player | Monster;
+        isPlayer: boolean;
+      }) => {
+        console.log("stats updated received in game page", data);
+        const position = currentGameState.entityPositions.get(data.entityId);
+        if (!position) {
+          console.error("No entity found at position for stats update");
+          return;
+        }
+        if (data.isPlayer) {
+          let player = currentGameState.players.get(data.entityId);
+          if (player) {
+            player = data.newStats as Player;
+            currentGameState.players.set(data.entityId, player);
+          }
+        } else {
+          let monster = currentGameState.monsters.get(data.entityId);
+          if (monster) {
+            monster = data.newStats as Monster;
+            currentGameState.monsters.set(data.entityId, monster);
+          }
+        }
+      }
+    );
+
     return () => {
       socket.off("game-state-update");
     };
@@ -56,7 +87,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     position: Position,
     monsterType: monsterClass | null
   ) => {
-    setSelectedPosition(position);
+    if (
+      selectedPosition !== null &&
+      selectedPosition.x === position.x &&
+      selectedPosition.y === position.y
+    ) {
+      setSelectedPosition(null);
+    } else {
+      setSelectedPosition(position);
+    }
     console.log(position);
 
     if (!selectedType) {
@@ -106,10 +145,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             {statsVisible && (
               <StatsComponent
                 socket={socket}
+                gameId={gameState.id}
+                position={selectedPosition ?? { x: 0, y: 0 }}
                 unit={getUnitAtSelectedPosition()}
                 setStatsVisible={setStatsVisible}
                 isGameMaster={role === "game-master"}
-                position={selectedPosition ?? { x: 0, y: 0 }}
               />
             )}
           </div>
@@ -120,6 +160,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                   gameState={currentGameState}
                   socket={socket}
                   onTileClick={handleTileClick}
+                  selectedPosition={selectedPosition}
                   selectedType={selectedType}
                   monsterType={monsterType}
                 />
