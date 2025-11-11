@@ -595,7 +595,6 @@ io.on("connection", (socket) => {
   socket.on(
     "move-player-one-step",
     (data: { gameId: string; playerId: string; direction: Direction }) => {
-      console.debug("move-player-one-step", data);
       const gameState = games.get(data.gameId);
       if (!gameState) {
         console.error("game couldn't be found in move-player-one-step");

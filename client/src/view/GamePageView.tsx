@@ -28,17 +28,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [selectedType, setSelectedType] = useState<tileType | Direction | null>(
     null
   );
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(
+    null
+  );
 
   const [currentGameState, setCurrentGameState] =
     useState<GameState>(gameState);
 
-  const player = gameState.players.get(socket.id);
   const [statsVisible, setStatsVisible] = useState(false);
-  const [visibleStatsTotal, setVisibleStatsTotal] = useState(false);
-
-  useEffect(() => {
-    setVisibleStatsTotal(role === "hero" && player && statsVisible);
-  }, [role, player, statsVisible]);
 
   useEffect(() => {
     if (!gameState) return;
@@ -59,6 +56,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     position: Position,
     monsterType: monsterClass | null
   ) => {
+    setSelectedPosition(position);
+    console.log(position);
+
     if (!selectedType) {
       //nothing to place
       return;
@@ -76,40 +76,69 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
   };
 
+  const getUnitAtSelectedPosition = () => {
+    if (!selectedPosition) {
+      return null;
+    }
+    const id = currentGameState.positionEntities.get(
+      selectedPosition.x + "," + selectedPosition.y
+    );
+    const unit =  id
+      ? currentGameState.players.get(id) ||
+          currentGameState.monsters.get(id) ||
+          null
+      : null;
+      console.log(" unit at selected position", unit);
+      return unit;
+  };
+
   return (
     <div className="game-page">
       {currentGameState && (
         <div className="game-container">
-          <div className={visibleStatsTotal ? "HeroStats" : "hidden"}>
-            {visibleStatsTotal &&
-              StatsComponent({ socket, unit: player, setStatsVisible })}
+          <div
+            className={
+              statsVisible && getUnitAtSelectedPosition() !== null
+                ? "HeroStats"
+                : "hidden"
+            }
+          >
+            {statsVisible && (
+              <StatsComponent
+                socket={socket}
+                unit={getUnitAtSelectedPosition()}
+                setStatsVisible={setStatsVisible}
+                isGameMaster={role === "game-master"}
+              />
+            )}
           </div>
           <div className="Board">
             <div>
-              {socket !== null &&
-                Board({
-                  gameState: currentGameState,
-                  socket: socket,
-                  onTileClick: handleTileClick,
-                  selectedType: selectedType,
-                  monsterType: monsterType,
-                })}
+              {socket !== null && (
+                <Board
+                  gameState={currentGameState}
+                  socket={socket}
+                  onTileClick={handleTileClick}
+                  selectedType={selectedType}
+                  monsterType={monsterType}
+                />
+              )}
             </div>
             <div>
-              {role === "hero" && (
-                <button onClick={() => setStatsVisible(!statsVisible)}>
+              {
+                <button onClick={() => getUnitAtSelectedPosition() !== null && setStatsVisible(!statsVisible)}>
                   {!statsVisible ? "Montrer stats" : "Cacher stats"}
                 </button>
-              )}
+              }
             </div>
           </div>
           <div className="info-on-the-side">
-            {GameControls({
-              socket,
-              setSelectedType,
-              monsterType,
-              setMonsterType,
-            })}
+            <GameControls
+              socket={socket}
+              setSelectedType={setSelectedType}
+              monsterType={monsterType}
+              setMonsterType={setMonsterType}
+            />
 
             <div className="game-info">
               <h3>Informations</h3>

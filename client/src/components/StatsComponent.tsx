@@ -1,13 +1,14 @@
 import { Box, LinearProgress, Paper } from "@mui/material";
-import { heroClass, Monster, Player } from "../shared/type";
-import { heroClassFr } from "../shared/frenchEnums";
+import { Monster, Player, Unit } from "../shared/type";
 import "./StatsComponent.css";
-import { getFightDiceFaceNumber, getHeroClassIconPath } from "../shared/utils";
+import { getFightDiceFaceNumber, getIconClassPath, getUnitClassName } from "../shared/utils";
+import { useState } from "react";
 
 interface StatsComponentProps {
   socket: string;
-  unit: Monster | Player;
+  unit: Monster | Player | null;
   setStatsVisible: (arg0: boolean) => void;
+  isGameMaster: boolean;
 }
 
 function isPlayer(u: Monster | Player): u is Player {
@@ -18,9 +19,18 @@ const StatsComponent = ({
   socket,
   unit,
   setStatsVisible,
+  isGameMaster,
 }: StatsComponentProps) => {
-  if (!unit?.stats) return <Paper>ERROR</Paper>;
+  const [statsEdit, setStatsEdit] = useState<Unit>(
+    unit?.stats ?? { name: "no stats found" }
+  );
 
+  const [gold, setGold] = useState<number>((unit as Player)?.gold ?? 0);
+
+  if (!unit?.stats) {
+    console.log("no stats found");
+    return <Paper>ERROR</Paper>;
+  }
   return (
     <Paper sx={{ height: "100%" }}>
       <div className="content">
@@ -28,34 +38,68 @@ const StatsComponent = ({
           X
         </button>
         <div className="stats">
-          <p className="title">{unit.stats.name} Stats</p>
-          {isPlayer(unit) && (unit as Player).class && (
+          <p className="title">{statsEdit.name} Stats</p>
+          {unit.class && (
             <div className="statElem">
-              <p>Class : </p>
+              <p>Classe : </p>
               <img
                 className="heroClassIcon"
-                src={getHeroClassIconPath(
-                  (unit as Player).class ?? heroClass.Barbarian
-                )}
+                src={getIconClassPath(unit.class)}
                 alt={`Icône de classe ${
-                  heroClassFr[(unit as Player).class ?? heroClass.Barbarian]
+                  getUnitClassName(unit.class)
                 }`}
               />
             </div>
           )}
           <div className="statElem">
             <p>Nombre de dés en attaque : </p>
-            {unit.stats?.nbAttackDice && getDices(unit.stats?.nbAttackDice)}
+            {statsEdit?.nbAttackDice && getDices(statsEdit.nbAttackDice)}
           </div>
+          {isGameMaster && (
+            <input
+              value={statsEdit.nbAttackDice}
+              onChange={(e) =>
+                setStatsEdit({
+                  ...statsEdit,
+                  nbAttackDice: Number(e.target.value),
+                })
+              }
+              type="number"
+            />
+          )}
           <div className="statElem">
             <p>Nombre de dés en défense : </p>
-            {unit.stats?.nbDefenseDice && getDices(unit.stats?.nbDefenseDice)}
+            {statsEdit.nbDefenseDice && getDices(statsEdit.nbDefenseDice)}
           </div>
+          {isGameMaster && (
+            <input
+              value={statsEdit.nbDefenseDice}
+              onChange={(e) =>
+                setStatsEdit({
+                  ...statsEdit,
+                  nbDefenseDice: Number(e.target.value),
+                })
+              }
+              type="number"
+            />
+          )}
           <div className="statElem">
             <p>Points d'esprit : </p>
-            {unit.stats.spiritPoints}
+            {statsEdit.spiritPoints}
           </div>
-          {unit.stats?.hp && unit.stats.maxHp && (
+          {isGameMaster && (
+            <input
+              value={statsEdit.spiritPoints}
+              onChange={(e) =>
+                setStatsEdit({
+                  ...statsEdit,
+                  spiritPoints: Number(e.target.value),
+                })
+              }
+              type="number"
+            />
+          )}
+          {statsEdit?.hp && statsEdit.maxHp && (
             <Box
               sx={{
                 width: "100%",
@@ -73,22 +117,63 @@ const StatsComponent = ({
                 sx={{ minWidth: "250px", borderRadius: "5px", height: "25px" }}
                 color="error"
                 variant="determinate"
-                value={(unit.stats?.hp / unit.stats?.maxHp) * 100}
+                value={(statsEdit?.hp / statsEdit?.maxHp) * 100}
               />
-              <p>{`${unit.stats?.hp} / ${unit.stats?.maxHp} HP`}</p>
+              <p>{`${statsEdit?.hp} / ${statsEdit?.maxHp} HP`}</p>
             </Box>
           )}
+          {isGameMaster && (
+            <input
+              value={statsEdit.hp}
+              onChange={(e) =>
+                setStatsEdit({
+                  ...statsEdit,
+                  hp: Number(e.target.value),
+                })
+              }
+              type="number"
+            />
+          )}
+          {isGameMaster && (
+            <input
+              value={statsEdit.maxHp}
+              onChange={(e) =>
+                setStatsEdit({
+                  ...statsEdit,
+                  maxHp: Number(e.target.value),
+                })
+              }
+              type="number"
+            />
+          )}
           {isPlayer(unit) && (
-            <div className="statElem">
-              <p>Or : </p>
-              {(unit as Player).gold}
+            <div>
+              <div className="statElem">
+                <p>Or : </p>
+                {gold}
+              </div>
+              {isGameMaster && (
+                <input
+                  value={gold}
+                  onChange={(e) => setGold(Number(e.target.value))}
+                  type="number"
+                />
+              )}
             </div>
+          )}
+          {isGameMaster && (
+            <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
           )}
         </div>
       </div>
     </Paper>
   );
 };
+
+function sendNewStats(newStats: Unit) {
+  // Send the new stats to the server or update the state
+  console.log("New stats to be saved: ", newStats);
+}
 
 function getDices(numDices: number) {
   const dices = [];
