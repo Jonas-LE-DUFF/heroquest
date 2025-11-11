@@ -310,11 +310,6 @@ io.on("connection", (socket) => {
         console.error("tile undefined in index.ts");
         return;
       }
-
-      if (selectedType === null) {
-        console.error("nothing to place");
-        return;
-      }
       if (typeof selectedType === typeof Direction.UP) {
         let positionSent = position;
         let verticalOrHorizontal: "vertical" | "horizontal" = "horizontal";
@@ -351,6 +346,15 @@ io.on("connection", (socket) => {
           verticalOrHorizontal: verticalOrHorizontal,
         });
         return;
+      }
+
+      if (selectedType === tileType.empty) {
+        // erasing the tile
+        const entityId = gameState.positionEntities.get(positionKey(position));
+        if (entityId) {
+          gameState.entityPositions.delete(entityId);
+          gameState.positionEntities.delete(positionKey(position));
+        }
       }
 
       if (tile?.type !== tileType.empty && selectedType !== tileType.empty) {
