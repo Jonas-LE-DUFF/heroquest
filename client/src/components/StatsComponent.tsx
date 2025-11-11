@@ -1,7 +1,11 @@
 import { Box, LinearProgress, Paper } from "@mui/material";
-import { Monster, Player, Unit } from "../shared/type";
+import { Monster, Player, Position, Unit } from "../shared/type";
 import "./StatsComponent.css";
-import { getFightDiceFaceNumber, getIconClassPath, getUnitClassName } from "../shared/utils";
+import {
+  getFightDiceFaceNumber,
+  getIconClassPath,
+  getUnitClassName,
+} from "../shared/utils";
 import { useState } from "react";
 
 interface StatsComponentProps {
@@ -9,6 +13,7 @@ interface StatsComponentProps {
   unit: Monster | Player | null;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
+  position: Position;
 }
 
 function isPlayer(u: Monster | Player): u is Player {
@@ -20,6 +25,7 @@ const StatsComponent = ({
   unit,
   setStatsVisible,
   isGameMaster,
+  position,
 }: StatsComponentProps) => {
   const [statsEdit, setStatsEdit] = useState<Unit>(
     unit?.stats ?? { name: "no stats found" }
@@ -45,9 +51,7 @@ const StatsComponent = ({
               <img
                 className="heroClassIcon"
                 src={getIconClassPath(unit.class)}
-                alt={`Icône de classe ${
-                  getUnitClassName(unit.class)
-                }`}
+                alt={`Icône de classe ${getUnitClassName(unit.class)}`}
               />
             </div>
           )}

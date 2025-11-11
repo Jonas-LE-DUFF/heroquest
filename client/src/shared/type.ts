@@ -92,14 +92,15 @@ export interface DoorGrid {
 
 // Événements Socket.io
 export interface ServerToClientEvents {
-  // Réponses de connexion
+  // connection responses
+  //TODO : remove join error and use callbacks instead
   "join-success": (data: { playerId: string; game: SendableGameState }) => void;
   "join-error": (message: string) => void;
 
   "player-reconnected": (data: { playerId: string }) => void;
 
-  // Mises à jour de jeu
-  "game-state-update": (data: { gameState: SendableGameState }) => void;
+  // game-state updates
+  "game-state-update": (data: { gameState: SendableGameState }) => void; // very slow and expensive, use only when necessary
   "dice-update": (data: {
     listResults: diceFace[];
     role: "hero" | "game-master";
@@ -108,6 +109,8 @@ export interface ServerToClientEvents {
     listResults: number[];
     role: "hero" | "game-master";
   }) => void;
+
+  //lobby actions
   "game-start": (data: { gameState: SendableGameState }) => void;
 
   "special-authorization": (data: {
@@ -116,7 +119,7 @@ export interface ServerToClientEvents {
     typeOfDices: "red" | "fight";
   }) => void;
 
-  // Actions spécifiques
+  // specific in-game actions
   "unit-moved": (data: { playerId: string; newPosition: Position }) => void;
   "monster-spawned": (data: {
     monsterType: string;
@@ -127,17 +130,24 @@ export interface ServerToClientEvents {
     verticalOrHorizontal: "vertical" | "horizontal";
   }) => void;
 
-  // Erreurs
+  "stats-updated": (data: {
+    entityId: string;
+    newStats: Player | Monster;
+  }) => void;
+
+  // errors
   error: (message: string) => void;
 }
-
+//////////////////////////////////////////////////////////////////////////////////
 export interface ClientToServerEvents {
+  //login actions
   "join-game": (data: {
     gameId: string;
     playerName: string;
     role: PlayerRole;
   }) => void;
 
+  // ############ hero actions ################
   // lobby actions
   "leave-lobby": (data: { gameId: string }) => void;
   "choose-character": (
@@ -170,7 +180,7 @@ export interface ClientToServerEvents {
   "check-secret-doors": (data: { gameId: string; postion: Position }) => void;
   "disarm-trap": (data: { gameId: string; trapTargeted: Position }) => void;
 
-  // game master actions
+  // ############################ game master actions ############################
   // lobby actions
   "start-game": (data: { gameId: string }) => void;
   // in-turn actions
@@ -188,6 +198,23 @@ export interface ClientToServerEvents {
     monsterType: monsterClass;
   }) => void;
 
+  "authorize-special-throw-dices": (data: {
+    gameId: string;
+    numberOfDices: number;
+    typeOfDices: "red" | "fight";
+    playerClass: heroClass;
+  }) => void;
+
+  "update-stats-unit": (
+    data: {
+      gameId: string;
+      newStats: Player | Monster;
+      position: Position;
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
+
+  // ###################### common actions ########################
   "roll-dice": (
     data: {
       gameId: string;
@@ -206,13 +233,6 @@ export interface ClientToServerEvents {
   ) => void;
 
   "end-turn": (data: { gameId: string }) => void;
-
-  "authorize-special-throw-dices": (data: {
-    gameId: string;
-    numberOfDices: number;
-    typeOfDices: "red" | "fight";
-    playerClass: heroClass;
-  }) => void;
 }
 
 // État du jeu

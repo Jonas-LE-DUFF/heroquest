@@ -83,13 +83,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     const id = currentGameState.positionEntities.get(
       selectedPosition.x + "," + selectedPosition.y
     );
-    const unit =  id
+    const unit = id
       ? currentGameState.players.get(id) ||
-          currentGameState.monsters.get(id) ||
-          null
+        currentGameState.monsters.get(id) ||
+        null
       : null;
-      console.log(" unit at selected position", unit);
-      return unit;
+    console.log(" unit at selected position", unit);
+    return unit;
   };
 
   return (
@@ -109,6 +109,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                 unit={getUnitAtSelectedPosition()}
                 setStatsVisible={setStatsVisible}
                 isGameMaster={role === "game-master"}
+                position={selectedPosition ?? { x: 0, y: 0 }}
               />
             )}
           </div>
@@ -123,13 +124,18 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                   monsterType={monsterType}
                 />
               )}
-            </div>
-            <div>
-              {
-                <button onClick={() => getUnitAtSelectedPosition() !== null && setStatsVisible(!statsVisible)}>
-                  {!statsVisible ? "Montrer stats" : "Cacher stats"}
-                </button>
-              }
+              <div>
+                {getUnitAtSelectedPosition() !== null && (
+                  <button
+                    onClick={() =>
+                      getUnitAtSelectedPosition() !== null &&
+                      setStatsVisible(!statsVisible)
+                    }
+                  >
+                    {!statsVisible ? "Montrer stats" : "Cacher stats"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <div className="info-on-the-side">
@@ -153,10 +159,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                       ?.stats?.name}
                 </p>
               )}
-              {currentGameState.players ? (
+              {currentGameState.players && (
                 <p>Joueurs: {currentGameState.players.size}</p>
-              ) : (
-                <p></p>
               )}
             </div>
           </div>

@@ -834,6 +834,69 @@ io.on("connection", (socket) => {
       gameState: convertGameStateAsSendableGameState(game),
     });
   });
+
+  //update-stats-unit
+  socket.on(
+    "update-stats-unit",
+    (
+      data: {
+        gameId: string;
+        newStats: Player | Monster;
+        position: Position;
+      },
+      callback
+    ) => {
+      const { gameId, newStats, position } = data;
+      const game = games.get(gameId);
+      if (!game) {
+        return callback({ success: false, error: "Game not found." });
+      }
+      const player = game.players.get(socket.id);
+      if (!player) {
+        return callback({ success: false, error: "Player not found." });
+      }
+      if (player.role !== "game-master") {
+        return callback({
+          success: false,
+          error: "Only game master can update stats.",
+        });
+      }
+
+      const entityIdAtPosition = game.positionEntities.get(
+        positionKey(position)
+      );
+      if (!entityIdAtPosition) {
+        return callback({
+          success: false,
+          error:
+            "L'ID du joueur effectuant la mise à jour n'a pas pu être trouvé.",
+        });
+      }
+
+      const existingPlayer = game.players.get(entityIdAtPosition);
+      const existingMonster = game.monsters.get(entityIdAtPosition);
+      if (existingPlayer) {
+        game.players.set(entityIdAtPosition, newStats as Player);
+        socket.to(gameId).emit("stats-updated", {
+          entityId: entityIdAtPosition,
+          newStats: newStats as Player,
+        });
+        return callback({ success: true });
+      } else if (existingMonster) {
+        game.monsters.set(entityIdAtPosition, newStats as Monster);
+        socket.to(gameId).emit("stats-updated", {
+          entityId: entityIdAtPosition,
+          newStats: newStats as Monster,
+        });
+        return callback({ success: true });
+      } else {
+        return callback({
+          success: false,
+          error: "Pas d'unité à modifier sur cette case.",
+        });
+      }
+    }
+  );
 });
 
 const PORT = process.env.PORT || 5000;
