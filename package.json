@@ -12,7 +12,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
-    "concurrently": "^7.6.0"
+    "concurrently": "^7.6.0",
+    "socket": "^1.1.25"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,9 @@
   "dependencies": {
     "mui": "^0.0.1",
     "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2"
+    "reun": "^0.2.7",
+    "run": "^1.5.0",
+    "ts-node": "^10.9.2",
+    "ts-script": "^1.0.0"
   }
 }

@@ -25,7 +25,7 @@ import diceDeathHead from "./../components/images/dices/battleDices/death.png";
 import diceMonsterShield from "./../components/images/dices/battleDices/blackShield.png";
 import diceHeroShield from "./../components/images/dices/battleDices/whiteShield.png";
 
-import { heroClassFr, spellElementFr } from "./frenchEnums";
+import { heroClassFr, monsterClassFr, spellElementFr } from "./frenchEnums";
 
 function convertSendableGameStateAsGameState(
   game: SendableGameState
@@ -74,6 +74,16 @@ function everyOneReady(game: GameState) {
     if (!player.ready) return false;
   }
   return true;
+}
+
+function getIconClassPath(entityType: heroClass | monsterClass): string {
+  if (Object.values(heroClass).includes(entityType as heroClass)) {
+    return getHeroClassIconPath(entityType as heroClass);
+  } else if (Object.values(monsterClass).includes(entityType as monsterClass)) {
+    return getMonsterIconPath(entityType as monsterClass);
+  } else {
+    return "unknown"; // or a default icon
+  }
 }
 
 function getHeroClassIconPath(heroType: heroClass): string {
@@ -145,8 +155,22 @@ function getElementName(element: spellElement) {
   return spellElementFr[element];
 }
 
+function getUnitClassName(unit: heroClass | monsterClass) {
+    if (Object.values(heroClass).includes(unit as heroClass)) {
+        return getHeroClassName(unit as heroClass);
+    } else if (Object.values(monsterClass).includes(unit as monsterClass)) {
+        return getMonsterClassName(unit as monsterClass);
+    } else {
+        return "unknown"; // or a default class name
+    }
+}
+
 function getHeroClassName(classHero: heroClass) {
   return heroClassFr[classHero];
+}
+
+function getMonsterClassName(classMonster: monsterClass) {
+  return monsterClassFr[classMonster];
 }
 
 const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
@@ -154,11 +178,14 @@ const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
 export {
   convertSendableGameStateAsGameState,
   everyOneReady,
+  getIconClassPath,
   getHeroClassIconPath,
   getMonsterIconPath,
   getFightDiceFace,
   getFightDiceFaceNumber,
+  getUnitClassName,
   getElementName,
   getHeroClassName,
+  getMonsterClassName,
   positionKey,
 };

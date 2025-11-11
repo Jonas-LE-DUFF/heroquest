@@ -24,8 +24,8 @@
 }
 
 .HeroStats {
-  width: 30%;
-  height: 100%;
+  width: fit-content;
+  height: fit-content;
   position: absolute;
   margin-left: 0;
   min-height: 400px;
