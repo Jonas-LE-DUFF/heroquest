@@ -715,12 +715,10 @@ io.on("connection", (socket) => {
         playerId: string;
         heroType: heroClass;
         stats: Unit;
-        spells: spellElement[];
-        gold?: number;
       },
       callback
     ) => {
-      const { gameId, playerId, heroType, stats, spells, gold } = data;
+      const { gameId, playerId, heroType, stats } = data;
       const game = games.get(gameId);
 
       if (!game) {
@@ -733,12 +731,13 @@ io.on("connection", (socket) => {
       }
 
       // Validate stats
+      const excludedStats = ["name", "spells"]; //thoses stats are not numbers and will be validated differently
       for (const value of Object.values(stats)) {
         const statName =
           Object.keys(stats).find((k) => (stats as any)[k] === value) ??
           "unknown";
         if (
-          statName !== "name" &&
+          !excludedStats.includes(statName) &&
           (value === null ||
             value === undefined ||
             isNaN(value) ||
@@ -750,11 +749,6 @@ io.on("connection", (socket) => {
             error: `Invalid stat "${statName}" value: ${value}`,
           });
         }
-      }
-
-      // Validate gold
-      if (gold === undefined || gold < 0 || isNaN(gold)) {
-        return callback({ success: false, error: "Invalid gold value." });
       }
 
       // Ensure game is in the lobby state
@@ -778,28 +772,30 @@ io.on("connection", (socket) => {
       }
 
       // Validate spells
-      for (const spell of spells) {
-        if (
-          Array.from(game.players.values()).some(
-            (p) => p.stats?.spells?.includes(spell) && p.id !== playerId
-          )
-        ) {
-          return callback({
-            success: false,
-            error: `Spell ${spell} already selected by another player.`,
-          });
+      if (stats.spells) {
+        for (const spell of stats.spells) {
+          if (
+            Array.from(game.players.values()).some(
+              (p) => p.stats?.spells?.includes(spell) && p.id !== playerId
+            )
+          ) {
+            return callback({
+              success: false,
+              error: `Spell ${spell} already selected by another player.`,
+            });
+          }
         }
       }
 
       // Specific validations for Elf and Cleric
-      if (heroType === heroClass.Elf && spells.length !== 1) {
+      if (heroType === heroClass.Elf && stats?.spells?.length !== 1) {
         return callback({
           success: false,
           error: "Elf must select exactly one spell.",
         });
       }
 
-      if (heroType === heroClass.Cleric && spells.length !== 3) {
+      if (heroType === heroClass.Cleric && stats?.spells?.length !== 3) {
         return callback({
           success: false,
           error: "Cleric must select exactly three spells.",
@@ -809,7 +805,7 @@ io.on("connection", (socket) => {
       // If all validations pass, update the player's class and stats
       player.class = heroType;
       // ensure stats object exists before assigning additional properties
-      player.stats = { ...stats, spells: spells, gold: gold };
+      player.stats = stats;
       player.ready = true;
 
       io.to(gameId).emit("game-state-update", {
@@ -894,8 +890,8 @@ io.on("connection", (socket) => {
       if (existingPlayer) {
         existingPlayer.stats = { ...existingPlayer.stats, ...newStats };
         game.players.set(entityIdAtPosition, existingPlayer);
-        console.log("sending to game : ",gameId); ;
-        
+        console.log("sending to game : ", gameId);
+
         io.to(gameId).emit("stats-updated", {
           entityId: entityIdAtPosition,
           newStats: newStats,

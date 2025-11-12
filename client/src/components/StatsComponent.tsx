@@ -7,7 +7,7 @@ import {
   getUnitClassName,
   isPlayer,
 } from "../shared/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 
 interface StatsComponentProps {
@@ -30,6 +30,10 @@ const StatsComponent = ({
   const [statsEdit, setStatsEdit] = useState<Unit>(
     unit?.stats ?? { name: "no stats found" }
   );
+
+  useEffect(() => {
+    setStatsEdit(unit?.stats ?? { name: "no stats found" });
+  }, [unit]);
 
   if (!unit?.stats) {
     console.log("no stats found");
