@@ -27,13 +27,13 @@ export enum spellElement {
 export type PlayerRole = "hero" | "game-master";
 
 export interface Unit {
-  hp?: number;
-  maxHp?: number;
-  spiritPoints?: number;
-  nbAttackDice?: number;
-  nbDefenseDice?: number;
+  hp?: number | undefined;
+  maxHp?: number | undefined;
+  spiritPoints?: number | undefined;
+  nbAttackDice?: number | undefined;
+  nbDefenseDice?: number | undefined;
   name: string;
-  movements?: number;
+  movements?: number | undefined;
   spells?: spellElement[] | undefined;
   gold?: number | undefined;
 }
@@ -132,7 +132,7 @@ export interface ServerToClientEvents {
 
   "stats-updated": (data: {
     entityId: string;
-    newStats: Player | Monster;
+    newStats: Unit;
     isPlayer: boolean;
   }) => void;
 
@@ -209,7 +209,7 @@ export interface ClientToServerEvents {
   "update-stats-unit": (
     data: {
       gameId: string;
-      newStats: Player | Monster;
+      newStats: Unit;
       position: Position;
     },
     callback: (response: { success: boolean; error?: string }) => void

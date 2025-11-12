@@ -781,7 +781,7 @@ io.on("connection", (socket) => {
       for (const spell of spells) {
         if (
           Array.from(game.players.values()).some(
-            (p) => p.spells?.includes(spell) && p.id !== playerId
+            (p) => p.stats?.spells?.includes(spell) && p.id !== playerId
           )
         ) {
           return callback({
@@ -806,12 +806,11 @@ io.on("connection", (socket) => {
         });
       }
 
-      // If all validations pass, update the player's class and spells
+      // If all validations pass, update the player's class and stats
       player.class = heroType;
-      player.spells = spells;
+      // ensure stats object exists before assigning additional properties
+      player.stats = { ...stats, spells: spells, gold: gold };
       player.ready = true;
-      player.gold = gold;
-      player.stats = stats;
 
       io.to(gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(game),
@@ -831,7 +830,18 @@ io.on("connection", (socket) => {
     if (!game || !player) return;
 
     player.class = undefined;
-    player.spells = undefined;
+    if (player.stats !== undefined) {
+      player.stats = {
+        name: player.stats.name,
+        spells: undefined,
+        hp: undefined,
+        maxHp: undefined,
+        nbAttackDice: undefined,
+        nbDefenseDice: undefined,
+        movements: undefined,
+        gold: undefined,
+      };
+    }
     player.ready = false;
 
     io.to(gameId).emit("game-state-update", {
@@ -845,7 +855,7 @@ io.on("connection", (socket) => {
     (
       data: {
         gameId: string;
-        newStats: Player | Monster;
+        newStats: Unit;
         position: Position;
       },
       callback
@@ -875,20 +885,20 @@ io.on("connection", (socket) => {
         return callback({
           success: false,
           error:
-            "L'ID du joueur effectuant la mise à jour n'a pas pu être trouvé.",
+            "le serveur n'a pas trouvé d'unité à la position sélectionnée.",
         });
       }
 
       const existingPlayer = game.players.get(entityIdAtPosition);
       const existingMonster = game.monsters.get(entityIdAtPosition);
       if (existingPlayer) {
-        game.players.set(entityIdAtPosition, {
-          ...existingPlayer,
-          ...newStats,
-        } as Player);
-        socket.to(gameId).emit("stats-updated", {
+        existingPlayer.stats = { ...existingPlayer.stats, ...newStats };
+        game.players.set(entityIdAtPosition, existingPlayer);
+        console.log("sending to game : ",gameId); ;
+        
+        io.to(gameId).emit("stats-updated", {
           entityId: entityIdAtPosition,
-          newStats: newStats as Player,
+          newStats: newStats,
           isPlayer: true,
         });
         console.log("emitting stats-updated for player :", entityIdAtPosition);
@@ -896,13 +906,10 @@ io.on("connection", (socket) => {
 
         return callback({ success: true });
       } else if (existingMonster) {
-        game.monsters.set(entityIdAtPosition, {
-          ...existingMonster,
-          ...newStats,
-        } as Monster);
-        socket.to(gameId).emit("stats-updated", {
+        game.monsters.set(entityIdAtPosition, existingMonster);
+        io.to(gameId).emit("stats-updated", {
           entityId: entityIdAtPosition,
-          newStats: newStats as Monster,
+          newStats: newStats,
           isPlayer: false,
         });
         return callback({ success: true });

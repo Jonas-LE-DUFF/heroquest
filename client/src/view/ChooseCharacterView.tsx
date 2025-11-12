@@ -53,7 +53,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     spiritPoints: player?.stats?.spiritPoints ?? "1",
   });
 
-  const [goldValue, setGoldValue] = useState(player?.gold ?? "1");
+  const [goldValue, setGoldValue] = useState(player?.stats?.gold ?? "1");
 
   const [selectedSpellElements, setSelectedSpellElements] = useState<
     spellElement[]
@@ -164,7 +164,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     if (!game) return false;
     for (let player of game.players.values()) {
       if (player.id === socket.id) continue;
-      if (player.spells?.includes(element)) {
+      if (player.stats?.spells?.includes(element)) {
         return true;
       }
     }

@@ -5,7 +5,6 @@ function generateMonster(monsterId: string, monsterType: monsterClass) {
   const monster: Monster = {
     id: monsterId,
     stats: stats,
-    movements: 10,
     class: monsterType,
   };
 
@@ -20,6 +19,7 @@ function getMonsterStats(monsterType: monsterClass): Unit {
     spiritPoints: 1,
     nbAttackDice: 1,
     nbDefenseDice: 1,
+    movements: 10,
   };
 }
 

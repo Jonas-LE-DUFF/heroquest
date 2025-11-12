@@ -107,14 +107,6 @@ const Board = ({
     const tile = localGameState.board[position.x][position.y];
     if (!tile || !socket.id) return;
 
-    const occupantType = tile.type;
-
-    if (occupantType === tileType.monster) {
-      if (localGameState.players.get(socket.id)?.role !== "game-master") {
-        console.log("cant select a monster as hero");
-        return;
-      }
-    }
     if (
       localGameState.players.get(socket.id)?.role === "hero" &&
       localGameState.currentTurn !== socket.id
