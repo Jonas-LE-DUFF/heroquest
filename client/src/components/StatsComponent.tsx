@@ -1,22 +1,28 @@
 import { Box, LinearProgress, Paper } from "@mui/material";
-import { Monster, Player, Unit } from "../shared/type";
+import { Monster, Player, Position, Unit } from "../shared/type";
 import "./StatsComponent.css";
-import { getFightDiceFaceNumber, getIconClassPath, getUnitClassName } from "../shared/utils";
-import { useState } from "react";
+import {
+  getFightDiceFaceNumber,
+  getIconClassPath,
+  getUnitClassName,
+  isPlayer,
+} from "../shared/utils";
+import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
 interface StatsComponentProps {
-  socket: string;
+  socket: Socket;
+  gameId: string;
+  position: Position;
   unit: Monster | Player | null;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
 }
 
-function isPlayer(u: Monster | Player): u is Player {
-  return (u as Player).class !== undefined;
-}
-
 const StatsComponent = ({
   socket,
+  gameId,
+  position,
   unit,
   setStatsVisible,
   isGameMaster,
@@ -25,7 +31,9 @@ const StatsComponent = ({
     unit?.stats ?? { name: "no stats found" }
   );
 
-  const [gold, setGold] = useState<number>((unit as Player)?.gold ?? 0);
+  useEffect(() => {
+    setStatsEdit(unit?.stats ?? { name: "no stats found" });
+  }, [unit]);
 
   if (!unit?.stats) {
     console.log("no stats found");
@@ -44,10 +52,8 @@ const StatsComponent = ({
               <p>Classe : </p>
               <img
                 className="heroClassIcon"
-                src={getIconClassPath(unit.class)}
-                alt={`Icône de classe ${
-                  getUnitClassName(unit.class)
-                }`}
+                src={getIconClassPath(unit)}
+                alt={`Icône de classe ${getUnitClassName(unit)}`}
               />
             </div>
           )}
@@ -123,39 +129,70 @@ const StatsComponent = ({
             </Box>
           )}
           {isGameMaster && (
-            <input
-              value={statsEdit.hp}
-              onChange={(e) =>
-                setStatsEdit({
-                  ...statsEdit,
-                  hp: Number(e.target.value),
-                })
-              }
-              type="number"
-            />
+            <div>
+              <label>HP : </label>
+              <input
+                value={statsEdit.hp}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    hp: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            </div>
           )}
           {isGameMaster && (
-            <input
-              value={statsEdit.maxHp}
-              onChange={(e) =>
-                setStatsEdit({
-                  ...statsEdit,
-                  maxHp: Number(e.target.value),
-                })
-              }
-              type="number"
-            />
+            <div>
+              <label>Max HP : </label>
+              <input
+                value={statsEdit.maxHp}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    maxHp: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            </div>
           )}
           {isPlayer(unit) && (
             <div>
               <div className="statElem">
                 <p>Or : </p>
-                {gold}
+                {statsEdit.gold}
               </div>
               {isGameMaster && (
                 <input
-                  value={gold}
-                  onChange={(e) => setGold(Number(e.target.value))}
+                  value={statsEdit.gold}
+                  onChange={(e) =>
+                    setStatsEdit({
+                      ...statsEdit,
+                      gold: Number(e.target.value),
+                    })
+                  }
+                  type="number"
+                />
+              )}
+            </div>
+          )}
+          {isPlayer(unit) === false && (
+            <div>
+              <div className="statElem">
+                <p>Déplacements : </p>
+                {statsEdit.movements}
+              </div>
+              {isGameMaster && (
+                <input
+                  value={statsEdit.movements}
+                  onChange={(e) =>
+                    setStatsEdit({
+                      ...statsEdit,
+                      movements: Number(e.target.value),
+                    })
+                  }
                   type="number"
                 />
               )}
@@ -168,12 +205,22 @@ const StatsComponent = ({
       </div>
     </Paper>
   );
+  function sendNewStats(newStats: Unit) {
+    // Send the new stats to the server or update the state
+    console.log("New stats to be saved: ", newStats);
+    socket.emit(
+      "update-stats-unit",
+      { gameId, newStats, position },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert("Erreur lors de la mise à jour des stats : " + response.error);
+        } else {
+          console.log("Stats updated successfully");
+        }
+      }
+    );
+  }
 };
-
-function sendNewStats(newStats: Unit) {
-  // Send the new stats to the server or update the state
-  console.log("New stats to be saved: ", newStats);
-}
 
 function getDices(numDices: number) {
   const dices = [];

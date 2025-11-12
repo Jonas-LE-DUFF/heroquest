@@ -22,6 +22,7 @@ import {
 } from "../shared/utils";
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
+import { Socket } from "socket.io-client/build/esm/socket";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -51,13 +52,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     nbDefenseDice: player?.stats?.nbDefenseDice ?? "1",
     hp: player?.stats?.hp ?? "1",
     spiritPoints: player?.stats?.spiritPoints ?? "1",
+    gold: player?.stats?.gold?.toString() ?? "0",
+    selectedSpellElements: player?.stats?.spells ?? ([] as spellElement[]),
   });
-
-  const [goldValue, setGoldValue] = useState(player?.gold ?? "1");
-
-  const [selectedSpellElements, setSelectedSpellElements] = useState<
-    spellElement[]
-  >([]);
 
   socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
     const gameState = convertSendableGameStateAsGameState(data.gameState);
@@ -130,46 +127,39 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         });
         break;
       case "gold":
-        setGoldValue(value);
+        setFormValues({
+          ...formValues,
+          gold: value,
+        });
         break;
     }
   };
 
   const handleSpellElementChange = (element: spellElement) => {
     if (heroType === heroClass.Elf) {
-      if (selectedSpellElements.includes(element)) {
+      if (formValues.selectedSpellElements.includes(element)) {
         // Deselect if already selected
-        setSelectedSpellElements([]);
+        setFormValues((prev) => ({
+          ...prev,
+          selectedSpellElements: [],
+        }));
         return false;
       }
       // Allow only one selection for Elf
-      setSelectedSpellElements([element]);
+      setFormValues((prev) => ({
+        ...prev,
+        selectedSpellElements: [element],
+      }));
     } else if (heroType === heroClass.Cleric) {
       // Toggle selection for Cleric
-      setSelectedSpellElements((prev) => {
-        if (prev.includes(element)) {
-          return prev.filter((el) => el !== element);
-        } else if (prev.length >= 3) {
-          prev.sort();
-          prev.shift();
-          return [...prev, element];
-        } else {
-          return [...prev, element];
-        }
-      });
+      setFormValues((prev) => ({
+        ...prev,
+        selectedSpellElements: prev.selectedSpellElements.includes(element)
+          ? prev.selectedSpellElements.filter((el) => el !== element)
+          : [...prev.selectedSpellElements, element],
+      }));
     }
   };
-
-  function isSpellElementDisabled(game: GameState, element: spellElement) {
-    if (!game) return false;
-    for (let player of game.players.values()) {
-      if (player.id === socket.id) continue;
-      if (player.spells?.includes(element)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   const renderSpellElements = () => {
     if (heroType !== heroClass.Elf && heroType !== heroClass.Cleric) {
@@ -191,9 +181,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         key={getElementName(element)}
         control={
           <Checkbox
-            checked={selectedSpellElements.includes(element)}
+            checked={formValues.selectedSpellElements.includes(element)}
             onChange={() => handleSpellElementChange(element)}
-            disabled={isSpellElementDisabled(gameState, element)}
+            disabled={isSpellElementDisabled(socket, gameState, element)}
           />
         }
         label={getElementName(element)}
@@ -210,6 +200,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         if (
           isNaN(Number(e)) &&
           !isSpellElementDisabled(
+            socket,
             gameState,
             spellElement[e as keyof typeof spellElement]
           )
@@ -218,27 +209,37 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           if (selectedSpells.length === 3) break;
         }
       }
-      setSelectedSpellElements(selectedSpells);
+      setFormValues((prev) => ({
+        ...prev,
+        selectedSpellElements: selectedSpells,
+      }));
     } else if (heroType === heroClass.Elf) {
       // Clear selections when switching away from elf or cleric
       for (const e in spellElement) {
         if (
           isNaN(Number(e)) &&
           !isSpellElementDisabled(
+            socket,
             gameState,
             spellElement[e as keyof typeof spellElement]
           )
         ) {
-          setSelectedSpellElements([
-            spellElement[e as keyof typeof spellElement],
-          ]);
+          setFormValues((prev) => ({
+            ...prev,
+            selectedSpellElements: [
+              spellElement[e as keyof typeof spellElement],
+            ],
+          }));
           break;
         }
       }
     } else {
-      setSelectedSpellElements([]);
+      setFormValues((prev) => ({
+        ...prev,
+        selectedSpellElements: [],
+      }));
     }
-  }, [gameState, heroType]);
+  }, [socket, gameState, heroType]);
 
   const handleSubmit = () => {
     if (!gameState) return;
@@ -262,6 +263,8 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       maxHp: Number(hp),
       spiritPoints: Number(spiritPoints),
       name: playerName,
+      gold: Number(formValues.gold),
+      spells: formValues.selectedSpellElements,
     };
 
     const statsSent = {
@@ -269,8 +272,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       playerId: socket.id,
       heroType: heroType,
       stats: stats,
-      spells: selectedSpellElements,
-      gold: goldValue,
     };
 
     socket.emit(
@@ -371,7 +372,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             helperText={
               formErrors.gold ? "Doit être un nombre entre 0 et 10" : ""
             }
-            value={goldValue}
+            value={formValues.gold}
           />
         </div>
         {[heroClass.Cleric, heroClass.Elf].includes(heroType) && (
@@ -389,5 +390,20 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     </div>
   );
 };
+
+function isSpellElementDisabled(
+  socket: Socket,
+  game: GameState,
+  element: spellElement
+) {
+  if (!game) return false;
+  for (let player of game.players.values()) {
+    if (player.id === socket.id) continue;
+    if (player.stats?.spells?.includes(element)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export default ChooseCharacter;

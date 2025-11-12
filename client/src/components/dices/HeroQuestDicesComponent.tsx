@@ -33,7 +33,6 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       listResults: diceFace[];
       role: "hero" | "game-master";
     }) => {
-      console.log("roll results", data);
       if (data.role !== role) return; // update is not for this component
       setCurrentNumberOfDices(data.listResults.length);
       setCurrentDiceFaces(data.listResults);

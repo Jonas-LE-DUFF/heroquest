@@ -139,7 +139,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         } else {
           playerClass = getHeroClassName(player.class);
         }
-        let spells = player.spells || [];
+        let spells = player.stats?.spells || [];
         const isGameMaster = player.role === "game-master";
 
         return (

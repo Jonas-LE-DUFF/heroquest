@@ -5,10 +5,13 @@ import "./GamePageView.css";
 import {
   Direction,
   GameState,
+  Monster,
   monsterClass,
+  Player,
   Position,
   SendableGameState,
   tileType,
+  Unit,
 } from "../shared/type";
 import { GameControls } from "../components/GameControlsComponent";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
@@ -28,6 +31,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [selectedType, setSelectedType] = useState<tileType | Direction | null>(
     null
   );
+  const [selectedUnit, setSelectedUnit] = useState<Player | Monster | null>(
+    null
+  );
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
     null
   );
@@ -43,20 +49,73 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       console.log("c'est l'update du gamePage", gameState);
 
-      setCurrentGameState(convertSendableGameStateAsGameState(data.gameState));
+      const updatedGameState = convertSendableGameStateAsGameState(
+        data.gameState
+      );
+      setCurrentGameState(updatedGameState);
+      if (selectedPosition) {
+        console.log(
+          "updating selected unit after game state update",
+          selectedPosition,
+          getUnitAtSelectedPosition(selectedPosition, updatedGameState)
+        );
+        setSelectedUnit(
+          getUnitAtSelectedPosition(selectedPosition, updatedGameState)
+        );
+      }
     });
 
+    socket.on(
+      "stats-updated",
+      (data: { entityId: string; newStats: Unit; isPlayer: boolean }) => {
+        console.log("stats updated received in game page", data);
+        const position = currentGameState.entityPositions.get(data.entityId);
+        if (!position) {
+          console.error("No entity found at position for stats update");
+          return;
+        }
+        if (data.isPlayer) {
+          let player = currentGameState.players.get(data.entityId);
+          if (player) {
+            player.stats = data.newStats;
+            currentGameState.players.set(data.entityId, player);
+          }
+        } else {
+          let monster = currentGameState.monsters.get(data.entityId);
+          if (monster) {
+            monster.stats = data.newStats;
+            currentGameState.monsters.set(data.entityId, monster);
+          }
+        }
+        console.log(
+          "game state after stat update : ",
+          currentGameState.players
+        );
+      }
+    );
+
     return () => {
+      socket.off("stats-updated");
       socket.off("game-state-update");
     };
-  }, [socket, gameState, currentGameState]);
+  }, [socket, gameState, currentGameState, selectedPosition]);
 
   const handleTileClick = (
     gameId: string,
     position: Position,
     monsterType: monsterClass | null
   ) => {
-    setSelectedPosition(position);
+    if (
+      selectedPosition !== null &&
+      selectedPosition.x === position.x &&
+      selectedPosition.y === position.y
+    ) {
+      setSelectedPosition(null);
+      setSelectedUnit(null);
+    } else {
+      setSelectedPosition(position);
+      setSelectedUnit(getUnitAtSelectedPosition(position, currentGameState));
+    }
     console.log(position);
 
     if (!selectedType) {
@@ -76,37 +135,21 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
   };
 
-  const getUnitAtSelectedPosition = () => {
-    if (!selectedPosition) {
-      return null;
-    }
-    const id = currentGameState.positionEntities.get(
-      selectedPosition.x + "," + selectedPosition.y
-    );
-    const unit =  id
-      ? currentGameState.players.get(id) ||
-          currentGameState.monsters.get(id) ||
-          null
-      : null;
-      console.log(" unit at selected position", unit);
-      return unit;
-  };
-
   return (
     <div className="game-page">
       {currentGameState && (
         <div className="game-container">
           <div
             className={
-              statsVisible && getUnitAtSelectedPosition() !== null
-                ? "HeroStats"
-                : "hidden"
+              statsVisible && selectedUnit !== null ? "HeroStats" : "hidden"
             }
           >
             {statsVisible && (
               <StatsComponent
                 socket={socket}
-                unit={getUnitAtSelectedPosition()}
+                gameId={gameState.id}
+                position={selectedPosition ?? { x: 0, y: 0 }}
+                unit={selectedUnit}
                 setStatsVisible={setStatsVisible}
                 isGameMaster={role === "game-master"}
               />
@@ -119,17 +162,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                   gameState={currentGameState}
                   socket={socket}
                   onTileClick={handleTileClick}
+                  selectedPosition={selectedPosition}
                   selectedType={selectedType}
                   monsterType={monsterType}
                 />
               )}
-            </div>
-            <div>
-              {
-                <button onClick={() => getUnitAtSelectedPosition() !== null && setStatsVisible(!statsVisible)}>
-                  {!statsVisible ? "Montrer stats" : "Cacher stats"}
-                </button>
-              }
+              <div>
+                {selectedUnit !== null && (
+                  <button
+                    onClick={() =>
+                      selectedUnit !== null && setStatsVisible(!statsVisible)
+                    }
+                  >
+                    {!statsVisible ? "Montrer stats" : "Cacher stats"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <div className="info-on-the-side">
@@ -153,10 +201,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                       ?.stats?.name}
                 </p>
               )}
-              {currentGameState.players ? (
+              {currentGameState.players && (
                 <p>Joueurs: {currentGameState.players.size}</p>
-              ) : (
-                <p></p>
               )}
             </div>
           </div>
@@ -164,6 +210,16 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       )}
     </div>
   );
+};
+
+const getUnitAtSelectedPosition = (pos: Position, game: GameState) => {
+  if (!pos) return null;
+  const id = game.positionEntities.get(pos.x + "," + pos.y);
+  const unit = id
+    ? game.players.get(id) || game.monsters.get(id) || null
+    : null;
+  console.log(" unit at selected position", unit);
+  return unit;
 };
 
 export default GamePage;

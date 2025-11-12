@@ -27,6 +27,10 @@ import diceHeroShield from "./../components/images/dices/battleDices/whiteShield
 
 import { heroClassFr, monsterClassFr, spellElementFr } from "./frenchEnums";
 
+function isPlayer(u: Monster | Player): u is Player {
+  return !u.id.match(/^idMonster/);
+}
+
 function convertSendableGameStateAsGameState(
   game: SendableGameState
 ): GameState {
@@ -76,13 +80,14 @@ function everyOneReady(game: GameState) {
   return true;
 }
 
-function getIconClassPath(entityType: heroClass | monsterClass): string {
-  if (Object.values(heroClass).includes(entityType as heroClass)) {
-    return getHeroClassIconPath(entityType as heroClass);
-  } else if (Object.values(monsterClass).includes(entityType as monsterClass)) {
-    return getMonsterIconPath(entityType as monsterClass);
+function getIconClassPath(entityType: Player | Monster): string {
+  if (entityType.class === undefined) {
+    return "unknown";
+  }
+  if (isPlayer(entityType)) {
+    return getHeroClassIconPath(entityType.class);
   } else {
-    return "unknown"; // or a default icon
+    return getMonsterIconPath(entityType.class);
   }
 }
 
@@ -155,14 +160,15 @@ function getElementName(element: spellElement) {
   return spellElementFr[element];
 }
 
-function getUnitClassName(unit: heroClass | monsterClass) {
-    if (Object.values(heroClass).includes(unit as heroClass)) {
-        return getHeroClassName(unit as heroClass);
-    } else if (Object.values(monsterClass).includes(unit as monsterClass)) {
-        return getMonsterClassName(unit as monsterClass);
-    } else {
-        return "unknown"; // or a default class name
-    }
+function getUnitClassName(unit: Player | Monster) {
+  if (unit.class === undefined) {
+    return "Inconnu";
+  }
+  if (isPlayer(unit)) {
+    return getHeroClassName(unit.class);
+  } else {
+    return getMonsterClassName(unit.class);
+  }
 }
 
 function getHeroClassName(classHero: heroClass) {
@@ -176,6 +182,7 @@ function getMonsterClassName(classMonster: monsterClass) {
 const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
 
 export {
+  isPlayer,
   convertSendableGameStateAsGameState,
   everyOneReady,
   getIconClassPath,
