@@ -71,11 +71,26 @@ const GameControls = ({
   const movePlayer = (direction: Direction) => {
     console.log("movement");
 
-    socket.emit("move-unit-one-step", {
-      gameId,
-      unitId: socket.id,
-      direction: direction,
-    });
+    socket.emit(
+      "move-unit-one-step",
+      {
+        gameId,
+        unitId: socket.id,
+        direction: direction,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          setMessage(`Erreur de déplacement du joueur: ${response.error}`);
+        }
+        // Update selected position and unit after movement
+        const pos = game.entityPositions.get(socket.id);
+        console.log("pos after move", pos);
+        if (pos) {
+          console.log("setting position to ", pos);
+          setSelectedPosition(pos);
+        }
+      }
+    );
   };
 
   const moveMonster = (direction: Direction) => {
@@ -84,22 +99,29 @@ const GameControls = ({
       return;
     }
 
-    socket.emit("move-unit-one-step", {
-      gameId,
-      unitId: selectedUnit.id,
-      direction: direction,
-    }, (response: { success: boolean; error?: string }) => {
-      if (!response.success) {
-        setMessage(`Erreur de déplacement du monstre: ${response.error}`);
-      }else{
-        const pos = game.entityPositions.get(selectedUnit.id);
-        if(pos){
-          console.log("setting position to ", pos);
-          setSelectedPosition(pos);
+    socket.emit(
+      "move-unit-one-step",
+      {
+        gameId,
+        unitId: selectedUnit.id,
+        direction: direction,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          setMessage(`Erreur de déplacement du monstre: ${response.error}`);
+        } else {
+          const pos = game.entityPositions.get(selectedUnit.id);
+          console.log("position found : ", pos);
+          console.log(game.entityPositions, selectedUnit.id);
+
+          if (pos) {
+            console.log("setting position to ", pos);
+            setSelectedPosition(pos);
+          }
+          setSelectedUnit(selectedUnit);
         }
-        setSelectedUnit(selectedUnit);
       }
-    });
+    );
   };
 
   const selectMonster = (monster: monsterClass) => {
@@ -280,11 +302,10 @@ const GameControls = ({
           role={"game-master"}
           viewerRole={role}
         />
-        {(role === "game-master" &&
+        {role === "game-master" &&
           selectedUnit !== null &&
-          !isPlayer(selectedUnit)) && (
-          renderMovementControls(role)
-        )}
+          !isPlayer(selectedUnit) &&
+          renderMovementControls(role)}
         <hr />
         {role === "game-master" && (
           <MasterControls socket={socket} gameId={gameId} />
