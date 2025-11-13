@@ -187,6 +187,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               monsterType={monsterType}
               setMonsterType={setMonsterType}
               selectedUnit={selectedUnit}
+              setSelectedPosition={setSelectedPosition}
+              setSelectedUnit={setSelectedUnit}
             />
 
             <div className="game-info">

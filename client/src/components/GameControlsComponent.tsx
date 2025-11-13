@@ -28,6 +28,8 @@ interface GameControlsProps {
   monsterType: monsterClass | null;
   setMonsterType: (type: monsterClass | null) => void;
   selectedUnit: Player | Monster | null;
+  setSelectedUnit: (unit: Player | Monster | null) => void;
+  setSelectedPosition: (pos: Position | null) => void;
 }
 
 const GameControls = ({
@@ -35,7 +37,9 @@ const GameControls = ({
   setSelectedType,
   monsterType,
   setMonsterType,
-  selectedUnit
+  selectedUnit,
+  setSelectedPosition,
+  setSelectedUnit,
 }: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
@@ -87,6 +91,13 @@ const GameControls = ({
     }, (response: { success: boolean; error?: string }) => {
       if (!response.success) {
         setMessage(`Erreur de déplacement du monstre: ${response.error}`);
+      }else{
+        const pos = game.entityPositions.get(selectedUnit.id);
+        if(pos){
+          console.log("setting position to ", pos);
+          setSelectedPosition(pos);
+        }
+        setSelectedUnit(selectedUnit);
       }
     });
   };
