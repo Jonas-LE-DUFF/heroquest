@@ -185,11 +185,11 @@ export interface ClientToServerEvents {
   // lobby actions
   "start-game": (data: { gameId: string }) => void;
   // in-turn actions
-  "move-monster": (data: {
+  "move-unit-one-step": (data: {
     gameId: string;
-    monsterMoved: Monster;
-    newPosition: Position;
-  }) => void;
+    unitId: string;
+    direction: Direction;
+  }, callback: (response: { success: boolean; error?: string }) => void) => void;
 
   "place-element": (data: {
     gameId: string;

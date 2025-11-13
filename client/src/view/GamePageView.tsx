@@ -45,6 +45,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   useEffect(() => {
     if (!gameState) return;
+    selectedPosition && setSelectedUnit(getUnitAtSelectedPosition(selectedPosition, gameState));
+  }, [selectedPosition, gameState]);
+
+  useEffect(() => {
+    if (!gameState) return;
 
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       console.log("c'est l'update du gamePage", gameState);
@@ -54,11 +59,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       );
       setCurrentGameState(updatedGameState);
       if (selectedPosition) {
-        console.log(
-          "updating selected unit after game state update",
-          selectedPosition,
-          getUnitAtSelectedPosition(selectedPosition, updatedGameState)
-        );
         setSelectedUnit(
           getUnitAtSelectedPosition(selectedPosition, updatedGameState)
         );
@@ -186,6 +186,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               setSelectedType={setSelectedType}
               monsterType={monsterType}
               setMonsterType={setMonsterType}
+              selectedUnit={selectedUnit}
             />
 
             <div className="game-info">

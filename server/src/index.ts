@@ -26,6 +26,7 @@ import {
   fiveHeroPlayers,
   generateMonsterId,
   getAmountOfDices,
+  isPlayer,
   positionKey,
 } from "./shared/util";
 
@@ -595,68 +596,76 @@ io.on("connection", (socket) => {
     }
   );
 
-  // move-player-one-step
+  // move-unit-one-step
   socket.on(
-    "move-player-one-step",
-    (data: { gameId: string; playerId: string; direction: Direction }) => {
+    "move-unit-one-step",
+    (data: { gameId: string; unitId: string; direction: Direction }, callback: (response: { success: boolean; error?: string }) => void) => {
       const gameState = games.get(data.gameId);
       if (!gameState) {
-        console.error("game couldn't be found in move-player-one-step");
-        return;
+        console.error("game couldn't be found in move-unit-one-step");
+        return callback({ success: false, error: "La partie n'existe plus." });
       }
-      if (gameState.currentTurn !== data.playerId) {
+      const moverPlayer = gameState.players.get(socket.id);
+      if (!moverPlayer) {
+        console.error("player moving unit couldn't be found in move-unit-one-step");
+        return callback({ success: false, error: "Le joueur déplaçant l'unité n'a pas été trouvé." });
+      }
+      
+      const unit = gameState.players.get(data.unitId) || gameState.monsters.get(data.unitId);
+      if (!unit) {
+        console.error("unit couldn't be found in move-unit-one-step");
+        return callback({ success: false, error: "L'unité n'a pas été trouvée." });
+      }
+      if (isPlayer(unit) && gameState.currentTurn !== unit.id && moverPlayer.role !== "game-master") {
         console.error("not your turn");
-        return;
+        return callback({ success: false, error: "Ce n'est pas votre tour." });
       }
-      const player = gameState.players.get(data.playerId);
-      if (!player) {
-        console.error("player couldn't be found in move-player-one-step");
-        return;
-      }
-      const position = gameState.entityPositions.get(player.id);
+      const position = gameState.entityPositions.get(unit.id);
       if (!position) {
         console.error(
-          "position of player couldn't be found in move-player-one-step"
+          "position of unit couldn't be found in move-unit-one-step"
         );
-        return;
+        return callback({ success: false, error: "La position de l'unité n'a pas été trouvée." });
       }
 
       if (!canMove(gameState, position, data.direction)) {
         console.error(
           "movement isn't valid SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
         );
-        return;
+        return callback({ success: false, error: "le mouvement n'est pas valide" });
       }
       const newPosition = getPositionAfterMove(position, data.direction);
       if (newPosition === position) {
         console.error(
           "no movement SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
         );
-        return;
+        return callback({ success: false, error: "aucun mouvement" });
       }
       const tile = gameState.board[position.x]?.[position.y];
       const newTile = gameState.board[newPosition.x]?.[newPosition.y];
 
       if (!tile || !newTile) {
         console.error("tiles not found in board");
-        return;
+        return callback({ success: false, error: "les tuiles n'ont pas été trouvées sur le plateau" });
       }
 
       console.log("movement handled should update");
 
       // make the hero lose 1 movement point
-      newTile.entityId = player.id;
+      newTile.entityId = unit.id;
       newTile.type = tileType.hero;
       tile.entityId = undefined;
       tile.type = tileType.empty;
-      gameState.entityPositions.set(player.id, newPosition);
-      gameState.positionEntities.set(positionKey(newPosition), player.id);
+      gameState.entityPositions.set(unit.id, newPosition);
+      gameState.positionEntities.set(positionKey(newPosition), unit.id);
       const oldPositionKey = { x: position.x, y: position.y };
       gameState.positionEntities.delete(positionKey(oldPositionKey));
 
       io.to(data.gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(gameState),
       });
+
+      return callback({ success: true });
     }
   );
 
