@@ -7,16 +7,13 @@ import {
   monsterClass,
   Player,
   Position,
-  SendableGameState,
   tileType,
 } from "../shared/type";
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import { Grid, Tooltip } from "@mui/material";
 import {
-  convertSendableGameStateAsGameState,
-  getMonsterIconPath,
-  isPlayer,
+  getMonsterIconPath
 } from "../shared/utils";
 import RedDices from "./dices/RedDicesComponent";
 import { monsterClassFr } from "../shared/frenchEnums";
@@ -24,6 +21,7 @@ import MasterControls from "./MasterControlsComponent";
 
 interface GameControlsProps {
   socket: any;
+  game: GameState;
   setSelectedType: (type: tileType | Direction | null) => void; //Direction -> door placement
   monsterType: monsterClass | null;
   setMonsterType: (type: monsterClass | null) => void;
@@ -34,6 +32,7 @@ interface GameControlsProps {
 
 const GameControls = ({
   socket,
+  game,
   setSelectedType,
   monsterType,
   setMonsterType,
@@ -45,25 +44,16 @@ const GameControls = ({
   const gameId = location.state.gameId;
   const role = location.state.role;
 
-  const [game, setgame] = useState<GameState>(location.state.gameState);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!game) return;
-
-    // Écouter les mises à jour du jeu
-    socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
-      console.log("c'est l'update du gamePage", game);
-
-      setgame(convertSendableGameStateAsGameState(data.gameState));
-    });
 
     socket.on("player-moved", (data: any) => {
       setMessage(`${data.playerName} s'est déplacé`);
     });
 
     return () => {
-      socket.off("game-state-update");
       socket.off("player-moved");
     };
   }, [socket, game]);
@@ -80,18 +70,13 @@ const GameControls = ({
         if (!response.success) {
           alert(`Erreur de déplacement du joueur: ${response.error}`);
         }
-        // Update selected position and unit after movement
-        const pos = game.entityPositions.get(socket.id);
-        if (pos) {
-          setSelectedPosition(pos);
-        }
       }
     );
   };
 
   const moveMonster = (direction: Direction) => {
-    if (!selectedUnit || isPlayer(selectedUnit) || role !== "game-master") {
-      console.error("No monster selected for movement");
+    if (!selectedUnit || role !== "game-master") {
+      console.error("No unit selected for movement");
       return;
     }
 
@@ -105,12 +90,6 @@ const GameControls = ({
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           alert(`Erreur de déplacement du monstre: ${response.error}`);
-        } else {
-          const pos = game.entityPositions.get(selectedUnit.id);
-          if (pos) {
-            setSelectedPosition(pos);
-          }
-          setSelectedUnit(selectedUnit);
         }
       }
     );
@@ -296,7 +275,6 @@ const GameControls = ({
         />
         {role === "game-master" &&
           selectedUnit !== null &&
-          !isPlayer(selectedUnit) &&
           renderMovementControls(role)}
         <hr />
         {role === "game-master" && (
