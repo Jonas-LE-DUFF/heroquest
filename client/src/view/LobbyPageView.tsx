@@ -20,7 +20,6 @@ interface LobbyPageProps {
 const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  console.log("loaction", location);
 
   const playerName = location.state.playerName;
   const [gameState, setGameState] = useState<GameState | null>(

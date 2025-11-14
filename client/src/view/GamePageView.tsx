@@ -23,7 +23,6 @@ interface GamePageProps {
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
-  const gameState = location.state.gameState;
   const role = location.state.role;
 
   const [monsterType, setMonsterType] = useState<monsterClass | null>(null);
@@ -38,59 +37,75 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     null
   );
 
-  const [currentGameState, setCurrentGameState] =
-    useState<GameState>(gameState);
+  const [currentGameState, setCurrentGameState] = useState<GameState>(
+    location.state.gameState
+  );
 
   const [statsVisible, setStatsVisible] = useState(false);
 
   useEffect(() => {
-    if (!gameState) return;
+    if (!currentGameState) return;
+    selectedPosition &&
+      setSelectedUnit(
+        getUnitAtSelectedPosition(selectedPosition, currentGameState)
+      );
+  }, [selectedPosition, currentGameState]);
 
+  useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
-      console.log("c'est l'update du gamePage", gameState);
-
       const updatedGameState = convertSendableGameStateAsGameState(
         data.gameState
       );
-      setCurrentGameState(updatedGameState);
-      if (selectedPosition) {
-        console.log(
-          "updating selected unit after game state update",
-          selectedPosition,
-          getUnitAtSelectedPosition(selectedPosition, updatedGameState)
-        );
-        setSelectedUnit(
-          getUnitAtSelectedPosition(selectedPosition, updatedGameState)
-        );
+      console.log("c'est l'update du gamePage", updatedGameState);
+      const selectedId = selectedUnit?.id;
+      if (selectedId) {
+        const pos = updatedGameState.entityPositions.get(selectedId);
+        if (pos) {
+          setSelectedPosition(pos);
+          setSelectedUnit(getUnitAtSelectedPosition(pos, updatedGameState));
+        } else {
+          // selected entity no longer has a position -> clear selection
+          setSelectedPosition(null);
+          setSelectedUnit(null);
+        }
+      } else if (selectedPosition) {
+        const unit = getUnitAtSelectedPosition(selectedPosition, updatedGameState);
+        setSelectedUnit(unit);
       }
+
+      setCurrentGameState(updatedGameState);
     });
 
     socket.on(
       "stats-updated",
       (data: { entityId: string; newStats: Unit; isPlayer: boolean }) => {
         console.log("stats updated received in game page", data);
-        const position = currentGameState.entityPositions.get(data.entityId);
-        if (!position) {
-          console.error("No entity found at position for stats update");
-          return;
-        }
-        if (data.isPlayer) {
-          let player = currentGameState.players.get(data.entityId);
-          if (player) {
-            player.stats = data.newStats;
-            currentGameState.players.set(data.entityId, player);
+        setCurrentGameState((prev) => {
+          if (!prev) return prev;
+          const position = prev.entityPositions.get(data.entityId);
+          if (!position) {
+            console.error("No entity found at position for stats update");
+            return prev;
           }
-        } else {
-          let monster = currentGameState.monsters.get(data.entityId);
-          if (monster) {
-            monster.stats = data.newStats;
-            currentGameState.monsters.set(data.entityId, monster);
+
+          // shallow copy maps we will modify
+          const players = new Map(prev.players);
+          const monsters = new Map(prev.monsters);
+
+          if (data.isPlayer) {
+            const player = players.get(data.entityId);
+            if (player) {
+              players.set(data.entityId, { ...player, stats: data.newStats });
+            }
+          } else {
+            const monster = monsters.get(data.entityId);
+            if (monster) {
+              monsters.set(data.entityId, { ...monster, stats: data.newStats });
+            }
           }
-        }
-        console.log(
-          "game state after stat update : ",
-          currentGameState.players
-        );
+
+          return { ...prev, players, monsters } as GameState;
+        });
       }
     );
 
@@ -98,7 +113,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       socket.off("stats-updated");
       socket.off("game-state-update");
     };
-  }, [socket, gameState, currentGameState, selectedPosition]);
+  }, [socket, selectedPosition, selectedUnit?.id]);
 
   const handleTileClick = (
     gameId: string,
@@ -116,7 +131,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setSelectedPosition(position);
       setSelectedUnit(getUnitAtSelectedPosition(position, currentGameState));
     }
-    console.log(position);
 
     if (!selectedType) {
       //nothing to place
@@ -147,7 +161,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             {statsVisible && (
               <StatsComponent
                 socket={socket}
-                gameId={gameState.id}
+                gameId={currentGameState.id}
                 position={selectedPosition ?? { x: 0, y: 0 }}
                 unit={selectedUnit}
                 setStatsVisible={setStatsVisible}
@@ -183,9 +197,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           <div className="info-on-the-side">
             <GameControls
               socket={socket}
+              game={currentGameState}
               setSelectedType={setSelectedType}
               monsterType={monsterType}
               setMonsterType={setMonsterType}
+              selectedUnit={selectedUnit}
+              setSelectedPosition={setSelectedPosition}
+              setSelectedUnit={setSelectedUnit}
             />
 
             <div className="game-info">
@@ -218,7 +236,6 @@ const getUnitAtSelectedPosition = (pos: Position, game: GameState) => {
   const unit = id
     ? game.players.get(id) || game.monsters.get(id) || null
     : null;
-  console.log(" unit at selected position", unit);
   return unit;
 };
 

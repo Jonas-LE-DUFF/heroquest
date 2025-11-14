@@ -85,11 +85,12 @@ export const openDoor = (
 export const canMove = (
   gameState: GameState,
   from: Position,
-  direction: Direction
+  direction: Direction,
+  isPlayer: boolean
 ): boolean => {
   if (
     hasWall(gameState.walls, from, direction) &&
-    !hasDoor(gameState.doors, from, direction)
+    (!hasDoor(gameState.doors, from, direction) || !isPlayer) // A monster can't open doors
   ) {
     console.error("wall in the way");
     return false;
@@ -101,9 +102,6 @@ export const canMove = (
     return false;
   }
 
-  if (hasDoor(gameState.doors, from, direction)) {
-    openDoor(gameState.doors, gameState.walls, from, direction);
-  }
 
   return true;
 };

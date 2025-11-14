@@ -84,7 +84,6 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
     currentNumberOfDices: number
   ) {
     if (currentDiceFaces === null) {
-      console.log("no dice faces given");
       return;
     }
     const dices = [];

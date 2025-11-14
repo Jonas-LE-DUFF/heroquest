@@ -8,6 +8,10 @@ import {
   Unit,
 } from "./type";
 
+function isPlayer(u: Monster | Player): u is Player {
+  return !u.id.match(/^idMonster/);
+}
+
 function getAmountOfDices(
   game: GameState,
   playerId: string,
@@ -121,6 +125,7 @@ function convertSendableGameStateAsGameState(
 const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
 
 export {
+  isPlayer,
   getAmountOfDices,
   convertGameStateAsSendableGameState,
   convertSendableGameStateAsGameState,

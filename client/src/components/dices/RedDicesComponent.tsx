@@ -44,9 +44,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
         role === "hero"
       ) {
         setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1)));
-        console.log("filling");
       }
-      console.log("current dice faces", currentDiceFaces);
     };
 
     socket.on("red-dice-update", onRedDiceUpdate);
@@ -94,7 +92,6 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
 
   function renderDices(currentDiceFaces: Array<number> | null) {
     if (currentDiceFaces === null) {
-      console.log("no dice faces given");
       return;
     }
     const dices = [];

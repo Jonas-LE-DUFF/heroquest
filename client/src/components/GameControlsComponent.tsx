@@ -3,16 +3,17 @@ import { useLocation } from "react-router-dom";
 import {
   Direction,
   GameState,
+  Monster,
   monsterClass,
-  SendableGameState,
+  Player,
+  Position,
   tileType,
 } from "../shared/type";
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import { Grid, Tooltip } from "@mui/material";
 import {
-  convertSendableGameStateAsGameState,
-  getMonsterIconPath,
+  getMonsterIconPath
 } from "../shared/utils";
 import RedDices from "./dices/RedDicesComponent";
 import { monsterClassFr } from "../shared/frenchEnums";
@@ -20,51 +21,78 @@ import MasterControls from "./MasterControlsComponent";
 
 interface GameControlsProps {
   socket: any;
+  game: GameState;
   setSelectedType: (type: tileType | Direction | null) => void; //Direction -> door placement
   monsterType: monsterClass | null;
   setMonsterType: (type: monsterClass | null) => void;
+  selectedUnit: Player | Monster | null;
+  setSelectedUnit: (unit: Player | Monster | null) => void;
+  setSelectedPosition: (pos: Position | null) => void;
 }
 
 const GameControls = ({
   socket,
+  game,
   setSelectedType,
   monsterType,
   setMonsterType,
+  selectedUnit,
+  setSelectedPosition,
+  setSelectedUnit,
 }: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
   const role = location.state.role;
 
-  const [game, setgame] = useState<GameState>(location.state.gameState);
   const [message, setMessage] = useState("");
+
   useEffect(() => {
     if (!game) return;
-
-    // Écouter les mises à jour du jeu
-    socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
-      console.log("c'est l'update du gamePage", game);
-
-      setgame(convertSendableGameStateAsGameState(data.gameState));
-    });
 
     socket.on("player-moved", (data: any) => {
       setMessage(`${data.playerName} s'est déplacé`);
     });
 
     return () => {
-      socket.off("game-state-update");
       socket.off("player-moved");
     };
   }, [socket, game]);
 
   const movePlayer = (direction: Direction) => {
-    console.log("movement");
+    socket.emit(
+      "move-unit-one-step",
+      {
+        gameId,
+        unitId: socket.id,
+        direction: direction,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert(`Erreur de déplacement du joueur: ${response.error}`);
+        }
+      }
+    );
+  };
 
-    socket.emit("move-player-one-step", {
-      gameId,
-      playerId: socket.id,
-      direction: direction,
-    });
+  const moveMonster = (direction: Direction) => {
+    if (!selectedUnit || role !== "game-master") {
+      console.error("No unit selected for movement");
+      return;
+    }
+
+    socket.emit(
+      "move-unit-one-step",
+      {
+        gameId,
+        unitId: selectedUnit.id,
+        direction: direction,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert(`Erreur de déplacement du monstre: ${response.error}`);
+        }
+      }
+    );
   };
 
   const selectMonster = (monster: monsterClass) => {
@@ -148,22 +176,36 @@ const GameControls = ({
     return buttons;
   };
 
+  const renderMovementControls = (role: "game-master" | "hero") => {
+    if (role === "hero")
+      return (
+        <div className="movement-controls">
+          <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
+          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
+          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️ Gauche</button>
+          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️ Droite</button>
+        </div>
+      );
+    if (role === "game-master")
+      return (
+        <div className="movement-controls">
+          <button onClick={() => moveMonster(Direction.UP)}>⬆️ Haut</button>
+          <button onClick={() => moveMonster(Direction.DOWN)}>⬇️ Bas</button>
+          <button onClick={() => moveMonster(Direction.LEFT)}>⬅️ Gauche</button>
+          <button onClick={() => moveMonster(Direction.RIGHT)}>
+            ➡️ Droite
+          </button>
+        </div>
+      );
+  };
+
   return (
     <div>
       <div className="game-controls hero">
         <h3>Actions</h3>
-        {role === "hero" && game.currentTurn === socket.id && (
-          <div className="movement-controls">
-            <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
-            <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
-            <button onClick={() => movePlayer(Direction.LEFT)}>
-              ⬅️ Gauche
-            </button>
-            <button onClick={() => movePlayer(Direction.RIGHT)}>
-              ➡️ Droite
-            </button>
-          </div>
-        )}
+        {role === "hero" &&
+          game.currentTurn === socket.id &&
+          renderMovementControls(role)}
 
         <RedDices
           socket={socket}
@@ -231,6 +273,9 @@ const GameControls = ({
           role={"game-master"}
           viewerRole={role}
         />
+        {role === "game-master" &&
+          selectedUnit !== null &&
+          renderMovementControls(role)}
         <hr />
         {role === "game-master" && (
           <MasterControls socket={socket} gameId={gameId} />
