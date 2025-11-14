@@ -19,7 +19,7 @@ export const hasWall = (
       return walls.vertical[x]?.[y] ?? false; // Left Wall
 
     case Direction.RIGHT:
-      return walls.vertical[x]?.[y - 1] ?? false; // Right Wall
+      return walls.vertical[x]?.[y + 1] ?? false; // Right Wall
 
     default:
       return false;

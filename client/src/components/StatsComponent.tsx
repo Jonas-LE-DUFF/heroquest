@@ -207,7 +207,6 @@ const StatsComponent = ({
   );
   function sendNewStats(newStats: Unit) {
     // Send the new stats to the server or update the state
-    console.log("New stats to be saved: ", newStats);
     socket.emit(
       "update-stats-unit",
       { gameId, newStats, position },

@@ -54,15 +54,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       console.log("c'est l'update du gamePage", data.gameState);
-
       const updatedGameState = convertSendableGameStateAsGameState(
         data.gameState
       );
-      setCurrentGameState(updatedGameState);
       const pos = updatedGameState.entityPositions.get(selectedUnit?.id || "");
       if (pos) {
         setSelectedPosition(pos);
       }
+      setCurrentGameState(updatedGameState);
+      
     });
 
     socket.on(
@@ -87,10 +87,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             currentGameState.monsters.set(data.entityId, monster);
           }
         }
-        console.log(
-          "game state after stat update : ",
-          currentGameState.players
-        );
       }
     );
 
@@ -116,7 +112,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setSelectedPosition(position);
       setSelectedUnit(getUnitAtSelectedPosition(position, currentGameState));
     }
-    console.log(position);
 
     if (!selectedType) {
       //nothing to place
@@ -221,12 +216,6 @@ const getUnitAtSelectedPosition = (pos: Position, game: GameState) => {
   const unit = id
     ? game.players.get(id) || game.monsters.get(id) || null
     : null;
-  console.log("getting unit at position", id);
-  console.log(" game players", game.players);
-  console.log(" game monsters", game.monsters);
-  console.log(" entity positions", game.entityPositions);
-  console.log(" position entities", game.positionEntities);
-  console.log(" unit at selected position", pos, unit);
   return unit;
 };
 

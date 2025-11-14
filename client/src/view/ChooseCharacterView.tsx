@@ -31,7 +31,6 @@ interface ChooseCharacterProps {
 const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  console.log("location hero choice", location);
 
   const [gameState, setGameState] = useState(location.state?.gameState || null);
   const { playerName, gameId } = location.state || {};
@@ -98,9 +97,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       [fieldName]: !isValid,
     }));
 
-    if (isValid && value !== "") {
-      console.log(`${fieldName}:`, numericValue);
-    }
     switch (fieldName) {
       case "attackDice":
         setFormValues({
@@ -253,9 +249,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       return;
     }
     const { nbAttackDice, nbDefenseDice, hp, spiritPoints } = formValues;
-
-    console.log("PLAYER NAME :", playerName);
-
+    
     const stats: Unit = {
       nbAttackDice: Number(nbAttackDice),
       nbDefenseDice: Number(nbDefenseDice),

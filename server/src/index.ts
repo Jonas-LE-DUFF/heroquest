@@ -69,7 +69,6 @@ io.on(
     socket.on(
       "join-game",
       (data: { gameId: string; playerName: string; role: PlayerRole }) => {
-        console.log("join-game caught");
 
         const { gameId, playerName, role } = data;
         console.log("gameId : ", gameId, "playerName : ", playerName);
@@ -241,7 +240,6 @@ io.on(
         }
       }
       const firstPlayerId = game.turnOrder.find((elem) => {
-        console.log(elem);
         return elem !== undefined;
       });
       if (!firstPlayerId) {
@@ -254,7 +252,6 @@ io.on(
         gameState: convertGameStateAsSendableGameState(game),
       });
       console.log("📢 Notification game-start envoyée à tous les joueurs");
-      console.log(game.players);
       console.log("list of players : ");
       for (let key of game.players) {
         console.log("", key[1].stats);
@@ -460,8 +457,6 @@ io.on(
           });
         }
 
-        console.log("movement handled should update");
-
         newTile.entityId = unit.id;
         if (isPlayer(unit)) {
           newTile.type = tileType.hero;
@@ -494,15 +489,11 @@ io.on(
 
         return;
       }
-      console.log(game.turnOrder);
 
       let playerFound = false;
 
       for (let i = 0; i < game.turnOrder.length; i++) {
         let nextPlayer = game.turnOrder[i + 1];
-        console.log(i);
-        console.log(game.turnOrder[i]);
-        console.log(game.currentTurn);
         if (i === 4) {
           //last element of the list going back to first
           nextPlayer = game.turnOrder.find((elem) => {
@@ -518,7 +509,6 @@ io.on(
           }
         }
         if (playerFound && nextPlayer) {
-          console.log("new player found ! : ", nextPlayer);
           game.currentTurn = nextPlayer;
           break;
         }
@@ -713,18 +703,12 @@ io.on(
         if (existingPlayer) {
           existingPlayer.stats = { ...existingPlayer.stats, ...newStats };
           game.players.set(entityIdAtPosition, existingPlayer);
-          console.log("sending to game : ", gameId);
 
           io.to(gameId).emit("stats-updated", {
             entityId: entityIdAtPosition,
             newStats: newStats,
             isPlayer: true,
           });
-          console.log(
-            "emitting stats-updated for player :",
-            entityIdAtPosition
-          );
-          console.log("newStats", game.players.get(entityIdAtPosition));
 
           return callback({ success: true });
         } else if (existingMonster) {

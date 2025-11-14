@@ -111,8 +111,6 @@ const Board = ({
       localGameState.players.get(socket.id)?.role === "hero" &&
       localGameState.currentTurn !== socket.id
     ) {
-      console.log("please wait your turn");
-      console.log(localGameState.players.get(socket.id)?.role);
       return;
     }
 
@@ -126,7 +124,6 @@ const Board = ({
   const renderGrid = () => {
     const grid = [];
     if (!localGameState) {
-      console.log("erreur : ", localGameState);
       return;
     }
     for (let row = 0; row < localGameState.board.length; row++) {
@@ -184,8 +181,6 @@ const Board = ({
         />
       );
     }
-    console.log("tile type returned  : ", tileType[tile.type]);
-
     return tileType[tile.type];
   };
 

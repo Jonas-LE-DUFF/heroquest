@@ -31,7 +31,6 @@ function handleRollFightDice(
       },
       callback: (response: { success: boolean; error?: string }) => void
     ) => {
-      console.log("roll-dice");
 
       const gameState = games.get(data.gameId);
       let numberOfDices: number | undefined;
@@ -74,7 +73,6 @@ function handleRollFightDice(
         });
       } else {
         // taking the amount of dices from the player's stats
-        console.log("using dice stats");
 
         numberOfDices = getAmountOfDices(
           gameState,
@@ -90,7 +88,6 @@ function handleRollFightDice(
           error: "pas de nombre de dés à lancer défini",
         });
       }
-      console.log("sending");
 
       for (let j = 0; j < 15; j++) {
         let results: diceFace[] = [];
@@ -214,14 +211,12 @@ function handleSpecialRollAuth(
       }
       const playerIds = game.players.keys();
       let playerId: string | undefined = playerIds.next().value;
-      console.log("start ID", playerId);
 
       while (playerId !== undefined) {
         if (game.players.get(playerId)?.class === playerClass) {
           break;
         }
         playerId = playerIds.next().value;
-        console.log("searching player for special dice authorization");
       }
       if (!playerId) {
         console.error("player couldn't be found");
@@ -232,9 +227,7 @@ function handleSpecialRollAuth(
         numberOfDices,
         diceType: typeOfDices,
       };
-      console.log(specialAuthorizedPlayer);
 
-      console.log("emitting special-authorization to player :", playerId);
       socket.to(gameId).emit("special-authorization", {
         playerId,
         amountOfDices: numberOfDices,

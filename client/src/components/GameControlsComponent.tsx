@@ -69,8 +69,6 @@ const GameControls = ({
   }, [socket, game]);
 
   const movePlayer = (direction: Direction) => {
-    console.log("movement");
-
     socket.emit(
       "move-unit-one-step",
       {
@@ -80,13 +78,11 @@ const GameControls = ({
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          setMessage(`Erreur de déplacement du joueur: ${response.error}`);
+          alert(`Erreur de déplacement du joueur: ${response.error}`);
         }
         // Update selected position and unit after movement
         const pos = game.entityPositions.get(socket.id);
-        console.log("pos after move", pos);
         if (pos) {
-          console.log("setting position to ", pos);
           setSelectedPosition(pos);
         }
       }
@@ -108,14 +104,10 @@ const GameControls = ({
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          setMessage(`Erreur de déplacement du monstre: ${response.error}`);
+          alert(`Erreur de déplacement du monstre: ${response.error}`);
         } else {
           const pos = game.entityPositions.get(selectedUnit.id);
-          console.log("position found : ", pos);
-          console.log(game.entityPositions, selectedUnit.id);
-
           if (pos) {
-            console.log("setting position to ", pos);
             setSelectedPosition(pos);
           }
           setSelectedUnit(selectedUnit);

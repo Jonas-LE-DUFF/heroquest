@@ -26,7 +26,6 @@ function placeDoor(
     positionSent = { x: position.x, y: position.y + 1 };
     verticalOrHorizontal = "vertical";
   }
-  console.log("emitting door placed");
   if (verticalOrHorizontal === "horizontal") {
     const row = gameState.doors.horizontal[positionSent.x] ?? [];
     row[positionSent.y] = true;
