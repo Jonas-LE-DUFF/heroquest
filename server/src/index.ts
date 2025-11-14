@@ -27,7 +27,12 @@ import {
   positionKey,
 } from "./shared/util";
 
-import { canMove, getPositionAfterMove } from "./shared/wallFunctions";
+import {
+  canMove,
+  getPositionAfterMove,
+  hasDoor,
+  openDoor,
+} from "./shared/wallFunctions";
 import { initializeBoard, initializeWalls } from "./shared/initializator";
 import { generateMonster } from "./shared/monsterGenerate";
 import { placeDoor } from "./shared/doors";
@@ -424,7 +429,7 @@ io.on(
           });
         }
 
-        if (!canMove(gameState, position, data.direction)) {
+        if (!canMove(gameState, position, data.direction, isPlayer(unit))) {
           console.error(
             "movement isn't valid SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
           );
@@ -434,6 +439,10 @@ io.on(
           });
         }
         const newPosition = getPositionAfterMove(position, data.direction);
+
+        if (hasDoor(gameState.doors, position, data.direction) && isPlayer(unit)) {
+          openDoor(gameState.doors, gameState.walls, position, data.direction);
+        }
         if (newPosition === position) {
           console.error(
             "no movement SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
