@@ -36,6 +36,7 @@ export interface Unit {
   movements?: number | undefined;
   spells?: spellElement[] | undefined;
   gold?: number | undefined;
+  equipements?: string[] | undefined;
 }
 
 export interface Player {

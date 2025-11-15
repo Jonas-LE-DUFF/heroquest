@@ -1,0 +1,19 @@
+[
+    {
+        "id": "arbalest",
+        "name": "Arbalète",
+        "image_path": "images/equipments/arbalest.png",
+        "cost":350,
+        "amountOfCopies":1,
+        "type": "Weapon",
+        "unique_usage": false,
+        "cleric_bearable": false,
+        "modifiers": {
+            "nbAttackDice": 3
+        },
+        "range" : "ranged"
+    },
+    {
+        
+    }
+]
