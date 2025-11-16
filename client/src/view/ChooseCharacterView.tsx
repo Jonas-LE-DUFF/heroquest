@@ -23,6 +23,8 @@ import {
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
 import { Socket } from "socket.io-client/build/esm/socket";
+import { CardCarouselComponent } from "../components/Card/CardCarouselComponent";
+import { getCardName } from "../components/Card/cardUtils";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -53,7 +55,12 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     spiritPoints: player?.stats?.spiritPoints ?? "1",
     gold: player?.stats?.gold?.toString() ?? "0",
     selectedSpellElements: player?.stats?.spells ?? ([] as spellElement[]),
+    equipments: player?.stats?.equipments ?? ([] as string[]),
   });
+
+  const [centerEquipment, setCenterEquipment] = useState<string | undefined>(
+    undefined
+  );
 
   socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
     const gameState = convertSendableGameStateAsGameState(data.gameState);
@@ -249,7 +256,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       return;
     }
     const { nbAttackDice, nbDefenseDice, hp, spiritPoints } = formValues;
-    
+
     const stats: Unit = {
       nbAttackDice: Number(nbAttackDice),
       nbDefenseDice: Number(nbDefenseDice),
@@ -375,6 +382,39 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             {renderSpellElements()}
           </div>
         )}
+
+        <div style={{ width: "100%" }}>
+          <div>
+            équipements :{" "}
+            {formValues.equipments
+              .map((id) => getCardName(id, "equipment"))
+              .join(", ")}
+          </div>
+          <CardCarouselComponent
+            socket={socket}
+            onCenterChange={(id) => setCenterEquipment(id)}
+          />
+          <button
+            onClick={() => {
+              if (!centerEquipment) return alert("Aucune carte sélectionnée");
+              // add selected equipment locally to formValues (example behavior)
+              setFormValues((prev) => ({
+                ...prev,
+                equipments: [...prev.equipments, centerEquipment],
+              }));
+            }}
+          >
+            ajouter equipement :{" "}
+            {getCardName(centerEquipment ?? "", "equipment")}
+          </button>
+          <button
+            onClick={() =>
+              setFormValues((prev) => ({ ...prev, equipments: [] }))
+            }
+          >
+            retirer tout les équipements
+          </button>
+        </div>
         <div className="formElement">
           <button className="button" onClick={() => handleSubmit()}>
             sauvgarder les modification
