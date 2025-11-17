@@ -1,5 +1,5 @@
 .heroFaceimage {
-  width: 40px;
+  width: auto;
   height: 40px;
   margin-right: 5px;
 }
@@ -24,10 +24,34 @@ label {
 }
 
 .formElement {
-  width: 50%;
+  margin-left: 10%;
+  width: 33%;
   display: flex;
-  justify-content: space-evenly;
   align-items: center;
   flex-direction: row;
   margin-bottom: 10px;
+}
+
+.formElement label {
+  width: 30%;
+  text-align: start;
+}
+
+.formElement div {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.spellCards {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.singleSpellCard{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }

@@ -156,8 +156,15 @@ function getFightDiceFaceNumber(face: number) {
   }
 }
 
-function getElementName(element: spellElement) {
-  return spellElementFr[element];
+function getElementName(element: spellElement, language: string = "fr") {
+  switch (language) {
+    case "fr":
+      return spellElementFr[element];
+    case "en":
+      return spellElement[element];
+    default:
+      return spellElement[element];
+  }
 }
 
 function getUnitClassName(unit: Player | Monster) {

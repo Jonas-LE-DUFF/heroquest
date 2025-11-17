@@ -91,7 +91,11 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       dices.push(
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null ? (
-            <img src={getFightDiceFace(currentDiceFaces[i])} alt={` `} />
+            <img
+              className="img"
+              src={getFightDiceFace(currentDiceFaces[i])}
+              alt={` `}
+            />
           ) : (
             "noFace"
           )}

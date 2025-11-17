@@ -25,6 +25,7 @@ import { renderHeroClassOptions } from "../shared/selectHeroClass";
 import { Socket } from "socket.io-client/build/esm/socket";
 import { CardCarouselComponent } from "../components/Card/CardCarouselComponent";
 import { getCardName } from "../components/Card/cardUtils";
+import { CardComponent } from "../components/Card/CardComponent";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -180,17 +181,24 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     }
 
     return elements.map((element) => (
-      <FormControlLabel
-        key={getElementName(element)}
-        control={
-          <Checkbox
-            checked={formValues.selectedSpellElements.includes(element)}
-            onChange={() => handleSpellElementChange(element)}
-            disabled={isSpellElementDisabled(socket, gameState, element)}
-          />
-        }
-        label={getElementName(element)}
-      />
+      <div className="singleSpellCard">
+        <FormControlLabel
+          key={getElementName(element)}
+          control={
+            <Checkbox
+              checked={formValues.selectedSpellElements.includes(element)}
+              onChange={() => handleSpellElementChange(element)}
+              disabled={isSpellElementDisabled(socket, gameState, element)}
+            />
+          }
+          label={getElementName(element)}
+        />
+        <CardComponent
+          socket={socket}
+          cardName={getElementName(element, "en")}
+          cardType="back"
+        />
+      </div>
     ));
   };
 
@@ -379,7 +387,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         {[heroClass.Cleric, heroClass.Elf].includes(heroType) && (
           <div className="formElement">
             <label id="label-spell-elements">éléments de sort</label>
-            {renderSpellElements()}
+            <div className="spellCards">{renderSpellElements()}</div>
           </div>
         )}
 

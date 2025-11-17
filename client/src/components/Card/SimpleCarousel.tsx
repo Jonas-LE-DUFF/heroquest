@@ -24,20 +24,10 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
     const [index, setIndex] = useState(0);
 
     const n = items.length;
-    const visible = Math.min(3, n);
 
     const outerRef = useRef<HTMLDivElement | null>(null);
-    const [outerWidth, setOuterWidth] = useState(0);
 
     // measure outer width to compute pixel-perfect translate and child widths
-    useLayoutEffect(() => {
-      const el = outerRef.current;
-      if (!el) return;
-      const update = () => setOuterWidth(el.clientWidth || 0);
-      update();
-      window.addEventListener("resize", update);
-      return () => window.removeEventListener("resize", update);
-    }, []);
 
     const prev = () => setIndex((i) => (i - 1 + n) % n);
     const next = () => setIndex((i) => (i + 1) % n);
@@ -46,9 +36,6 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
     React.useEffect(() => {
       if (onIndexChange) onIndexChange(index);
     }, [index, onIndexChange]);
-
-    const slotWidth = outerWidth && visible ? outerWidth / visible : 0;
-    const innerWidthPx = slotWidth * n;
 
     const leftIndex = (index - 1 + n) % n;
     const rightIndex = (index + 1) % n;
@@ -70,9 +57,9 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
       <div
         ref={outerRef}
         style={{
+          width: "fit-content",
           position: "relative",
           overflow: "hidden",
-          width: "100%",
           maxWidth: 720,
           margin: "0 auto",
         }}
@@ -81,13 +68,7 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
         <div
           style={{
             display: "flex",
-            width: innerWidthPx ? `${innerWidthPx}px` : undefined,
-            transform:
-              outerWidth && centerPos >= 0
-                ? `translateX(-${
-                    centerPos * slotWidth - (outerWidth - slotWidth) / 2
-                  }px)`
-                : undefined,
+            width: "fit-content",
             transition: "transform 300ms ease",
             alignItems: "center",
           }}
@@ -99,9 +80,7 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
 
             const style: React.CSSProperties = {
               // each child's pixel width equals the slot width so visible slots fill the outer container
-              flex: slotWidth ? `0 0 ${slotWidth}px` : undefined,
-              width: slotWidth ? `${slotWidth}px` : undefined,
-              display: "flex",
+              display: isCenter || isSide ? "flex" : "none",
               justifyContent: "center",
               alignItems: "center",
               transform: isCenter
