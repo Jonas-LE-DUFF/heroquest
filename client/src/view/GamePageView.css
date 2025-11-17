@@ -1,8 +1,3 @@
-.game-page {
-  width: 95%;
-  max-width: 100%;
-}
-
 .game-container {
   width: 100%;
   display: flex;
@@ -17,10 +12,22 @@
   width: 25%;
 }
 
+.Navbar {
+  width: 100%;
+  height: 100px;
+  background-color: burlywood;
+}
+
 .Board {
   width: auto;
   display: flex;
   flex-direction: column;
+}
+
+.Footer{
+  width: 100%;
+  height: 100px;
+  background-color: burlywood;
 }
 
 .HeroStats {

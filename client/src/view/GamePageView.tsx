@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Board from "../components/BoardComponent";
+import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
 import {
   Direction,
@@ -16,6 +16,10 @@ import {
 import { GameControls } from "../components/GameControlsComponent";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
 import StatsComponent from "../components/StatsComponent";
+import Footer from "../components/main_components/Footer";
+import Navbar from "../components/main_components/Navbar";
+import LeftMenu from "../components/main_components/LeftMenu";
+import RightMenu from "../components/main_components/RightMenu";
 
 interface GamePageProps {
   socket: any;
@@ -69,7 +73,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           setSelectedUnit(null);
         }
       } else if (selectedPosition) {
-        const unit = getUnitAtSelectedPosition(selectedPosition, updatedGameState);
+        const unit = getUnitAtSelectedPosition(
+          selectedPosition,
+          updatedGameState
+        );
         setSelectedUnit(unit);
       }
 
@@ -149,83 +156,110 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
   };
 
+  // return (
+  //   <div className="game-page">
+  //     {currentGameState && (
+  //       <div className="game-container">
+  //         <div
+  //           className={
+  //             statsVisible && selectedUnit !== null ? "HeroStats" : "hidden"
+  //           }
+  //         >
+  //           {statsVisible && (
+  //             <StatsComponent
+  //               socket={socket}
+  //               gameId={currentGameState.id}
+  //               position={selectedPosition ?? { x: 0, y: 0 }}
+  //               unit={selectedUnit}
+  //               setStatsVisible={setStatsVisible}
+  //               isGameMaster={role === "game-master"}
+  //             />
+  //           )}
+  //         </div>
+  //         <div className="Board">
+  //           <div>
+  //             {socket !== null && (
+  //               <Board
+  //                 gameState={currentGameState}
+  //                 socket={socket}
+  //                 onTileClick={handleTileClick}
+  //                 selectedPosition={selectedPosition}
+  //                 selectedType={selectedType}
+  //                 monsterType={monsterType}
+  //               />
+  //             )}
+  //             <div>
+  //               {selectedUnit !== null && (
+  //                 <button
+  //                   onClick={() =>
+  //                     selectedUnit !== null && setStatsVisible(!statsVisible)
+  //                   }
+  //                 >
+  //                   {!statsVisible ? "Montrer stats" : "Cacher stats"}
+  //                 </button>
+  //               )}
+  //             </div>
+  //           </div>
+  //         </div>
+  //         <div className="info-on-the-side">
+  //           <GameControls
+  //             socket={socket}
+  //             game={currentGameState}
+  //             setSelectedType={setSelectedType}
+  //             monsterType={monsterType}
+  //             setMonsterType={setMonsterType}
+  //             selectedUnit={selectedUnit}
+  //             setSelectedPosition={setSelectedPosition}
+  //             setSelectedUnit={setSelectedUnit}
+  //           />
+
+  //           <div className="game-info">
+  //             <h3>Informations</h3>
+  //             {currentGameState.currentTurn === socket.id ? (
+  //               <p>YOUR TURN !!!!!</p>
+  //             ) : (
+  //               <p>
+  //                 Tour actuel:{" "}
+  //                 {currentGameState.currentTurn &&
+  //                   currentGameState.players &&
+  //                   currentGameState.players.get(currentGameState.currentTurn)
+  //                     ?.stats?.name}
+  //               </p>
+  //             )}
+  //             {currentGameState.players && (
+  //               <p>Joueurs: {currentGameState.players.size}</p>
+  //             )}
+  //           </div>
+  //         </div>
+  //       </div>
+  //     )}
+  //   </div>
+  // );
+
   return (
     <div className="game-page">
-      {currentGameState && (
-        <div className="game-container">
-          <div
-            className={
-              statsVisible && selectedUnit !== null ? "HeroStats" : "hidden"
-            }
-          >
-            {statsVisible && (
-              <StatsComponent
-                socket={socket}
-                gameId={currentGameState.id}
-                position={selectedPosition ?? { x: 0, y: 0 }}
-                unit={selectedUnit}
-                setStatsVisible={setStatsVisible}
-                isGameMaster={role === "game-master"}
-              />
-            )}
-          </div>
-          <div className="Board">
-            <div>
-              {socket !== null && (
-                <Board
-                  gameState={currentGameState}
-                  socket={socket}
-                  onTileClick={handleTileClick}
-                  selectedPosition={selectedPosition}
-                  selectedType={selectedType}
-                  monsterType={monsterType}
-                />
-              )}
-              <div>
-                {selectedUnit !== null && (
-                  <button
-                    onClick={() =>
-                      selectedUnit !== null && setStatsVisible(!statsVisible)
-                    }
-                  >
-                    {!statsVisible ? "Montrer stats" : "Cacher stats"}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="info-on-the-side">
-            <GameControls
-              socket={socket}
-              game={currentGameState}
-              setSelectedType={setSelectedType}
-              monsterType={monsterType}
-              setMonsterType={setMonsterType}
-              selectedUnit={selectedUnit}
-              setSelectedPosition={setSelectedPosition}
-              setSelectedUnit={setSelectedUnit}
-            />
-
-            <div className="game-info">
-              <h3>Informations</h3>
-              {currentGameState.currentTurn === socket.id ? (
-                <p>YOUR TURN !!!!!</p>
-              ) : (
-                <p>
-                  Tour actuel:{" "}
-                  {currentGameState.currentTurn &&
-                    currentGameState.players &&
-                    currentGameState.players.get(currentGameState.currentTurn)
-                      ?.stats?.name}
-                </p>
-              )}
-              {currentGameState.players && (
-                <p>Joueurs: {currentGameState.players.size}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="Navbar">
+        <Navbar />
+      </div>
+      <div>
+        <LeftMenu />
+      </div>
+      <div>
+        <RightMenu />
+      </div>
+      <div className="game-container">
+        <Board
+          gameState={currentGameState}
+          socket={socket}
+          onTileClick={handleTileClick}
+          selectedPosition={selectedPosition}
+          selectedType={selectedType}
+          monsterType={monsterType}
+        />
+      </div>
+      <div className="Footer">
+        <Footer />
+      </div>
     </div>
   );
 };

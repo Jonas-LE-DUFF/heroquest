@@ -1,5 +1,7 @@
 import { Direction, GameState, Position, tileType } from "./type";
 
+const TILESIZE = 40;
+
 export const getTileStyle = (
   x: number,
   y: number,
@@ -26,8 +28,8 @@ export const getTileStyle = (
 
   let style: any = {
     alignItems: "center",
-    width: 45,
-    height: 45,
+    width: TILESIZE,
+    height: TILESIZE,
     border: "none",
     cursor: "pointer",
     textAlign: "center" as const,

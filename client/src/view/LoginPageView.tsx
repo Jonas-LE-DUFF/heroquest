@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SendableGameState } from "../shared/type";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
+import "./LoginPageView.css";
 interface LoginPageProps {
   socket: any;
 }
@@ -44,7 +45,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
 
   return (
     <div className="login-page">
-      <h1>🎮 HeroQuest Online</h1>
+      <h1>HeroQuest Online</h1>
       <form onSubmit={handleJoinGame} className="login-form">
         <div className="form-group">
           <label>Votre nom :</label>
