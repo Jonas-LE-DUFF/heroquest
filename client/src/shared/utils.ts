@@ -25,7 +25,11 @@ import diceDeathHead from "./../components/images/dices/battleDices/death.png";
 import diceMonsterShield from "./../components/images/dices/battleDices/blackShield.png";
 import diceHeroShield from "./../components/images/dices/battleDices/whiteShield.png";
 
-import { heroClassFr, monsterClassFr, spellElementFr } from "./frenchEnums";
+import {
+  heroClassFr,
+  monsterClassFr,
+  spellElementFr,
+} from "./languages/frenchEnums";
 
 function isPlayer(u: Monster | Player): u is Player {
   return !u.id.match(/^idMonster/);

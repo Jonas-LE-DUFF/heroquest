@@ -14,7 +14,7 @@ import "./GameControlsComponent.css";
 import { Grid, Tooltip } from "@mui/material";
 import { getMonsterIconPath } from "../shared/utils";
 import RedDices from "./dices/RedDicesComponent";
-import { monsterClassFr } from "../shared/frenchEnums";
+import { monsterClassFr } from "../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
 
 interface GameControlsProps {

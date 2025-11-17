@@ -1,6 +1,6 @@
-import equipments from "../../shared/equipments.json";
-import spells from "../../shared/spells.json";
-import back from "../../shared/backCard.json";
+import equipments from "../../shared/game_cards/equipments.json";
+import spells from "../../shared/game_cards/spells.json";
+import back from "../../shared/game_cards/backCard.json";
 
 type Card = {
   id: string;
