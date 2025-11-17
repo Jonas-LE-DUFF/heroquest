@@ -20,6 +20,7 @@ import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import LeftMenu from "../components/main_components/LeftMenu";
 import RightMenu from "../components/main_components/RightMenu";
+import { Grid } from "@mui/material";
 
 interface GamePageProps {
   socket: any;
@@ -237,17 +238,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   // );
 
   return (
-    <div className="game-page">
-      <div className="Navbar">
-        <Navbar />
-      </div>
-      <div>
+    <Grid className="game-page" container>
+      <Grid className="Navbar">
+        <Navbar socket={socket} gameId={currentGameState.id} player={currentGameState.players.get(socket.id)} />
+      </Grid>
+      <Grid className="LeftMenu">
         <LeftMenu />
-      </div>
-      <div>
-        <RightMenu />
-      </div>
-      <div className="game-container">
+      </Grid>
+      
+      <Grid className="Board">
         <Board
           gameState={currentGameState}
           socket={socket}
@@ -256,11 +255,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           selectedType={selectedType}
           monsterType={monsterType}
         />
-      </div>
-      <div className="Footer">
+      </Grid>
+      <Grid className="RightMenu">
+        <RightMenu />
+      </Grid>
+      <Grid className="Footer">
         <Footer />
-      </div>
-    </div>
+      </Grid>
+    </Grid>
   );
 };
 
