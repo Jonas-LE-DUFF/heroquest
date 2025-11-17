@@ -1,6 +1,8 @@
 .boardImg{
-    width: 35px;
-    height: 35px;
+    width: auto;
+    height: auto;
+    max-width: 35px;
+    max-height: 35px;
     align-self: center;
     margin-right: 0;
 }

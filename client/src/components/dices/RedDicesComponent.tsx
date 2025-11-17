@@ -74,17 +74,17 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   function getDiceFace(face: number) {
     switch (face) {
       case 1:
-        return <img src={face1} alt="dé rouge face 1" />;
+        return <img className="img" src={face1} alt="dé rouge face 1" />;
       case 2:
-        return <img src={face2} alt="dé rouge face 2" />;
+        return <img className="img" src={face2} alt="dé rouge face 2" />;
       case 3:
-        return <img src={face3} alt="dé rouge face 3" />;
+        return <img className="img" src={face3} alt="dé rouge face 3" />;
       case 4:
-        return <img src={face4} alt="dé rouge face 4" />;
+        return <img className="img" src={face4} alt="dé rouge face 4" />;
       case 5:
-        return <img src={face5} alt="dé rouge face 5" />;
+        return <img className="img" src={face5} alt="dé rouge face 5" />;
       case 6:
-        return <img src={face6} alt="dé rouge face 6" />;
+        return <img className="img" src={face6} alt="dé rouge face 6" />;
       default:
         return null;
     }

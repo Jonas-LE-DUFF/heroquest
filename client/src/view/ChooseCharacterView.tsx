@@ -181,7 +181,11 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     }
 
     return elements.map((element) => (
-      <div className="singleSpellCard">
+      <div
+        className="singleSpellCard"
+        role="button"
+        onClick={() => handleSpellElementChange(element)}
+      >
         <FormControlLabel
           key={getElementName(element)}
           control={
@@ -274,6 +278,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       name: playerName,
       gold: Number(formValues.gold),
       spells: formValues.selectedSpellElements,
+      equipments: formValues.equipments,
     };
 
     const statsSent = {

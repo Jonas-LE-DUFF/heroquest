@@ -12,9 +12,7 @@ import {
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import { Grid, Tooltip } from "@mui/material";
-import {
-  getMonsterIconPath
-} from "../shared/utils";
+import { getMonsterIconPath } from "../shared/utils";
 import RedDices from "./dices/RedDicesComponent";
 import { monsterClassFr } from "../shared/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
@@ -234,10 +232,10 @@ const GameControls = ({
               <Grid container spacing={1} sx={{ margin: "10px 0" }}>
                 {renderMonsterButtons()}
               </Grid>
-              <Grid className="gridElem" size={4}>
+              <Grid className="gridElem" size={6}>
                 <button onClick={putWall}>Mur</button>
               </Grid>
-              <Grid className="gridElem" size={4}>
+              <Grid className="gridElem" size={6}>
                 <button onClick={putFurniture}>Meuble</button>
               </Grid>
             </Grid>

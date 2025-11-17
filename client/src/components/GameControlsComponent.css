@@ -15,7 +15,9 @@
 .monster-button {
   display: flex;
   flex-direction: row;
-  width: fit-content;
+  height: 64.8px;
+  justify-content: center;
+  align-items: center;
 }
 
 .two-button-container {
@@ -34,7 +36,7 @@ select {
 
 .monster-img {
   width: 40px;
-  height: 40px;
+  height: auto;
 }
 
 .selected {
