@@ -9,7 +9,7 @@ import {
   Position,
   Tile,
   tileType,
-} from "../shared/type";
+} from "../../shared/type";
 import "./BoardComponent.css";
 import {
   Table,
@@ -24,8 +24,8 @@ import {
   getHeroClassIconPath,
   getMonsterIconPath,
   positionKey,
-} from "../shared/utils";
-import { getTileStyle } from "../shared/tileStyle";
+} from "../../shared/utils";
+import { getTileStyle } from "../../shared/tileStyle";
 
 interface BoardProps {
   gameState: GameState | null;
@@ -130,8 +130,6 @@ const Board = ({
       const cells = [];
       for (let col = 0; col < localGameState?.board[row]?.length; col++) {
         const tile: tileType = localGameState.board[row]?.[col]?.type;
-        if (row === 5 && col === 5) {
-        }
         cells.push(
           <TableCell
             key={col}
