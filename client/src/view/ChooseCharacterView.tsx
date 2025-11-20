@@ -428,7 +428,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             retirer tout les équipements
           </button>
         </div>
-        <div className="formElement">
+        <div>
           <button className="button" onClick={() => handleSubmit()}>
             sauvgarder les modification
           </button>

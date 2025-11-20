@@ -1,6 +1,6 @@
 import { Direction, GameState, Position, tileType } from "./type";
 
-const TILESIZE = 40;
+const TILESIZE = "40px";
 
 export const getTileStyle = (
   x: number,

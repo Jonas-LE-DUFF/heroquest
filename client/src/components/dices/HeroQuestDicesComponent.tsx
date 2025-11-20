@@ -92,7 +92,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null ? (
             <img
-              className="img"
+              className="imgDice"
               src={getFightDiceFace(currentDiceFaces[i])}
               alt={` `}
             />
@@ -121,6 +121,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
           <button onClick={rollDice}>lancer les dés</button>
           {playerRole === "game-master" && (
             <input
+              className="inputDice"
               type="number"
               onChange={(e) =>
                 setCurrentNumberOfDices(Number(e.currentTarget.value))

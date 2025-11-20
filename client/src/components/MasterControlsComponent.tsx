@@ -47,18 +47,22 @@ const MasterControls = ({ socket, gameId }: MasterControlsProps) => {
         </Select>
       </div>
       <RadioGroup
-        color="white"
-        sx={{ color: "white" }}
         value={diceType}
         row
         onChange={(e) => setDiceType(e.target.value as "fight" | "red")}
       >
         <FormControlLabel
+          sx={{ color: "white" }}
           value="fight"
           control={<Radio />}
           label="Dés de combat"
         />
-        <FormControlLabel value="red" control={<Radio />} label="Dés rouges" />
+        <FormControlLabel
+          sx={{ color: "white" }}
+          value="red"
+          control={<Radio />}
+          label="Dés rouges"
+        />
       </RadioGroup>
       <button
         onClick={() => {

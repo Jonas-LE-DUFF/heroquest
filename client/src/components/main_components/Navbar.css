@@ -7,4 +7,12 @@
 
 .nav-elem{
     margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.imgNav{
+    height: 40px;
+    width: auto;
+    cursor: pointer;
 }

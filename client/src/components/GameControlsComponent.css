@@ -51,3 +51,16 @@ select {
 .game-master {
   background-color: #5a141b;
 }
+
+.hidden {
+  display: none;
+  width: 0%;
+}
+
+.dices-section{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+}

@@ -13,14 +13,12 @@ import {
   tileType,
   Unit,
 } from "../shared/type";
-import { GameControls } from "../components/GameControlsComponent";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
-import StatsComponent from "../components/StatsComponent";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
-import LeftMenu from "../components/main_components/LeftMenu";
 import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
+import LeftMenu from "../components/main_components/LeftMenu";
 
 interface GamePageProps {
   socket: any;
@@ -104,11 +102,18 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             const player = players.get(data.entityId);
             if (player) {
               players.set(data.entityId, { ...player, stats: data.newStats });
+              if(selectedUnit?.id === data.entityId){
+                setSelectedUnit({ ...player, stats: data.newStats });
+              }
+                
             }
           } else {
             const monster = monsters.get(data.entityId);
             if (monster) {
               monsters.set(data.entityId, { ...monster, stats: data.newStats });
+              if(selectedUnit?.id === data.entityId){
+                setSelectedUnit({ ...monster, stats: data.newStats });
+              }
             }
           }
 
@@ -240,12 +245,27 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   return (
     <Grid className="game-page" container>
       <Grid className="Navbar">
-        <Navbar socket={socket} gameId={currentGameState.id} player={currentGameState.players.get(socket.id)} />
+        <Navbar
+          socket={socket}
+          gameId={currentGameState.id}
+          player={currentGameState.players.get(socket.id)}
+          statsOpen={statsVisible}
+          setStatsOpen={setStatsVisible}
+          setSelectedUnit={setSelectedUnit}
+        />
       </Grid>
       <Grid className="LeftMenu">
-        <LeftMenu />
+        <LeftMenu
+          statsVisible={statsVisible}
+          socket={socket}
+          currentGameState={currentGameState}
+          selectedPosition={selectedPosition}
+          selectedUnit={selectedUnit}
+          setStatsVisible={setStatsVisible}
+          role={role}
+        />
       </Grid>
-      
+
       <Grid className="Board">
         <Board
           gameState={currentGameState}
@@ -257,7 +277,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         />
       </Grid>
       <Grid className="RightMenu">
-        <RightMenu />
+        <RightMenu 
+          socket={socket}
+          currentGameState={currentGameState}
+          setSelectedType={setSelectedType}
+          monsterType={monsterType}
+          setMonsterType={setMonsterType}
+          selectedUnit={selectedUnit}
+        />
       </Grid>
       <Grid className="Footer">
         <Footer />
