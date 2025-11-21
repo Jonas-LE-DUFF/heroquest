@@ -22,17 +22,20 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
   role,
 }) => {
   return (
-    <div className="left-menu">
-      {statsVisible && (
-        <StatsComponent
-          socket={socket}
-          gameId={currentGameState.id}
-          position={selectedPosition ?? { x: 0, y: 0 }}
-          unit={selectedUnit}
-          setStatsVisible={setStatsVisible}
-          isGameMaster={role === "game-master"}
-        />
-      )}
+    <>
+      <div className="game-controls">
+        {statsVisible && (
+          <StatsComponent
+            socket={socket}
+            gameId={currentGameState.id}
+            position={selectedPosition ?? { x: 0, y: 0 }}
+            unit={selectedUnit}
+            setStatsVisible={setStatsVisible}
+            isGameMaster={role === "game-master"}
+          />
+        )}
+      </div>
+
       <div>
         {selectedUnit !== null && (
           <button
@@ -44,7 +47,7 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
           </button>
         )}
       </div>
-    </div>
+    </>
   );
 };
 

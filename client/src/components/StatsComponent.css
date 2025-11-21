@@ -12,7 +12,7 @@ p, label{
 
 .content{
     position: relative;
-    background: url('./images/backgrounds/paperBackground.png') no-repeat center center; 
+    background-color: #cfb898; 
     background-size: 100% 100%;
     height: 100%;
     padding-right: 20px;
