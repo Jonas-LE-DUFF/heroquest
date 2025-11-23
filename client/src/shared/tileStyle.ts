@@ -1,4 +1,5 @@
-import { Direction, GameState, Position, tileType } from "./type";
+import { Direction, GameState, tileType } from "./type";
+import { positionKey } from "./utils";
 
 const TILESIZE = "40px";
 
@@ -6,10 +7,13 @@ export const getTileStyle = (
   x: number,
   y: number,
   gameState: GameState | null,
-  selectedPosition: Position | null
+  selectedEntityId: string | null
 ) => {
   const tile = gameState?.board[x]?.[y];
-  const isSelected = selectedPosition?.x === x && selectedPosition?.y === y;
+  const entityAtPos = gameState?.positionEntities?.get(positionKey({ x, y }));
+  const isSelected = selectedEntityId
+    ? entityAtPos === selectedEntityId
+    : false;
   const isMonster = tile?.type === tileType.monster;
   const isHero = tile?.type === tileType.hero;
   const isFurniture = tile?.type === tileType.furniture;

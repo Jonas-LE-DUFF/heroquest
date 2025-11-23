@@ -14,6 +14,7 @@ import {
   Unit,
 } from "../shared/type";
 import { convertSendableGameStateAsGameState } from "../shared/utils";
+import { positionKey } from "../shared/utils";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
@@ -33,12 +34,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [selectedType, setSelectedType] = useState<tileType | Direction | null>(
     null
   );
-  const [selectedUnit, setSelectedUnit] = useState<Player | Monster | null>(
-    null
-  );
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
     null
   );
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
   const [currentGameState, setCurrentGameState] = useState<GameState>(
     location.state.gameState
@@ -47,36 +46,28 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [statsVisible, setStatsVisible] = useState(false);
 
   useEffect(() => {
-    if (!currentGameState) return;
-    selectedPosition &&
-      setSelectedUnit(
-        getUnitAtSelectedPosition(selectedPosition, currentGameState)
-      );
-  }, [selectedPosition, currentGameState]);
-
-  useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
       const updatedGameState = convertSendableGameStateAsGameState(
         data.gameState
       );
       console.log("c'est l'update du gamePage", updatedGameState);
-      const selectedId = selectedUnit?.id;
+      const selectedId = selectedEntityId;
       if (selectedId) {
         const pos = updatedGameState.entityPositions.get(selectedId);
         if (pos) {
           setSelectedPosition(pos);
-          setSelectedUnit(getUnitAtSelectedPosition(pos, updatedGameState));
+          setSelectedEntityId(selectedId);
         } else {
           // selected entity no longer has a position -> clear selection
           setSelectedPosition(null);
-          setSelectedUnit(null);
+          setSelectedEntityId(null);
         }
       } else if (selectedPosition) {
         const unit = getUnitAtSelectedPosition(
           selectedPosition,
           updatedGameState
         );
-        setSelectedUnit(unit);
+        if (unit) setSelectedEntityId(unit.id);
       }
 
       setCurrentGameState(updatedGameState);
@@ -102,18 +93,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             const player = players.get(data.entityId);
             if (player) {
               players.set(data.entityId, { ...player, stats: data.newStats });
-              if(selectedUnit?.id === data.entityId){
-                setSelectedUnit({ ...player, stats: data.newStats });
-              }
-                
             }
           } else {
             const monster = monsters.get(data.entityId);
             if (monster) {
               monsters.set(data.entityId, { ...monster, stats: data.newStats });
-              if(selectedUnit?.id === data.entityId){
-                setSelectedUnit({ ...monster, stats: data.newStats });
-              }
             }
           }
 
@@ -126,7 +110,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       socket.off("stats-updated");
       socket.off("game-state-update");
     };
-  }, [socket, selectedPosition, selectedUnit?.id]);
+  }, [socket, selectedPosition, selectedEntityId]);
 
   const handleTileClick = (
     gameId: string,
@@ -139,10 +123,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       selectedPosition.y === position.y
     ) {
       setSelectedPosition(null);
-      setSelectedUnit(null);
+      setSelectedEntityId(null);
     } else {
       setSelectedPosition(position);
-      setSelectedUnit(getUnitAtSelectedPosition(position, currentGameState));
+      // set selected entity id based on current game state mapping
+      const idAtPos = currentGameState?.positionEntities.get(
+        positionKey(position)
+      );
+      setSelectedEntityId(idAtPos ?? null);
     }
 
     if (!selectedType) {
@@ -251,7 +239,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           player={currentGameState.players.get(socket.id)}
           statsOpen={statsVisible}
           setStatsOpen={setStatsVisible}
-          setSelectedUnit={setSelectedUnit}
+          setSelectedUnit={(unit: Player | Monster | null) => {
+            if (!unit) return;
+            const position = currentGameState.entityPositions.get(unit.id);
+            if (!position) return;
+            setSelectedPosition(position);
+            setSelectedEntityId(unit.id);
+          }}
         />
       </Grid>
       <Grid className="LeftMenu">
@@ -260,7 +254,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           socket={socket}
           currentGameState={currentGameState}
           selectedPosition={selectedPosition}
-          selectedUnit={selectedUnit}
+          selectedUnit={getUnitAtSelectedPosition(
+            selectedPosition!,
+            currentGameState
+          )}
           setStatsVisible={setStatsVisible}
           role={role}
         />
@@ -272,18 +269,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           socket={socket}
           onTileClick={handleTileClick}
           selectedPosition={selectedPosition}
+          selectedEntityId={selectedEntityId}
           selectedType={selectedType}
           monsterType={monsterType}
         />
       </Grid>
       <Grid className="RightMenu">
-        <RightMenu 
+        <RightMenu
           socket={socket}
           currentGameState={currentGameState}
           setSelectedType={setSelectedType}
           monsterType={monsterType}
           setMonsterType={setMonsterType}
-          selectedUnit={selectedUnit}
+          selectedUnit={getUnitAtSelectedPosition(
+            selectedPosition!,
+            currentGameState
+          )}
         />
       </Grid>
       <Grid className="Footer">
@@ -293,12 +294,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   );
 };
 
-const getUnitAtSelectedPosition = (pos: Position, game: GameState) => {
+const getUnitAtSelectedPosition = (
+  pos: Position,
+  game: GameState
+): Monster | Player | null => {
   if (!pos) return null;
   const id = game.positionEntities.get(pos.x + "," + pos.y);
-  const unit = id
-    ? game.players.get(id) || game.monsters.get(id) || null
-    : null;
+  if (!id) return null;
+  const unit = game.players.get(id) || game.monsters.get(id);
+  if (!unit) return null;
   return unit;
 };
 

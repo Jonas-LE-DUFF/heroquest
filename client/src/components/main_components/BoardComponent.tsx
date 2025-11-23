@@ -36,6 +36,7 @@ interface BoardProps {
     monsterType: monsterClass | null
   ) => void;
   selectedPosition: Position | null;
+  selectedEntityId: string | null;
   selectedType: tileType | Direction | null;
   monsterType: monsterClass | null;
 }
@@ -45,6 +46,7 @@ const Board = ({
   socket,
   onTileClick,
   selectedPosition,
+  selectedEntityId,
   selectedType,
   monsterType,
 }: BoardProps) => {
@@ -134,7 +136,7 @@ const Board = ({
           <TableCell
             key={col}
             className="tile"
-            sx={getTileStyle(row, col, localGameState, selectedPosition)}
+            sx={getTileStyle(row, col, localGameState, selectedEntityId)}
             onClick={() =>
               handleTileClick({ x: row, y: col }, selectedType, monsterType)
             }
