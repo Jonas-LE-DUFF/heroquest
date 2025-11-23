@@ -1,13 +1,13 @@
 import { spellElement } from "../../../shared/type";
 import { getElementName } from "../../../shared/utils";
 import { CardComponent } from "../CardComponent";
-import "./SpellsComponent.css";
 
 interface SpellsComponentProps {
   socket: any;
-  spellSchools: spellElement[] | undefined;
-  spellAlreadyUsed: string[] | undefined; // list of spell IDs
-  onSpellClick: () => void;
+  spellSchools: spellElement[];
+  spellAlreadyUsed: string[]; // list of spell IDs
+  onSpellClick: (spellElement: spellElement) => void;
+  onClose: () => void;
 }
 
 const SpellsComponent: React.FC<SpellsComponentProps> = ({
@@ -15,6 +15,7 @@ const SpellsComponent: React.FC<SpellsComponentProps> = ({
   spellSchools,
   spellAlreadyUsed,
   onSpellClick,
+  onClose,
 }) => {
   if (!spellSchools) {
     return <div className="spell-view">No spells available</div>;
@@ -31,7 +32,7 @@ const SpellsComponent: React.FC<SpellsComponentProps> = ({
         key={school}
         className="spell-school"
         role="button"
-        onClick={onSpellClick}
+        onClick={() => onSpellClick(school)}
       >
         <CardComponent
           socket={socket}
@@ -41,7 +42,14 @@ const SpellsComponent: React.FC<SpellsComponentProps> = ({
       </div>
     ));
   };
-  return <div className="spell-view">{renderSpellSchools(spellSchools)}</div>;
+  return (
+    <div className="spell-view">
+      <div className="closeButton">
+        <button onClick={onClose}>X</button>
+      </div>
+      {renderSpellSchools(spellSchools)}
+    </div>
+  );
 };
 
 export default SpellsComponent;

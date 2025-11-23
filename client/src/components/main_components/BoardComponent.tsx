@@ -136,7 +136,12 @@ const Board = ({
           <TableCell
             key={col}
             className="tile"
-            sx={getTileStyle(row, col, localGameState, selectedEntityId)}
+            sx={getTileStyle(
+              row,
+              col,
+              localGameState,
+              selectedEntityId ?? selectedPosition
+            )}
             onClick={() =>
               handleTileClick({ x: row, y: col }, selectedType, monsterType)
             }

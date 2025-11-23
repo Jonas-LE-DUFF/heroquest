@@ -1,6 +1,8 @@
 import equipments from "../../shared/game_cards/equipments.json";
 import spells from "../../shared/game_cards/spells.json";
 import back from "../../shared/game_cards/backCard.json";
+import { spellElement } from "../../shared/type";
+import { getElementName } from "../../shared/utils";
 
 type Card = {
   id: string;
@@ -10,6 +12,21 @@ type Card = {
 
 function getAllEquipmentCardNames(): string[] {
   return (equipments as Card[]).map((e) => e.id);
+}
+
+function getSpellListForSchool(spellSchool: spellElement): string[] {
+  // This is a placeholder implementation.
+  // Replace with actual logic to get spell IDs for the given school.
+
+  const spellList: string[] = [];
+  for (let i = 0; i < spells.length; i++) {
+    const spell = spells[i];
+    if (spell.school === getElementName(spellSchool, "en")) {
+      spellList.push(spell.id);
+    }
+  }
+
+  return spellList;
 }
 
 function getCardImagePath(id: string, cardType: string): string | undefined {
@@ -53,4 +70,9 @@ function getCardName(id: string, cardType: string): string | undefined {
   return eq ? eq.name : undefined;
 }
 
-export { getCardImagePath, getAllEquipmentCardNames, getCardName };
+export {
+  getSpellListForSchool,
+  getCardImagePath,
+  getAllEquipmentCardNames,
+  getCardName,
+};

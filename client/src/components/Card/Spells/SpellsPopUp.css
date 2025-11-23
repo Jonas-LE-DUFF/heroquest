@@ -13,15 +13,22 @@
   justify-content: center;
   flex-direction: row;
   padding-left: 10%;
-    padding-right: 10%;
+  padding-right: 10%;
 }
 
-.spell-school{
-    width: 30%;
-    height: auto;
-    margin: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+.spell-school {
+  width: 30%;
+  height: auto;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.returnButton {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  cursor: pointer;
 }

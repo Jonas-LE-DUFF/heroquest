@@ -23,7 +23,7 @@ import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
-import SpellsComponent from "../components/Card/Spells/SpellsComponent";
+import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 
 interface GamePageProps {
   socket: any;
@@ -48,6 +48,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   );
 
   const [statsVisible, setStatsVisible] = useState(false);
+  const [spellPageVisible, setSpellPageVisible] = useState(false);
 
   useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
@@ -185,14 +186,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   return (
     <>
-      {true && (
-        <SpellsComponent
+      {spellPageVisible && (
+        <SpellsPopUp
           socket={socket}
           spellSchools={currentGameState.players.get(socket.id)?.stats?.spells}
           spellAlreadyUsed={[]}
           onSpellClick={() => {
             console.log("spell clicked ! ");
           }}
+          closeSpellPage={() => setSpellPageVisible(false)}
         />
       )}
       <Grid className="game-page" container>
@@ -212,6 +214,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             statsOpen={statsVisible}
             setStatsOpen={setStatsVisible}
             setSelectedUnit={setSelectedUnit}
+            openSpellPage={() => setSpellPageVisible(true)}
           />
         </Grid>
         <Grid className="LeftMenu">

@@ -14,6 +14,7 @@ interface NavbarProps {
   statsOpen: boolean;
   setStatsOpen: (arg0: boolean) => void;
   setSelectedUnit: (arg0: Player | Monster | null) => void;
+  openSpellPage: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -25,6 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({
   statsOpen,
   setStatsOpen,
   setSelectedUnit,
+  openSpellPage,
 }) => {
   console.log("nav player : ", player);
 
@@ -33,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({
   }
 
   function showSpells() {
-    console.log("show spells not yet implemented");
+    openSpellPage();
   }
   return (
     <div className="Navbar">
