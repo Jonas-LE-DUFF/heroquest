@@ -23,8 +23,8 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
 }) => {
   return (
     <>
-      <div className="game-controls">
-        {statsVisible && (
+      {statsVisible && (
+        <div className="game-controls">
           <StatsComponent
             socket={socket}
             gameId={currentGameState.id}
@@ -33,8 +33,8 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
             setStatsVisible={setStatsVisible}
             isGameMaster={role === "game-master"}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       <div>
         {selectedUnit !== null && (

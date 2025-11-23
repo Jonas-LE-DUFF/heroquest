@@ -3,6 +3,7 @@ import { Monster, Player } from "../../shared/type";
 import "./Navbar.css";
 import { getHeroClassIconPath, getHeroClassName } from "../../shared/utils";
 import { Tooltip } from "@mui/material";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 interface NavbarProps {
   socket: Socket;
@@ -25,6 +26,10 @@ const Navbar: React.FC<NavbarProps> = ({
 
   if (!player || !player.stats) {
     return <div>Loading...</div>;
+  }
+
+  function showSpells() {
+    console.log("show spells not yet implemented");
   }
   return (
     <div className="Navbar">
@@ -51,6 +56,18 @@ const Navbar: React.FC<NavbarProps> = ({
       )}
       <div className="nav-elem">Game ID: {gameId}</div>
       <div className="nav-elem">Player: {player.stats.name}</div>
+      <div className="nav-elem">Role: {player.role}</div>
+      {player?.stats?.spells && player.stats.spells.length > 0 && (
+        <div className="nav-elem">
+          <Tooltip title="Voir mes sorts" arrow>
+            <AutoAwesomeIcon
+              className="imgNav"
+              role="button"
+              onClick={() => showSpells()}
+            />
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 };
