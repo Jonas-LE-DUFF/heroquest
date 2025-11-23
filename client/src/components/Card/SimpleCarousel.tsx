@@ -1,7 +1,6 @@
 import React, {
   useState,
   useRef,
-  useLayoutEffect,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -51,8 +50,6 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
       orderedIndices.push((leftIndex + i) % n);
     }
 
-    const centerPos = orderedIndices.indexOf(index);
-
     return (
       <div
         ref={outerRef}
@@ -80,6 +77,8 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
 
             const style: React.CSSProperties = {
               // each child's pixel width equals the slot width so visible slots fill the outer container
+              width: "120px",
+              height: "auto",
               display: isCenter || isSide ? "flex" : "none",
               justifyContent: "center",
               alignItems: "center",

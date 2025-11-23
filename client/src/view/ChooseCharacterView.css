@@ -47,6 +47,8 @@ label {
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
+  width: 100%;
+  height: auto;
 }
 
 .singleSpellCard{
@@ -55,4 +57,6 @@ label {
   align-items: center;
   flex-direction: column;
   cursor: pointer;
+  flex: 0 1 110px;
+  min-width: 110px;
 }

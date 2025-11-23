@@ -160,7 +160,7 @@ function getFightDiceFaceNumber(face: number) {
   }
 }
 
-function getElementName(element: spellElement, language: string = "fr") {
+function getElementName(element: spellElement, language: string = "en") {
   switch (language) {
     case "fr":
       return spellElementFr[element];

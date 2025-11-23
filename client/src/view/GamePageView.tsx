@@ -23,6 +23,7 @@ import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
+import SpellsComponent from "../components/Card/Spells/SpellsComponent";
 
 interface GamePageProps {
   socket: any;
@@ -183,68 +184,80 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   // );
 
   return (
-    <Grid className="game-page" container>
-      <Grid className="Navbar">
-        <Navbar
+    <>
+      {true && (
+        <SpellsComponent
           socket={socket}
-          gameId={currentGameState.id}
-          isCurrentTurnPlayer={
-            currentGameState.currentTurn ===
-            currentGameState.players.get(socket.id)?.id
-          }
-          currentTurnPlayerName={getPlayerName(
-            currentGameState,
-            currentGameState.currentTurn
-          )}
-          player={currentGameState.players.get(socket.id)}
-          statsOpen={statsVisible}
-          setStatsOpen={setStatsVisible}
-          setSelectedUnit={setSelectedUnit}
+          spellSchools={currentGameState.players.get(socket.id)?.stats?.spells}
+          spellAlreadyUsed={[]}
+          onSpellClick={() => {
+            console.log("spell clicked ! ");
+          }}
         />
-      </Grid>
-      <Grid className="LeftMenu">
-        <LeftMenu
-          statsVisible={statsVisible}
-          socket={socket}
-          currentGameState={currentGameState}
-          selectedPosition={selectedPosition}
-          selectedUnit={getUnitAtSelectedPosition(
-            selectedPosition!,
-            currentGameState
-          )}
-          setStatsVisible={setStatsVisible}
-          role={role}
-        />
-      </Grid>
+      )}
+      <Grid className="game-page" container>
+        <Grid className="Navbar">
+          <Navbar
+            socket={socket}
+            gameId={currentGameState.id}
+            isCurrentTurnPlayer={
+              currentGameState.currentTurn ===
+              currentGameState.players.get(socket.id)?.id
+            }
+            currentTurnPlayerName={getPlayerName(
+              currentGameState,
+              currentGameState.currentTurn
+            )}
+            player={currentGameState.players.get(socket.id)}
+            statsOpen={statsVisible}
+            setStatsOpen={setStatsVisible}
+            setSelectedUnit={setSelectedUnit}
+          />
+        </Grid>
+        <Grid className="LeftMenu">
+          <LeftMenu
+            statsVisible={statsVisible}
+            socket={socket}
+            currentGameState={currentGameState}
+            selectedPosition={selectedPosition}
+            selectedUnit={getUnitAtSelectedPosition(
+              selectedPosition!,
+              currentGameState
+            )}
+            setStatsVisible={setStatsVisible}
+            role={role}
+          />
+        </Grid>
 
-      <Grid className="Board">
-        <Board
-          gameState={currentGameState}
-          socket={socket}
-          onTileClick={handleTileClick}
-          selectedPosition={selectedPosition}
-          selectedEntityId={selectedEntityId}
-          selectedType={selectedType}
-          monsterType={monsterType}
-        />
+        <Grid className="Board">
+          <Board
+            gameState={currentGameState}
+            socket={socket}
+            onTileClick={handleTileClick}
+            selectedPosition={selectedPosition}
+            selectedEntityId={selectedEntityId}
+            selectedType={selectedType}
+            monsterType={monsterType}
+          />
+        </Grid>
+        <Grid className="RightMenu">
+          <RightMenu
+            socket={socket}
+            currentGameState={currentGameState}
+            setSelectedType={setSelectedType}
+            monsterType={monsterType}
+            setMonsterType={setMonsterType}
+            selectedUnit={getUnitAtSelectedPosition(
+              selectedPosition!,
+              currentGameState
+            )}
+          />
+        </Grid>
+        <Grid className="Footer">
+          <Footer />
+        </Grid>
       </Grid>
-      <Grid className="RightMenu">
-        <RightMenu
-          socket={socket}
-          currentGameState={currentGameState}
-          setSelectedType={setSelectedType}
-          monsterType={monsterType}
-          setMonsterType={setMonsterType}
-          selectedUnit={getUnitAtSelectedPosition(
-            selectedPosition!,
-            currentGameState
-          )}
-        />
-      </Grid>
-      <Grid className="Footer">
-        <Footer />
-      </Grid>
-    </Grid>
+    </>
   );
 };
 

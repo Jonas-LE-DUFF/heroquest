@@ -18,11 +18,13 @@ const CardCarouselComponent = ({
     const images: any[] = [];
     for (let i = 0; i < equipmentCardNames.length; i++) {
       images.push(
-        <CardComponent
-          socket={socket}
-          cardName={equipmentCardNames[i]}
-          cardType="equipment"
-        />
+        <div className="singleSpellCard">
+          <CardComponent
+            socket={socket}
+            cardName={equipmentCardNames[i]}
+            cardType="equipment"
+          />
+        </div>
       );
     }
     return images;

@@ -12,8 +12,15 @@ const CardComponent = ({ socket, cardName, cardType }: CardProps) => {
   return (
     <img
       src={getCardImagePath(cardName, cardType)}
-      alt="carte"
-      style={{ maxWidth: "100px", height: "auto", display: "block" }}
+      alt={cardName}
+      style={{
+        width: "fit-content",
+        height: "fit-content",
+        maxHeight: "100%",
+        maxWidth: "100%",
+        display: "block",
+        objectFit: "scale-down",
+      }}
     />
   );
 };
