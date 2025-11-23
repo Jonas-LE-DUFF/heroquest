@@ -190,6 +190,12 @@ function getMonsterClassName(classMonster: monsterClass) {
   return monsterClassFr[classMonster];
 }
 
+function getPlayerName(game: GameState, playerId: string) {
+  const player = game.players.get(playerId);
+  if (!player || !player.stats) return "Inconnu";
+  return player.stats.name;
+}
+
 const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
 
 export {
@@ -205,5 +211,6 @@ export {
   getElementName,
   getHeroClassName,
   getMonsterClassName,
+  getPlayerName,
   positionKey,
 };

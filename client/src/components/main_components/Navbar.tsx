@@ -9,6 +9,8 @@ interface NavbarProps {
   socket: Socket;
   gameId: string;
   player?: Player;
+  isCurrentTurnPlayer: boolean;
+  currentTurnPlayerName: string;
   statsOpen: boolean;
   setStatsOpen: (arg0: boolean) => void;
   setSelectedUnit: (arg0: Player | Monster | null) => void;
@@ -18,6 +20,8 @@ const Navbar: React.FC<NavbarProps> = ({
   socket,
   gameId,
   player,
+  isCurrentTurnPlayer,
+  currentTurnPlayerName,
   statsOpen,
   setStatsOpen,
   setSelectedUnit,
@@ -55,8 +59,8 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
       )}
       <div className="nav-elem">Game ID: {gameId}</div>
-      <div className="nav-elem">Player: {player.stats.name}</div>
-      <div className="nav-elem">Role: {player.role}</div>
+      <div className="nav-elem">Votre nom: {player.stats.name}</div>
+      <div className="nav-elem">Votre Rôle: {player.role}</div>
       {player?.stats?.spells && player.stats.spells.length > 0 && (
         <div className="nav-elem">
           <Tooltip title="Voir mes sorts" arrow>
@@ -68,6 +72,11 @@ const Navbar: React.FC<NavbarProps> = ({
           </Tooltip>
         </div>
       )}
+      <div className="nav-elem">
+        {isCurrentTurnPlayer
+          ? "À toi de jouer !"
+          : "Au tour de " + currentTurnPlayerName}
+      </div>
     </div>
   );
 };

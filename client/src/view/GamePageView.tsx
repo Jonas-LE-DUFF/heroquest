@@ -13,7 +13,10 @@ import {
   tileType,
   Unit,
 } from "../shared/type";
-import { convertSendableGameStateAsGameState } from "../shared/utils";
+import {
+  convertSendableGameStateAsGameState,
+  getPlayerName,
+} from "../shared/utils";
 import { positionKey } from "../shared/utils";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
@@ -58,7 +61,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           setSelectedPosition(pos);
           setSelectedEntityId(selectedId);
         } else {
-          // selected entity no longer has a position -> clear selection
           setSelectedPosition(null);
           setSelectedEntityId(null);
         }
@@ -85,7 +87,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             return prev;
           }
 
-          // shallow copy maps we will modify
           const players = new Map(prev.players);
           const monsters = new Map(prev.monsters);
 
@@ -111,6 +112,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       socket.off("game-state-update");
     };
   }, [socket, selectedPosition, selectedEntityId]);
+
+  const setSelectedUnit = (unit: Player | Monster | null) => {
+    if (!unit) return;
+    const position = currentGameState.entityPositions.get(unit.id);
+    if (!position) return;
+    setSelectedPosition(position);
+    setSelectedEntityId(unit.id);
+  };
 
   const handleTileClick = (
     gameId: string,
@@ -150,63 +159,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
   };
 
-  // return (
-  //   <div className="game-page">
-  //     {currentGameState && (
-  //       <div className="game-container">
-  //         <div
-  //           className={
-  //             statsVisible && selectedUnit !== null ? "HeroStats" : "hidden"
-  //           }
-  //         >
-  //           {statsVisible && (
-  //             <StatsComponent
-  //               socket={socket}
-  //               gameId={currentGameState.id}
-  //               position={selectedPosition ?? { x: 0, y: 0 }}
-  //               unit={selectedUnit}
-  //               setStatsVisible={setStatsVisible}
-  //               isGameMaster={role === "game-master"}
-  //             />
-  //           )}
-  //         </div>
-  //         <div className="Board">
-  //           <div>
-  //             {socket !== null && (
-  //               <Board
-  //                 gameState={currentGameState}
-  //                 socket={socket}
-  //                 onTileClick={handleTileClick}
-  //                 selectedPosition={selectedPosition}
-  //                 selectedType={selectedType}
-  //                 monsterType={monsterType}
-  //               />
-  //             )}
-  //             <div>
-  //               {selectedUnit !== null && (
-  //                 <button
-  //                   onClick={() =>
-  //                     selectedUnit !== null && setStatsVisible(!statsVisible)
-  //                   }
-  //                 >
-  //                   {!statsVisible ? "Montrer stats" : "Cacher stats"}
-  //                 </button>
-  //               )}
-  //             </div>
-  //           </div>
-  //         </div>
-  //         <div className="info-on-the-side">
-  //           <GameControls
-  //             socket={socket}
-  //             game={currentGameState}
-  //             setSelectedType={setSelectedType}
-  //             monsterType={monsterType}
-  //             setMonsterType={setMonsterType}
-  //             selectedUnit={selectedUnit}
-  //             setSelectedPosition={setSelectedPosition}
-  //             setSelectedUnit={setSelectedUnit}
-  //           />
-
   //           <div className="game-info">
   //             <h3>Informations</h3>
   //             {currentGameState.currentTurn === socket.id ? (
@@ -236,16 +188,18 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Navbar
           socket={socket}
           gameId={currentGameState.id}
+          isCurrentTurnPlayer={
+            currentGameState.currentTurn ===
+            currentGameState.players.get(socket.id)?.id
+          }
+          currentTurnPlayerName={getPlayerName(
+            currentGameState,
+            currentGameState.currentTurn
+          )}
           player={currentGameState.players.get(socket.id)}
           statsOpen={statsVisible}
           setStatsOpen={setStatsVisible}
-          setSelectedUnit={(unit: Player | Monster | null) => {
-            if (!unit) return;
-            const position = currentGameState.entityPositions.get(unit.id);
-            if (!position) return;
-            setSelectedPosition(position);
-            setSelectedEntityId(unit.id);
-          }}
+          setSelectedUnit={setSelectedUnit}
         />
       </Grid>
       <Grid className="LeftMenu">
