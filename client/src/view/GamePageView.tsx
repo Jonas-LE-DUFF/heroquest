@@ -33,11 +33,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const role = location.state.role;
 
-  const [monsterType, setMonsterType] = useState<monsterClass | null>(null);
-
-  const [selectedType, setSelectedType] = useState<tileType | Direction | null>(
-    null
-  );
+  const [selectedType, setSelectedType] = useState<
+    tileType | Direction | monsterClass | null
+  >(null);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
     null
   );
@@ -49,6 +47,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
+  const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
 
   useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
@@ -126,8 +125,29 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const handleTileClick = (
     gameId: string,
     position: Position,
-    monsterType: monsterClass | null
+    selectedType: tileType | Direction | monsterClass | null
   ) => {
+    if (selectedSpell !== null) {
+      console.log("Casting spell:", selectedSpell, "at position:", position);
+      socket.emit(
+        "cast-spell",
+        {
+          gameId,
+          spellId: selectedSpell,
+          position: position,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (response.success) {
+            console.log("Spell cast successfully");
+            setSelectedSpell(null);
+          } else {
+            console.error("Failed to cast spell:", response.error);
+          }
+        }
+      );
+      return;
+    }
+
     if (
       selectedPosition !== null &&
       selectedPosition.x === position.x &&
@@ -148,16 +168,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       //nothing to place
       return;
     }
-    if (selectedType === tileType.monster && !monsterType) {
-      console.error("monsterType must be defined when placing a monster");
-      return;
-    }
     socket.emit("place-element", {
       gameId,
       position,
       selectedType,
       playerId: socket.id,
-      monsterType: monsterType,
     });
   };
 
@@ -190,9 +205,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <SpellsPopUp
           socket={socket}
           spellSchools={currentGameState.players.get(socket.id)?.stats?.spells}
-          spellAlreadyUsed={[]}
-          onSpellClick={() => {
-            console.log("spell clicked ! ");
+          spellAlreadyUsed={
+            currentGameState.players.get(socket.id)?.stats?.usedSpells
+          }
+          onSpellClick={(selectedSpell: string) => {
+            setSelectedSpell(selectedSpell);
           }}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
@@ -232,7 +249,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           />
         </Grid>
 
-        <Grid className="Board">
+        <Grid className={"Board" + (selectedSpell ? " target" : "")}>
           <Board
             gameState={currentGameState}
             socket={socket}
@@ -240,7 +257,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             selectedPosition={selectedPosition}
             selectedEntityId={selectedEntityId}
             selectedType={selectedType}
-            monsterType={monsterType}
           />
         </Grid>
         <Grid className="RightMenu">
@@ -248,8 +264,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             socket={socket}
             currentGameState={currentGameState}
             setSelectedType={setSelectedType}
-            monsterType={monsterType}
-            setMonsterType={setMonsterType}
+            selectedType={selectedType}
             selectedUnit={getUnitAtSelectedPosition(
               selectedPosition!,
               currentGameState

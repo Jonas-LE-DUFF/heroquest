@@ -31,7 +31,6 @@ function getSpellListForSchool(spellSchool: spellElement): string[] {
 
 function getCardImagePath(id: string, cardType: string): string | undefined {
   let jsonFile;
-  console.log(id, cardType);
 
   switch (cardType) {
     case "equipment":
@@ -48,12 +47,8 @@ function getCardImagePath(id: string, cardType: string): string | undefined {
   }
 
   const eq = (jsonFile as Card[]).find((e) => e.id === id);
-  console.log("json found:", eq);
-  console.log(eq?.image_path);
   const image_path = eq?.image_path;
   const ret = `${process.env.PUBLIC_URL}/${image_path}`;
-  console.log(ret);
-
   return ret;
 }
 

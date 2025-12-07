@@ -1,12 +1,5 @@
-export enum heroClassFr {
-  "Barbare" = 1,
-  "Nain",
-  "Elfe",
-  "Enchanteur",
-}
-
 export enum monsterClassFr {
-  "Gobelin" = 1,
+  "Gobelin" = 100,
   "Squelette",
   "Zombie",
   "Orc",
@@ -16,8 +9,15 @@ export enum monsterClassFr {
   "Gargouille",
 }
 
+export enum heroClassFr {
+  "Barbare" = 300,
+  "Nain",
+  "Elfe",
+  "Enchanteur",
+}
+
 export enum spellElementFr {
-  "Feu" = 1,
+  "Feu" = 400,
   "Eau",
   "Terre",
   "Air",

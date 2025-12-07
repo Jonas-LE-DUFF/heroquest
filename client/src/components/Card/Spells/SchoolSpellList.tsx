@@ -2,7 +2,7 @@ import { spellElement } from "../../../shared/type";
 import { getElementName } from "../../../shared/utils";
 import { CardComponent } from "../CardComponent";
 
-interface SpellsComponentProps {
+interface SchoolSpellListProps {
   socket: any;
   spellSchools: spellElement[];
   spellAlreadyUsed: string[]; // list of spell IDs
@@ -10,7 +10,7 @@ interface SpellsComponentProps {
   onClose: () => void;
 }
 
-const SpellsComponent: React.FC<SpellsComponentProps> = ({
+const SchoolSpellList: React.FC<SchoolSpellListProps> = ({
   socket,
   spellSchools,
   spellAlreadyUsed,
@@ -52,4 +52,4 @@ const SpellsComponent: React.FC<SpellsComponentProps> = ({
   );
 };
 
-export default SpellsComponent;
+export default SchoolSpellList;

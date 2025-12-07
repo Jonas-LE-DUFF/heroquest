@@ -20,6 +20,7 @@
   grid-column: 2/3;
   display: flex;
   width: 55%;
+  cursor: pointer;
 }
 
 .Footer{
@@ -56,4 +57,8 @@
 .hidden {
   display: none;
   width: 0%;
+}
+
+.target{
+  cursor: crosshair;
 }

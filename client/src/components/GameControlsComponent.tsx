@@ -10,19 +10,24 @@ import {
 } from "../shared/type";
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
-import { Accordion, AccordionSummary, Grid, Tooltip, Typography } from "@mui/material";
+import {
+  Accordion,
+  AccordionSummary,
+  Grid,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { getMonsterIconPath } from "../shared/utils";
 import RedDices from "./dices/RedDicesComponent";
 import { monsterClassFr } from "../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface GameControlsProps {
   socket: any;
   game: GameState;
-  setSelectedType: (type: tileType | Direction | null) => void; //Direction -> door placement
-  monsterType: monsterClass | null;
-  setMonsterType: (type: monsterClass | null) => void;
+  setSelectedType: (type: tileType | Direction | monsterClass | null) => void; //Direction -> door placement
+  selectedType: tileType | Direction | monsterClass | null;
   selectedUnit: Player | Monster | null;
 }
 
@@ -30,8 +35,7 @@ const GameControls = ({
   socket,
   game,
   setSelectedType,
-  monsterType,
-  setMonsterType,
+  selectedType,
   selectedUnit,
 }: GameControlsProps) => {
   const location = useLocation();
@@ -98,48 +102,39 @@ const GameControls = ({
   };
 
   const selectMonster = (monster: monsterClass) => {
-    setSelectedType(tileType.monster);
-    setMonsterType(monster);
+    setSelectedType(monster);
   };
 
   const putWall = () => {
     setSelectedType(tileType.wall);
-    setMonsterType(null);
   };
 
   const putFurniture = () => {
     setSelectedType(tileType.furniture);
-    setMonsterType(null);
   };
 
   const unSelect = () => {
     setSelectedType(null);
-    setMonsterType(null);
   };
 
   const erase = () => {
     setSelectedType(tileType.empty);
-    setMonsterType(null);
   };
 
   const putTopDoor = () => {
     setSelectedType(Direction.UP);
-    setMonsterType(null);
   };
 
   const putBottomDoor = () => {
     setSelectedType(Direction.DOWN);
-    setMonsterType(null);
   };
 
   const putLeftDoor = () => {
     setSelectedType(Direction.LEFT);
-    setMonsterType(null);
   };
 
   const putRightDoor = () => {
     setSelectedType(Direction.RIGHT);
-    setMonsterType(null);
   };
 
   const endTurn = () => {
@@ -164,8 +159,12 @@ const GameControls = ({
         <Grid key={mType} size={3}>
           <Tooltip title={name} arrow>
             <button
-              className={`monster-button ${monsterType === mType ? "selected" : ""
-                }`}
+              className={`monster-button ${
+                selectedType === mType &&
+                typeof selectedType === typeof monsterClass
+                  ? "selected"
+                  : ""
+              }`}
               onClick={() => selectMonster(mType)}
             >
               <img src={img} alt={name} className="monster-img" />
@@ -203,7 +202,7 @@ const GameControls = ({
   return (
     <div>
       <div className="game-controls hero">
-        <Accordion sx={{ background: "inherit" }} >
+        <Accordion sx={{ background: "inherit" }}>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
             aria-controls="panel1-content"
@@ -238,10 +237,9 @@ const GameControls = ({
         </Accordion>
       </div>
       <div className="game-controls game-master">
-
         {role === "game-master" && (
           <div>
-            <Accordion sx={{ color: "white", background: "inherit" }} >
+            <Accordion sx={{ color: "white", background: "inherit" }}>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls="panel2-content"
@@ -323,8 +321,8 @@ const GameControls = ({
         {role === "game-master" &&
           selectedUnit !== null &&
           renderMovementControls(role)}
-        {role === "game-master" &&
-          <Accordion sx={{ color: "white", background: "inherit" }} >
+        {role === "game-master" && (
+          <Accordion sx={{ color: "white", background: "inherit" }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel5-content"
@@ -336,7 +334,7 @@ const GameControls = ({
               <MasterControls socket={socket} gameId={gameId} />
             </div>
           </Accordion>
-        }
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,8 @@ import "./SpellsPopUp.css";
 interface SpellListProps {
   socket: any;
   spellList: string[];
-  onSpellClick: () => void;
+  usedSpellList: string[];
+  onSpellClick: (spell: string) => void;
   onClose: () => void;
   onReturn: (() => void) | undefined;
 }
@@ -12,6 +13,7 @@ interface SpellListProps {
 const SpellList: React.FC<SpellListProps> = ({
   socket,
   spellList,
+  usedSpellList,
   onSpellClick,
   onClose,
   onReturn,
@@ -19,17 +21,23 @@ const SpellList: React.FC<SpellListProps> = ({
   if (!spellList) {
     return <div className="spell-view">No spells available</div>;
   }
+  console.log("Rendering SpellList with spells: ", spellList);
+  console.log("Used spells: ", usedSpellList);
+
   const renderSpellSchools = (spellList: string[]) => {
-    return spellList.map((spellId) => (
-      <div
-        key={spellId}
-        className="spell-school"
-        role="button"
-        onClick={onSpellClick}
-      >
-        <CardComponent socket={socket} cardName={spellId} cardType="spell" />
-      </div>
-    ));
+    return spellList.map((spellId) => {
+      const isUsed: boolean = usedSpellList.includes(spellId);
+      return (
+        <div
+          key={spellId}
+          className={"spell-school " + (isUsed ? "used-spell" : "")}
+          role="button"
+          onClick={isUsed ? undefined : () => onSpellClick(spellId)}
+        >
+          <CardComponent socket={socket} cardName={spellId} cardType="spell" />
+        </div>
+      );
+    });
   };
   return (
     <div className="spell-view">

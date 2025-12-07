@@ -12,7 +12,6 @@ import {
   Position,
   tileType,
   Monster,
-  Tile,
   Direction,
   heroClass,
   Unit,
@@ -39,8 +38,9 @@ import { placeDoor } from "./shared/doors";
 import {
   handleRollFightDice,
   handleRollRedDice,
-  handleSpecialRollAuth,
+  handleSpecialRollAuthorization,
 } from "./shared/dicesControllers";
+import { castSpell } from "./shared/spell/spellEffects";
 
 const app = express();
 const httpServer = createServer(app);
@@ -69,7 +69,6 @@ io.on(
     socket.on(
       "join-game",
       (data: { gameId: string; playerName: string; role: PlayerRole }) => {
-
         const { gameId, playerName, role } = data;
         console.log("gameId : ", gameId, "playerName : ", playerName);
         if (!gameId || !playerName) {
@@ -230,10 +229,8 @@ io.on(
         if (player.role === "game-master") {
           // no hero to place on the board for this player
         } else {
-          const tile: Tile | undefined = game.board[pos.x]?.[pos.y];
+          const tile: tileType | undefined = game.board[pos.x]?.[pos.y];
           if (!tile) return;
-          tile.entityId = player.id;
-          tile.type = tileType.hero;
           game.entityPositions.set(player.id, pos);
           game.positionEntities.set(positionKey(pos), player.id);
           pos = { x: pos.x + 1, y: pos.y };
@@ -283,90 +280,11 @@ io.on(
       return;
     });
 
-    // place-element
-    socket.on(
-      "place-element",
-      (data: {
-        gameId: string;
-        position: Position;
-        selectedType: tileType | Direction;
-        playerId: string;
-        monsterType: monsterClass;
-      }) => {
-        console.debug("placing element", data);
-        const { gameId, position, selectedType, playerId, monsterType } = data;
-        if (selectedType === undefined || selectedType === null) return;
-        const gameState = games.get(gameId);
-        if (!gameState) {
-          console.error("no game found");
-          return;
-        }
-        if (gameState.players.get(playerId)?.role !== "game-master") {
-          console.error(
-            "you are no game master therefore you can't place pieces on the board"
-          );
-          return;
-        }
-        let tile = gameState?.board?.[position.x]?.[position.y];
-        if (tile === undefined) {
-          console.error("tile undefined in index.ts");
-          return;
-        }
-        if (typeof selectedType === typeof Direction.UP) {
-          const newDoor = placeDoor(position, selectedType, gameState, gameId);
-          io.to(gameId).emit("door-placed", {
-            position: newDoor.position,
-            verticalOrHorizontal: newDoor.verticalOrHorizontal,
-          });
-          return;
-        }
-
-        if (selectedType === tileType.empty) {
-          // erasing the tile
-          const entityId = gameState.positionEntities.get(
-            positionKey(position)
-          );
-          if (entityId) {
-            gameState.entityPositions.delete(entityId);
-            gameState.positionEntities.delete(positionKey(position));
-          }
-        }
-
-        if (tile?.type !== tileType.empty && selectedType !== tileType.empty) {
-          console.error("tile is occupied");
-          return;
-        }
-
-        tile.type = selectedType as tileType;
-
-        if (monsterType !== null && monsterType !== undefined) {
-          console.debug("adding monster", monsterType);
-
-          const newMonsterId = generateMonsterId(gameState);
-
-          gameState.entityPositions.set(newMonsterId, position);
-          gameState.positionEntities.set(positionKey(position), newMonsterId);
-          const monster = generateMonster(newMonsterId, monsterType);
-          gameState.monsters.set(newMonsterId, monster);
-        }
-        io.to(gameId).emit("game-state-update", {
-          gameState: convertGameStateAsSendableGameState(gameState),
-        });
-      }
-    );
-
-    const sleep = (ms: number) => {
-      return new Promise((r) => setTimeout(r, ms));
-    };
-
     // roll-dice
-    handleRollFightDice(io, socket, games, sleep);
+    handleRollFightDice(io, socket, games);
 
     //roll-red-dice
-    handleRollRedDice(io, socket, games, sleep);
-
-    // authorize-special-throw-dices
-    handleSpecialRollAuth(socket, games);
+    handleRollRedDice(io, socket, games);
 
     // move-unit-one-step
     socket.on(
@@ -437,7 +355,10 @@ io.on(
         }
         const newPosition = getPositionAfterMove(position, data.direction);
 
-        if (hasDoor(gameState.doors, position, data.direction) && isPlayer(unit)) {
+        if (
+          hasDoor(gameState.doors, position, data.direction) &&
+          isPlayer(unit)
+        ) {
           openDoor(gameState.doors, gameState.walls, position, data.direction);
         }
         if (newPosition === position) {
@@ -457,14 +378,6 @@ io.on(
           });
         }
 
-        newTile.entityId = unit.id;
-        if (isPlayer(unit)) {
-          newTile.type = tileType.hero;
-        } else {
-          newTile.type = tileType.monster;
-        }
-        tile.entityId = undefined;
-        tile.type = tileType.empty;
         gameState.entityPositions.set(unit.id, newPosition);
         gameState.positionEntities.set(positionKey(newPosition), unit.id);
         const oldPositionKey = { x: position.x, y: position.y };
@@ -519,6 +432,224 @@ io.on(
       });
     });
 
+    // cast-spell
+    socket.on(
+      "cast-spell",
+      async (
+        data: { gameId: string; spellId: string; position: Position },
+        callback: (response: { success: boolean; error?: string }) => void
+      ) => {
+        console.debug("casting spell", data);
+        const { gameId, spellId, position } = data;
+        let gameState = games.get(gameId);
+        if (!gameState) {
+          console.error("game couldn't be found in cast-spell");
+          return callback({
+            success: false,
+            error: "game couldn't be found in cast-spell",
+          });
+        }
+        const castingPlayer = gameState.players.get(socket.id);
+        if (!castingPlayer) {
+          console.error("player casting spell couldn't be found in cast-spell");
+          return callback({
+            success: false,
+            error: "player casting spell couldn't be found",
+          });
+        }
+        console.debug("spell cast by player", castingPlayer.stats?.name);
+        try {
+          gameState = await castSpell(
+            gameState,
+            castingPlayer,
+            spellId,
+            position,
+            io
+          );
+        } catch (error) {
+          const errorMessage = (error as Error).message;
+          console.error("error while casting spell :", errorMessage);
+          return callback({
+            success: false,
+            error: "You couldn't cast this spell because : " + errorMessage,
+          });
+        }
+
+        // Marking spell as used for the player
+        if (castingPlayer.stats) {
+          if (!castingPlayer.stats.usedSpells) {
+            castingPlayer.stats.usedSpells = [];
+          }
+          castingPlayer.stats.usedSpells.push(spellId);
+        }
+
+        console.log("spell casted successfully Player :", castingPlayer.stats);
+        console.log("sending updated game state to players", gameState);
+        if (!gameState) return;
+        io.to(gameId).emit("game-state-update", {
+          gameState: convertGameStateAsSendableGameState(gameState),
+        });
+
+        return callback({ success: true });
+      }
+    );
+
+    ///** game master actions **///
+    // place-element
+    socket.on(
+      "place-element",
+      (data: {
+        gameId: string;
+        position: Position;
+        selectedType: tileType | Direction | monsterClass;
+        playerId: string;
+      }) => {
+        console.debug("placing element", data);
+        const { gameId, position, selectedType, playerId } = data;
+        if (!selectedType) {
+          console.error("no selected type in place-element");
+          return;
+        }
+        console.log("selected type :", selectedType);
+        const gameState = games.get(gameId);
+        if (!gameState) {
+          console.error("no game found");
+          return;
+        }
+        if (gameState.players.get(playerId)?.role !== "game-master") {
+          console.error(
+            "you are no game master therefore you can't place pieces on the board"
+          );
+          return;
+        }
+        if (selectedType in Direction) {
+          const newDoor = placeDoor(position, selectedType, gameState, gameId);
+          console.log("new door placed :", newDoor);
+          io.to(gameId).emit("door-placed", {
+            position: newDoor.position,
+            verticalOrHorizontal: newDoor.verticalOrHorizontal,
+          });
+          return;
+        }
+
+        if (selectedType === tileType.empty) {
+          // erasing the tile
+          console.log("erasing tile at position :", position);
+          const entityId = gameState.positionEntities.get(
+            positionKey(position)
+          );
+          if (entityId) {
+            gameState.entityPositions.delete(entityId);
+            gameState.positionEntities.delete(positionKey(position));
+          }
+        }
+        let tile = gameState?.board?.[position.x]?.[position.y];
+        if (tile !== tileType.empty && selectedType !== tileType.empty) {
+          console.error("tile is occupied");
+          return;
+        }
+        const entityAtPostion = gameState.positionEntities.get(
+          positionKey(position)
+        );
+        if (entityAtPostion) {
+          console.error("there's already an entity at this position");
+          return;
+        }
+
+        if (selectedType in monsterClass) {
+          console.debug("adding monster", selectedType);
+
+          const newMonsterId = generateMonsterId(gameState);
+
+          gameState.entityPositions.set(newMonsterId, position);
+          gameState.positionEntities.set(positionKey(position), newMonsterId);
+          const monster = generateMonster(
+            newMonsterId,
+            selectedType as monsterClass
+          );
+          console.log("generated monster :", monster);
+          gameState.monsters.set(newMonsterId, monster);
+        }
+        io.to(gameId).emit("game-state-update", {
+          gameState: convertGameStateAsSendableGameState(gameState),
+        });
+      }
+    );
+
+    //update-stats-unit
+    socket.on(
+      "update-stats-unit",
+      (
+        data: {
+          gameId: string;
+          newStats: Unit;
+          position: Position;
+        },
+        callback
+      ) => {
+        const { gameId, newStats, position } = data;
+        const game = games.get(gameId);
+        if (!game) {
+          return callback({ success: false, error: "Game not found." });
+        }
+        const player = game.players.get(socket.id);
+        if (!player) {
+          return callback({ success: false, error: "Player not found." });
+        }
+        if (player.role !== "game-master") {
+          return callback({
+            success: false,
+            error: "Only game master can update stats.",
+          });
+        }
+
+        const entityIdAtPosition = game.positionEntities.get(
+          positionKey(position)
+        );
+
+        console.debug("entityId found : ", entityIdAtPosition);
+        if (!entityIdAtPosition) {
+          return callback({
+            success: false,
+            error:
+              "le serveur n'a pas trouvé d'unité à la position sélectionnée.",
+          });
+        }
+
+        const existingPlayer = game.players.get(entityIdAtPosition);
+        const existingMonster = game.monsters.get(entityIdAtPosition);
+        if (existingPlayer) {
+          existingPlayer.stats = { ...existingPlayer.stats, ...newStats };
+          game.players.set(entityIdAtPosition, existingPlayer);
+
+          io.to(gameId).emit("stats-updated", {
+            entityId: entityIdAtPosition,
+            newStats: newStats,
+            isPlayer: true,
+          });
+
+          return callback({ success: true });
+        } else if (existingMonster) {
+          game.monsters.set(entityIdAtPosition, existingMonster);
+          io.to(gameId).emit("stats-updated", {
+            entityId: entityIdAtPosition,
+            newStats: newStats,
+            isPlayer: false,
+          });
+          return callback({ success: true });
+        } else {
+          return callback({
+            success: false,
+            error: "Pas d'unité à modifier sur cette case.",
+          });
+        }
+      }
+    );
+
+    // authorize-special-throw-dices
+    handleSpecialRollAuthorization(socket, games);
+
+    /// lobby actions
     // choose-character
     socket.on(
       "choose-character",
@@ -657,76 +788,6 @@ io.on(
         gameState: convertGameStateAsSendableGameState(game),
       });
     });
-
-    //update-stats-unit
-    socket.on(
-      "update-stats-unit",
-      (
-        data: {
-          gameId: string;
-          newStats: Unit;
-          position: Position;
-        },
-        callback
-      ) => {
-        const { gameId, newStats, position } = data;
-        const game = games.get(gameId);
-        if (!game) {
-          return callback({ success: false, error: "Game not found." });
-        }
-        const player = game.players.get(socket.id);
-        if (!player) {
-          return callback({ success: false, error: "Player not found." });
-        }
-        if (player.role !== "game-master") {
-          return callback({
-            success: false,
-            error: "Only game master can update stats.",
-          });
-        }
-
-        const entityIdAtPosition = game.positionEntities.get(
-          positionKey(position)
-        );
-
-        console.debug("entityId found : ", entityIdAtPosition);
-        if (!entityIdAtPosition) {
-          return callback({
-            success: false,
-            error:
-              "le serveur n'a pas trouvé d'unité à la position sélectionnée.",
-          });
-        }
-
-        const existingPlayer = game.players.get(entityIdAtPosition);
-        const existingMonster = game.monsters.get(entityIdAtPosition);
-        if (existingPlayer) {
-          existingPlayer.stats = { ...existingPlayer.stats, ...newStats };
-          game.players.set(entityIdAtPosition, existingPlayer);
-
-          io.to(gameId).emit("stats-updated", {
-            entityId: entityIdAtPosition,
-            newStats: newStats,
-            isPlayer: true,
-          });
-
-          return callback({ success: true });
-        } else if (existingMonster) {
-          game.monsters.set(entityIdAtPosition, existingMonster);
-          io.to(gameId).emit("stats-updated", {
-            entityId: entityIdAtPosition,
-            newStats: newStats,
-            isPlayer: false,
-          });
-          return callback({ success: true });
-        } else {
-          return callback({
-            success: false,
-            error: "Pas d'unité à modifier sur cette case.",
-          });
-        }
-      }
-    );
   }
 );
 

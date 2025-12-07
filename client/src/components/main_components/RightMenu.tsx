@@ -1,21 +1,28 @@
 import React from "react";
 import { GameControls } from "../GameControlsComponent";
+import { Socket } from "socket.io-client";
+import {
+  Direction,
+  GameState,
+  Monster,
+  monsterClass,
+  Player,
+  tileType,
+} from "../../shared/type";
 
 interface RightMenuProps {
-  socket: any;
-  currentGameState: any;
+  socket: Socket;
+  currentGameState: GameState;
   setSelectedType: (type: any) => void;
-  monsterType: any;
-  setMonsterType: (type: any) => void;
-  selectedUnit: any;
+  selectedType: tileType | Direction | monsterClass | null;
+  selectedUnit: Player | Monster | null;
 }
 
 const RightMenu: React.FC<RightMenuProps> = ({
   socket,
   currentGameState,
   setSelectedType,
-  monsterType,
-  setMonsterType,
+  selectedType,
   selectedUnit,
 }) => {
   return (
@@ -24,8 +31,7 @@ const RightMenu: React.FC<RightMenuProps> = ({
         socket={socket}
         game={currentGameState}
         setSelectedType={setSelectedType}
-        monsterType={monsterType}
-        setMonsterType={setMonsterType}
+        selectedType={selectedType}
         selectedUnit={selectedUnit}
       />
     </div>

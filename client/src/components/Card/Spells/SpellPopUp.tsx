@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { spellElement } from "../../../shared/type";
-import SpellsComponent from "./SpellsComponent";
+import SchoolSpellList from "./SchoolSpellList";
 import "./SpellsPopUp.css";
 import SpellList from "./SpellList";
 import { getSpellListForSchool } from "../cardUtils";
@@ -9,7 +9,7 @@ interface SpellsPopUpProps {
   socket: any;
   spellSchools: spellElement[] | undefined;
   spellAlreadyUsed: string[] | undefined; // list of spell IDs
-  onSpellClick: () => void;
+  onSpellClick: (selectedSpell: string) => void;
   closeSpellPage: () => void;
 }
 
@@ -51,7 +51,7 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
     switch (spellPage) {
       case 1:
         return (
-          <SpellsComponent
+          <SchoolSpellList
             socket={socket}
             spellSchools={spellSchools}
             spellAlreadyUsed={spellAlreadyUsed}
@@ -70,7 +70,11 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
           <SpellList
             socket={socket}
             spellList={spellList}
-            onSpellClick={() => setSpellPage(3)}
+            usedSpellList={spellAlreadyUsed}
+            onSpellClick={(spell) => {
+              onSpellClick(spell);
+              closeSpellPage();
+            }}
             onClose={() => closeSpellPage()}
             onReturn={
               spellSchools.length === 1 ? undefined : () => goToPreviousPage()

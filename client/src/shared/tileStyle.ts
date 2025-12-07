@@ -17,10 +17,10 @@ export const getTileStyle = (
   } else if (selection && "x" in selection && "y" in selection) {
     isSelected = x === selection.x && y === selection.y;
   }
-  const isMonster = tile?.type === tileType.monster;
-  const isHero = tile?.type === tileType.hero;
-  const isFurniture = tile?.type === tileType.furniture;
-  const isWall = tile?.type === tileType.wall;
+  const isMonster = gameState?.monsters.has(entityAtPos ?? "");
+  const isHero = gameState?.players.has(entityAtPos ?? "");
+  const isFurniture = tile === tileType.furniture;
+  const isWall = tile === tileType.wall;
 
   const borderDirectionSet: Direction[] = [];
 
@@ -38,7 +38,6 @@ export const getTileStyle = (
     width: TILESIZE,
     height: TILESIZE,
     border: "none",
-    cursor: "pointer",
     textAlign: "center" as const,
     verticalAlign: "middle" as const,
     boxSizing: "border-box" as const,

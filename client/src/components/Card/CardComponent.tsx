@@ -7,8 +7,6 @@ interface CardProps {
 }
 
 const CardComponent = ({ socket, cardName, cardType }: CardProps) => {
-  console.log(getCardImagePath(cardName, cardType));
-
   return (
     <img
       src={getCardImagePath(cardName, cardType)}

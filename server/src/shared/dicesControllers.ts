@@ -15,11 +15,15 @@ interface SpecialAuthorizedPlayer {
   diceType: "red" | "fight";
 }
 let specialAuthorizedPlayer: SpecialAuthorizedPlayer | undefined = undefined;
+
+const sleep = (ms: number) => {
+  return new Promise((r) => setTimeout(r, ms));
+};
+
 function handleRollFightDice(
   io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>,
-  sleep: (ms: number) => Promise<unknown>
+  games: Map<string, GameState>
 ) {
   socket.on(
     "roll-dice",
@@ -31,7 +35,6 @@ function handleRollFightDice(
       },
       callback: (response: { success: boolean; error?: string }) => void
     ) => {
-
       const gameState = games.get(data.gameId);
       let numberOfDices: number | undefined;
 
@@ -119,8 +122,7 @@ function handleRollFightDice(
 function handleRollRedDice(
   io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>,
-  sleep: (ms: number) => Promise<unknown>
+  games: Map<string, GameState>
 ) {
   socket.on(
     "roll-red-dice",
@@ -128,69 +130,83 @@ function handleRollRedDice(
       data: { gameId: string; currentNumberOfDices: number },
       callback
     ) => {
-      console.log("roll-red-dice");
-      let numberOfDices: number = 2; // default number of dices
-      const gameState = games.get(data.gameId);
-
-      // checking if data needed exists
-      if (!gameState) {
-        console.error("game couldn't be found");
-        return callback({
-          success: false,
-          error: "la partie n'a pas pu être trouvée",
-        });
-      }
-      const playerRole = gameState.players.get(socket.id)?.role;
-      if (!playerRole) {
-        console.error("no role found for player rolling red dices");
-        return callback({
-          success: false,
-          error: "aucun rôle trouvé pour le joueur lançant les dés rouges",
-        });
-      }
-
-      if (
-        data.currentNumberOfDices !== undefined &&
-        data.currentNumberOfDices > 0 &&
-        playerRole === "game-master" // if player is game-master he can choose the amount of dices
-      ) {
-        numberOfDices = data.currentNumberOfDices;
-      } else if (
-        specialAuthorizedPlayer &&
-        specialAuthorizedPlayer.playerId === socket.id &&
-        specialAuthorizedPlayer.diceType === "red"
-        // if player is specialy authorized to roll red dices
-      ) {
-        numberOfDices = specialAuthorizedPlayer.numberOfDices;
-        specialAuthorizedPlayer = undefined;
-      } else if (gameState.currentTurn !== socket.id) {
-        // checking if it's the player's turn
-        console.error("not your turn to roll red dices");
-        return callback({
-          success: false,
-          error: "Attends ton tour trou du q !",
-        });
-      }
-
-      for (let j = 0; j < 15; j++) {
-        let results: number[] = [];
-        for (let i = 0; i < numberOfDices; i++) {
-          const randomNumber = Math.floor(Math.random() * 6 + 1);
-          results.push(randomNumber);
-        }
-        io.to(data.gameId).emit("red-dice-update", {
-          listResults: results,
-          role: playerRole,
-        });
-        await sleep(75);
-        results = [];
-      }
-      return callback({ success: true });
+      const result = await rollRedDice(
+        io,
+        socket.id,
+        games.get(data.gameId)!,
+        data.currentNumberOfDices
+      );
+      return callback(result);
     }
   );
 }
 
-function handleSpecialRollAuth(
+export async function rollRedDice(
+  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
+  playerId: string,
+  gameState: GameState,
+  wishedNumberOfDices: number
+) {
+  console.log("roll-red-dice");
+  let numberOfDices: number = 2; // default number of dices
+
+  // checking if data needed exists
+  if (!gameState) {
+    console.error("game couldn't be found");
+    return {
+      success: false,
+      error: "la partie n'a pas pu être trouvée",
+    };
+  }
+  const playerRole = gameState.players.get(playerId)?.role;
+  if (!playerRole) {
+    console.error("no role found for player rolling red dices");
+    return {
+      success: false,
+      error: "aucun rôle trouvé pour le joueur lançant les dés rouges",
+    };
+  }
+
+  if (
+    wishedNumberOfDices !== undefined &&
+    wishedNumberOfDices > 0 &&
+    playerRole === "game-master" // if player is game-master he can choose the amount of dices
+  ) {
+    numberOfDices = wishedNumberOfDices;
+  } else if (
+    specialAuthorizedPlayer &&
+    specialAuthorizedPlayer.playerId === playerId &&
+    specialAuthorizedPlayer.diceType === "red"
+    // if player is specialy authorized to roll red dices
+  ) {
+    numberOfDices = specialAuthorizedPlayer.numberOfDices;
+    specialAuthorizedPlayer = undefined;
+  } else if (gameState.currentTurn !== playerId) {
+    // checking if it's the player's turn
+    console.error("not your turn to roll red dices");
+    return {
+      success: false,
+      error: "Attends ton tour trou du q !",
+    };
+  }
+
+  let results: number[] = [];
+  for (let j = 0; j < 15; j++) {
+    results = [];
+    for (let i = 0; i < numberOfDices; i++) {
+      const randomNumber = Math.floor(Math.random() * 6 + 1);
+      results.push(randomNumber);
+    }
+    io.to(gameState.id).emit("red-dice-update", {
+      listResults: results,
+      role: playerRole,
+    });
+    await sleep(75);
+  }
+  return { success: true, results: results };
+}
+
+function handleSpecialRollAuthorization(
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
   games: Map<string, GameState>
 ) {
@@ -236,4 +252,8 @@ function handleSpecialRollAuth(
     }
   );
 }
-export { handleRollFightDice, handleRollRedDice, handleSpecialRollAuth };
+export {
+  handleRollFightDice,
+  handleRollRedDice,
+  handleSpecialRollAuthorization,
+};

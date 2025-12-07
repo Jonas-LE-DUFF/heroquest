@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Direction,
   GameState,
-  heroClass,
   Monster,
   monsterClass,
   Player,
   Position,
-  Tile,
   tileType,
 } from "../../shared/type";
 import "./BoardComponent.css";
@@ -21,8 +19,8 @@ import {
 } from "@mui/material";
 import { Socket } from "socket.io-client";
 import {
-  getHeroClassIconPath,
-  getMonsterIconPath,
+  getIconClassPath,
+  getUnitClassName,
   positionKey,
 } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
@@ -33,12 +31,11 @@ interface BoardProps {
   onTileClick: (
     gameId: string,
     position: Position,
-    monsterType: monsterClass | null
+    selectedType: tileType | Direction | monsterClass | null
   ) => void;
   selectedPosition: Position | null;
   selectedEntityId: string | null;
-  selectedType: tileType | Direction | null;
-  monsterType: monsterClass | null;
+  selectedType: tileType | Direction | monsterClass | null;
 }
 
 const Board = ({
@@ -48,7 +45,6 @@ const Board = ({
   selectedPosition,
   selectedEntityId,
   selectedType,
-  monsterType,
 }: BoardProps) => {
   const [localGameState, setLocalGameState] = useState<GameState | null>(
     gameState
@@ -99,8 +95,7 @@ const Board = ({
 
   const handleTileClick = (
     position: Position,
-    selectedType: tileType | Direction | null,
-    monsterType: monsterClass | null
+    selectedType: tileType | Direction | monsterClass | null
   ) => {
     if (!localGameState || !localGameState.board[position.x]) {
       console.error("gameState is not defined");
@@ -116,7 +111,7 @@ const Board = ({
       return;
     }
 
-    onTileClick(localGameState.id, position, monsterType);
+    onTileClick(localGameState.id, position, selectedType);
 
     if (selectedType !== null) {
       return;
@@ -131,7 +126,6 @@ const Board = ({
     for (let row = 0; row < localGameState.board.length; row++) {
       const cells = [];
       for (let col = 0; col < localGameState?.board[row]?.length; col++) {
-        const tile: tileType = localGameState.board[row]?.[col]?.type;
         cells.push(
           <TableCell
             key={col}
@@ -142,11 +136,9 @@ const Board = ({
               localGameState,
               selectedEntityId ?? selectedPosition
             )}
-            onClick={() =>
-              handleTileClick({ x: row, y: col }, selectedType, monsterType)
-            }
+            onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
           >
-            {tile !== tileType.empty && getTileContent(row, col)}
+            {getTileContent(row, col)}
           </TableCell>
         );
       }
@@ -157,36 +149,37 @@ const Board = ({
   };
 
   const getTileContent = (x: number, y: number) => {
-    const tile: Tile | undefined = localGameState?.board[x]?.[y];
-    if (!tile) return null;
+    const tile: tileType | undefined = localGameState?.board[x]?.[y];
+    if (!tile) {
+      console.error("Tile is undefined at position:", x, y);
+      return null;
+    }
     const pos: Position = { x: x, y: y };
     const entityId = localGameState?.positionEntities.get(positionKey(pos));
-    if (!entityId) return tileType[tile.type];
+    if (!entityId) {
+      if (tile === tileType.empty) return `${x},${y}`;
+      return tile;
+    }
 
-    const entityPlayer: Player | undefined =
+    let entity: Player | Monster | undefined =
       localGameState?.players.get(entityId);
-    const entityMonster: Monster | undefined =
-      localGameState?.monsters.get(entityId);
+    if (!entity) entity = localGameState?.monsters.get(entityId);
 
-    if (entityPlayer && entityPlayer.class) {
+    if (entity && entity.class) {
       return (
         <img
           className="boardImg"
-          src={getHeroClassIconPath(entityPlayer.class)}
-          alt={heroClass[entityPlayer.class]}
+          src={getIconClassPath(entity)}
+          alt={getUnitClassName(entity)}
         />
       );
     }
-    if (entityMonster && entityMonster.class) {
-      return (
-        <img
-          className="boardImg"
-          src={getMonsterIconPath(entityMonster.class)}
-          alt={monsterClass[entityMonster.class]}
-        />
-      );
-    }
-    return tileType[tile.type];
+
+    console.error("Entity not found for id:", entityId);
+    console.error("Current GameState:", localGameState?.monsters);
+    console.log(typeof entity);
+    console.log(entity);
+    return tileType[tile];
   };
 
   return (
