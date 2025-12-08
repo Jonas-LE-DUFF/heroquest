@@ -297,7 +297,7 @@ describe("castSpell", () => {
       gameState.entityPositions.set("monster1", monsterPos);
       gameState.positionEntities.set("1,1", monster.id);
       gameState.monsters.set("monster1", monster);
-      const { checkMonsterDefeat } = require("./death");
+      const { checkMonsterDefeat } = require("../shared/death/death.ts");
 
       await castSpell(gameState, player, "damage-spell-1", monsterPos, mockIo);
       expect(checkMonsterDefeat).toHaveBeenCalledWith(gameState, monster);
