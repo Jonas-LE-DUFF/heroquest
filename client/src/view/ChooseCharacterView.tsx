@@ -26,6 +26,7 @@ import { Socket } from "socket.io-client/build/esm/socket";
 import { CardCarouselComponent } from "../components/Card/CardCarouselComponent";
 import { getCardName } from "../components/Card/cardUtils";
 import { CardComponent } from "../components/Card/CardComponent";
+import { getHeroStats } from "../shared/heroesStats";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -87,6 +88,15 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const handleChangeHeroClass = (event: SelectChangeEvent<number>) => {
     setHeroType(Number(event.target.value));
+    const unit = getHeroStats(Number(event.target.value));
+    setFormValues((prev) => ({
+      ...prev,
+      nbAttackDice: unit.nbAttackDice ?? "",
+      nbDefenseDice: unit.nbDefenseDice ?? "",
+      hp: unit.hp ?? "",
+      spiritPoints: unit.spiritPoints ?? "",
+      equipments: unit.equipments ?? [],
+    }));
   };
 
   const handleTextFieldNumber = (

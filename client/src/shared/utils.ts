@@ -114,19 +114,19 @@ function getMonsterIconPath(monsterType: monsterClass): string {
   switch (monsterType) {
     case monsterClass.Abomination:
       return iconAbomination;
-    case monsterClass.Gargouille:
+    case monsterClass.Gargoyle:
       return iconGargoyle;
     case monsterClass.Goblin:
       return iconGobelin;
-    case monsterClass.Guerrier_de_la_terreur:
+    case monsterClass.TerrorWarrior:
       return iconDreadWarrior;
-    case monsterClass.Squelette:
+    case monsterClass.Skeleton:
       return iconSkeleton;
     case monsterClass.Zombie:
       return iconZombie;
     case monsterClass.Orc:
       return iconOrc;
-    case monsterClass.Momie:
+    case monsterClass.Mummy:
       return iconMummy;
     default:
       return "monster"; // or a default icon
