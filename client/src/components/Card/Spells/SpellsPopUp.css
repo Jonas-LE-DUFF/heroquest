@@ -1,0 +1,40 @@
+.spell-view {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 60%;
+  height: 80%;
+  z-index: 200;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: row;
+  padding-left: 10%;
+  padding-right: 10%;
+}
+
+.spell-school {
+  width: 30%;
+  height: auto;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.returnButton {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  cursor: pointer;
+}
+
+.used-spell {
+  opacity: 0.5;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}

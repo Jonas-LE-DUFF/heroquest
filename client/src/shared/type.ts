@@ -5,23 +5,50 @@ export interface Position {
 }
 
 export enum diceFace {
-  "WhiteShield" = 1,
-  "BlackShield",
-  "Hit",
+  WhiteShield = 1,
+  BlackShield,
+  Hit,
+}
+
+export enum monsterClass {
+  Goblin = 100,
+  Squelette,
+  Zombie,
+  Orc,
+  Abomination,
+  Momie,
+  Guerrier_de_la_terreur,
+  Gargouille,
 }
 
 export enum heroClass {
-  "Barbarian" = 1,
-  "Dwarf",
-  "Elf",
-  "Cleric",
+  Barbarian = 300,
+  Dwarf,
+  Elf,
+  Cleric,
 }
 
 export enum spellElement {
-  "Fire" = 1,
-  "Water",
-  "Earth",
-  "Air",
+  Fire = 400,
+  Water,
+  Earth,
+  Air,
+}
+
+export enum tileType {
+  empty = 200,
+  wall,
+  treasure,
+  trap,
+  start,
+  furniture,
+}
+
+export enum Direction {
+  UP = "up",
+  DOWN = "down",
+  LEFT = "left",
+  RIGHT = "right",
 }
 
 export type PlayerRole = "hero" | "game-master";
@@ -35,7 +62,9 @@ export interface Unit {
   name: string;
   movements?: number | undefined;
   spells?: spellElement[] | undefined;
+  usedSpells?: string[] | undefined;
   gold?: number | undefined;
+  equipments?: string[] | undefined;
 }
 
 export interface Player {
@@ -46,38 +75,10 @@ export interface Player {
   ready: boolean;
 }
 
-export enum monsterClass {
-  Goblin = 1,
-  Squelette,
-  Zombie,
-  Orc,
-  Abomination,
-  Momie,
-  Guerrier_de_la_terreur,
-  Gargouille,
-}
-
 export interface Monster {
   id: string;
   class: monsterClass;
   stats: Unit;
-}
-
-export enum tileType {
-  empty = 1,
-  wall,
-  treasure,
-  trap,
-  start,
-  hero,
-  monster,
-  furniture,
-}
-
-export interface Tile {
-  type: tileType;
-  revealed: boolean;
-  entityId?: string | undefined;
 }
 
 export interface WallGrid {
@@ -129,6 +130,10 @@ export interface ServerToClientEvents {
     position: Position;
     verticalOrHorizontal: "vertical" | "horizontal";
   }) => void;
+  "tile-placed": (data: {
+    position: Position;
+    tileType: tileType;
+  }) => void;
 
   "stats-updated": (data: {
     entityId: string;
@@ -175,7 +180,14 @@ export interface ClientToServerEvents {
     direction: Direction;
   }) => void;
   "attack-monster": (data: { gameId: string; monsterId: string }) => void;
-  "cast-spell": (data: { gameId: string; targetId: string }) => void;
+  "cast-spell": (
+    data: {
+      gameId: string;
+      spellId: string;
+      position: Position;
+    },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
   "check-for-treasures": (data: { gameId: string; position: Position }) => void;
   "check-traps": (data: { gameId: string; postion: Position }) => void;
   "check-secret-doors": (data: { gameId: string; postion: Position }) => void;
@@ -197,9 +209,8 @@ export interface ClientToServerEvents {
   "place-element": (data: {
     gameId: string;
     position: Position;
-    selectedType: tileType;
+    selectedType: tileType | Direction | monsterClass;
     playerId: string;
-    monsterType: monsterClass;
   }) => void;
 
   "authorize-special-throw-dices": (data: {
@@ -242,7 +253,7 @@ export interface ClientToServerEvents {
 // État du jeu
 export interface GameState {
   id: string;
-  board: Tile[][];
+  board: tileType[][];
   walls: WallGrid;
   doors: DoorGrid;
   players: Map<string, Player>; // Id -> Player
@@ -258,7 +269,7 @@ export interface GameState {
 
 export interface SendableGameState {
   id: string;
-  board: Tile[][];
+  board: tileType[][];
   walls: WallGrid;
   doors: DoorGrid;
   players: Player[]; // Id -> Player
@@ -271,13 +282,6 @@ export interface SendableGameState {
   turnOrder: (string | undefined)[]; // order of turn with the ids of players; game master should always be last player
   currentTurn: string; // the id of the player
   status: "lobby" | "playing" | "finished";
-}
-
-export enum Direction {
-  UP = "up",
-  DOWN = "down",
-  LEFT = "left",
-  RIGHT = "right",
 }
 
 export interface SocketData {

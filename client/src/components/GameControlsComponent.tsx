@@ -6,45 +6,51 @@ import {
   Monster,
   monsterClass,
   Player,
-  Position,
   tileType,
 } from "../shared/type";
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
-import { Grid, Tooltip } from "@mui/material";
 import {
-  getMonsterIconPath
-} from "../shared/utils";
+  Accordion,
+  AccordionSummary,
+  Grid,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { getMonsterIconPath } from "../shared/utils";
 import RedDices from "./dices/RedDicesComponent";
-import { monsterClassFr } from "../shared/frenchEnums";
+import { monsterClassFr } from "../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface GameControlsProps {
   socket: any;
   game: GameState;
-  setSelectedType: (type: tileType | Direction | null) => void; //Direction -> door placement
-  monsterType: monsterClass | null;
-  setMonsterType: (type: monsterClass | null) => void;
+  setSelectedType: (type: tileType | Direction | monsterClass | null) => void; //Direction -> door placement
+  selectedType: tileType | Direction | monsterClass | null;
   selectedUnit: Player | Monster | null;
-  setSelectedUnit: (unit: Player | Monster | null) => void;
-  setSelectedPosition: (pos: Position | null) => void;
 }
 
 const GameControls = ({
   socket,
   game,
   setSelectedType,
-  monsterType,
-  setMonsterType,
+  selectedType,
   selectedUnit,
-  setSelectedPosition,
-  setSelectedUnit,
 }: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
   const role = location.state.role;
 
   const [message, setMessage] = useState("");
+
+  const isElementsShown: Map<string, boolean> = new Map();
+  isElementsShown.set("monsterSelector", false);
+  isElementsShown.set("miscellaneousButtons", false);
+  isElementsShown.set("doorButtons", false);
+  isElementsShown.set("playerDices", true);
+  isElementsShown.set("monsterDices", true);
+  isElementsShown.set("masterControls", false);
 
   useEffect(() => {
     if (!game) return;
@@ -96,48 +102,39 @@ const GameControls = ({
   };
 
   const selectMonster = (monster: monsterClass) => {
-    setSelectedType(tileType.monster);
-    setMonsterType(monster);
+    setSelectedType(monster);
   };
 
   const putWall = () => {
     setSelectedType(tileType.wall);
-    setMonsterType(null);
   };
 
   const putFurniture = () => {
     setSelectedType(tileType.furniture);
-    setMonsterType(null);
   };
 
   const unSelect = () => {
     setSelectedType(null);
-    setMonsterType(null);
   };
 
   const erase = () => {
     setSelectedType(tileType.empty);
-    setMonsterType(null);
   };
 
   const putTopDoor = () => {
     setSelectedType(Direction.UP);
-    setMonsterType(null);
   };
 
   const putBottomDoor = () => {
     setSelectedType(Direction.DOWN);
-    setMonsterType(null);
   };
 
   const putLeftDoor = () => {
     setSelectedType(Direction.LEFT);
-    setMonsterType(null);
   };
 
   const putRightDoor = () => {
     setSelectedType(Direction.RIGHT);
-    setMonsterType(null);
   };
 
   const endTurn = () => {
@@ -163,7 +160,9 @@ const GameControls = ({
           <Tooltip title={name} arrow>
             <button
               className={`monster-button ${
-                monsterType === mType ? "selected" : ""
+                selectedType === mType
+                  ? "selected"
+                  : ""
               }`}
               onClick={() => selectMonster(mType)}
             >
@@ -202,83 +201,138 @@ const GameControls = ({
   return (
     <div>
       <div className="game-controls hero">
-        <h3>Actions</h3>
-        {role === "hero" &&
-          game.currentTurn === socket.id &&
-          renderMovementControls(role)}
-
-        <RedDices
-          socket={socket}
-          gameId={gameId}
-          role={"hero"}
-          viewerRole={role}
-        />
-        <Dices
-          socket={socket}
-          gameId={gameId}
-          role={"hero"}
-          viewerRole={role}
-        />
-        {message && <div className="game-message">{message}</div>}
-        {game.currentTurn === socket.id && (
-          <div>
-            <button onClick={endTurn}>END TURN</button>
+        <Accordion sx={{ background: "inherit" }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1-content"
+            id="panel1-header"
+          >
+            <Typography component="span">Actions Héros</Typography>
+          </AccordionSummary>
+          <h3>Actions</h3>
+          {role === "hero" &&
+            game.currentTurn === socket.id &&
+            renderMovementControls(role)}
+          <div className="dices-section">
+            <RedDices
+              socket={socket}
+              gameId={gameId}
+              role={"hero"}
+              viewerRole={role}
+            />
+            <Dices
+              socket={socket}
+              gameId={gameId}
+              role={"hero"}
+              viewerRole={role}
+            />
           </div>
-        )}
+          {message && <div className="game-message">{message}</div>}
+          {game.currentTurn === socket.id && (
+            <div>
+              <button onClick={endTurn}>END TURN</button>
+            </div>
+          )}
+        </Accordion>
       </div>
       <div className="game-controls game-master">
         {role === "game-master" && (
           <div>
-            <Grid container sx={{ width: "fit-content" }}>
-              {/* monster selector: generate buttons from the enum values */}
-              <Grid container spacing={1} sx={{ margin: "10px 0" }}>
+            <Accordion sx={{ color: "white", background: "inherit" }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2-content"
+                id="panel2-header"
+              >
+                <Typography component="span">Actions Maître du Jeu</Typography>
+              </AccordionSummary>
+              <Grid container>
+                {/* monster selector: generate buttons from the enum values */}
                 {renderMonsterButtons()}
               </Grid>
-              <Grid className="gridElem" size={4}>
+            </Accordion>
+
+            <Accordion sx={{ color: "white", background: "inherit" }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel3-content"
+                id="panel3-header"
+              >
+                <Typography component="span">Murs et Meubles</Typography>
+              </AccordionSummary>
+              <div className="two-button-container">
                 <button onClick={putWall}>Mur</button>
-              </Grid>
-              <Grid className="gridElem" size={4}>
                 <button onClick={putFurniture}>Meuble</button>
+              </div>
+              <div className="two-button-container">
+                <button onClick={unSelect}>Annuler</button>
+                <button onClick={erase}>Effacer</button>
+              </div>
+            </Accordion>
+            <Accordion sx={{ color: "white", background: "inherit" }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel3-content"
+                id="panel3-header"
+              >
+                <Typography component="span">Portes</Typography>
+              </AccordionSummary>
+              <Grid container sx={{ width: "fit-content" }}>
+                <Grid size={6}>
+                  <button onClick={putTopDoor}>Porte Haut</button>
+                </Grid>
+                <Grid size={6}>
+                  <button onClick={putBottomDoor}>Porte Bas</button>
+                </Grid>
+                <Grid size={6}>
+                  <button onClick={putLeftDoor}>Porte Gauche</button>
+                </Grid>
+                <Grid size={6}>
+                  <button onClick={putRightDoor}>Porte Droite</button>
+                </Grid>
               </Grid>
-            </Grid>
-            <div className="two-button-container">
-              <button onClick={unSelect}>Annuler</button>
-              <button onClick={erase}>Effacer</button>
-            </div>
-            <Grid container>
-              <Grid size={6}>
-                <button onClick={putTopDoor}>Porte Haut</button>
-              </Grid>
-              <Grid size={6}>
-                <button onClick={putBottomDoor}>Porte Bas</button>
-              </Grid>
-              <Grid size={6}>
-                <button onClick={putLeftDoor}>Porte Gauche</button>
-              </Grid>
-              <Grid size={6}>
-                <button onClick={putRightDoor}>Porte Droite</button>
-              </Grid>
-            </Grid>
+            </Accordion>
           </div>
         )}
-        <RedDices
-          socket={socket}
-          gameId={gameId}
-          role={"game-master"}
-          viewerRole={role}
-        />
-        <Dices
-          socket={socket}
-          gameId={gameId}
-          role={"game-master"}
-          viewerRole={role}
-        />
+        <Accordion sx={{ color: "white", background: "inherit" }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel4-content"
+            id="panel4-header"
+          >
+            <Typography component="span">Lancers de Dés</Typography>
+          </AccordionSummary>
+          <div className="dices-section">
+            <RedDices
+              socket={socket}
+              gameId={gameId}
+              role={"game-master"}
+              viewerRole={role}
+            />
+            <Dices
+              socket={socket}
+              gameId={gameId}
+              role={"game-master"}
+              viewerRole={role}
+            />
+          </div>
+        </Accordion>
         {role === "game-master" &&
           selectedUnit !== null &&
           renderMovementControls(role)}
-        <hr />
         {role === "game-master" && (
-          <MasterControls socket={socket} gameId={gameId} />
+          <Accordion sx={{ color: "white", background: "inherit" }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel5-content"
+              id="panel5-header"
+            >
+              <Typography component="span">Contrôles Maître du Jeu</Typography>
+            </AccordionSummary>
+            <div>
+              <MasterControls socket={socket} gameId={gameId} />
+            </div>
+          </Accordion>
         )}
       </div>
     </div>

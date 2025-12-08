@@ -1,8 +1,8 @@
-import { Position, Direction, GameState, tileType } from "./type";
+import { Position, Direction, GameState, tileType, monsterClass } from "./type";
 
 function placeDoor(
   position: Position,
-  selectedType: tileType | Direction,
+  selectedType: tileType | Direction | monsterClass,
   gameState: GameState,
   gameId: string
 ) {

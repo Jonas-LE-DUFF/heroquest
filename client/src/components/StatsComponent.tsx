@@ -36,17 +36,17 @@ const StatsComponent = ({
   }, [unit]);
 
   if (!unit?.stats) {
-    console.log("no stats found");
+    console.log("no stats found on : ", unit);
     return <Paper>ERROR</Paper>;
   }
   return (
-    <Paper sx={{ height: "100%" }}>
+    <Paper sx={{ height: "fit-content" }}>
       <div className="content">
         <button onClick={() => setStatsVisible(false)} className="closeButton">
           X
         </button>
         <div className="stats">
-          <p className="title">{statsEdit.name} Stats</p>
+          <p>{statsEdit.name} Stats</p>
           {unit.class && (
             <div className="statElem">
               <p>Classe : </p>
@@ -59,52 +59,53 @@ const StatsComponent = ({
           )}
           <div className="statElem">
             <p>Nombre de dés en attaque : </p>
+            {isGameMaster && (
+              <input
+                value={statsEdit.nbAttackDice}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    nbAttackDice: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            )}
             {statsEdit?.nbAttackDice && getDices(statsEdit.nbAttackDice)}
           </div>
-          {isGameMaster && (
-            <input
-              value={statsEdit.nbAttackDice}
-              onChange={(e) =>
-                setStatsEdit({
-                  ...statsEdit,
-                  nbAttackDice: Number(e.target.value),
-                })
-              }
-              type="number"
-            />
-          )}
           <div className="statElem">
             <p>Nombre de dés en défense : </p>
+            {isGameMaster && (
+              <input
+                value={statsEdit.nbDefenseDice}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    nbDefenseDice: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            )}
             {statsEdit.nbDefenseDice && getDices(statsEdit.nbDefenseDice)}
           </div>
-          {isGameMaster && (
-            <input
-              value={statsEdit.nbDefenseDice}
-              onChange={(e) =>
-                setStatsEdit({
-                  ...statsEdit,
-                  nbDefenseDice: Number(e.target.value),
-                })
-              }
-              type="number"
-            />
-          )}
           <div className="statElem">
             <p>Points d'esprit : </p>
-            {statsEdit.spiritPoints}
+            {isGameMaster && (
+              <input
+                value={statsEdit.spiritPoints}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    spiritPoints: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            )}
+            {!isGameMaster && statsEdit.spiritPoints}
+
           </div>
-          {isGameMaster && (
-            <input
-              value={statsEdit.spiritPoints}
-              onChange={(e) =>
-                setStatsEdit({
-                  ...statsEdit,
-                  spiritPoints: Number(e.target.value),
-                })
-              }
-              type="number"
-            />
-          )}
           {statsEdit?.hp && statsEdit.maxHp && (
             <Box
               sx={{
@@ -129,7 +130,7 @@ const StatsComponent = ({
             </Box>
           )}
           {isGameMaster && (
-            <div>
+            <div className="statElem">
               <label>HP : </label>
               <input
                 value={statsEdit.hp}
@@ -144,9 +145,10 @@ const StatsComponent = ({
             </div>
           )}
           {isGameMaster && (
-            <div>
+            <div className="statsElem">
               <label>Max HP : </label>
               <input
+                className="statsElem"
                 value={statsEdit.maxHp}
                 onChange={(e) =>
                   setStatsEdit({
@@ -159,11 +161,8 @@ const StatsComponent = ({
             </div>
           )}
           {isPlayer(unit) && (
-            <div>
-              <div className="statElem">
-                <p>Or : </p>
-                {statsEdit.gold}
-              </div>
+            <div className="statElem">
+              <p>Or : </p>
               {isGameMaster && (
                 <input
                   value={statsEdit.gold}
@@ -176,14 +175,14 @@ const StatsComponent = ({
                   type="number"
                 />
               )}
+              {!isGameMaster && statsEdit.gold}
             </div>
           )}
           {isPlayer(unit) === false && (
-            <div>
-              <div className="statElem">
-                <p>Déplacements : </p>
-                {statsEdit.movements}
-              </div>
+            <div className="statElem">
+              <p>Déplacements : </p>
+              {statsEdit.movements}
+
               {isGameMaster && (
                 <input
                   value={statsEdit.movements}
@@ -226,7 +225,11 @@ function getDices(numDices: number) {
   for (let i = 0; i < numDices; i++) {
     dices.push(
       <div className="dice" key={"dice number" + i}>
-        <img src={getFightDiceFaceNumber(i)} alt={`dé face`} />
+        <img
+          className="diceImage"
+          src={getFightDiceFaceNumber(i)}
+          alt={`dé face`}
+        />
       </div>
     );
   }

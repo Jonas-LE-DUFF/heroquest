@@ -1,17 +1,26 @@
 import { Direction, GameState, Position, tileType } from "./type";
+import { positionKey } from "./utils";
+
+const TILESIZE = "40px";
 
 export const getTileStyle = (
   x: number,
   y: number,
   gameState: GameState | null,
-  selectedPosition: Position | null
+  selection: string | Position | null
 ) => {
   const tile = gameState?.board[x]?.[y];
-  const isSelected = selectedPosition?.x === x && selectedPosition?.y === y;
-  const isMonster = tile?.type === tileType.monster;
-  const isHero = tile?.type === tileType.hero;
-  const isFurniture = tile?.type === tileType.furniture;
-  const isWall = tile?.type === tileType.wall;
+  const entityAtPos = gameState?.positionEntities?.get(positionKey({ x, y }));
+  let isSelected = false;
+  if (typeof selection === "string") {
+    isSelected = entityAtPos === selection;
+  } else if (selection && "x" in selection && "y" in selection) {
+    isSelected = x === selection.x && y === selection.y;
+  }
+  const isMonster = gameState?.monsters.has(entityAtPos ?? "");
+  const isHero = gameState?.players.has(entityAtPos ?? "");
+  const isFurniture = tile === tileType.furniture;
+  const isWall = tile === tileType.wall;
 
   const borderDirectionSet: Direction[] = [];
 
@@ -26,10 +35,9 @@ export const getTileStyle = (
 
   let style: any = {
     alignItems: "center",
-    width: 45,
-    height: 45,
+    width: TILESIZE,
+    height: TILESIZE,
     border: "none",
-    cursor: "pointer",
     textAlign: "center" as const,
     verticalAlign: "middle" as const,
     boxSizing: "border-box" as const,

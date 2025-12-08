@@ -1,6 +1,9 @@
 p {
-    color: white;
     font-weight: bold;
+}
+
+.form-component p{
+    color: white;
 }
 
 .form-component{

@@ -1,5 +1,14 @@
 .App {
   text-align: center;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
 
 .App-logo {
@@ -64,8 +73,7 @@ form {
 }
 
 .login-page,
-.lobby-page,
-.character-page {
+.lobby-page {
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;

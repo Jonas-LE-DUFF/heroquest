@@ -25,7 +25,11 @@ import diceDeathHead from "./../components/images/dices/battleDices/death.png";
 import diceMonsterShield from "./../components/images/dices/battleDices/blackShield.png";
 import diceHeroShield from "./../components/images/dices/battleDices/whiteShield.png";
 
-import { heroClassFr, monsterClassFr, spellElementFr } from "./frenchEnums";
+import {
+  heroClassFr,
+  monsterClassFr,
+  spellElementFr,
+} from "./languages/frenchEnums";
 
 function isPlayer(u: Monster | Player): u is Player {
   return !u.id.match(/^idMonster/);
@@ -156,8 +160,15 @@ function getFightDiceFaceNumber(face: number) {
   }
 }
 
-function getElementName(element: spellElement) {
-  return spellElementFr[element];
+function getElementName(element: spellElement, language: string = "en") {
+  switch (language) {
+    case "fr":
+      return spellElementFr[element];
+    case "en":
+      return spellElement[element];
+    default:
+      return spellElement[element];
+  }
 }
 
 function getUnitClassName(unit: Player | Monster) {
@@ -179,6 +190,12 @@ function getMonsterClassName(classMonster: monsterClass) {
   return monsterClassFr[classMonster];
 }
 
+function getPlayerName(game: GameState, playerId: string) {
+  const player = game.players.get(playerId);
+  if (!player || !player.stats) return "Inconnu";
+  return player.stats.name;
+}
+
 const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
 
 export {
@@ -194,5 +211,6 @@ export {
   getElementName,
   getHeroClassName,
   getMonsterClassName,
+  getPlayerName,
   positionKey,
 };

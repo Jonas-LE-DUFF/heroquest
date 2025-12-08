@@ -1,18 +1,15 @@
-import { Tile, tileType, WallGrid } from "./type";
+import { tileType, WallGrid } from "./type";
 
 const rows = 19;
 const cols = 26;
 
-function initializeBoard(): Tile[][] {
-  const board: Tile[][] = [];
+function initializeBoard(): tileType[][] {
+  const board: tileType[][] = [];
 
   for (let i = 0; i < rows; i++) {
-    const row: Tile[] = [];
+    const row: tileType[] = [];
     for (let j = 0; j < cols; j++) {
-      row.push({
-        type: tileType.empty,
-        revealed: false,
-      });
+      row.push(tileType.empty);
     }
     board.push(row);
   }

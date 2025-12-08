@@ -1,0 +1,18 @@
+.Navbar{
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    padding: 5px;
+}
+
+.nav-elem{
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.imgNav{
+    height: 40px;
+    width: auto;
+    cursor: pointer;
+}

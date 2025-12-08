@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import Board from "../components/BoardComponent";
+import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
 import {
   Direction,
@@ -13,9 +13,17 @@ import {
   tileType,
   Unit,
 } from "../shared/type";
-import { GameControls } from "../components/GameControlsComponent";
-import { convertSendableGameStateAsGameState } from "../shared/utils";
-import StatsComponent from "../components/StatsComponent";
+import {
+  convertSendableGameStateAsGameState,
+  getPlayerName,
+} from "../shared/utils";
+import { positionKey } from "../shared/utils";
+import Footer from "../components/main_components/Footer";
+import Navbar from "../components/main_components/Navbar";
+import RightMenu from "../components/main_components/RightMenu";
+import { Grid } from "@mui/material";
+import LeftMenu from "../components/main_components/LeftMenu";
+import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 
 interface GamePageProps {
   socket: any;
@@ -25,31 +33,21 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const role = location.state.role;
 
-  const [monsterType, setMonsterType] = useState<monsterClass | null>(null);
-
-  const [selectedType, setSelectedType] = useState<tileType | Direction | null>(
-    null
-  );
-  const [selectedUnit, setSelectedUnit] = useState<Player | Monster | null>(
-    null
-  );
+  const [selectedType, setSelectedType] = useState<
+    tileType | Direction | monsterClass | null
+  >(null);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(
     null
   );
+  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
   const [currentGameState, setCurrentGameState] = useState<GameState>(
     location.state.gameState
   );
 
   const [statsVisible, setStatsVisible] = useState(false);
-
-  useEffect(() => {
-    if (!currentGameState) return;
-    selectedPosition &&
-      setSelectedUnit(
-        getUnitAtSelectedPosition(selectedPosition, currentGameState)
-      );
-  }, [selectedPosition, currentGameState]);
+  const [spellPageVisible, setSpellPageVisible] = useState(false);
+  const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
 
   useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
@@ -57,20 +55,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         data.gameState
       );
       console.log("c'est l'update du gamePage", updatedGameState);
-      const selectedId = selectedUnit?.id;
+      const selectedId = selectedEntityId;
       if (selectedId) {
         const pos = updatedGameState.entityPositions.get(selectedId);
         if (pos) {
           setSelectedPosition(pos);
-          setSelectedUnit(getUnitAtSelectedPosition(pos, updatedGameState));
+          setSelectedEntityId(selectedId);
         } else {
-          // selected entity no longer has a position -> clear selection
           setSelectedPosition(null);
-          setSelectedUnit(null);
+          setSelectedEntityId(null);
         }
       } else if (selectedPosition) {
-        const unit = getUnitAtSelectedPosition(selectedPosition, updatedGameState);
-        setSelectedUnit(unit);
+        const unit = getUnitAtSelectedPosition(
+          selectedPosition,
+          updatedGameState
+        );
+        if (unit) setSelectedEntityId(unit.id);
       }
 
       setCurrentGameState(updatedGameState);
@@ -88,7 +88,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             return prev;
           }
 
-          // shallow copy maps we will modify
           const players = new Map(prev.players);
           const monsters = new Map(prev.monsters);
 
@@ -109,35 +108,77 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       }
     );
 
+    socket.on("tile-placed", (data: { position: Position; tileType: tileType }) => {
+      console.log("tile placed received in game page", data);
+      setCurrentGameState((prev) => {
+        if (!prev) return prev;
+
+        const board = prev.board.map((row) => row.slice());
+        board[data.position.x][data.position.y] = data.tileType;
+
+        return { ...prev, board } as GameState;
+      });
+    });
+
     return () => {
+      socket.off("tile-placed");
       socket.off("stats-updated");
       socket.off("game-state-update");
     };
-  }, [socket, selectedPosition, selectedUnit?.id]);
+  }, [socket, selectedPosition, selectedEntityId]);
+
+  const setSelectedUnit = (unit: Player | Monster | null) => {
+    if (!unit) return;
+    const position = currentGameState.entityPositions.get(unit.id);
+    if (!position) return;
+    setSelectedPosition(position);
+    setSelectedEntityId(unit.id);
+  };
 
   const handleTileClick = (
     gameId: string,
     position: Position,
-    monsterType: monsterClass | null
+    selectedType: tileType | Direction | monsterClass | null
   ) => {
+    if (selectedSpell !== null) {
+      console.log("Casting spell:", selectedSpell, "at position:", position);
+      socket.emit(
+        "cast-spell",
+        {
+          gameId,
+          spellId: selectedSpell,
+          position: position,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (response.success) {
+            console.log("Spell cast successfully");
+            setSelectedSpell(null);
+          } else {
+            console.error("Failed to cast spell:", response.error);
+          }
+        }
+      );
+      return;
+    }
+
     if (
       selectedPosition !== null &&
       selectedPosition.x === position.x &&
       selectedPosition.y === position.y
     ) {
       setSelectedPosition(null);
-      setSelectedUnit(null);
+      setSelectedEntityId(null);
     } else {
       setSelectedPosition(position);
-      setSelectedUnit(getUnitAtSelectedPosition(position, currentGameState));
+      // set selected entity id based on current game state mapping
+      const idAtPos = currentGameState?.positionEntities.get(
+        positionKey(position)
+      );
+      setSelectedEntityId(idAtPos ?? null);
     }
 
     if (!selectedType) {
       //nothing to place
-      return;
-    }
-    if (selectedType === tileType.monster && !monsterType) {
-      console.error("monsterType must be defined when placing a monster");
       return;
     }
     socket.emit("place-element", {
@@ -145,97 +186,121 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       position,
       selectedType,
       playerId: socket.id,
-      monsterType: monsterType,
     });
   };
 
-  return (
-    <div className="game-page">
-      {currentGameState && (
-        <div className="game-container">
-          <div
-            className={
-              statsVisible && selectedUnit !== null ? "HeroStats" : "hidden"
-            }
-          >
-            {statsVisible && (
-              <StatsComponent
-                socket={socket}
-                gameId={currentGameState.id}
-                position={selectedPosition ?? { x: 0, y: 0 }}
-                unit={selectedUnit}
-                setStatsVisible={setStatsVisible}
-                isGameMaster={role === "game-master"}
-              />
-            )}
-          </div>
-          <div className="Board">
-            <div>
-              {socket !== null && (
-                <Board
-                  gameState={currentGameState}
-                  socket={socket}
-                  onTileClick={handleTileClick}
-                  selectedPosition={selectedPosition}
-                  selectedType={selectedType}
-                  monsterType={monsterType}
-                />
-              )}
-              <div>
-                {selectedUnit !== null && (
-                  <button
-                    onClick={() =>
-                      selectedUnit !== null && setStatsVisible(!statsVisible)
-                    }
-                  >
-                    {!statsVisible ? "Montrer stats" : "Cacher stats"}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="info-on-the-side">
-            <GameControls
-              socket={socket}
-              game={currentGameState}
-              setSelectedType={setSelectedType}
-              monsterType={monsterType}
-              setMonsterType={setMonsterType}
-              selectedUnit={selectedUnit}
-              setSelectedPosition={setSelectedPosition}
-              setSelectedUnit={setSelectedUnit}
-            />
+  //           <div className="game-info">
+  //             <h3>Informations</h3>
+  //             {currentGameState.currentTurn === socket.id ? (
+  //               <p>YOUR TURN !!!!!</p>
+  //             ) : (
+  //               <p>
+  //                 Tour actuel:{" "}
+  //                 {currentGameState.currentTurn &&
+  //                   currentGameState.players &&
+  //                   currentGameState.players.get(currentGameState.currentTurn)
+  //                     ?.stats?.name}
+  //               </p>
+  //             )}
+  //             {currentGameState.players && (
+  //               <p>Joueurs: {currentGameState.players.size}</p>
+  //             )}
+  //           </div>
+  //         </div>
+  //       </div>
+  //     )}
+  //   </div>
+  // );
 
-            <div className="game-info">
-              <h3>Informations</h3>
-              {currentGameState.currentTurn === socket.id ? (
-                <p>YOUR TURN !!!!!</p>
-              ) : (
-                <p>
-                  Tour actuel:{" "}
-                  {currentGameState.currentTurn &&
-                    currentGameState.players &&
-                    currentGameState.players.get(currentGameState.currentTurn)
-                      ?.stats?.name}
-                </p>
-              )}
-              {currentGameState.players && (
-                <p>Joueurs: {currentGameState.players.size}</p>
-              )}
-            </div>
-          </div>
-        </div>
+  return (
+    <>
+      {spellPageVisible && (
+        <SpellsPopUp
+          socket={socket}
+          spellSchools={currentGameState.players.get(socket.id)?.stats?.spells}
+          spellAlreadyUsed={
+            currentGameState.players.get(socket.id)?.stats?.usedSpells
+          }
+          onSpellClick={(selectedSpell: string) => {
+            setSelectedSpell(selectedSpell);
+          }}
+          closeSpellPage={() => setSpellPageVisible(false)}
+        />
       )}
-    </div>
+      <Grid className="game-page" container>
+        <Grid className="Navbar">
+          <Navbar
+            socket={socket}
+            gameId={currentGameState.id}
+            isCurrentTurnPlayer={
+              currentGameState.currentTurn ===
+              currentGameState.players.get(socket.id)?.id
+            }
+            currentTurnPlayerName={getPlayerName(
+              currentGameState,
+              currentGameState.currentTurn
+            )}
+            player={currentGameState.players.get(socket.id)}
+            statsOpen={statsVisible}
+            setStatsOpen={setStatsVisible}
+            setSelectedUnit={setSelectedUnit}
+            openSpellPage={() => setSpellPageVisible(true)}
+          />
+        </Grid>
+        <Grid className="LeftMenu">
+          <LeftMenu
+            statsVisible={statsVisible}
+            socket={socket}
+            currentGameState={currentGameState}
+            selectedPosition={selectedPosition}
+            selectedUnit={getUnitAtSelectedPosition(
+              selectedPosition!,
+              currentGameState
+            )}
+            setStatsVisible={setStatsVisible}
+            role={role}
+          />
+        </Grid>
+
+        <Grid className={"Board" + (selectedSpell ? " target" : "")}>
+          <Board
+            gameState={currentGameState}
+            socket={socket}
+            onTileClick={handleTileClick}
+            selectedPosition={selectedPosition}
+            selectedEntityId={selectedEntityId}
+            selectedType={selectedType}
+          />
+        </Grid>
+        <Grid className="RightMenu">
+          <RightMenu
+            socket={socket}
+            currentGameState={currentGameState}
+            setSelectedType={setSelectedType}
+            selectedType={selectedType}
+            selectedUnit={getUnitAtSelectedPosition(
+              selectedPosition!,
+              currentGameState
+            )}
+          />
+        </Grid>
+        <Grid className="Footer">
+          <Footer />
+        </Grid>
+      </Grid>
+    </>
   );
 };
 
-const getUnitAtSelectedPosition = (pos: Position, game: GameState) => {
+const getUnitAtSelectedPosition = (
+  pos: Position,
+  game: GameState
+): Monster | Player | null => {
   if (!pos) return null;
   const id = game.positionEntities.get(pos.x + "," + pos.y);
-  const unit = id
-    ? game.players.get(id) || game.monsters.get(id) || null
-    : null;
+  if (!id) return null;
+  const unit = game.players.get(id) || game.monsters.get(id);
+  if (!unit) return null;
   return unit;
 };
 

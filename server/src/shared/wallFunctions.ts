@@ -97,11 +97,10 @@ export const canMove = (
   }
 
   const to = getPositionAfterMove(from, direction);
-  if (gameState.board[to.x]?.[to.y]?.type !== tileType.empty) {
+  if (gameState.board[to.x]?.[to.y] !== tileType.empty) {
     console.error("tile is occupied");
     return false;
   }
-
 
   return true;
 };
