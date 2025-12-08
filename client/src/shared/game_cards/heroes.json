@@ -1,6 +1,6 @@
 [
     {
-        "id": "barbarian",
+        "id": 300,
         "name": "Barbarian",
         "nbAttackDice": 3,
         "nbDefenseDice": 2,
@@ -10,7 +10,7 @@
         "movements": 2 
     },
     {
-        "id": "dwarf",
+        "id": 301,
         "name": "Dwarf",
         "nbAttackDice": 2,
         "nbDefenseDice": 2,
@@ -21,7 +21,7 @@
 
     },
     {
-        "id": "elf",
+        "id": 302,
         "name": "Elf",
         "nbAttackDice": 2,
         "nbDefenseDice": 2,
@@ -32,7 +32,7 @@
 
     },
     {
-        "id": "cleric",
+        "id": 303,
         "name": "Cleric",
         "nbAttackDice": 1,
         "nbDefenseDice": 2,
