@@ -1,0 +1,74 @@
+[
+    {
+        "id": 100,
+        "name": "Goblin",
+        "movements":10,
+        "nbAttackDice": 2,
+        "nbDefenseDice": 1,
+        "health": 1,
+        "spiritPoints": 1
+    },
+    {
+        "id": 101,
+        "name": "Skeleton",
+        "movements":6,
+        "nbAttackDice": 2,
+        "nbDefenseDice": 2,
+        "health": 1,
+        "spiritPoints": 0
+    },
+    {
+        "id": 102,
+        "name": "Zombie",
+        "movements":5,
+        "nbAttackDice": 2,
+        "nbDefenseDice": 3,
+        "health": 1,
+        "spiritPoints": 0
+    },
+    {
+        "id": 103,
+        "name": "Orc",
+        "movements":8,
+        "nbAttackDice": 3,
+        "nbDefenseDice": 2,
+        "health": 1,
+        "spiritPoints": 2
+    },
+    {
+        "id": 104,
+        "name": "Abomination",
+        "movements":6,
+        "nbAttackDice": 3,
+        "nbDefenseDice": 3,
+        "health": 2,
+        "spiritPoints": 3
+    },
+    {
+        "id": 105,
+        "name": "Mummy",
+        "movements":4,
+        "nbAttackDice": 3,
+        "nbDefenseDice": 4,
+        "health": 2,
+        "spiritPoints": 0
+    },
+    {
+        "id": 106,
+        "name": "Guerrier_de_la_terreur",
+        "movements":7,
+        "nbAttackDice": 4,
+        "nbDefenseDice": 4,
+        "health": 3,
+        "spiritPoints": 3
+    },
+    {
+        "id": 107,
+        "name": "Gargouille",
+        "movements":6,
+        "nbAttackDice": 4,
+        "nbDefenseDice": 5,
+        "health": 3,
+        "spiritPoints": 4
+    }
+]
