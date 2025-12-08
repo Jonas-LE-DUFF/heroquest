@@ -160,8 +160,7 @@ const GameControls = ({
           <Tooltip title={name} arrow>
             <button
               className={`monster-button ${
-                selectedType === mType &&
-                typeof selectedType === typeof monsterClass
+                selectedType === mType
                   ? "selected"
                   : ""
               }`}

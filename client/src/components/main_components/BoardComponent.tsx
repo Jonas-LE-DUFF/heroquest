@@ -158,7 +158,7 @@ const Board = ({
     const entityId = localGameState?.positionEntities.get(positionKey(pos));
     if (!entityId) {
       if (tile === tileType.empty) return `${x},${y}`;
-      return tile;
+      return tileType[tile];
     }
 
     let entity: Player | Monster | undefined =

@@ -130,6 +130,10 @@ export interface ServerToClientEvents {
     position: Position;
     verticalOrHorizontal: "vertical" | "horizontal";
   }) => void;
+  "tile-placed": (data: {
+    position: Position;
+    tileType: tileType;
+  }) => void;
 
   "stats-updated": (data: {
     entityId: string;

@@ -108,7 +108,20 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       }
     );
 
+    socket.on("tile-placed", (data: { position: Position; tileType: tileType }) => {
+      console.log("tile placed received in game page", data);
+      setCurrentGameState((prev) => {
+        if (!prev) return prev;
+
+        const board = prev.board.map((row) => row.slice());
+        board[data.position.x][data.position.y] = data.tileType;
+
+        return { ...prev, board } as GameState;
+      });
+    });
+
     return () => {
+      socket.off("tile-placed");
       socket.off("stats-updated");
       socket.off("game-state-update");
     };

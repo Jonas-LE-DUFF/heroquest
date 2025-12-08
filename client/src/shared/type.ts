@@ -5,43 +5,43 @@ export interface Position {
 }
 
 export enum diceFace {
-  "WhiteShield" = 1,
-  "BlackShield",
-  "Hit",
+  WhiteShield = 1,
+  BlackShield,
+  Hit,
 }
 
 export enum monsterClass {
-  "Goblin" = 100,
-  "Squelette",
-  "Zombie",
-  "Orc",
-  "Abomination",
-  "Momie",
-  "Guerrier_de_la_terreur",
-  "Gargouille",
+  Goblin = 100,
+  Squelette,
+  Zombie,
+  Orc,
+  Abomination,
+  Momie,
+  Guerrier_de_la_terreur,
+  Gargouille,
 }
 
 export enum heroClass {
-  "Barbarian" = 300,
-  "Dwarf",
-  "Elf",
-  "Cleric",
+  Barbarian = 300,
+  Dwarf,
+  Elf,
+  Cleric,
 }
 
 export enum spellElement {
-  "Fire" = 400,
-  "Water",
-  "Earth",
-  "Air",
+  Fire = 400,
+  Water,
+  Earth,
+  Air,
 }
 
 export enum tileType {
-  "empty" = 200,
-  "wall",
-  "treasure",
-  "trap",
-  "start",
-  "furniture",
+  empty = 200,
+  wall,
+  treasure,
+  trap,
+  start,
+  furniture,
 }
 
 export enum Direction {
@@ -129,6 +129,10 @@ export interface ServerToClientEvents {
   "door-placed": (data: {
     position: Position;
     verticalOrHorizontal: "vertical" | "horizontal";
+  }) => void;
+  "tile-placed": (data: {
+    position: Position;
+    tileType: tileType;
   }) => void;
 
   "stats-updated": (data: {

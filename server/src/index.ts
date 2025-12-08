@@ -522,7 +522,7 @@ io.on(
           );
           return;
         }
-        if (selectedType in Direction) {
+        if (selectedType.toString().toUpperCase() in Direction) {
           const newDoor = placeDoor(position, selectedType, gameState, gameId);
           console.log("new door placed :", newDoor);
           io.to(gameId).emit("door-placed", {
@@ -544,6 +544,10 @@ io.on(
           }
         }
         let tile = gameState?.board?.[position.x]?.[position.y];
+        if (tile === undefined) {
+          console.error("tile couldn't be found on the board");
+          return;
+        }
         if (tile !== tileType.empty && selectedType !== tileType.empty) {
           console.error("tile is occupied");
           return;
@@ -553,6 +557,18 @@ io.on(
         );
         if (entityAtPostion) {
           console.error("there's already an entity at this position");
+          return;
+        }
+
+        if (selectedType in tileType) {
+          console.debug("placing tile", selectedType, "at position", position);
+
+          tile = selectedType as tileType;
+          const row = gameState.board[position.x];
+          if (row) {
+            row[position.y] = tile;
+          }
+          io.to(gameId).emit("tile-placed", { position: position, tileType: tile });
           return;
         }
 
