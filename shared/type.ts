@@ -12,13 +12,13 @@ export enum diceFace {
 
 export enum monsterClass {
   Goblin = 100,
-  Squelette,
+  Skeleton,
   Zombie,
   Orc,
   Abomination,
-  Momie,
-  Guerrier_de_la_terreur,
-  Gargouille,
+  Mummy,
+  TerrorWarrior,
+  Gargoyle,
 }
 
 export enum heroClass {
