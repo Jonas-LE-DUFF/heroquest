@@ -108,17 +108,20 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       }
     );
 
-    socket.on("tile-placed", (data: { position: Position; tileType: tileType }) => {
-      console.log("tile placed received in game page", data);
-      setCurrentGameState((prev) => {
-        if (!prev) return prev;
+    socket.on(
+      "tile-placed",
+      (data: { position: Position; tileType: tileType }) => {
+        console.log("tile placed received in game page", data);
+        setCurrentGameState((prev) => {
+          if (!prev) return prev;
 
-        const board = prev.board.map((row) => row.slice());
-        board[data.position.x][data.position.y] = data.tileType;
+          const board = prev.board.map((row) => row.slice());
+          board[data.position.x][data.position.y] = data.tileType;
 
-        return { ...prev, board } as GameState;
-      });
-    });
+          return { ...prev, board } as GameState;
+        });
+      }
+    );
 
     return () => {
       socket.off("tile-placed");
@@ -166,6 +169,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       selectedPosition.x === position.x &&
       selectedPosition.y === position.y
     ) {
+      console.log("Deselecting position:", position);
       setSelectedPosition(null);
       setSelectedEntityId(null);
       setStatsVisible(false);
@@ -175,17 +179,17 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       const idAtPos = currentGameState?.positionEntities.get(
         positionKey(position)
       );
-      if(!idAtPos){
+      if (!idAtPos) {
         setStatsVisible(false);
-        return;
       }
       setSelectedEntityId(idAtPos ?? null);
     }
 
     if (!selectedType) {
-      //nothing to place
+      console.log("No element selected to place.");
       return;
     }
+    console.log("Placing element:", selectedType, "at position:", position);
     socket.emit("place-element", {
       gameId,
       position,
