@@ -134,7 +134,7 @@ const Board = ({
               row,
               col,
               localGameState,
-              selectedEntityId ?? selectedPosition
+              selectedPosition ?? selectedEntityId
             )}
             onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
           >
