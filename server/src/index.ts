@@ -532,6 +532,13 @@ io.on(
           return;
         }
 
+        let tile = gameState?.board?.[position.x]?.[position.y];
+
+        if (tile === undefined) {
+          console.error("tile couldn't be found on the board");
+          return;
+        }
+
         if (selectedType === tileType.empty) {
           // erasing the tile
           console.log("erasing tile at position :", position);
@@ -542,13 +549,17 @@ io.on(
             gameState.entityPositions.delete(entityId);
             gameState.positionEntities.delete(positionKey(position));
           }
-        }
-        let tile = gameState?.board?.[position.x]?.[position.y];
-        if (tile === undefined) {
-          console.error("tile couldn't be found on the board");
+          tile = tileType.empty;
+          const row = gameState.board[position.x];
+          if (row) {
+            row[position.y] = tile;
+          }
+          io.to(gameId).emit("game-state-update", {
+            gameState: convertGameStateAsSendableGameState(gameState),
+          });
           return;
         }
-        if (tile !== tileType.empty && selectedType !== tileType.empty) {
+        if (tile !== tileType.empty) {
           console.error("tile is occupied");
           return;
         }
@@ -568,7 +579,10 @@ io.on(
           if (row) {
             row[position.y] = tile;
           }
-          io.to(gameId).emit("tile-placed", { position: position, tileType: tile });
+          io.to(gameId).emit("tile-placed", {
+            position: position,
+            tileType: tile,
+          });
           return;
         }
 
@@ -691,7 +705,7 @@ io.on(
         }
 
         // Validate stats
-        const excludedStats = ["name", "spells"]; //thoses stats are not numbers and will be validated differently
+        const excludedStats = ["name", "spells", "equipments"]; //thoses stats are not numbers and will be validated differently
         for (const value of Object.values(stats)) {
           const statName =
             Object.keys(stats).find((k) => (stats as any)[k] === value) ??
