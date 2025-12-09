@@ -691,7 +691,7 @@ io.on(
         }
 
         // Validate stats
-        const excludedStats = ["name", "spells"]; //thoses stats are not numbers and will be validated differently
+        const excludedStats = ["name", "spells", "equipments"]; //thoses stats are not numbers and will be validated differently
         for (const value of Object.values(stats)) {
           const statName =
             Object.keys(stats).find((k) => (stats as any)[k] === value) ??

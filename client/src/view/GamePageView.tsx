@@ -168,12 +168,17 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     ) {
       setSelectedPosition(null);
       setSelectedEntityId(null);
+      setStatsVisible(false);
     } else {
       setSelectedPosition(position);
       // set selected entity id based on current game state mapping
       const idAtPos = currentGameState?.positionEntities.get(
         positionKey(position)
       );
+      if(!idAtPos){
+        setStatsVisible(false);
+        return;
+      }
       setSelectedEntityId(idAtPos ?? null);
     }
 
