@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { CardComponent } from "../CardComponent";
+import { getDjinnSpells } from "../cardUtils";
 import "./SpellsPopUp.css";
 
 interface SpellListProps {
@@ -18,22 +20,40 @@ const SpellList: React.FC<SpellListProps> = ({
   onClose,
   onReturn,
 }) => {
-  if (!spellList) {
+  const [displayedSpells, setDisplayedSpells] = useState<string[]>(spellList);
+  const [onReturnHandler, setOnReturnHandler] = useState<
+    (() => void) | undefined
+  >(onReturn);
+  // Keep local display list in sync with parent changes
+  useEffect(() => {
+    setDisplayedSpells(spellList);
+  }, [spellList]);
+
+  if (!displayedSpells) {
     return <div className="spell-view">No spells available</div>;
   }
-  console.log("Rendering SpellList with spells: ", spellList);
+  console.log("Rendering SpellList with spells: ", displayedSpells);
   console.log("Used spells: ", usedSpellList);
 
   const onSpellClickInternal = (spellId: string) => {
     console.log("Spell clicked: ", spellId);
     if (spellId === "Djinn") {
+      const djinnSpells = getDjinnSpells();
+      setDisplayedSpells(djinnSpells);
+      console.log(
+        "Djinn spell clicked, expanding to sub-spells: ",
+        djinnSpells
+      );
+      setOnReturnHandler(() => {
+        setDisplayedSpells(spellList);
+      });
       return; // do nothing when clicking on the main Djinn spell
     }
     onSpellClick(spellId);
   };
 
-  const renderSpellSchools = (spellList: string[]) => {
-    return spellList.map((spellId) => {
+  const renderSpellSchools = (spellIds: string[]) => {
+    return spellIds.map((spellId) => {
       const isUsed: boolean = usedSpellList.includes(spellId);
       return (
         <div
@@ -52,12 +72,12 @@ const SpellList: React.FC<SpellListProps> = ({
       <div className="closeButton">
         <button onClick={onClose}>X</button>
       </div>
-      {onReturn !== undefined && (
+      {onReturnHandler !== undefined && (
         <div className="returnButton">
-          <button onClick={onReturn}>Retour</button>
+          <button onClick={onReturnHandler}>Retour</button>
         </div>
       )}
-      {renderSpellSchools(spellList)}
+      {renderSpellSchools(displayedSpells)}
     </div>
   );
 };
