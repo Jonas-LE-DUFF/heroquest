@@ -24,6 +24,14 @@ const SpellList: React.FC<SpellListProps> = ({
   console.log("Rendering SpellList with spells: ", spellList);
   console.log("Used spells: ", usedSpellList);
 
+  const onSpellClickInternal = (spellId: string) => {
+    console.log("Spell clicked: ", spellId);
+    if (spellId === "Djinn") {
+      return; // do nothing when clicking on the main Djinn spell
+    }
+    onSpellClick(spellId);
+  };
+
   const renderSpellSchools = (spellList: string[]) => {
     return spellList.map((spellId) => {
       const isUsed: boolean = usedSpellList.includes(spellId);
@@ -32,7 +40,7 @@ const SpellList: React.FC<SpellListProps> = ({
           key={spellId}
           className={"spell-school " + (isUsed ? "used-spell" : "")}
           role="button"
-          onClick={isUsed ? undefined : () => onSpellClick(spellId)}
+          onClick={isUsed ? undefined : () => onSpellClickInternal(spellId)}
         >
           <CardComponent socket={socket} cardName={spellId} cardType="spell" />
         </div>

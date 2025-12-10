@@ -81,6 +81,10 @@ export async function castSpell(
     throw new Error("Player position not found.");
   }
 
+  if (spell.id.includes("Djinn")) {
+    if (spell.id === "Djinn") return; // this spell allows to choose between sub-spells
+  }
+
   if (isPositionVisible(playerPosition, position) === false) {
     throw new Error("Target position is not visible.");
   }

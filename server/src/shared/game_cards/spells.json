@@ -14,7 +14,7 @@
         },
         "sub_spells": [
             {
-                "id": "Open door",
+                "id": "Djinn Open door",
                 "name": "ouvrir une porte",
                 "range": "any",
                 "target_type": "door",
@@ -25,7 +25,7 @@
                     "comment": "reveal and open a door"
                 }
             },{
-                "id": "DIE",
+                "id": "Djinn DIE",
                 "name": "MEURT",
                 "range": "visible",
                 "target_type": "monster",
