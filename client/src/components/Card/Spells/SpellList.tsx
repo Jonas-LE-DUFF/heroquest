@@ -23,7 +23,7 @@ const SpellList: React.FC<SpellListProps> = ({
   const [displayedSpells, setDisplayedSpells] = useState<string[]>(spellList);
   const [onReturnHandler, setOnReturnHandler] = useState<
     (() => void) | undefined
-  >(onReturn);
+  >(() => onReturn);
   // Keep local display list in sync with parent changes
   useEffect(() => {
     setDisplayedSpells(spellList);
@@ -46,6 +46,7 @@ const SpellList: React.FC<SpellListProps> = ({
       );
       setOnReturnHandler(() => {
         setDisplayedSpells(spellList);
+        setOnReturnHandler(() => onReturnHandler);
       });
       return; // do nothing when clicking on the main Djinn spell
     }
