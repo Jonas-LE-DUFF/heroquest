@@ -1,5 +1,6 @@
 import {
   GameState,
+  heroClass,
   Monster,
   Player,
   PlayerRole,
@@ -81,6 +82,19 @@ function fiveHeroPlayers(game: GameState, role: PlayerRole) {
   );
 }
 
+function getPlayerByClass(
+  gameState: GameState,
+  playerClass: heroClass
+): string | null {
+  for (const [playerId, player] of gameState.players.entries()) {
+    if (player.class === playerClass) {
+      return playerId;
+    }
+  }
+  return null;
+}
+
+
 function convertSendableGameStateAsGameState(
   game: SendableGameState
 ): GameState {
@@ -133,4 +147,5 @@ export {
   generateMonsterId,
   fiveHeroPlayers,
   positionKey,
+  getPlayerByClass,
 };

@@ -39,7 +39,7 @@ import {
   handleRollFightDice,
   handleRollRedDice,
   handleSpecialRollAuthorization,
-} from "./shared/dicesControllers";
+} from "./handlers/diceHandler";
 import { castSpell } from "./shared/spell/spellEffects";
 
 const app = express();
@@ -523,7 +523,7 @@ io.on(
           return;
         }
         if (selectedType.toString().toUpperCase() in Direction) {
-          const newDoor = placeDoor(position, selectedType, gameState, gameId);
+          const newDoor = placeDoor(position, selectedType, gameState);
           console.log("new door placed :", newDoor);
           io.to(gameId).emit("door-placed", {
             position: newDoor.position,

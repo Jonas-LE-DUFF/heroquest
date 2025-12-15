@@ -4,7 +4,6 @@ function placeDoor(
   position: Position,
   selectedType: tileType | Direction | monsterClass,
   gameState: GameState,
-  gameId: string
 ) {
   let positionSent = position;
   let verticalOrHorizontal: "vertical" | "horizontal" = "horizontal";

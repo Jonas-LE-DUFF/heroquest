@@ -8,7 +8,7 @@ import {
 } from "../type";
 import spells from "../game_cards/spells.json";
 import { isPositionVisible } from "./range";
-import { handleRollRedDice, rollRedDice } from "../dicesControllers";
+import { rollFightDice, rollRedDice } from "../../controllers/dicesControllers";
 import { Server } from "socket.io";
 import { checkOnlyOneGameMaster, positionKey } from "../util";
 import { checkMonsterDefeat } from "../death/death";
@@ -54,14 +54,34 @@ export async function castSpell(
     throw new Error("Spell not found: " + spellId);
   }
 
-  const spellSchool = getSpellSchool(spell);
-  if (spellSchool === null) {
-    throw new Error("Spell school not found.");
-  }
-
   if (!player.stats) {
     throw new Error("Player stats not found.");
   }
+
+  if (player.stats.usedSpells && player.stats.usedSpells.includes(spellId)) {
+    throw new Error("Player already used this spell.");
+  }
+  
+  if (spell.id.includes("Djinn")) {
+    if (spell.id === "Djinn") return; // this spell allows to choose between sub-spells
+
+    if(spell.id === "Djinn Open door"){
+      throw new Error("Djinn Open door spell effect not implemented yet.");
+    }
+
+    if(spell.id === "Djinn DIE"){
+      
+      return;
+    }
+
+  }
+
+  const spellSchool = getSpellSchool(spell);
+  if (!spellSchool) {
+    throw new Error("Spell school not found.");
+  }
+
+
 
   if (!player.stats.spells || !player.stats.spells.includes(spellSchool)) {
     throw new Error(
@@ -72,18 +92,14 @@ export async function castSpell(
     );
   }
 
-  if (player.stats.usedSpells && player.stats.usedSpells.includes(spellId)) {
-    throw new Error("Player already used this spell.");
-  }
+
 
   const playerPosition = gameState.entityPositions.get(player.id);
   if (!playerPosition) {
     throw new Error("Player position not found.");
   }
 
-  if (spell.id.includes("Djinn")) {
-    if (spell.id === "Djinn") return; // this spell allows to choose between sub-spells
-  }
+
 
   if (isPositionVisible(playerPosition, position) === false) {
     throw new Error("Target position is not visible.");
