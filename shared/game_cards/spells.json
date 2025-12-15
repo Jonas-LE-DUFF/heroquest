@@ -1,74 +1,204 @@
 [
-    {
-        "id": "Djinn",
-        "name": "Djinn",
-        "icon": "assets/images/cards/spells/air/djinn.png",
-        "school": "Air"
+  {
+    "id": "Djinn",
+    "name": "Djinn",
+    "image_path": "assets/images/cards/spells/air/djinn.png",
+    "school": "Air",
+    "range": "any",
+    "target_type": "no target",
+    "effect": {
+      "type": "special",
+      "stat": "no stat",
+      "value": null,
+      "comment": "choose between two powerful spells"
     },
-    {
-        "id": "Quick_as_the_wind",
-        "name": "Vif comme le vent",
-        "icon": "assets/images/cards/spells/air/quickAsTheWind.png",
-        "school": "Air"
+    "sub_spells": [
+      {
+        "id": "Djinn Open door"
+      },
+      {
+        "id": "Djinn DIE"
+      }
+    ]
+  },
+  {
+    "id": "Djinn DIE",
+    "name": "MEURT",
+    "range": "visible",
+    "target_type": "monster",
+    "effect": {
+      "type": "damage",
+      "stat": "health",
+      "value": "5 attackDice",
+      "comment": "deal 5 attack dice damage to a monster in sight"
     },
-    {
-        "id": "Tornado",
-        "name": "Tornade",
-        "icon": "assets/images/cards/spells/air/tornado.png",
-        "school": "Air"
+    "image_path": "assets/images/cards/spells/air/djinnSubSpells/DjinnAttack.png"
+  },
+  {
+    "id": "Djinn Open door",
+    "name": "ouvrir une porte",
+    "range": "any",
+    "target_type": "door",
+    "effect": {
+      "type": "special",
+      "stat": "no stat",
+      "value": null,
+      "comment": "reveal and open a door"
     },
-    {
-        "id": "Heal",
-        "name": "Guérison",
-        "icon": "assets/images/cards/spells/earth/heal.png",
-        "school": "Earth"
-    },
-    {
-        "id": "RockSkin",
-        "name": "Peau de roc",
-        "icon": "assets/images/cards/spells/earth/rockSkin.png",
-        "school": "Earth"
-    },
-    {
-        "id": "Through_the_rock",
-        "name": "À travers la pierre",
-        "icon": "assets/images/cards/spells/earth/throughTheRock.png",
-        "school": "Earth"
-    },
-    {
-        "id": "Courage",
-        "name": "Courage",
-        "icon": "assets/images/cards/spells/fire/courage.png",
-        "school": "Fire"
-    },
-    {
-        "id": "Fire_of_wrath",
-        "name": "Le feu du couroux",
-        "icon": "assets/images/cards/spells/fire/fireOfWrath.png",
-        "school": "Fire"
-    },
-    {
-        "id": "FIREBAALL",
-        "name": "Boule de feu",
-        "icon": "assets/images/cards/spells/fire/fireBall.png",
-        "school": "Fire"
-    },
-    {
-        "id": "Sleep",
-        "name": "Sommeil",
-        "icon": "assets/images/cards/spells/water/sleep.png",
-        "school": "Water"
-    },
-    {
-        "id": "Veil_of_mist",
-        "name": "Voile de brume",
-        "icon": "assets/images/cards/spells/water/veilOfMist.png",
-        "school": "Water"
-    },
-    {
-        "id": "Water_heal",
-        "name": "Eau de Guérison",
-        "icon": "assets/images/cards/spells/water/waterHeal.png",
-        "school": "Water"
+    "image_path": "assets/images/cards/spells/air/djinnSubSpells/DjinnOpenDoor.png"
+  },
+  {
+    "id": "Quick_as_the_wind",
+    "name": "Vif comme le vent",
+    "image_path": "assets/images/cards/spells/air/quickAsTheWind.png",
+    "school": "Air",
+    "range": "any",
+    "target_type": "hero self",
+    "effect": {
+      "type": "buff",
+      "stat": "movements",
+      "value": "*2",
+      "comment": "once"
     }
+  },
+  {
+    "id": "Tornado",
+    "name": "Tornade",
+    "image_path": "assets/images/cards/spells/air/tornado.png",
+    "school": "Air",
+    "range": "any",
+    "target_type": "monster",
+    "effect": {
+      "type": "special",
+      "stat": "no stat",
+      "value": "one turn",
+      "comment": "once"
+    }
+  },
+  {
+    "id": "Heal",
+    "name": "Guérison",
+    "image_path": "assets/images/cards/spells/earth/heal.png",
+    "school": "Earth",
+    "range": "any",
+    "target_type": "hero self",
+    "effect": {
+      "type": "heal",
+      "stat": "health",
+      "value": "+4",
+      "comment": "can't overheal"
+    }
+  },
+  {
+    "id": "RockSkin",
+    "name": "Peau de roc",
+    "image_path": "assets/images/cards/spells/earth/rockSkin.png",
+    "school": "Earth",
+    "range": "any",
+    "target_type": "hero self",
+    "effect": {
+      "type": "buff",
+      "stat": "nbDefenseDice",
+      "value": "+1",
+      "comment": "until one damage taken"
+    }
+  },
+  {
+    "id": "Through_the_rock",
+    "name": "À travers la pierre",
+    "image_path": "assets/images/cards/spells/earth/throughTheRock.png",
+    "school": "Earth",
+    "range": "any",
+    "target_type": "hero self",
+    "effect": {
+      "type": "special",
+      "stat": "no stat",
+      "value": null,
+      "comment": "move through walls once if out of playable area : dies"
+    }
+  },
+  {
+    "id": "Courage",
+    "name": "Courage",
+    "image_path": "assets/images/cards/spells/fire/courage.png",
+    "school": "Fire",
+    "range": "visible",
+    "target_type": "hero self",
+    "effect": {
+      "type": "buff",
+      "stat": "nbAttackDice",
+      "value": "+2",
+      "comment": "until no enemy in sight"
+    }
+  },
+  {
+    "id": "Fire_of_wrath",
+    "name": "Le feu du couroux",
+    "image_path": "assets/images/cards/spells/fire/fireOfWrath.png",
+    "school": "Fire",
+    "range": "any",
+    "target_type": "monster",
+    "effect": {
+      "type": "damage",
+      "stat": "health",
+      "value": "-1",
+      "comment": "monster roll red dices"
+    }
+  },
+  {
+    "id": "FIREBAALL",
+    "name": "Boule de feu",
+    "image_path": "assets/images/cards/spells/fire/fireBall.png",
+    "school": "Fire",
+    "range": "any",
+    "target_type": "monster",
+    "effect": {
+      "type": "damage",
+      "stat": "health",
+      "value": "-2",
+      "comment": "monster roll red dices"
+    }
+  },
+  {
+    "id": "Sleep",
+    "name": "Sommeil",
+    "image_path": "assets/images/cards/spells/water/sleep.png",
+    "school": "Water",
+    "range": "any",
+    "target_type": "monster",
+    "effect": {
+      "type": "special",
+      "stat": "no stat",
+      "value": "until one 6 rolled (one dice per spirit point)",
+      "comment": "not on mummies, zombies and skeletons"
+    }
+  },
+  {
+    "id": "Veil_of_mist",
+    "name": "Voile de brume",
+    "image_path": "assets/images/cards/spells/water/veilOfMist.png",
+    "school": "Water",
+    "range": "any",
+    "target_type": "hero self",
+    "effect": {
+      "type": "special",
+      "stat": "no stat",
+      "value": null,
+      "comment": "move through monsters once"
+    }
+  },
+  {
+    "id": "Water_heal",
+    "name": "Eau de Guérison",
+    "image_path": "assets/images/cards/spells/water/waterHeal.png",
+    "school": "Water",
+    "range": "any",
+    "target_type": "hero self",
+    "effect": {
+      "type": "heal",
+      "stat": "health",
+      "value": "+4",
+      "comment": "can't overheal"
+    }
+  }
 ]

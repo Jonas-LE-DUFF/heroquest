@@ -125,7 +125,15 @@ export async function rollRedDice(
       error: "la partie n'a pas pu être trouvée",
     };
   }
-  const playerRole = gameState.players.get(playerId)?.role;
+  const player = gameState.players.get(playerId);
+  if (!player) {
+    console.error("no player found for rolling red dices");
+    return {
+      success: false,
+      error: "le joueur lançant les dés rouges n'a pas pu être trouvé",
+    };
+  }
+  const playerRole = player.role;
   if (!playerRole) {
     console.error("no role found for player rolling red dices");
     return {
@@ -155,6 +163,8 @@ export async function rollRedDice(
       success: false,
       error: "Attends ton tour trou du q !",
     };
+  } else if( player.stats?.movements !== undefined && player.stats.movements !== 0) {
+    numberOfDices = player.stats.movements;
   }
 
   let results: number[] = [];

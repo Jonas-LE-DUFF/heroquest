@@ -140,7 +140,7 @@ export async function castSpell(
       const rawValue = spell.effect.value ?? "0";
       const sign = rawValue[0];
       const parsed = parseInt(rawValue.replace(/[-+*]/, ""));
-
+      
       switch (sign) {
         case "+":
           applyBuff(player.stats, statToBuff, parsed, (a, b) => a + b);
@@ -185,6 +185,7 @@ export async function castSpell(
         checkUnitDefeat(gameState, monsterTarget);
       }
 
+    case "special":
       break;
     // Implement other spell effects here
     default:

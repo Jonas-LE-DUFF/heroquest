@@ -775,7 +775,7 @@ io.on(
             error: "Cleric must select exactly three spells.",
           });
         }
-
+        stats.movements = 2; // default movement value for heroes
         // If all validations pass, update the player's class and stats
         player.class = heroType;
         // ensure stats object exists before assigning additional properties
