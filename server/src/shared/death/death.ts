@@ -1,9 +1,9 @@
-import { GameState, Monster, tileType } from "../type";
+import { GameState, Monster, Player } from "../type";
 import { positionKey } from "../util";
 
-export function checkMonsterDefeat(
+export function checkUnitDefeat(
   gameState: GameState,
-  monsterTarget: Monster
+  monsterTarget: Monster|Player
 ) {
   console.log("Checking defeat for monster:", monsterTarget);
   if (monsterTarget.stats?.hp === undefined || monsterTarget.stats.hp > 0) {

@@ -1,17 +1,24 @@
 import {
+  ClientToServerEvents,
+  diceFace,
   GameState,
   Player,
   Position,
+  ServerToClientEvents,
+  SocketData,
   spellElement,
-  tileType,
   Unit,
 } from "../type";
 import spells from "../game_cards/spells.json";
 import { isPositionVisible } from "./range";
-import { rollFightDice, rollRedDice } from "../../controllers/dicesControllers";
-import { Server } from "socket.io";
-import { checkOnlyOneGameMaster, positionKey } from "../util";
-import { checkMonsterDefeat } from "../death/death";
+import {
+  grantSpecialRollAuthorization,
+  rollFightDice,
+  rollRedDice,
+} from "../../controllers/dicesControllers";
+import { positionKey, fight } from "../util";
+import { checkUnitDefeat } from "../death/death";
+import { Server, Socket } from "socket.io";
 
 interface Spell {
   id: string;
@@ -45,7 +52,8 @@ export async function castSpell(
   player: Player,
   spellId: string,
   position: Position,
-  io: Server
+  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
+  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData, any>
 ) {
   console.log("applying effects of casted spell");
 
@@ -61,27 +69,38 @@ export async function castSpell(
   if (player.stats.usedSpells && player.stats.usedSpells.includes(spellId)) {
     throw new Error("Player already used this spell.");
   }
-  
+
   if (spell.id.includes("Djinn")) {
     if (spell.id === "Djinn") return; // this spell allows to choose between sub-spells
-
-    if(spell.id === "Djinn Open door"){
+    player.stats.usedSpells = player.stats.usedSpells || [];
+    if (spell.id === "Djinn Open door") {
+      player.stats.usedSpells.push("Djinn");
       throw new Error("Djinn Open door spell effect not implemented yet.");
     }
 
-    if(spell.id === "Djinn DIE"){
-      
-      return;
-    }
+    if (spell.id === "Djinn DIE") {
+      const monsterTargetId = gameState.positionEntities.get(
+        positionKey(position)
+      );
+      if (!monsterTargetId) {
+        throw new Error("No target found at the specified position.");
+      }
+      const monsterTarget = gameState.monsters.get(monsterTargetId);
+      if (!monsterTarget) {
+        throw new Error("Monster target not found.");
+      }
+      grantSpecialRollAuthorization(gameState, socket, 5, "fight", player.id);
+      fight(io, gameState, player, monsterTarget, 5);
 
+      player.stats.usedSpells.push("Djinn");
+      return gameState;
+    }
   }
 
   const spellSchool = getSpellSchool(spell);
   if (!spellSchool) {
     throw new Error("Spell school not found.");
   }
-
-
 
   if (!player.stats.spells || !player.stats.spells.includes(spellSchool)) {
     throw new Error(
@@ -92,14 +111,10 @@ export async function castSpell(
     );
   }
 
-
-
   const playerPosition = gameState.entityPositions.get(player.id);
   if (!playerPosition) {
     throw new Error("Player position not found.");
   }
-
-
 
   if (isPositionVisible(playerPosition, position) === false) {
     throw new Error("Target position is not visible.");
@@ -167,11 +182,10 @@ export async function castSpell(
         }
         console.log("dealing damages:", damages);
         monsterTarget.stats.hp -= damages;
-        checkMonsterDefeat(gameState, monsterTarget);
+        checkUnitDefeat(gameState, monsterTarget);
       }
 
       break;
-
     // Implement other spell effects here
     default:
       throw new Error(

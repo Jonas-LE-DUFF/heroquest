@@ -14,8 +14,17 @@ export function handleSpecialRollAuthorization(
       typeOfDices: "fight" | "red";
       playerClass: heroClass;
     }) => {
+      const gameState = games.get(data.gameId);
+      if (!gameState) {
+        console.error("Game not found for special roll authorization");
+        return;
+      }
+      if(gameState.players.get(socket.id)?.role !== "game-master") {
+        console.error("Only the game-master can authorize special rolls");
+        return;
+      }
       grantSpecialRollAuthorization(
-        games.get(data.gameId),
+        gameState,
         socket,
         data.numberOfDices,
         data.typeOfDices,
@@ -63,8 +72,8 @@ export function handleRollFightDice(
       callback: (response: { success: boolean; error?: string }) => void
     ) => {
       const gameState = games.get(data.gameId);
-      rollFightDice(io, data.playerId, gameState!, data.numberOfDice);
-      return callback({ success: true });
+      const result = await rollFightDice(io, data.playerId, gameState!, data.numberOfDice);
+      return callback(result);
     }
   );
 }

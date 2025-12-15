@@ -464,6 +464,7 @@ io.on(
             castingPlayer,
             spellId,
             position,
+            socket,
             io
           );
         } catch (error) {
@@ -484,7 +485,6 @@ io.on(
         }
 
         console.log("spell casted successfully Player :", castingPlayer.stats);
-        console.log("sending updated game state to players", gameState);
         if (!gameState) return;
         io.to(gameId).emit("game-state-update", {
           gameState: convertGameStateAsSendableGameState(gameState),

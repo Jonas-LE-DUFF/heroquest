@@ -83,8 +83,9 @@ export async function rollFightDice(
     };
   }
 
+  let results: diceFace[] = [];
   for (let j = 0; j < 15; j++) {
-    let results: diceFace[] = [];
+    results = [];
     for (let i = 0; i < numberOfDices; i++) {
       const randomNumber = Math.floor(Math.random() * 6 + 1);
       let face: diceFace = diceFace.Hit;
@@ -103,9 +104,8 @@ export async function rollFightDice(
     });
 
     await sleep(75);
-    results = [];
   }
-  return { success: true };
+  return { success: true, results: results };
 }
 
 export async function rollRedDice(
