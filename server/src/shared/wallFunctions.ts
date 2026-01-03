@@ -1,4 +1,5 @@
 import { Position, WallGrid, Direction, GameState, tileType } from "./type";
+import { positionKey } from "./util";
 
 // shared/wallLogic.ts
 export const hasWall = (
@@ -86,22 +87,25 @@ export const canMove = (
   gameState: GameState,
   from: Position,
   direction: Direction,
-  isPlayer: boolean
+  isPlayer: boolean,
+  statusEffects: (string | null)[]
 ): boolean => {
   if (
     hasWall(gameState.walls, from, direction) &&
-    (!hasDoor(gameState.doors, from, direction) || !isPlayer) // A monster can't open doors
+    (!hasDoor(gameState.doors, from, direction) || !isPlayer) && !statusEffects.includes("phase through walls") // A monster can't open doors
   ) {
     console.error("wall in the way");
     return false;
   }
 
   const to = getPositionAfterMove(from, direction);
-  if (gameState.board[to.x]?.[to.y] !== tileType.empty) {
+
+  const unit = gameState.positionEntities.get(positionKey(to))
+  console.debug("checking occupancy at", to, "found unit:", unit);
+  if(unit && !statusEffects.includes("phase through monsters")) {
     console.error("tile is occupied");
     return false;
   }
-
   return true;
 };
 

@@ -16,7 +16,7 @@ import {
   rollFightDice,
   rollRedDice,
 } from "../../controllers/dicesControllers";
-import { positionKey, fight } from "../util";
+import { positionKey, fight, isPlayer } from "../util";
 import { checkUnitDefeat } from "../death/death";
 import { Server, Socket } from "socket.io";
 
@@ -32,6 +32,7 @@ interface Spell {
     stat: string;
     value: string | null;
     comment: string;
+    status_type?: string;
   };
 }
 
@@ -120,36 +121,60 @@ export async function castSpell(
     throw new Error("Target position is not visible.");
   }
 
-  const target = gameState.positionEntities.get(positionKey(position));
-  if (!target && spell.target_type !== "no target") {
+  const target_id = gameState.positionEntities.get(positionKey(position));
+  if (!target_id && spell.target_type !== "no target") {
     throw new Error("No target found at the specified position.");
+  }
+  const entity_target = gameState.players.get(target_id || "") || gameState.monsters.get(target_id || "");
+  if (!entity_target) {
+    if(spell?.target_type !== "no target"){
+      throw new Error("Target entity not found.");
+    }
+  }else{
+    if (entity_target.id === player.id && !spell.target_type.includes("self")) {
+      throw new Error("Spell can't be cast on self.");
+    }
+    if (isPlayer(entity_target) && !spell.target_type.includes("hero")) {
+      throw new Error("Spell can't be cast on heroes.");
+    }
+    if (!isPlayer(entity_target) && !spell.target_type.includes("monster")) {
+      throw new Error("Spell can't be cast on monsters.");
+    }
   }
 
   switch (spell.effect.type) {
     case "heal":
-      if (player.stats.hp !== undefined && player.stats.maxHp) {
+      if (!entity_target || !entity_target.stats){
+        throw new Error("No target to heal found.");
+      };
+
+      if (entity_target.stats.hp !== undefined && entity_target.stats.maxHp) {
         const healValue = parseInt(spell.effect.value!.replace("+", ""));
-        player.stats.hp = Math.min(
-          player.stats.hp + healValue,
-          player.stats.maxHp
+        entity_target.stats.hp = Math.min(
+          entity_target.stats.hp + healValue,
+          entity_target.stats.maxHp
         );
       }
       break;
     case "buff": {
-      const statToBuff = spell.effect.stat as keyof typeof player.stats;
+      if (!entity_target || !entity_target.stats){
+        throw new Error("No target to buff found.");
+      };
+
+      const statToBuff = spell.effect.stat as keyof typeof entity_target.stats;
       const rawValue = spell.effect.value ?? "0";
       const sign = rawValue[0];
       const parsed = parseInt(rawValue.replace(/[-+*]/, ""));
       
       switch (sign) {
         case "+":
-          applyBuff(player.stats, statToBuff, parsed, (a, b) => a + b);
+          applyBuff(entity_target.stats, statToBuff, parsed, (a, b) => a + b);
           break;
         case "-":
-          applyBuff(player.stats, statToBuff, parsed, (a, b) => a - b);
+          applyBuff(entity_target.stats, statToBuff, parsed, (a, b) => a - b);
           break;
         case "*":
-          applyBuff(player.stats, statToBuff, parsed, (a, b) => a * b);
+          applyBuff(entity_target.stats, statToBuff, parsed, (a, b) => a * b);
           break;
         default:
           throw new Error("Unknown buff sign: " + sign);
@@ -159,8 +184,7 @@ export async function castSpell(
     case "damage":
       // Damage effect to be implemented
       if (spell.effect.comment === "monster roll red dices") {
-        const monsterTarget = gameState.monsters.get(target || "");
-        if (!monsterTarget) {
+        if (!entity_target) {
           throw new Error("Monster target not found.");
         }
         let damages = parseInt(spell.effect.value?.replace("-", "") || "0");
@@ -177,13 +201,25 @@ export async function castSpell(
             damages -= 1;
           }
         }
-        if (monsterTarget.stats?.hp === undefined) {
+        if (entity_target.stats?.hp === undefined) {
           throw new Error("Monster target has no health stat.");
         }
         console.log("dealing damages:", damages);
-        monsterTarget.stats.hp -= damages;
-        checkUnitDefeat(gameState, monsterTarget);
+        entity_target.stats.hp -= damages;
+        checkUnitDefeat(gameState, entity_target);
       }
+    case "apply status":
+      if (!entity_target?.stats?.statusEffects){
+        throw new Error("No target to apply status effect found.");
+      }
+      const statusEffect = {
+        duration: spell.effect.value || "unknown",
+        relatedSpell: spell.id,
+        effectName: spell.effect.status_type || "unknown",
+      };
+      entity_target.stats.statusEffects.push(statusEffect);
+      break;
+
 
     case "special":
       break;

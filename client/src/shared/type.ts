@@ -71,7 +71,7 @@ export interface Unit {
   usedSpells?: string[] | undefined;
   gold?: number | undefined;
   equipments?: string[] | undefined;
-  statusEffects?: (Status | null)[] | undefined; // the effects obtained by spells or potions
+  statusEffects: (Status | null)[] | undefined; // the effects obtained by spells or potions
 }
 
 export interface Player {

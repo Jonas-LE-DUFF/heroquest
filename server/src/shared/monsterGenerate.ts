@@ -26,6 +26,7 @@ function getMonsterStats(monsterType: monsterClass): Unit {
       nbAttackDice: 1,
       nbDefenseDice: 1,
       movements: 1,
+      statusEffects: [],
     };
   }
   return {
@@ -36,6 +37,7 @@ function getMonsterStats(monsterType: monsterClass): Unit {
     nbAttackDice: monster.nbAttackDice,
     nbDefenseDice: monster.nbDefenseDice,
     movements: monster.movements,
+    statusEffects: [],
   };
 }
 

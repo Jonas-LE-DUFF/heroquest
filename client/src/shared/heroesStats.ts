@@ -20,5 +20,6 @@ export function getHeroStats(heroType: heroClass) : Unit{
         usedSpells: [],
         gold: 0,
         equipments: heroData.equipments,
+        statusEffects: [],
     };
 }

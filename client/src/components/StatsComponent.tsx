@@ -28,11 +28,11 @@ const StatsComponent = ({
   isGameMaster,
 }: StatsComponentProps) => {
   const [statsEdit, setStatsEdit] = useState<Unit>(
-    unit?.stats ?? { name: "no stats found" }
+    unit?.stats ?? { name: "no stats found", statusEffects: [] }
   );
 
   useEffect(() => {
-    setStatsEdit(unit?.stats ?? { name: "no stats found" });
+    setStatsEdit(unit?.stats ?? { name: "no stats found", statusEffects: [] });
   }, [unit]);
 
   if (!unit?.stats) {
@@ -104,7 +104,6 @@ const StatsComponent = ({
               />
             )}
             {!isGameMaster && statsEdit.spiritPoints}
-
           </div>
           {statsEdit?.hp && statsEdit.maxHp && (
             <Box
@@ -197,6 +196,38 @@ const StatsComponent = ({
               )}
             </div>
           )}
+          <div className="statElem">
+            <p>Effets : </p>
+            <ul>
+              {statsEdit.statusEffects && statsEdit.statusEffects.length > 0 ? (
+                statsEdit.statusEffects.map((status, index) => (
+                  <li key={index}>
+                    {status?.effectName} - Durée: {status?.duration} - Sort lié:
+                    {status?.relatedSpell}
+                    {isGameMaster && (
+                      <button
+                        onClick={() => {
+                          const newStatusEffects =
+                            statsEdit.statusEffects?.filter(
+                              (statusEffect) => statusEffect !== status
+                            );
+                          setStatsEdit({
+                            ...statsEdit,
+                            statusEffects: newStatusEffects,
+                          });
+                        }}
+                      >
+                        X
+                      </button>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <li>Aucun effets</li>
+              )}
+            </ul>
+          </div>
+
           {isGameMaster && (
             <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
           )}

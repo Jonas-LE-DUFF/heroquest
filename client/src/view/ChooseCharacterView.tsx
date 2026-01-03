@@ -289,6 +289,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       gold: Number(formValues.gold),
       spells: formValues.selectedSpellElements,
       equipments: formValues.equipments,
+      statusEffects: [],
     };
 
     const statsSent = {

@@ -69,10 +69,11 @@
     "range": "any",
     "target_type": "monster",
     "effect": {
-      "type": "special",
+      "type": "apply status",
       "stat": "no stat",
-      "value": "one turn",
-      "comment": "once"
+      "value": "until the end of next turn",
+      "comment": "prevent the target from moving",
+      "status_type": "immobilized"
     }
   },
   {
@@ -111,10 +112,11 @@
     "range": "any",
     "target_type": "hero self",
     "effect": {
-      "type": "special",
+      "type": "apply status",
       "stat": "no stat",
-      "value": null,
-      "comment": "move through walls once if out of playable area : dies"
+      "value": "until the end of next turn",
+      "comment": "move through walls once",
+      "status_type": "phase through walls"
     }
   },
   {
@@ -167,10 +169,11 @@
     "range": "any",
     "target_type": "monster",
     "effect": {
-      "type": "special",
+      "type": "apply status",
       "stat": "no stat",
       "value": "until one 6 rolled (one dice per spirit point)",
-      "comment": "not on mummies, zombies and skeletons"
+      "comment": "not on mummies, zombies and skeletons",
+      "status_type": "asleep"
     }
   },
   {
@@ -181,10 +184,11 @@
     "range": "any",
     "target_type": "hero self",
     "effect": {
-      "type": "special",
+      "type": "apply status",
       "stat": "no stat",
-      "value": null,
-      "comment": "move through monsters once"
+      "value": "until the end of next turn",
+      "comment": "move through monsters once",
+      "status_type": "phase through monsters"
     }
   },
   {

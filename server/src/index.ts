@@ -41,6 +41,7 @@ import {
   handleSpecialRollAuthorization,
 } from "./handlers/diceHandler";
 import { castSpell } from "./shared/spell/spellEffects";
+import { getNextPlayerTurn } from "./turnOrder/turnOrder";
 
 const app = express();
 const httpServer = createServer(app);
@@ -133,6 +134,7 @@ io.on(
           ready: role === "game-master",
           stats: {
             name: playerName,
+            statusEffects: [],
           },
         };
         if (!game) {
@@ -344,7 +346,9 @@ io.on(
           });
         }
 
-        if (!canMove(gameState, position, data.direction, isPlayer(unit))) {
+        const statuses = unit.stats?.statusEffects?.map(status => status?.effectName || null) || [];
+
+        if (!canMove(gameState, position, data.direction, isPlayer(unit), statuses)) {
           console.error(
             "movement isn't valid SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
           );
@@ -403,29 +407,43 @@ io.on(
         return;
       }
 
-      let playerFound = false;
+      const nextPlayer = getNextPlayerTurn(game);
+      if (!nextPlayer) {
+        console.error("no next player found in end-turn");
+        return;
+      }
 
-      for (let i = 0; i < game.turnOrder.length; i++) {
-        let nextPlayer = game.turnOrder[i + 1];
-        if (i === 4) {
-          //last element of the list going back to first
-          nextPlayer = game.turnOrder.find((elem) => {
-            return elem !== undefined;
-          });
-          game.currentTurn = nextPlayer ?? "";
-        }
-        if (game.turnOrder[i] === game.currentTurn) {
-          playerFound = true;
-          if (nextPlayer !== undefined) {
-            game.currentTurn = nextPlayer;
-            break;
+      const player = game.players.get(game.currentTurn)
+      if(!player){
+        console.error("current player not found in end-turn");
+        return;
+      }
+      if(player.role !== "game-master" && player.stats?.statusEffects){
+        const newStatusEffects = player.stats?.statusEffects?.filter((statusEffect) => {
+          if(!statusEffect){
+            return false;
           }
-        }
-        if (playerFound && nextPlayer) {
-          game.currentTurn = nextPlayer;
-          break;
+          if (statusEffect.duration === "until the end of next turn") {
+            return false;
+          }
+          return true;
+        });
+        player.stats.statusEffects = newStatusEffects;
+      }else{
+        console.info("end of game-master's turn removing status effects of monsters");
+        for(const monster of game.monsters.values()){
+          monster.stats.statusEffects = monster.stats.statusEffects?.filter((statusEffect) => {
+            if(!statusEffect){
+              return false;
+            }
+            if (statusEffect.duration === "until the end of next turn") {
+              return false;
+            }
+            return true;
+          });
         }
       }
+      game.currentTurn = nextPlayer;
 
       io.to(data.gameId).emit("game-state-update", {
         gameState: convertGameStateAsSendableGameState(game),
@@ -810,6 +828,7 @@ io.on(
           nbDefenseDice: undefined,
           movements: undefined,
           gold: undefined,
+          statusEffects: [],
         };
       }
       player.ready = false;
