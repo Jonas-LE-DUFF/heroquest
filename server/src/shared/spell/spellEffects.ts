@@ -1,17 +1,24 @@
 import {
+  ClientToServerEvents,
+  diceFace,
   GameState,
   Player,
   Position,
+  ServerToClientEvents,
+  SocketData,
   spellElement,
-  tileType,
   Unit,
 } from "../type";
 import spells from "../game_cards/spells.json";
 import { isPositionVisible } from "./range";
-import { handleRollRedDice, rollRedDice } from "../dicesControllers";
-import { Server } from "socket.io";
-import { checkOnlyOneGameMaster, positionKey } from "../util";
-import { checkMonsterDefeat } from "../death/death";
+import {
+  grantSpecialRollAuthorization,
+  rollFightDice,
+  rollRedDice,
+} from "../../controllers/dicesControllers";
+import { positionKey, fight, isPlayer } from "../util";
+import { checkUnitDefeat } from "../death/death";
+import { Server, Socket } from "socket.io";
 
 interface Spell {
   id: string;
@@ -25,6 +32,7 @@ interface Spell {
     stat: string;
     value: string | null;
     comment: string;
+    status_type?: string;
   };
 }
 
@@ -45,7 +53,8 @@ export async function castSpell(
   player: Player,
   spellId: string,
   position: Position,
-  io: Server
+  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
+  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData, any>
 ) {
   console.log("applying effects of casted spell");
 
@@ -54,13 +63,44 @@ export async function castSpell(
     throw new Error("Spell not found: " + spellId);
   }
 
-  const spellSchool = getSpellSchool(spell);
-  if (spellSchool === null) {
-    throw new Error("Spell school not found.");
-  }
-
   if (!player.stats) {
     throw new Error("Player stats not found.");
+  }
+
+  if (player.stats.usedSpells && player.stats.usedSpells.includes(spellId)) {
+    throw new Error("Player already used this spell.");
+  }
+
+  if (spell.id.includes("Djinn")) {
+    if (spell.id === "Djinn") return; // this spell allows to choose between sub-spells
+    player.stats.usedSpells = player.stats.usedSpells || [];
+    if (spell.id === "Djinn Open door") {
+      player.stats.usedSpells.push("Djinn");
+      throw new Error("Djinn Open door spell effect not implemented yet.");
+    }
+
+    if (spell.id === "Djinn DIE") {
+      const monsterTargetId = gameState.positionEntities.get(
+        positionKey(position)
+      );
+      if (!monsterTargetId) {
+        throw new Error("No target found at the specified position.");
+      }
+      const monsterTarget = gameState.monsters.get(monsterTargetId);
+      if (!monsterTarget) {
+        throw new Error("Monster target not found.");
+      }
+      grantSpecialRollAuthorization(gameState, socket, 5, "fight", player.id);
+      fight(io, gameState, player, monsterTarget, 5);
+
+      player.stats.usedSpells.push("Djinn");
+      return gameState;
+    }
+  }
+
+  const spellSchool = getSpellSchool(spell);
+  if (!spellSchool) {
+    throw new Error("Spell school not found.");
   }
 
   if (!player.stats.spells || !player.stats.spells.includes(spellSchool)) {
@@ -72,10 +112,6 @@ export async function castSpell(
     );
   }
 
-  if (player.stats.usedSpells && player.stats.usedSpells.includes(spellId)) {
-    throw new Error("Player already used this spell.");
-  }
-
   const playerPosition = gameState.entityPositions.get(player.id);
   if (!playerPosition) {
     throw new Error("Player position not found.");
@@ -85,36 +121,60 @@ export async function castSpell(
     throw new Error("Target position is not visible.");
   }
 
-  const target = gameState.positionEntities.get(positionKey(position));
-  if (!target && spell.target_type !== "no target") {
+  const target_id = gameState.positionEntities.get(positionKey(position));
+  if (!target_id && spell.target_type !== "no target") {
     throw new Error("No target found at the specified position.");
+  }
+  const entity_target = gameState.players.get(target_id || "") || gameState.monsters.get(target_id || "");
+  if (!entity_target) {
+    if(spell?.target_type !== "no target"){
+      throw new Error("Target entity not found.");
+    }
+  }else{
+    if (entity_target.id === player.id && !spell.target_type.includes("self")) {
+      throw new Error("Spell can't be cast on self.");
+    }
+    if (isPlayer(entity_target) && !spell.target_type.includes("hero")) {
+      throw new Error("Spell can't be cast on heroes.");
+    }
+    if (!isPlayer(entity_target) && !spell.target_type.includes("monster")) {
+      throw new Error("Spell can't be cast on monsters.");
+    }
   }
 
   switch (spell.effect.type) {
     case "heal":
-      if (player.stats.hp !== undefined && player.stats.maxHp) {
+      if (!entity_target || !entity_target.stats){
+        throw new Error("No target to heal found.");
+      };
+
+      if (entity_target.stats.hp !== undefined && entity_target.stats.maxHp) {
         const healValue = parseInt(spell.effect.value!.replace("+", ""));
-        player.stats.hp = Math.min(
-          player.stats.hp + healValue,
-          player.stats.maxHp
+        entity_target.stats.hp = Math.min(
+          entity_target.stats.hp + healValue,
+          entity_target.stats.maxHp
         );
       }
       break;
     case "buff": {
-      const statToBuff = spell.effect.stat as keyof typeof player.stats;
+      if (!entity_target || !entity_target.stats){
+        throw new Error("No target to buff found.");
+      };
+
+      const statToBuff = spell.effect.stat as keyof typeof entity_target.stats;
       const rawValue = spell.effect.value ?? "0";
       const sign = rawValue[0];
       const parsed = parseInt(rawValue.replace(/[-+*]/, ""));
-
+      
       switch (sign) {
         case "+":
-          applyBuff(player.stats, statToBuff, parsed, (a, b) => a + b);
+          applyBuff(entity_target.stats, statToBuff, parsed, (a, b) => a + b);
           break;
         case "-":
-          applyBuff(player.stats, statToBuff, parsed, (a, b) => a - b);
+          applyBuff(entity_target.stats, statToBuff, parsed, (a, b) => a - b);
           break;
         case "*":
-          applyBuff(player.stats, statToBuff, parsed, (a, b) => a * b);
+          applyBuff(entity_target.stats, statToBuff, parsed, (a, b) => a * b);
           break;
         default:
           throw new Error("Unknown buff sign: " + sign);
@@ -124,8 +184,7 @@ export async function castSpell(
     case "damage":
       // Damage effect to be implemented
       if (spell.effect.comment === "monster roll red dices") {
-        const monsterTarget = gameState.monsters.get(target || "");
-        if (!monsterTarget) {
+        if (!entity_target) {
           throw new Error("Monster target not found.");
         }
         let damages = parseInt(spell.effect.value?.replace("-", "") || "0");
@@ -142,16 +201,28 @@ export async function castSpell(
             damages -= 1;
           }
         }
-        if (monsterTarget.stats?.hp === undefined) {
+        if (entity_target.stats?.hp === undefined) {
           throw new Error("Monster target has no health stat.");
         }
         console.log("dealing damages:", damages);
-        monsterTarget.stats.hp -= damages;
-        checkMonsterDefeat(gameState, monsterTarget);
+        entity_target.stats.hp -= damages;
+        checkUnitDefeat(gameState, entity_target);
       }
-
+    case "apply status":
+      if (!entity_target?.stats?.statusEffects){
+        throw new Error("No target to apply status effect found.");
+      }
+      const statusEffect = {
+        duration: spell.effect.value || "unknown",
+        relatedSpell: spell.id,
+        effectName: spell.effect.status_type || "unknown",
+      };
+      entity_target.stats.statusEffects.push(statusEffect);
       break;
 
+
+    case "special":
+      break;
     // Implement other spell effects here
     default:
       throw new Error(

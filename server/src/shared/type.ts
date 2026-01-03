@@ -53,6 +53,12 @@ export enum Direction {
 
 export type PlayerRole = "hero" | "game-master";
 
+export interface Status {
+  effectName: string;
+  duration: string;
+  relatedSpell: string; // the spell that caused this status effect
+}
+
 export interface Unit {
   hp?: number | undefined;
   maxHp?: number | undefined;
@@ -65,6 +71,7 @@ export interface Unit {
   usedSpells?: string[] | undefined;
   gold?: number | undefined;
   equipments?: string[] | undefined;
+  statusEffects: (Status | null)[] | undefined; // the effects obtained by spells or potions
 }
 
 export interface Player {
@@ -130,10 +137,7 @@ export interface ServerToClientEvents {
     position: Position;
     verticalOrHorizontal: "vertical" | "horizontal";
   }) => void;
-  "tile-placed": (data: {
-    position: Position;
-    tileType: tileType;
-  }) => void;
+  "tile-placed": (data: { position: Position; tileType: tileType }) => void;
 
   "stats-updated": (data: {
     entityId: string;

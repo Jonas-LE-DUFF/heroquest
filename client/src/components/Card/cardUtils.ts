@@ -29,6 +29,20 @@ function getSpellListForSchool(spellSchool: spellElement): string[] {
   return spellList;
 }
 
+export function getDjinnSpells(): string[] {
+  const djinnSpells: string[] = [];
+  const jsonFile = spells as Card[];
+  const djinnSpell = jsonFile.find((e) => e.id === "Djinn");
+  if (djinnSpell) {
+    for (const spell of djinnSpell.sub_spells) {
+      djinnSpells.push(spell.id);
+    }
+    return djinnSpells;
+  }
+  console.error("No Djinn spell found");
+  return [];
+}
+
 function getCardImagePath(id: string, cardType: string): string | undefined {
   let jsonFile;
 

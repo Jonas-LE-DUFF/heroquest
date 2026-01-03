@@ -1,5 +1,9 @@
+import { Server } from "socket.io";
+import { rollFightDice } from "../controllers/dicesControllers";
 import {
+  diceFace,
   GameState,
+  heroClass,
   Monster,
   Player,
   PlayerRole,
@@ -7,6 +11,7 @@ import {
   SendableGameState,
   Unit,
 } from "./type";
+import { checkUnitDefeat } from "./death/death";
 
 function isPlayer(u: Monster | Player): u is Player {
   return !u.id.match(/^idMonster/);
@@ -81,6 +86,22 @@ function fiveHeroPlayers(game: GameState, role: PlayerRole) {
   );
 }
 
+function getPlayerByClass(
+  gameState: GameState,
+  playerClass: heroClass
+): string | null {
+  for (const [playerId, player] of gameState.players.entries()) {
+    if (player.class === playerClass) {
+      return playerId;
+    }
+  }
+  return null;
+}
+
+function getGameMasterId(gameState: GameState): string | null {
+  return gameState.turnOrder[4] || null;
+}
+
 function convertSendableGameStateAsGameState(
   game: SendableGameState
 ): GameState {
@@ -122,6 +143,47 @@ function convertSendableGameStateAsGameState(
   };
 }
 
+async function fight(
+  io: Server,
+  gameState: GameState,
+  attacker: Player | Monster,
+  defender: Player | Monster,
+  nbAttackDice?: number,
+  nbDefenseDice?: number
+) {
+  if (!attacker.stats || !defender.stats) {
+    throw new Error("Player or monster stats not found.");
+  }
+  const attackDice =
+    nbAttackDice !== undefined
+      ? nbAttackDice
+      : attacker.stats.nbAttackDice;
+  const defenseDice =
+    nbDefenseDice !== undefined
+      ? nbDefenseDice
+      : defender.stats.nbDefenseDice;
+  const roll = await rollFightDice(io, attacker.id, gameState, 5);
+        if(!roll.success || !roll.results) {
+          throw new Error("Failed to roll fight dice for Djinn DIE spell.");
+        }
+        const playerThrow = roll.results || [];
+        const monsterRoll = await rollFightDice(io, getGameMasterId(gameState) || "", gameState, defender.stats?.nbDefenseDice || 0);
+        if(!monsterRoll.success || !monsterRoll.results) {
+          throw new Error("Failed to roll fight dice for Djinn DIE spell monster.");
+        }
+        const monsterThrow = monsterRoll.results || [];
+        const damageDealt = (playerThrow.filter(d => d == diceFace.Hit).length) - monsterThrow.filter(d => d == diceFace.BlackShield).length;
+        if(damageDealt > 0) {
+          if(defender.stats?.hp === undefined) {
+            throw new Error("Monster target has no health stat.");
+          }
+          defender.stats.hp -= damageDealt;
+          if(!isPlayer(defender))
+            checkUnitDefeat(gameState, defender);
+        }
+  
+}
+
 const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
 
 export {
@@ -133,4 +195,7 @@ export {
   generateMonsterId,
   fiveHeroPlayers,
   positionKey,
+  getPlayerByClass,
+  getGameMasterId,
+  fight,
 };

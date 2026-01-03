@@ -58,6 +58,7 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
             onSpellClick={(spellElement: spellElement) => {
               setSelectedSpellSchool(spellElement);
               setSpellPage(2);
+              console.log("Selected spell school: ", spellElement);
             }}
             onClose={() => closeSpellPage()}
           />
