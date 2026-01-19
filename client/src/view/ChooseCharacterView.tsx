@@ -401,7 +401,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           />
         </div>
         {[heroClass.Cleric, heroClass.Elf].includes(heroType) && (
-          <div className="formElement">
+          <div className="spellList">
             <label id="label-spell-elements">éléments de sort</label>
             <div className="spellCards">{renderSpellElements()}</div>
           </div>
