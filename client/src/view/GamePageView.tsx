@@ -24,6 +24,7 @@ import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
+import { getEquipmentType } from "../shared/equipments";
 
 interface GamePageProps {
   socket: any;
@@ -44,10 +45,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [currentGameState, setCurrentGameState] = useState<GameState>(
     location.state.gameState
   );
-
+  const user = currentGameState.players.get(socket.id);
+  const weapons = user?.stats?.equipments?.filter(equipment => getEquipmentType(equipment) === "weapon") || [];
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
+  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(weapons.length > 0 ? weapons[0] : null);
+
+  const [targetMode, setTargetMode] = useState<boolean>(false);
 
   useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
@@ -145,6 +150,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   ) => {
     if (selectedSpell !== null) {
       console.log("Casting spell:", selectedSpell, "at position:", position);
+      setTargetMode(false);
       socket.emit(
         "cast-spell",
         {
@@ -161,6 +167,43 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           }
         }
       );
+      return;
+    }
+
+    if(targetMode) {
+      console.log("In target mode, clicking on position:", position);
+
+      const target = getUnitAtSelectedPosition(
+        position,
+        currentGameState
+      );
+      if(!target) {
+        console.log("No unit at selected position to target.");
+        return;
+      }
+      const player = currentGameState.players.get(socket.id);
+      if(!player) {
+        console.error("Current player not found in game state.");
+        return;
+      }
+
+      socket.emit(
+        "attack",
+        {
+          gameId,
+          attackerId: player.id,
+          targetId: target.id,
+          weaponId: selectedWeapon,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (response.success) {
+            console.log("Attack executed successfully");
+          } else {
+            console.error("Failed to execute attack:", response.error);
+          }
+        }
+      );
+      setTargetMode(false);
       return;
     }
 
@@ -198,29 +241,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
   };
 
-  //           <div className="game-info">
-  //             <h3>Informations</h3>
-  //             {currentGameState.currentTurn === socket.id ? (
-  //               <p>YOUR TURN !!!!!</p>
-  //             ) : (
-  //               <p>
-  //                 Tour actuel:{" "}
-  //                 {currentGameState.currentTurn &&
-  //                   currentGameState.players &&
-  //                   currentGameState.players.get(currentGameState.currentTurn)
-  //                     ?.stats?.name}
-  //               </p>
-  //             )}
-  //             {currentGameState.players && (
-  //               <p>Joueurs: {currentGameState.players.size}</p>
-  //             )}
-  //           </div>
-  //         </div>
-  //       </div>
-  //     )}
-  //   </div>
-  // );
-
   return (
     <>
       {spellPageVisible && (
@@ -232,6 +252,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           }
           onSpellClick={(selectedSpell: string) => {
             setSelectedSpell(selectedSpell);
+            setTargetMode(true);
           }}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
@@ -271,7 +292,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           />
         </Grid>
 
-        <Grid className={"Board" + (selectedSpell ? " target" : "")}>
+        <Grid className={"Board" + (targetMode ? " target" : "")}>
           <Board
             gameState={currentGameState}
             socket={socket}
@@ -291,6 +312,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               selectedPosition!,
               currentGameState
             )}
+            setTargetMode={setTargetMode}
+            setSelectedWeapon={setSelectedWeapon}
+            selectedWeapon={selectedWeapon}
           />
         </Grid>
         <Grid className="Footer">
@@ -306,7 +330,7 @@ const getUnitAtSelectedPosition = (
   game: GameState
 ): Monster | Player | null => {
   if (!pos) return null;
-  const id = game.positionEntities.get(pos.x + "," + pos.y);
+  const id = game.positionEntities.get(positionKey(pos));
   if (!id) return null;
   const unit = game.players.get(id) || game.monsters.get(id);
   if (!unit) return null;

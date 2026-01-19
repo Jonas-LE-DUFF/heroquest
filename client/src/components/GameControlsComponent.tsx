@@ -22,6 +22,7 @@ import RedDices from "./dices/RedDicesComponent";
 import { monsterClassFr } from "../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { getEquipmentName } from "../shared/equipments";
 
 interface GameControlsProps {
   socket: any;
@@ -29,6 +30,9 @@ interface GameControlsProps {
   setSelectedType: (type: tileType | Direction | monsterClass | null) => void; //Direction -> door placement
   selectedType: tileType | Direction | monsterClass | null;
   selectedUnit: Player | Monster | null;
+  setTargetMode: (value: boolean) => void;
+  setSelectedWeapon: (weaponId: string | null) => void;
+  selectedWeapon: string | null;
 }
 
 const GameControls = ({
@@ -37,6 +41,9 @@ const GameControls = ({
   setSelectedType,
   selectedType,
   selectedUnit,
+  setTargetMode,
+  setSelectedWeapon,
+  selectedWeapon,
 }: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
@@ -52,8 +59,12 @@ const GameControls = ({
   isElementsShown.set("monsterDices", true);
   isElementsShown.set("masterControls", false);
 
+  const [player, setPlayer] = useState(game.players.get(socket.id));
+
   useEffect(() => {
     if (!game) return;
+
+    setPlayer(game.players.get(socket.id));
 
     socket.on("player-moved", (data: any) => {
       setMessage(`${data.playerName} s'est déplacé`);
@@ -160,9 +171,7 @@ const GameControls = ({
           <Tooltip title={name} arrow>
             <button
               className={`monster-button ${
-                selectedType === mType
-                  ? "selected"
-                  : ""
+                selectedType === mType ? "selected" : ""
               }`}
               onClick={() => selectMonster(mType)}
             >
@@ -198,6 +207,10 @@ const GameControls = ({
       );
   };
 
+  function goInTargetMode(): void {
+    setTargetMode(true);
+  }
+
   return (
     <div>
       <div className="game-controls hero">
@@ -227,6 +240,21 @@ const GameControls = ({
               viewerRole={role}
             />
           </div>
+          {role === "hero" && player?.stats?.equipments && (
+            <div className="attack-choice">
+              Arme selectionnée :
+              <select className="weapons" id="weapons-select" onChange={(e)=> {setSelectedWeapon(e.target.value)}} value={selectedWeapon ?? ""}>
+                {player?.stats?.equipments?.map((equipmentId) => {
+                  return (
+                    <option key={equipmentId} value={equipmentId}>
+                      {getEquipmentName(equipmentId)}
+                    </option>
+                  );
+                })}
+              </select>
+              <button onClick={() => goInTargetMode()}>Attaquer</button>
+            </div>
+          )}
           {message && <div className="game-message">{message}</div>}
           {game.currentTurn === socket.id && (
             <div>

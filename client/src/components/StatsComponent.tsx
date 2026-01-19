@@ -9,6 +9,7 @@ import {
 } from "../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
+import { getEquipmentName } from "../shared/equipments";
 
 interface StatsComponentProps {
   socket: Socket;
@@ -227,7 +228,42 @@ const StatsComponent = ({
               )}
             </ul>
           </div>
+          {isGameMaster && (
+            <div className="statElem">
+              <input
+                type="text"
+                placeholder="Nom de l'effet"
+                id="effectName"
+              />
+              <button onClick={() => {
+                const effectNameInput = document.getElementById("effectName") as HTMLInputElement;
+                const effectName = effectNameInput.value;
+                if (effectName.trim() === "") return;
+                const newStatusEffect = { effectName, duration: "donné par le MJ", relatedSpell: "N/A" };
+                setStatsEdit({
+                  ...statsEdit,
+                  statusEffects: [...(statsEdit.statusEffects || []), newStatusEffect],
+                });
+                effectNameInput.value = "";
+              }}>Ajouter effet</button>
+            </div>
+          )}
+          {isPlayer(unit) && (
+            <div className="statElem">
+              <p>Equipements : </p>
+              <ul>
+                {statsEdit.equipments && statsEdit.equipments.length > 0 ? (
+                  statsEdit.equipments.map((equipment, index) => (
+                    <li key={index}>{getEquipmentName(equipment)}</li>
+                  ))
+                ) : (
+                  <li>Aucun équipement</li>
+                )}
+              </ul>
+            </div>
+          )
 
+          }
           {isGameMaster && (
             <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
           )}
