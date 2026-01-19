@@ -227,6 +227,36 @@ const StatsComponent = ({
               )}
             </ul>
           </div>
+          <div className="statElem">
+            <p>Équipements : </p>
+            <ul>
+              {statsEdit.equipments && statsEdit.equipments.length > 0 ? (
+                statsEdit.equipments.map((equipment, index) => (
+                  <li key={index}>
+                    {equipment}
+                    {isGameMaster && (
+                      <button
+                        onClick={() => {
+                          const newEquipments =
+                            statsEdit.equipments?.filter(
+                              (equipmentItem) => equipmentItem !== equipment
+                            );
+                          setStatsEdit({
+                            ...statsEdit,
+                            equipments: newEquipments,
+                          });
+                        }}
+                      >
+                        X
+                      </button>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <li>Aucun équipements</li>
+              )}
+            </ul>
+          </div>
 
           {isGameMaster && (
             <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
