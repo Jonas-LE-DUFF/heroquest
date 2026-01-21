@@ -101,7 +101,6 @@ export const canMove = (
   const to = getPositionAfterMove(from, direction);
 
   const unit = gameState.positionEntities.get(positionKey(to))
-  console.debug("checking occupancy at", to, "found unit:", unit);
   if(unit && !statusEffects.includes("phase through monsters")) {
     console.error("tile is occupied");
     return false;

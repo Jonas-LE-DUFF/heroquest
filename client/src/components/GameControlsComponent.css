@@ -64,3 +64,8 @@ select {
   justify-content: space-around;
   width: 100%;
 }
+
+.weapons{
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
