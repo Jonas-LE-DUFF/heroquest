@@ -1,7 +1,9 @@
-import { HeroCategory } from "../Categories/HeroCategory";
-import { MonsterCategory } from "../Categories/MonsterCategory";
+import { HeroCategory } from "../../enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
+import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
 import { Effect } from "../Effects/Effects";
 import { Position } from "../Position/Position";
+import { Spell } from "../Spell/Spell";
 import { Stats } from "./Stats";
 
 abstract class Unit<T extends HeroCategory | MonsterCategory> {
@@ -11,9 +13,9 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
     position: Position;
     stats!: Stats;
     effects: Effect[] = [];
+    spells: Spell[] = [];
 
-    abstract DefenseDiceType: string; // the dice value that is needed to block damages
-
+    abstract DefenseDiceType: FightDiceFaces; // the dice value that is needed to block damages
 
     constructor(id: string, name: string, category: T, position: Position, stats: Stats) {
         this.id = id;
