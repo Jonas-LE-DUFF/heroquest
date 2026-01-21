@@ -139,3 +139,10 @@ export function getAllEquipments(): Equipment[] {
 export function getEquipmentsByType(type: "Weapon" | "Armor" | "Consumable"): Equipment[] {
     return equipments.filter((eq) => eq.type === type);
 }
+
+export function filterEquipmentsByType(type: "Weapon" | "Armor" | "Consumable", equipmentIds: string[] | undefined): Equipment[] {
+    if(!equipmentIds) return [];
+    return equipmentIds
+        .map(id => getEquipmentById(id))
+        .filter((eq): eq is Equipment => eq !== undefined && eq.type === type);
+}

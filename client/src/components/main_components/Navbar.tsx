@@ -28,7 +28,6 @@ const Navbar: React.FC<NavbarProps> = ({
   setSelectedUnit,
   openSpellPage,
 }) => {
-  console.log("nav player : ", player);
 
   if (!player || !player.stats) {
     return <div>Loading...</div>;

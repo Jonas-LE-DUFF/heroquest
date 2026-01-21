@@ -38,7 +38,8 @@ const StatsComponent = ({
 
   if (!unit?.stats) {
     console.log("no stats found on : ", unit);
-    return <Paper>ERROR</Paper>;
+    setStatsVisible(false);
+    return null;
   }
   return (
     <Paper sx={{ height: "fit-content" }}>
