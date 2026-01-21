@@ -50,14 +50,16 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     gold: false,
   });
 
+  const stats = getHeroStats(player?.class ?? getAvailableClasses()[0]);
+
   const [formValues, setFormValues] = useState({
-    nbAttackDice: player?.stats?.nbAttackDice ?? "1",
-    nbDefenseDice: player?.stats?.nbDefenseDice ?? "1",
-    hp: player?.stats?.hp ?? "1",
-    spiritPoints: player?.stats?.spiritPoints ?? "1",
-    gold: player?.stats?.gold?.toString() ?? "0",
-    selectedSpellElements: player?.stats?.spells ?? ([] as spellElement[]),
-    equipments: player?.stats?.equipments ?? ([] as string[]),
+    nbAttackDice: player?.stats?.nbAttackDice ?? stats.nbAttackDice?.toString() ?? "1",
+    nbDefenseDice: player?.stats?.nbDefenseDice ?? stats.nbDefenseDice?.toString() ?? "1",
+    hp: player?.stats?.hp ?? stats.hp?.toString() ?? "1",
+    spiritPoints: player?.stats?.spiritPoints ?? stats.spiritPoints?.toString() ?? "1",
+    gold: player?.stats?.gold?.toString() ?? stats.gold?.toString() ?? "0",
+    selectedSpellElements: player?.stats?.spells ?? stats.spells ?? ([] as spellElement[]),
+    equipments: player?.stats?.equipments ?? stats.equipments ?? ([] as string[]),
   });
 
   const [centerEquipment, setCenterEquipment] = useState<string | undefined>(
@@ -401,7 +403,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           />
         </div>
         {[heroClass.Cleric, heroClass.Elf].includes(heroType) && (
-          <div className="formElement">
+          <div className="spellList">
             <label id="label-spell-elements">éléments de sort</label>
             <div className="spellCards">{renderSpellElements()}</div>
           </div>

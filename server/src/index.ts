@@ -42,6 +42,7 @@ import {
 } from "./handlers/diceHandler";
 import { castSpell } from "./shared/spell/spellEffects";
 import { getNextPlayerTurn } from "./turnOrder/turnOrder";
+import { attack } from "./shared/attack/attack";
 
 const app = express();
 const httpServer = createServer(app);
@@ -52,7 +53,7 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
       origin: "http://localhost:3000",
       methods: ["GET", "POST"],
     },
-  }
+  },
 );
 
 app.use(express.static(path.join(__dirname, "../../client/build")));
@@ -62,7 +63,7 @@ const games = new Map<string, GameState>();
 io.on(
   "connection",
   (
-    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>
+    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
   ) => {
     console.log("Un utilisateur connecté:", socket.id);
 
@@ -101,7 +102,7 @@ io.on(
           if (role === "game-master" && game) {
             if (!checkOnlyOneGameMaster(game)) {
               console.error(
-                "two game-master isn't possible in a game connection interrupted"
+                "two game-master isn't possible in a game connection interrupted",
               );
               socket.emit("error", "a game master is already in this game");
               return;
@@ -119,11 +120,11 @@ io.on(
           }
           if (fiveHeroPlayers(game, role)) {
             console.error(
-              "there's already 4 hero players and there can't be a fifth one"
+              "there's already 4 hero players and there can't be a fifth one",
             );
             socket.emit(
               "error",
-              "there's already 4 heros in this game and there can't be a fifth one... please select game master or choose another gameId"
+              "there's already 4 heros in this game and there can't be a fifth one... please select game master or choose another gameId",
             );
             return;
           }
@@ -176,7 +177,7 @@ io.on(
         });
 
         console.log(`${playerName} a rejoint la partie ${gameId}`);
-      }
+      },
     );
 
     //leave-lobby
@@ -293,7 +294,7 @@ io.on(
       "move-unit-one-step",
       (
         data: { gameId: string; unitId: string; direction: Direction },
-        callback: (response: { success: boolean; error?: string }) => void
+        callback: (response: { success: boolean; error?: string }) => void,
       ) => {
         const gameState = games.get(data.gameId);
         if (!gameState) {
@@ -306,7 +307,7 @@ io.on(
         const moverPlayer = gameState.players.get(socket.id);
         if (!moverPlayer) {
           console.error(
-            "player moving unit couldn't be found in move-unit-one-step"
+            "player moving unit couldn't be found in move-unit-one-step",
           );
           return callback({
             success: false,
@@ -338,7 +339,7 @@ io.on(
         const position = gameState.entityPositions.get(unit.id);
         if (!position) {
           console.error(
-            "position of unit couldn't be found in move-unit-one-step"
+            "position of unit couldn't be found in move-unit-one-step",
           );
           return callback({
             success: false,
@@ -346,11 +347,22 @@ io.on(
           });
         }
 
-        const statuses = unit.stats?.statusEffects?.map(status => status?.effectName || null) || [];
+        const statuses =
+          unit.stats?.statusEffects?.map(
+            (status) => status?.effectName || null,
+          ) || [];
 
-        if (!canMove(gameState, position, data.direction, isPlayer(unit), statuses)) {
+        if (
+          !canMove(
+            gameState,
+            position,
+            data.direction,
+            isPlayer(unit),
+            statuses,
+          )
+        ) {
           console.error(
-            "movement isn't valid SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
+            "movement isn't valid SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION",
           );
           return callback({
             success: false,
@@ -367,7 +379,7 @@ io.on(
         }
         if (newPosition === position) {
           console.error(
-            "no movement SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION"
+            "no movement SHOULD HANDLE THAT SO HERO DOESN4T LOSE HIS ACTION",
           );
           return callback({ success: false, error: "aucun mouvement" });
         }
@@ -392,7 +404,7 @@ io.on(
         });
 
         return callback({ success: true });
-      }
+      },
     );
 
     //end-turn
@@ -413,34 +425,40 @@ io.on(
         return;
       }
 
-      const player = game.players.get(game.currentTurn)
-      if(!player){
+      const player = game.players.get(game.currentTurn);
+      if (!player) {
         console.error("current player not found in end-turn");
         return;
       }
-      if(player.role !== "game-master" && player.stats?.statusEffects){
-        const newStatusEffects = player.stats?.statusEffects?.filter((statusEffect) => {
-          if(!statusEffect){
-            return false;
-          }
-          if (statusEffect.duration === "until the end of next turn") {
-            return false;
-          }
-          return true;
-        });
-        player.stats.statusEffects = newStatusEffects;
-      }else{
-        console.info("end of game-master's turn removing status effects of monsters");
-        for(const monster of game.monsters.values()){
-          monster.stats.statusEffects = monster.stats.statusEffects?.filter((statusEffect) => {
-            if(!statusEffect){
+      if (player.role !== "game-master" && player.stats?.statusEffects) {
+        const newStatusEffects = player.stats?.statusEffects?.filter(
+          (statusEffect) => {
+            if (!statusEffect) {
               return false;
             }
             if (statusEffect.duration === "until the end of next turn") {
               return false;
             }
             return true;
-          });
+          },
+        );
+        player.stats.statusEffects = newStatusEffects;
+      } else {
+        console.info(
+          "end of game-master's turn removing status effects of monsters",
+        );
+        for (const monster of game.monsters.values()) {
+          monster.stats.statusEffects = monster.stats.statusEffects?.filter(
+            (statusEffect) => {
+              if (!statusEffect) {
+                return false;
+              }
+              if (statusEffect.duration === "until the end of next turn") {
+                return false;
+              }
+              return true;
+            },
+          );
         }
       }
       game.currentTurn = nextPlayer;
@@ -455,7 +473,7 @@ io.on(
       "cast-spell",
       async (
         data: { gameId: string; spellId: string; position: Position },
-        callback: (response: { success: boolean; error?: string }) => void
+        callback: (response: { success: boolean; error?: string }) => void,
       ) => {
         console.debug("casting spell", data);
         const { gameId, spellId, position } = data;
@@ -483,7 +501,7 @@ io.on(
             spellId,
             position,
             socket,
-            io
+            io,
           );
         } catch (error) {
           const errorMessage = (error as Error).message;
@@ -509,7 +527,7 @@ io.on(
         });
 
         return callback({ success: true });
-      }
+      },
     );
 
     ///** game master actions **///
@@ -536,7 +554,7 @@ io.on(
         }
         if (gameState.players.get(playerId)?.role !== "game-master") {
           console.error(
-            "you are no game master therefore you can't place pieces on the board"
+            "you are no game master therefore you can't place pieces on the board",
           );
           return;
         }
@@ -561,7 +579,7 @@ io.on(
           // erasing the tile
           console.log("erasing tile at position :", position);
           const entityId = gameState.positionEntities.get(
-            positionKey(position)
+            positionKey(position),
           );
           if (entityId) {
             gameState.entityPositions.delete(entityId);
@@ -582,7 +600,7 @@ io.on(
           return;
         }
         const entityAtPostion = gameState.positionEntities.get(
-          positionKey(position)
+          positionKey(position),
         );
         if (entityAtPostion) {
           console.error("there's already an entity at this position");
@@ -613,7 +631,7 @@ io.on(
           gameState.positionEntities.set(positionKey(position), newMonsterId);
           const monster = generateMonster(
             newMonsterId,
-            selectedType as monsterClass
+            selectedType as monsterClass,
           );
           console.log("generated monster :", monster);
           gameState.monsters.set(newMonsterId, monster);
@@ -621,7 +639,7 @@ io.on(
         io.to(gameId).emit("game-state-update", {
           gameState: convertGameStateAsSendableGameState(gameState),
         });
-      }
+      },
     );
 
     //update-stats-unit
@@ -633,7 +651,7 @@ io.on(
           newStats: Unit;
           position: Position;
         },
-        callback
+        callback,
       ) => {
         const { gameId, newStats, position } = data;
         const game = games.get(gameId);
@@ -652,7 +670,7 @@ io.on(
         }
 
         const entityIdAtPosition = game.positionEntities.get(
-          positionKey(position)
+          positionKey(position),
         );
 
         console.debug("entityId found : ", entityIdAtPosition);
@@ -691,7 +709,7 @@ io.on(
             error: "Pas d'unité à modifier sur cette case.",
           });
         }
-      }
+      },
     );
 
     // authorize-special-throw-dices
@@ -708,7 +726,7 @@ io.on(
           heroType: heroClass;
           stats: Unit;
         },
-        callback
+        callback,
       ) => {
         const { gameId, playerId, heroType, stats } = data;
         const game = games.get(gameId);
@@ -754,7 +772,7 @@ io.on(
         // Check if the hero class is already selected
         if (
           Array.from(game.players.values()).some(
-            (p) => p.class === heroType && p.id !== playerId
+            (p) => p.class === heroType && p.id !== playerId,
           )
         ) {
           return callback({
@@ -768,7 +786,7 @@ io.on(
           for (const spell of stats.spells) {
             if (
               Array.from(game.players.values()).some(
-                (p) => p.stats?.spells?.includes(spell) && p.id !== playerId
+                (p) => p.stats?.spells?.includes(spell) && p.id !== playerId,
               )
             ) {
               return callback({
@@ -807,7 +825,7 @@ io.on(
           success: true,
           gameState: convertGameStateAsSendableGameState(game),
         });
-      }
+      },
     );
 
     //unselect-character
@@ -837,7 +855,36 @@ io.on(
         gameState: convertGameStateAsSendableGameState(game),
       });
     });
-  }
+
+    socket.on(
+      "attack",
+      async (
+        data: {
+          gameId: string;
+          attackerId: string;
+          targetId: string;
+          weaponId: string;
+        },
+        callback: (response: { success: boolean; error?: string }) => void,
+      ) => {
+        const { gameId, attackerId, targetId, weaponId } = data;
+        const gameState = games.get(gameId);
+        if (!gameState) {
+          console.error("game couldn't be found in attack");
+          return callback({
+            success: false,
+            error: "La partie n'existe plus.",
+          });
+        }
+
+        console.log("monsters:", gameState.monsters)
+
+
+        attack(io, socket, gameState, attackerId, targetId, weaponId);
+        return callback({ success: true });
+      },
+    );
+  },
 );
 
 const PORT = process.env.PORT || 5000;

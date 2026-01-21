@@ -16,6 +16,9 @@ interface RightMenuProps {
   setSelectedType: (type: any) => void;
   selectedType: tileType | Direction | monsterClass | null;
   selectedUnit: Player | Monster | null;
+  setTargetMode: (value: boolean) => void;
+  setSelectedWeapon: (weaponId: string | null) => void;
+  selectedWeapon: string | null;
 }
 
 const RightMenu: React.FC<RightMenuProps> = ({
@@ -24,6 +27,9 @@ const RightMenu: React.FC<RightMenuProps> = ({
   setSelectedType,
   selectedType,
   selectedUnit,
+  setTargetMode,
+  setSelectedWeapon,
+  selectedWeapon,
 }) => {
   return (
     <div>
@@ -33,6 +39,9 @@ const RightMenu: React.FC<RightMenuProps> = ({
         setSelectedType={setSelectedType}
         selectedType={selectedType}
         selectedUnit={selectedUnit}
+        setTargetMode={setTargetMode}
+        setSelectedWeapon={setSelectedWeapon}
+        selectedWeapon={selectedWeapon}
       />
     </div>
   );

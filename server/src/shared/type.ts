@@ -117,7 +117,7 @@ export interface ServerToClientEvents {
     listResults: number[];
     role: "hero" | "game-master";
   }) => void;
-
+  
   //lobby actions
   "game-start": (data: { gameState: SendableGameState }) => void;
 
@@ -231,6 +231,16 @@ export interface ClientToServerEvents {
       position: Position;
     },
     callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
+
+  "attack" : (
+    data: {
+    gameId: string;
+    attackerId: string;
+    targetId: string;
+    weaponId: string;
+    },
+    callback: (response: { success: boolean; damageDealt?: number; error?: string }) => void
   ) => void;
 
   // ###################### common actions ########################

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
@@ -24,6 +24,7 @@ import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
+import { getEquipmentType } from "../shared/equipments";
 
 interface GamePageProps {
   socket: any;
@@ -44,10 +45,74 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [currentGameState, setCurrentGameState] = useState<GameState>(
     location.state.gameState
   );
-
+  const [boardKey, setBoardKey] = useState(0); // Force re-render key
+  const user = currentGameState.players.get(socket.id);
+  const weapons = user?.stats?.equipments?.filter(equipment => getEquipmentType(equipment) === "Weapon") || [];
+  console.log("User weapons :", weapons);
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
+  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(weapons.length > 0 ? weapons[0] : null);
+
+  console.log("Selected weapon in game page :", selectedWeapon);
+
+  const [targetMode, setTargetMode] = useState<boolean>(false);
+
+  // Handle stats update separately to ensure proper re-render
+  const handleStatsUpdate = useCallback((data: { entityId: string; newStats: Unit; isPlayer: boolean }) => {
+    console.log("stats updated received in game page", data);
+    
+    const isDead = data.newStats.hp !== undefined && data.newStats.hp <= 0;
+    
+    setCurrentGameState((prev) => {
+      if (!prev) return prev;
+      const position = prev.entityPositions.get(data.entityId);
+      if (!position) {
+        console.error("No entity found at position for stats update");
+        return prev;
+      }
+
+      const players = new Map(prev.players);
+      const monsters = new Map(prev.monsters);
+      const entityPositions = new Map(prev.entityPositions);
+      const positionEntities = new Map(prev.positionEntities);
+
+      if (data.isPlayer) {
+        const player = players.get(data.entityId);
+        if (player) {
+          if (isDead) {
+            console.log(`Player ${data.entityId} has been defeated.`);
+            players.delete(data.entityId);
+            positionEntities.delete(positionKey(position));
+            entityPositions.delete(data.entityId);
+          } else {
+            players.set(data.entityId, { ...player, stats: data.newStats });
+          }
+        }
+      } else {
+        const monster = monsters.get(data.entityId);
+        if (monster) {
+          if (isDead) {
+            console.log(`Monster ${data.entityId} has been defeated.`);
+            monsters.delete(data.entityId);
+            positionEntities.delete(positionKey(position));
+            entityPositions.delete(data.entityId);
+          } else {
+            monsters.set(data.entityId, { ...monster, stats: data.newStats });
+          }
+        }
+      }
+
+      return { ...prev, players, monsters, entityPositions, positionEntities } as GameState;
+    });
+
+    // Force board re-render OUTSIDE the setCurrentGameState callback
+    if (isDead) {
+      setTimeout(() => {
+        setBoardKey((k) => k + 1);
+      }, 0);
+    }
+  }, []);
 
   useEffect(() => {
     socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
@@ -74,39 +139,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       }
 
       setCurrentGameState(updatedGameState);
+      // Also increment board key on full game state updates
+      setBoardKey((k) => k + 1);
     });
 
-    socket.on(
-      "stats-updated",
-      (data: { entityId: string; newStats: Unit; isPlayer: boolean }) => {
-        console.log("stats updated received in game page", data);
-        setCurrentGameState((prev) => {
-          if (!prev) return prev;
-          const position = prev.entityPositions.get(data.entityId);
-          if (!position) {
-            console.error("No entity found at position for stats update");
-            return prev;
-          }
-
-          const players = new Map(prev.players);
-          const monsters = new Map(prev.monsters);
-
-          if (data.isPlayer) {
-            const player = players.get(data.entityId);
-            if (player) {
-              players.set(data.entityId, { ...player, stats: data.newStats });
-            }
-          } else {
-            const monster = monsters.get(data.entityId);
-            if (monster) {
-              monsters.set(data.entityId, { ...monster, stats: data.newStats });
-            }
-          }
-
-          return { ...prev, players, monsters } as GameState;
-        });
-      }
-    );
+    socket.on("stats-updated", handleStatsUpdate);
 
     socket.on(
       "tile-placed",
@@ -120,15 +157,52 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
           return { ...prev, board } as GameState;
         });
+        setBoardKey((k) => k + 1);
+      }
+    );
+
+    socket.on(
+      "door-placed",
+      (data: {
+        position: Position;
+        verticalOrHorizontal: "vertical" | "horizontal";
+      }) => {
+        console.log("door placed received in game page", data);
+        setCurrentGameState((prev) => {
+          if (!prev) return prev;
+          const newState: GameState = {
+            ...prev,
+            doors: {
+              horizontal: prev.doors.horizontal.map((row) =>
+                row ? [...row] : []
+              ),
+              vertical: prev.doors.vertical.map((row) => (row ? [...row] : [])),
+            },
+          };
+
+          if (data.verticalOrHorizontal === "horizontal") {
+            const row = newState.doors.horizontal[data.position.x] ?? [];
+            row[data.position.y] = true;
+            newState.doors.horizontal[data.position.x] = row;
+          } else if (data.verticalOrHorizontal === "vertical") {
+            const row = newState.doors.vertical[data.position.x] ?? [];
+            row[data.position.y] = true;
+            newState.doors.vertical[data.position.x] = row;
+          }
+
+          return newState;
+        });
+        setBoardKey((k) => k + 1);
       }
     );
 
     return () => {
       socket.off("tile-placed");
+      socket.off("door-placed");
       socket.off("stats-updated");
       socket.off("game-state-update");
     };
-  }, [socket, selectedPosition, selectedEntityId]);
+  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate]);
 
   const setSelectedUnit = (unit: Player | Monster | null) => {
     if (!unit) return;
@@ -145,6 +219,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   ) => {
     if (selectedSpell !== null) {
       console.log("Casting spell:", selectedSpell, "at position:", position);
+      setTargetMode(false);
       socket.emit(
         "cast-spell",
         {
@@ -161,6 +236,45 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           }
         }
       );
+      return;
+    }
+
+    if(targetMode) {
+      console.log("In target mode, clicking on position:", position);
+
+      const target = getUnitAtSelectedPosition(
+        position,
+        currentGameState
+      );
+      if(!target) {
+        console.log("No unit at selected position to target.");
+        setTargetMode(false);
+        return;
+      }
+      const player = currentGameState.players.get(socket.id);
+      if(!player) {
+        console.error("Current player not found in game state.");
+        setTargetMode(false);
+        return;
+      }
+
+      socket.emit(
+        "attack",
+        {
+          gameId,
+          attackerId: player.id,
+          targetId: target.id,
+          weaponId: selectedWeapon,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (response.success) {
+            console.log("Attack executed successfully");
+          } else {
+            console.error("Failed to execute attack:", response.error);
+          }
+        }
+      );
+      setTargetMode(false);
       return;
     }
 
@@ -198,29 +312,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     });
   };
 
-  //           <div className="game-info">
-  //             <h3>Informations</h3>
-  //             {currentGameState.currentTurn === socket.id ? (
-  //               <p>YOUR TURN !!!!!</p>
-  //             ) : (
-  //               <p>
-  //                 Tour actuel:{" "}
-  //                 {currentGameState.currentTurn &&
-  //                   currentGameState.players &&
-  //                   currentGameState.players.get(currentGameState.currentTurn)
-  //                     ?.stats?.name}
-  //               </p>
-  //             )}
-  //             {currentGameState.players && (
-  //               <p>Joueurs: {currentGameState.players.size}</p>
-  //             )}
-  //           </div>
-  //         </div>
-  //       </div>
-  //     )}
-  //   </div>
-  // );
-
   return (
     <>
       {spellPageVisible && (
@@ -232,6 +323,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           }
           onSpellClick={(selectedSpell: string) => {
             setSelectedSpell(selectedSpell);
+            setTargetMode(true);
           }}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
@@ -271,8 +363,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           />
         </Grid>
 
-        <Grid className={"Board" + (selectedSpell ? " target" : "")}>
+        <Grid className={"Board" + (targetMode ? " target" : "")}>
           <Board
+            key={`board-${boardKey}`}
             gameState={currentGameState}
             socket={socket}
             onTileClick={handleTileClick}
@@ -291,6 +384,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               selectedPosition!,
               currentGameState
             )}
+            setTargetMode={setTargetMode}
+            setSelectedWeapon={setSelectedWeapon}
+            selectedWeapon={selectedWeapon}
           />
         </Grid>
         <Grid className="Footer">
@@ -306,7 +402,7 @@ const getUnitAtSelectedPosition = (
   game: GameState
 ): Monster | Player | null => {
   if (!pos) return null;
-  const id = game.positionEntities.get(pos.x + "," + pos.y);
+  const id = game.positionEntities.get(positionKey(pos));
   if (!id) return null;
   const unit = game.players.get(id) || game.monsters.get(id);
   if (!unit) return null;
