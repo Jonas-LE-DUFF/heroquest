@@ -1,5 +1,7 @@
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
+import { StatType } from "../../enums/StatType";
+import { EffectService } from "../Effects/EffectService";
 import { Position } from "../Position/Position";
 import { Stats } from "./Stats";
 import { Unit } from "./Unit";
@@ -15,11 +17,30 @@ class Monster extends Unit<MonsterCategory> {
     }
 
     getDefenseDiceCount(): number {
-        return this.stats.nbDefenseDice;
+        const baseDefense = this.stats.nbDefenseDice;
+        
+        const modifier = EffectService.getStatModifier(this, StatType.DEFENSE);
+        const multiplier = EffectService.getStatMultiplier(this, StatType.DEFENSE);
+        
+        return Math.floor((baseDefense + modifier) * multiplier);
     }
 
     getAttackDiceCount(): number {
-        return this.nbAttackDice;
+        const baseAttack = this.nbAttackDice;
+        
+        const modifier = EffectService.getStatModifier(this, StatType.ATTACK);
+        const multiplier = EffectService.getStatMultiplier(this, StatType.ATTACK);
+        
+        return Math.floor((baseAttack + modifier) * multiplier);
+    }
+
+    getMovementPoints(): number {
+        const baseMovement = this.stats.movements;
+        
+        const modifier = EffectService.getStatModifier(this, StatType.MOVEMENT);
+        const multiplier = EffectService.getStatMultiplier(this, StatType.MOVEMENT);
+        
+        return Math.floor((baseMovement + modifier) * multiplier);
     }
 }
 

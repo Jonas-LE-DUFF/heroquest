@@ -10,3 +10,5 @@ class Weapon {
     }
 
 }
+
+export { Weapon };

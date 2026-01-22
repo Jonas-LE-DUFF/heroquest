@@ -1,9 +1,9 @@
 interface Stats {
     movements: number;
-    healthPoints: number;
-    maxHealthPoints: number;
+    health: number;
+    maxHealth: number;
     nbDefenseDice: number;
-    spiritPoints: number;
+    spirit: number;
 }
 
 export { Stats };
