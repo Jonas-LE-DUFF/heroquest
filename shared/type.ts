@@ -1,49 +1,3 @@
-// Types de base
-export interface Position {
-  x: number;
-  y: number;
-}
-
-export enum diceFace {
-  WhiteShield = 1,
-  BlackShield,
-  Hit,
-}
-
-export enum monsterClass {
-  Goblin = 100,
-  Skeleton,
-  Zombie,
-  Orc,
-  Abomination,
-  Mummy,
-  TerrorWarrior,
-  Gargoyle,
-}
-
-export enum heroClass {
-  Barbarian = 300,
-  Dwarf,
-  Elf,
-  Cleric,
-}
-
-export enum spellElement {
-  Fire = 400,
-  Water,
-  Earth,
-  Air,
-}
-
-export enum tileType {
-  empty = 200,
-  wall,
-  treasure,
-  trap,
-  start,
-  furniture,
-}
-
 export enum Direction {
   UP = "up",
   DOWN = "down",
@@ -59,21 +13,6 @@ export interface Status {
   relatedSpell: string; // the spell that caused this status effect
 }
 
-export interface Unit {
-  hp?: number | undefined;
-  maxHp?: number | undefined;
-  spiritPoints?: number | undefined;
-  nbAttackDice?: number | undefined;
-  nbDefenseDice?: number | undefined;
-  name: string;
-  movements?: number | undefined;
-  spells?: spellElement[] | undefined;
-  usedSpells?: string[] | undefined;
-  gold?: number | undefined;
-  equipments?: string[] | undefined;
-  statusEffects: (Status | null)[] | undefined; // the effects obtained by spells or potions
-}
-
 export interface Player {
   id: string;
   class?: heroClass | undefined;
@@ -82,72 +21,6 @@ export interface Player {
   ready: boolean;
 }
 
-export interface Monster {
-  id: string;
-  class: monsterClass;
-  stats: Unit;
-}
-
-export interface WallGrid {
-  horizontal: boolean[][]; // walls between the tiles horizontally
-  vertical: boolean[][]; // walls between the tiles vertically
-}
-
-export interface DoorGrid {
-  horizontal: boolean[][]; // doors between the tiles horizontally
-  vertical: boolean[][]; // doors between the tiles vertically
-}
-
-// Événements Socket.io
-export interface ServerToClientEvents {
-  // connection responses
-  //TODO : remove join error and use callbacks instead
-  "join-success": (data: { playerId: string; game: SendableGameState }) => void;
-  "join-error": (message: string) => void;
-
-  "player-reconnected": (data: { playerId: string }) => void;
-
-  // game-state updates
-  "game-state-update": (data: { gameState: SendableGameState }) => void; // very slow and expensive, use only when necessary
-  "dice-update": (data: {
-    listResults: diceFace[];
-    role: "hero" | "game-master";
-  }) => void;
-  "red-dice-update": (data: {
-    listResults: number[];
-    role: "hero" | "game-master";
-  }) => void;
-
-  //lobby actions
-  "game-start": (data: { gameState: SendableGameState }) => void;
-
-  "special-authorization": (data: {
-    playerId: string;
-    amountOfDices: number;
-    typeOfDices: "red" | "fight";
-  }) => void;
-
-  // specific in-game actions
-  "unit-moved": (data: { playerId: string; newPosition: Position }) => void;
-  "monster-spawned": (data: {
-    monsterType: string;
-    position: Position;
-  }) => void;
-  "door-placed": (data: {
-    position: Position;
-    verticalOrHorizontal: "vertical" | "horizontal";
-  }) => void;
-  "tile-placed": (data: { position: Position; tileType: tileType }) => void;
-
-  "stats-updated": (data: {
-    entityId: string;
-    newStats: Unit;
-    isPlayer: boolean;
-  }) => void;
-
-  // errors
-  error: (message: string) => void;
-}
 //////////////////////////////////////////////////////////////////////////////////
 export interface ClientToServerEvents {
   //login actions
