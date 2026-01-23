@@ -43,6 +43,9 @@ import {
 import { castSpell } from "./shared/spell/spellEffects";
 import { getNextPlayerTurn } from "./turnOrder/turnOrder";
 import { attack } from "./shared/attack/attack";
+import { ServerHeroQuest } from "./POO/classes/Server/ServerHeroQuest";
+
+const server : ServerHeroQuest = new ServerHeroQuest();
 
 const app = express();
 const httpServer = createServer(app);
