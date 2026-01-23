@@ -1,12 +1,12 @@
-import { Game } from "./Game";
+import { Game } from "../POO/classes/Server/Game";
 
 import express from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import { SocketData } from "../../interfaces/Socket/SocketData";
+import { SocketData } from "../POO/interfaces/Socket/SocketData";
 import path from "path/win32";
-import { ServerToClientEvents } from "../../interfaces/Events/ServerToClientEvents";
-import { ClientToServerEvents } from "../../interfaces/Events/ClientToServerEvents";
+import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
+import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 
 class ServerHeroQuest {
     app = express();

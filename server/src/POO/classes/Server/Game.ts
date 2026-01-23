@@ -6,6 +6,8 @@ class Game {
     id: string;
     name: string;
     players: Map<string, Player>; // playerId -> Player
+    playOrder: string[] = []; // array of playerIds
+    currentTurnIndex: number = 0;
     gameState: GameState;
 
     constructor(id: string, name: string) {
@@ -28,12 +30,16 @@ class Game {
                     throw new Error("A game master already exists in the game.");
                 }
             }
+            this.playOrder.unshift(player.id); // game master goes first
+        } else {
+            this.playOrder.push(player.id);
         }
         this.players.set(player.id, player);
     }
 
     removePlayer(playerId: string): void {
         this.players.delete(playerId);
+        this.playOrder = this.playOrder.filter(id => id !== playerId);
     }
 
     launchGame(): void {
@@ -51,6 +57,22 @@ class Game {
         }
 
         this.gameState.status = "playing";
+    }
+
+    getCurrentPlayerTurn(): Player {
+        const currentPlayerId = this.playOrder[this.currentTurnIndex];
+        if (!currentPlayerId) {
+            throw new Error("No current player turn found.");
+        }
+        const player = this.players.get(currentPlayerId);
+        if (!player) {
+            throw new Error("Current player not found.");
+        }
+        return player;
+    }
+
+    endTurn(): void {
+        this.currentTurnIndex = (this.currentTurnIndex + 1) % this.playOrder.length;
     }
 
     

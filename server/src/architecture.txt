@@ -1,0 +1,30 @@
+server/src/
+├── index.ts                      # Entry point - starts server
+├── server/
+│   └── ServerHeroQuest.ts        # Express + Socket.io setup
+│
+├── middlewares/                  # Socket.io middlewares
+│   ├── authMiddleware.ts         # Verify player identity on connection
+│   └── loggerMiddleware.ts       # Log all events
+│
+├── guards/                       # Permission checks (reusable)
+│   ├── requireGameMaster.ts      # Check if player is GM
+│   ├── requirePlayerTurn.ts      # Check if it's player's turn
+│   └── requireGameExists.ts      # Check if game exists
+│
+├── handlers/                     # Event handlers (≈ controllers)
+│   ├── connectionHandler.ts      # disconnect event
+│   ├── lobbyHandlers.ts          # join-game, leave-lobby, choose-character
+│   ├── gameHandlers.ts           # start-game, end-turn
+│   ├── movementHandlers.ts       # move-unit-one-step
+│   ├── combatHandlers.ts         # attack, cast-spell
+│   ├── diceHandlers.ts           # roll-dice (already exists!)
+│   └── masterHandlers.ts         # place-element, update-stats-unit
+│
+├── services/                     # Business logic
+│   ├── GameService.ts            # Create/get/remove games
+│   ├── PlayerService.ts          # Add/remove players, turn order
+│   └── MovementService.ts        # Movement validation logic
+│
+└── socket/
+    └── SocketRouter.ts           # Wires middlewares + handlers to io

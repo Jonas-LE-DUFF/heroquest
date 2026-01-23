@@ -6,7 +6,6 @@ import { Unit } from "./Units/Unit";
 class GameState {
     Units: Unit<HeroCategory | MonsterCategory>[];
     Board: Board
-    currentTurnIndex?: number;
     status: "lobby" | "playing" | "finished";
 
     constructor() {
