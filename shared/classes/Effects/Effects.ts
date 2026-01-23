@@ -1,7 +1,7 @@
 import { AbilityType } from "../../enums/AbilityType";
-import { EffectDuration } from "../../enums/EffectDuration";
-import { EffectType } from "../../enums/EffectType";
-import { StatType } from "../../enums/StatType";
+import { EffectDuration } from "../../enums/Effects/EffectDuration";
+import { EffectType } from "../../enums/Effects/EffectType";
+import { StatType } from "../../enums/Effects/StatType";
 
 class Effect {
     name: string;

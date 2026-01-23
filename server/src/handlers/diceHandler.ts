@@ -1,10 +1,14 @@
 import { Server, Socket } from "socket.io";
 import { grantSpecialRollAuthorization, rollFightDice, rollRedDice } from "../controllers/dicesControllers";
-import { ClientToServerEvents, GameState, heroClass, ServerToClientEvents, SocketData } from "../shared/type";
+import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
+import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
+import { SocketData } from "../POO/interfaces/Socket/SocketData";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { Game } from "../POO/classes/Server/Game";
 
 export function handleSpecialRollAuthorization(
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>
+  games: Map<string, Game>
 ) {
   socket.on(
     "authorize-special-throw-dices",
@@ -12,7 +16,7 @@ export function handleSpecialRollAuthorization(
       gameId: string;
       numberOfDices: number;
       typeOfDices: "fight" | "red";
-      playerClass: heroClass;
+      playerClass: HeroCategory;
     }) => {
       const gameState = games.get(data.gameId);
       if (!gameState) {
@@ -37,7 +41,7 @@ export function handleSpecialRollAuthorization(
 export function handleRollRedDice(
   io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>
+  games: Map<string, Game>
 ) {
   socket.on(
     "roll-red-dice",
@@ -59,7 +63,7 @@ export function handleRollRedDice(
 export function handleRollFightDice(
   io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>
+  games: Map<string, Game>
 ) {
   socket.on(
     "roll-dice",
