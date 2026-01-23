@@ -2,9 +2,9 @@ import { Unit } from "./Units/Unit";
 
 class Tile {
     Unit : Unit<any> | null;
-    type : "empty" | "wall" | "trap" | "treasure" | "spawn-point";
+    type : TileType
     
-    constructor(type: "empty" | "wall" | "trap" | "treasure" | "spawn-point") {
+    constructor(type: TileType) {
         this.type = type;
         this.Unit = null;
     }

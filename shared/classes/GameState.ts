@@ -8,11 +8,13 @@ class GameState {
     Board: Board
     playOrder: Unit<HeroCategory>[];
     currentTurnIndex?: number;
+    status: "lobby" | "playing" | "finished";
 
     constructor() {
         this.Units = [];
         this.Board = new Board();
         this.playOrder = [];
+        this.status = "lobby";
     }
 
     addMonster(unit: Unit<MonsterCategory>): void {

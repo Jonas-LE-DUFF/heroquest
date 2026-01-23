@@ -1,6 +1,6 @@
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
-import { StatType } from "../../enums/StatType";
+import { StatType } from "../../enums/Effects/StatType";
 import { EffectService } from "../Effects/EffectService";
 import { Position } from "../Position/Position";
 import { Stats } from "./Stats";

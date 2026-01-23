@@ -1,6 +1,6 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
-import { StatType } from "../../enums/StatType";
+import { StatType } from "../../enums/Effects/StatType";
 import { EffectService } from "../Effects/EffectService";
 import { Equipment } from "../Equipment/Equipment";
 import { Position } from "../Position/Position";

@@ -2,6 +2,8 @@ import { Armor } from "./Armor.ts";
 import { Potion } from "./Potions/Potions.ts";
 import { Weapon } from "./Weapon.ts";
 
+import equipmentJson from "../../game_cards/equipments.json";
+
 class Equipment {
     gold: number;
     weapons: Weapon[] = [];
@@ -55,6 +57,43 @@ class Equipment {
 
     addPotion(potion: Potion) {
         this.potions.push(potion);
+    }
+
+    addEquipmentById(equipmentId: string) {
+        const equipmentData = equipmentJson.find(e => e.id === equipmentId);
+        if (!equipmentData) {
+            throw new Error(`Equipment with id ${equipmentId} not found.`);
+        }
+
+        switch (equipmentData.type) {
+            case "weapon":
+                const weapon = new Weapon(
+                    equipmentData.id,
+                    equipmentData.name,
+                    equipmentData.cost,
+                    equipmentData.image_path,
+                    equipmentData.modifiers.damage || 0,
+                    (equipmentData.range || "melee") as "ranged" | "melee" | "long-melee",
+                );
+                this.addWeapon(weapon);
+                break;
+            case "armor":
+                const armor = new Armor(
+                    equipmentData.id,
+                    equipmentData.name,
+                    equipmentData.cost,
+                    equipmentData.image_path,
+                    equipmentData.modifiers.defense || 0,
+                    equipmentData.modifiers.movementDebuff || 0,
+                    equipmentData.type as "helmet" | "chestPiece" | "shield"
+                );
+                this.addArmor(armor);
+                break;
+            case "potion":
+                throw new Error("Potion creation not implemented yet.");
+            default:
+                throw new Error(`Unknown equipment type: ${equipmentData.type}`);
+        }
     }
 }
 

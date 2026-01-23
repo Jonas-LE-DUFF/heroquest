@@ -1,12 +1,13 @@
-class Weapon {
-    damage: number;
-    range: number;
-    type: "melee" | "ranged";
+import { Item } from "./Item";
 
-    constructor(damage: number, range: number, type: "melee" | "ranged") {
+class Weapon extends Item{
+    damage: number;
+    range: "melee" | "ranged" | "long-melee";
+
+    constructor(id: string, name: string, cost: number, imagePath: string, damage: number, range: "melee" | "ranged" | "long-melee") {
+        super(id, name, cost, imagePath);
         this.damage = damage;
         this.range = range;
-        this.type = type;
     }
 
 }

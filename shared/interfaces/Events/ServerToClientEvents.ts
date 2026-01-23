@@ -1,8 +1,8 @@
-import { GameState } from "../classes/GameState";
-import { Position } from "../classes/Position/Position";
-import { Tile } from "../classes/Tile";
-import { Unit } from "../classes/Units/Unit";
-import { FightDiceFaces } from "../enums/Dices/FightDiceFaces";
+import { GameState } from "../../classes/GameState";
+import { Position } from "../../classes/Position/Position";
+import { Tile } from "../../classes/Tile";
+import { Unit } from "../../classes/Units/Unit";
+import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
 
 // Événements Socket.io
 export interface ServerToClientEvents {
