@@ -1,5 +1,5 @@
-import { GameState } from "../../classes/GameState";
 import { Position } from "../../classes/Position/Position";
+import { Game } from "../../classes/Server/Game";
 import { Unit } from "../../classes/Units/Unit";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
 import { TileType } from "../../enums/TileType";
@@ -7,14 +7,12 @@ import { TileType } from "../../enums/TileType";
 // Événements Socket.io
 interface ServerToClientEvents {
   // connection responses
-  //TODO : remove join error and use callbacks instead
-  "join-success": (data: { playerId: string; game: GameState }) => void;
-  "join-error": (message: string) => void;
+  "join-success": (data: { playerId: string; game: Game }) => void;
 
   "player-reconnected": (data: { playerId: string }) => void;
 
   // game-state updates
-  "game-state-update": (data: { gameState: GameState }) => void; // very slow and expensive, use only when necessary
+  "game-state-update": (data: { game: Game }) => void; // very slow and expensive, use only when necessary
   
   "dice-update": (data: {
     listResults: FightDiceFaces[];
@@ -27,7 +25,7 @@ interface ServerToClientEvents {
   }) => void;
 
   //lobby actions
-  "game-start": (data: { gameState: GameState }) => void;
+  "game-start": (data: { game: Game }) => void;
 
   "special-authorization": (data: {
     playerId: string;
@@ -57,4 +55,4 @@ interface ServerToClientEvents {
   error: (message: string) => void;
 }
 
-export { ServerToClientEvents };
+export type { ServerToClientEvents };

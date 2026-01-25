@@ -1,7 +1,7 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
 import { StatType } from "../../enums/Effects/StatType";
-import { EffectService } from "../Effects/EffectService";
+import { EffectService } from "../../../services/EffectService";
 import { Equipment } from "../Equipment/Equipment";
 import { Position } from "../Position/Position";
 import { Stats } from "./Stats";
@@ -12,8 +12,8 @@ class Hero extends Unit<HeroCategory> {
     
     equipment: Equipment;
 
-    constructor(id: string, name: string, category: HeroCategory, position: Position, stats: Stats, equipment: Equipment) {
-        super(id, name, category, position, stats);
+    constructor(controlledById: string, name: string, category: HeroCategory, position: Position, stats: Stats, equipment: Equipment) {
+        super(controlledById, name, category, position, stats);
         this.equipment = equipment;
     }
     

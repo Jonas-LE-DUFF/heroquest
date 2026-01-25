@@ -1,0 +1,45 @@
+[
+    {
+        "id": 300,
+        "name": "Barbarian",
+        "nbAttackDice": 3,
+        "nbDefenseDice": 2,
+        "health": 8,
+        "spiritPoints": 2,
+        "equipments": ["barbarian_sword"],
+        "movements": 2 
+    },
+    {
+        "id": 301,
+        "name": "Dwarf",
+        "nbAttackDice": 2,
+        "nbDefenseDice": 2,
+        "health": 7,
+        "spiritPoints": 3,
+        "equipments": ["short_sword"],
+        "movements": 2 
+
+    },
+    {
+        "id": 302,
+        "name": "Elf",
+        "nbAttackDice": 2,
+        "nbDefenseDice": 2,
+        "health": 6,
+        "spiritPoints": 4,
+        "equipments": ["short_sword"],
+        "movements": 2 
+
+    },
+    {
+        "id": 303,
+        "name": "Cleric",
+        "nbAttackDice": 1,
+        "nbDefenseDice": 2,
+        "health": 4,
+        "spiritPoints": 6,
+        "equipments": ["dagger"],
+        "movements": 2 
+
+    }
+]

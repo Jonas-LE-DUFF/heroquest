@@ -1,83 +1,100 @@
 import { Server, Socket } from "socket.io";
-import { grantSpecialRollAuthorization, rollFightDice, rollRedDice } from "../controllers/dicesControllers";
+import {
+    grantSpecialRollAuthorization,
+    rollFightDice,
+    rollRedDice,
+} from "../services/DiceService";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { SocketData } from "../POO/interfaces/Socket/SocketData";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Game } from "../POO/classes/Server/Game";
+import { requireGameMaster } from "../guards/requireGameMaster";
+import { requireGameExists } from "../guards/requireGameExists";
 
 export function handleSpecialRollAuthorization(
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, Game>
+    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
+    games: Map<string, Game>,
 ) {
-  socket.on(
-    "authorize-special-throw-dices",
-    (data: {
-      gameId: string;
-      numberOfDices: number;
-      typeOfDices: "fight" | "red";
-      playerClass: HeroCategory;
-    }) => {
-      const gameState = games.get(data.gameId);
-      if (!gameState) {
-        console.error("Game not found for special roll authorization");
-        return;
-      }
-      if(gameState.players.get(socket.id)?.role !== "game-master") {
-        console.error("Only the game-master can authorize special rolls");
-        return;
-      }
-      grantSpecialRollAuthorization(
-        gameState,
-        socket,
-        data.numberOfDices,
-        data.typeOfDices,
-        data.playerClass
-      );
-    }
-  );
+    socket.on(
+        "authorize-special-throw-dices",
+        (data: {
+            gameId: string;
+            numberOfDices: number;
+            typeOfDices: "fight" | "red";
+            playerClass: HeroCategory;
+        }) => {
+            const gameState = games.get(data.gameId);
+
+            if (!requireGameExists(data.gameId, games)) return;
+
+            if (!requireGameMaster(socket, gameState!)) return;
+
+            const callback = grantSpecialRollAuthorization(
+                gameState!,
+                socket,
+                data.numberOfDices,
+                data.typeOfDices,
+                data.playerClass,
+            );
+
+            return callback;
+        },
+    );
 }
 
 export function handleRollRedDice(
-  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, Game>
+    io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
+    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
+    games: Map<string, Game>,
 ) {
-  socket.on(
-    "roll-red-dice",
-    async (
-      data: { gameId: string; currentNumberOfDices: number },
-      callback
-    ) => {
-      const result = await rollRedDice(
-        io,
-        socket.id,
-        games.get(data.gameId)!,
-        data.currentNumberOfDices
-      );
-      return callback(result);
-    }
-  );
+    socket.on(
+        "roll-red-dice",
+        async (
+            data: { gameId: string; currentNumberOfDices: number },
+            callback,
+        ) => {
+            const gameState = games.get(data.gameId);
+
+            if (!requireGameExists(data.gameId, games)) return;
+
+            const result = await rollRedDice(
+                io,
+                socket.id,
+                gameState!,
+                data.currentNumberOfDices,
+            );
+            return callback(result);
+        },
+    );
 }
 
 export function handleRollFightDice(
-  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, Game>
+    io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
+    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
+    games: Map<string, Game>,
 ) {
-  socket.on(
-    "roll-dice",
-    async (
-      data: {
-        gameId: string;
-        playerId: string;
-        numberOfDice: number;
-      },
-      callback: (response: { success: boolean; error?: string }) => void
-    ) => {
-      const gameState = games.get(data.gameId);
-      const result = await rollFightDice(io, data.playerId, gameState!, data.numberOfDice);
-      return callback(result);
-    }
-  );
+    socket.on(
+        "roll-dice",
+        async (
+            data: {
+                gameId: string;
+                playerId: string;
+                numberOfDice: number;
+            },
+            callback: (response: { success: boolean; error?: string }) => void,
+        ) => {
+            const gameState = games.get(data.gameId);
+
+            if (!requireGameExists(data.gameId, games)) return;
+
+            const result = await rollFightDice(
+                io,
+                data.playerId,
+                gameState!,
+                data.numberOfDice,
+            );
+            return callback(result);
+        },
+    );
 }

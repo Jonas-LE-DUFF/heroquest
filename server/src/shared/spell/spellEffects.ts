@@ -15,7 +15,7 @@ import {
   grantSpecialRollAuthorization,
   rollFightDice,
   rollRedDice,
-} from "../../controllers/dicesControllers";
+} from "../../services/DiceService";
 import { positionKey, fight, isPlayer } from "../util";
 import { checkUnitDefeat } from "../death/death";
 import { Server, Socket } from "socket.io";

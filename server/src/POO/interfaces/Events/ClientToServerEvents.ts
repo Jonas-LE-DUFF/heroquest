@@ -111,4 +111,4 @@ interface ClientToServerEvents {
     "end-turn": (data: { gameId: string }) => void;
 }
 
-export { ClientToServerEvents };
+export type { ClientToServerEvents };

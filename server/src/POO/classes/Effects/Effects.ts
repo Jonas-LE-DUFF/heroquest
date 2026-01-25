@@ -1,7 +1,7 @@
 import { AbilityType } from "../../enums/AbilityType";
-import { EffectDuration } from "../../enums/EffectDuration";
-import { EffectType } from "../../enums/EffectType";
-import { StatType } from "../../enums/StatType";
+import { EffectDuration } from "../../enums/Effects/EffectDuration";
+import { EffectType } from "../../enums/Effects/EffectType";
+import { StatType } from "../../enums/Effects/StatType";
 
 class Effect {
     name: string;
@@ -9,11 +9,11 @@ class Effect {
     duration: EffectDuration;
 
     // For STAT_MODIFIER and STAT_MULTIPLIER
-    stat?: StatType;
-    value?: number;
+    stat?: StatType | undefined;
+    value?: number | undefined;
 
     // For ABILITY_GRANT
-    ability?: AbilityType;
+    ability?: AbilityType | undefined;
 
     constructor(
         name: string,
@@ -23,7 +23,7 @@ class Effect {
             stat?: StatType;
             value?: number;
             ability?: AbilityType;
-        }
+        },
     ) {
         this.name = name;
         this.effectType = effectType;
@@ -46,8 +46,8 @@ class EffectFactory {
             EffectDuration.UNTIL_CONDITION,
             {
                 stat: StatType.ATTACK,
-                value: 2
-            }
+                value: 2,
+            },
         );
     }
 
@@ -57,8 +57,8 @@ class EffectFactory {
             EffectType.ABILITY_GRANT,
             EffectDuration.ONE_TURN,
             {
-                ability: AbilityType.PHASE_THROUGH_WALLS
-            }
+                ability: AbilityType.PHASE_THROUGH_WALLS,
+            },
         );
     }
 
@@ -68,8 +68,8 @@ class EffectFactory {
             EffectType.ABILITY_GRANT,
             EffectDuration.ONE_TURN,
             {
-                ability: AbilityType.PHASE_THROUGH_MONSTERS
-            }
+                ability: AbilityType.PHASE_THROUGH_MONSTERS,
+            },
         );
     }
 
@@ -80,8 +80,8 @@ class EffectFactory {
             EffectDuration.ONE_TURN,
             {
                 stat: StatType.MOVEMENT,
-                value: 2
-            }
+                value: 2,
+            },
         );
     }
 
@@ -89,17 +89,12 @@ class EffectFactory {
         name: string,
         stat: StatType,
         value: number,
-        duration: EffectDuration = EffectDuration.ONE_TURN
+        duration: EffectDuration = EffectDuration.ONE_TURN,
     ): Effect {
-        return new Effect(
-            name,
-            EffectType.STAT_MODIFIER,
-            duration,
-            {
-                stat,
-                value
-            }
-        );
+        return new Effect(name, EffectType.STAT_MODIFIER, duration, {
+            stat,
+            value,
+        });
     }
 }
 

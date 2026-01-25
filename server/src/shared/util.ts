@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { rollFightDice } from "../controllers/dicesControllers";
+import { rollFightDice } from "../services/DiceService";
 import {
   diceFace,
   GameState,

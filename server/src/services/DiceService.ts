@@ -1,13 +1,10 @@
 import { Server, Socket } from "socket.io";
-import {
-  ClientToServerEvents,
-  diceFace,
-  GameState,
-  heroClass,
-  ServerToClientEvents,
-  SocketData,
-} from "../shared/type";
-import { getAmountOfDices, getPlayerByClass } from "../shared/util";
+import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
+import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
+import { SocketData } from "../POO/interfaces/Socket/SocketData";
+import { Game } from "../POO/classes/Server/Game";
+import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 
 interface SpecialAuthorizedPlayer {
   playerId: string;
@@ -23,21 +20,13 @@ const sleep = (ms: number) => {
 export async function rollFightDice(
   io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
   playerId: string,
-  gameState: GameState,
+  game: Game,
   wishedNumberOfDices: number
 ) {
   console.log("roll-dice");
   let numberOfDices: number | undefined;
 
-  // checking if data needed exists
-  if (!gameState) {
-    console.error("game couldn't be found");
-    return {
-      success: false,
-      error: "la partie n'a pas pu être trouvée",
-    };
-  }
-  const playerRole = gameState.players.get(playerId)?.role;
+  const playerRole = game.players.get(playerId)?.role;
   if (!playerRole) {
     console.error("player role couldn't be found");
     return {
@@ -58,21 +47,8 @@ export async function rollFightDice(
     console.log("using special authorized dices");
     numberOfDices = specialAuthorizedPlayer.numberOfDices;
     specialAuthorizedPlayer = undefined;
-  } else if (gameState.currentTurn !== playerId) {
-    // checking if it's the player's turn
-    console.error("not your turn to roll red dices");
-    return {
-      success: false,
-      error: "Attends ton tour trou du q !",
-    };
   } else {
-    // taking the amount of dices from the player's stats
-
-    numberOfDices = getAmountOfDices(
-      gameState,
-      playerId,
-      "att" //TODO : need to know if we attack or defend !!
-    );
+    numberOfDices = game.getCurrentHeroTurn().getAttackDiceCount();
   }
 
   if (numberOfDices === undefined) {
@@ -83,22 +59,22 @@ export async function rollFightDice(
     };
   }
 
-  let results: diceFace[] = [];
+  let results: FightDiceFaces[] = [];
   for (let j = 0; j < 15; j++) {
     results = [];
     for (let i = 0; i < numberOfDices; i++) {
       const randomNumber = Math.floor(Math.random() * 6 + 1);
-      let face: diceFace = diceFace.Hit;
+      let face: FightDiceFaces = FightDiceFaces.Hit;
       if (randomNumber === 1) {
-        face = diceFace.BlackShield;
+        face = FightDiceFaces.BlackShield;
       } else if (randomNumber < 3) {
-        face = diceFace.WhiteShield;
+        face = FightDiceFaces.WhiteShield;
       } else {
-        face = diceFace.Hit;
+        face = FightDiceFaces.Hit;
       }
       results.push(face);
     }
-    io.to(gameState.id).emit("dice-update", {
+    io.to(game.id).emit("dice-update", {
       listResults: results,
       role: playerRole,
     });
@@ -111,21 +87,21 @@ export async function rollFightDice(
 export async function rollRedDice(
   io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
   playerId: string,
-  gameState: GameState,
+  game: Game,
   wishedNumberOfDices: number
 ) {
   console.log("roll-red-dice");
   let numberOfDices: number = 2; // default number of dices
 
   // checking if data needed exists
-  if (!gameState) {
+  if (!game) {
     console.error("game couldn't be found");
     return {
       success: false,
       error: "la partie n'a pas pu être trouvée",
     };
   }
-  const player = gameState.players.get(playerId);
+  const player = game.players.get(playerId);
   if (!player) {
     console.error("no player found for rolling red dices");
     return {
@@ -156,16 +132,18 @@ export async function rollRedDice(
   ) {
     numberOfDices = specialAuthorizedPlayer.numberOfDices;
     specialAuthorizedPlayer = undefined;
-  } else if (gameState.currentTurn !== playerId) {
-    // checking if it's the player's turn
-    console.error("not your turn to roll red dices");
-    return {
-      success: false,
-      error: "Attends ton tour trou du q !",
-    };
-  } else if( player.stats?.movements !== undefined && player.stats.movements !== 0) {
-    numberOfDices = player.stats.movements;
+  } else {
+    const hero = game.gameState.getHeroById(playerId);
+    if (!hero) {
+      console.error("hero couldn't be found for red dice roll");
+      return {
+        success: false,
+        error: "le héros du joueur lançant les dés rouges n'a pas pu être trouvé",
+      };
+    }
+    numberOfDices = hero.stats.movements;
   }
+
 
   let results: number[] = [];
   for (let j = 0; j < 15; j++) {
@@ -174,7 +152,7 @@ export async function rollRedDice(
       const randomNumber = Math.floor(Math.random() * 6 + 1);
       results.push(randomNumber);
     }
-    io.to(gameState.id).emit("red-dice-update", {
+    io.to(game.id).emit("red-dice-update", {
       listResults: results,
       role: playerRole,
     });
@@ -184,30 +162,26 @@ export async function rollRedDice(
 }
 
 export async function grantSpecialRollAuthorization(
-  game: GameState | undefined,
+  game: Game,
   socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
   numberOfDices: number,
   typeOfDices: "fight" | "red",
-  playerId: heroClass | string // can be playerId or heroClass
+  playerId: HeroCategory | string // can be playerId or heroClass
 ) {
-  if (!game) {
-    console.error("game couldn't be found");
-    return;
-  }
-
   if (typeof playerId !== "string") {
-    const playerIds = getPlayerByClass(game, playerId);
-    if (!playerIds) {
-      console.error("player couldn't be found");
-      return;
-    }
-    playerId = playerIds;
+    playerId = game.gameState.getHeroByCategory(playerId).id;
   }
 
-  if (!playerId) {
+  const player = game.players.get(playerId);
+
+  if (!player) {
     console.error("player couldn't be found");
-    return;
+    return {
+      success: false,
+      error: "le joueur n'a pas pu être trouvé",
+    };
   }
+
   specialAuthorizedPlayer = {
     playerId,
     numberOfDices,
@@ -219,4 +193,6 @@ export async function grantSpecialRollAuthorization(
     amountOfDices: numberOfDices,
     typeOfDices: typeOfDices,
   });
+
+  return { success: true };
 }

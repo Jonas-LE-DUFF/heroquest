@@ -1,17 +1,16 @@
-import * as uuid from "uuid";
-
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { Position } from "../Position/Position";
 import { Hero } from "../Units/Hero";
 import { Stats } from "../Units/Stats";
 
-import heroStats from "../../game_cards/heroes.json";
+import heroStats from "../../../shared/game_cards/heroes.json";
 import { Equipment } from "../Equipment/Equipment";
+import { randomUUID } from "crypto";
 
 class HeroFactory {
-    createHero(heroCategory: HeroCategory, position: Position, name: string): Hero | null{
+    createHero(heroCategory: HeroCategory, position: Position, name: string): Hero | null {
 
-        const id:string = uuid.v4();
+        const id : string = randomUUID();
 
         const stats: Stats = getHeroBaseStats(heroCategory);
 

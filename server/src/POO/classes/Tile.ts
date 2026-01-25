@@ -1,12 +1,15 @@
+import { HeroCategory } from "../enums/Categories/HeroCategory";
+import { MonsterCategory } from "../enums/Categories/MonsterCategory";
+import { TileType } from "../enums/TileType";
 import { Unit } from "./Units/Unit";
 
 class Tile {
-    Unit : Unit<any> | null;
+    unit : Unit<HeroCategory | MonsterCategory> | null;
     type : TileType
     
     constructor(type: TileType) {
         this.type = type;
-        this.Unit = null;
+        this.unit = null;
     }
 }
 

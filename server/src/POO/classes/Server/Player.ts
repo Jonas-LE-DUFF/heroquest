@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { PlayerRole } from "../../enums/PlayerRole";
 
 class Player {
@@ -5,8 +6,8 @@ class Player {
     name: string;
     role: PlayerRole;
 
-    constructor(id: string, name: string, role: PlayerRole) {
-        this.id = id;
+    constructor(name: string, role: PlayerRole) {
+        this.id = randomUUID();
         this.name = name;
         this.role = role;
     }

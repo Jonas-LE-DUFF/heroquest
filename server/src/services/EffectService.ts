@@ -1,9 +1,9 @@
-import { AbilityType } from "../../enums/AbilityType";
-import { EffectType } from "../../enums/EffectType";
-import { StatType } from "../../enums/StatType";
-import { Unit } from "../Units/Unit";
-import { HeroCategory } from "../../enums/Categories/HeroCategory";
-import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
+import { AbilityType } from "../POO/enums/AbilityType";
+import { EffectType } from "../POO/enums/Effects/EffectType";
+import { StatType } from "../POO/enums/Effects/StatType";
+import { Unit } from "../POO/classes/Units/Unit";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 
 class EffectService {
     /**
@@ -16,9 +16,11 @@ class EffectService {
         const activeEffects = unit.effects;
 
         return activeEffects
-            .filter(e =>
-                (e.effectType === EffectType.STAT_MODIFIER || e.effectType === EffectType.CONDITIONAL_BUFF) &&
-                e.stat === stat
+            .filter(
+                (e) =>
+                    (e.effectType === EffectType.STAT_MODIFIER ||
+                        e.effectType === EffectType.CONDITIONAL_BUFF) &&
+                    e.stat === stat,
             )
             .reduce((sum, e) => sum + (e.value ?? 0), 0);
     }
@@ -34,7 +36,11 @@ class EffectService {
         const activeEffects = unit.effects;
 
         return activeEffects
-            .filter(e => e.effectType === EffectType.STAT_MULTIPLIER && e.stat === stat)
+            .filter(
+                (e) =>
+                    e.effectType === EffectType.STAT_MULTIPLIER &&
+                    e.stat === stat,
+            )
             .reduce((mult, e) => mult * (e.value ?? 1), 1);
     }
 
@@ -43,12 +49,14 @@ class EffectService {
      */
     static hasAbility(
         unit: Unit<HeroCategory | MonsterCategory>,
-        ability: AbilityType
+        ability: AbilityType,
     ): boolean {
         const activeEffects = unit.effects;
 
         return activeEffects.some(
-            e => e.effectType === EffectType.ABILITY_GRANT && e.ability === ability
+            (e) =>
+                e.effectType === EffectType.ABILITY_GRANT &&
+                e.ability === ability,
         );
     }
 
@@ -56,13 +64,17 @@ class EffectService {
      * Get all granted abilities for a unit
      */
     static getGrantedAbilities(
-        unit: Unit<HeroCategory | MonsterCategory>
+        unit: Unit<HeroCategory | MonsterCategory>,
     ): AbilityType[] {
         const activeEffects = unit.effects;
 
         return activeEffects
-            .filter(e => e.effectType === EffectType.ABILITY_GRANT && e.ability !== undefined)
-            .map(e => e.ability!);
+            .filter(
+                (e) =>
+                    e.effectType === EffectType.ABILITY_GRANT &&
+                    e.ability !== undefined,
+            )
+            .map((e) => e.ability!);
     }
 
     /**
@@ -78,7 +90,7 @@ class EffectService {
      * Check if unit can phase through monsters
      */
     static canPhaseThroughMonsters(
-        unit: Unit<HeroCategory | MonsterCategory>
+        unit: Unit<HeroCategory | MonsterCategory>,
     ): boolean {
         return this.hasAbility(unit, AbilityType.PHASE_THROUGH_MONSTERS);
     }

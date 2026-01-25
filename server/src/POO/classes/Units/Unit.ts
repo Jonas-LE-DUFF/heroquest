@@ -4,13 +4,15 @@ import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
 import { SpellElement } from "../../enums/SpellElement";
 import { AbilityType } from "../../enums/AbilityType";
 import { Effect } from "../Effects/Effects";
-import { EffectService } from "../Effects/EffectService";
+import { EffectService } from "../../../services/EffectService";
 import { Position } from "../Position/Position";
 import { Spell } from "../Spell/Spell";
 import { Stats } from "./Stats";
+import { randomUUID } from "crypto";
 
 abstract class Unit<T extends HeroCategory | MonsterCategory> {
     id: string;
+    controlledByPlayerId: string;
     name: string;
     category!: T;
     position: Position;
@@ -21,8 +23,9 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
 
     abstract DefenseDiceType: FightDiceFaces; // the dice value that is needed to block damages
 
-    constructor(id: string, name: string, category: T, position: Position, stats: Stats) {
-        this.id = id;
+    constructor(controlledByPlayerId: string, name: string, category: T, position: Position, stats: Stats) {
+        this.id = randomUUID();
+        this.controlledByPlayerId = controlledByPlayerId;
         this.name = name;
         this.category = category;
         this.position = position;
@@ -35,8 +38,8 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
 
     abstract getMovementPoints(): number;
 
-    getCategory(): T {
-        return this.category;
+    getCategory(): string {
+        return typeof this.category;
     }
 
     moveTo(newPosition: Position): void {

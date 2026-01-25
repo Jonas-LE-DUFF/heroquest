@@ -1,11 +1,9 @@
-import { Socket, Server } from "socket.io";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { loggerMiddleware } from "../middlewares/loggerMiddleware";
-import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
-import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
-import { SocketData } from "../POO/interfaces/Socket/SocketData";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
+import { registerGameHandlers } from "../handlers/gamehandlers";
+import { registerLobbyHandlers } from "../handlers/lobbyHandlers";
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
     const { io } = server;
@@ -25,5 +23,13 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
         registerCombatHandlers(socket, io, gameService);
         registerMasterHandlers(socket, io, gameService);
         registerConnectionHandler(socket, io, gameService);
+
+        socket.on("disconnect", () => {
+            const modifiedGames = gameService.removePlayerFromAllGames(socket.id);
+            modifiedGames.forEach(game => {
+                io.emit("game-state-update", { game: game });
+            });
+            console.log(`Disconnected player: ${socket.id} from games ${modifiedGames.map(g => g.name).join(", ")}`);
+        });
     });
 }
