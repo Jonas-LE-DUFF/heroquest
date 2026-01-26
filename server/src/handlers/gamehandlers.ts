@@ -3,7 +3,7 @@ import { requireGameMaster } from "../guards/requireGameMaster";
 import { GameState } from "../POO/classes/GameState";
 import { requirePlayerTurn } from "../guards/requirePlayerTurn";
 import { GameService } from "../services/GameService";
-import { requireGameExistsGameService } from "../guards/requireGameExists";
+import { requireGameExists } from "../guards/requireGameExists";
 
 export function registerGameHandlers(
     socket: Socket,
@@ -17,7 +17,7 @@ export function registerGameHandlers(
             callback: (success: boolean, error?: string) => void,
         ) => {
             const game = gameService.getGame(data.gameId);
-            if (!requireGameExistsGameService(data.gameId, gameService))
+            if (!requireGameExists(data.gameId, gameService))
                 return callback(false, "Partie non trouvée");
 
             // Use guard
@@ -45,7 +45,7 @@ export function registerGameHandlers(
             callback: (success: boolean, error?: string) => void,
         ) => {
             const game = gameService.getGame(data.gameId);
-            if (!requireGameExistsGameService(data.gameId, gameService))
+            if (!requireGameExists(data.gameId, gameService))
                 return callback(false, "Partie non trouvée");
 
             if (!requirePlayerTurn(socket, game!))

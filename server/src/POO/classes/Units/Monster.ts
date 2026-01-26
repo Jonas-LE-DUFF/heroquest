@@ -2,7 +2,6 @@ import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
 import { StatType } from "../../enums/Effects/StatType";
 import { EffectService } from "../../../services/EffectService";
-import { Position } from "../Position/Position";
 import { Stats } from "./Stats";
 import { Unit } from "./Unit";
 
@@ -11,8 +10,8 @@ class Monster extends Unit<MonsterCategory> {
 
     nbAttackDice: number;
 
-    constructor(controlledById: string, name: string, category: MonsterCategory, position: Position, stats: Stats, nbAttackDice: number) {
-        super(controlledById, name, category, position, stats);
+    constructor(controlledById: string, name: string, category: MonsterCategory, stats: Stats, nbAttackDice: number) {
+        super(controlledById, name, category, stats);
         this.nbAttackDice = nbAttackDice;
     }
 

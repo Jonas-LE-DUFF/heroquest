@@ -5,7 +5,6 @@ import { SpellElement } from "../../enums/SpellElement";
 import { AbilityType } from "../../enums/AbilityType";
 import { Effect } from "../Effects/Effects";
 import { EffectService } from "../../../services/EffectService";
-import { Position } from "../Position/Position";
 import { Spell } from "../Spell/Spell";
 import { Stats } from "./Stats";
 import { randomUUID } from "crypto";
@@ -15,20 +14,16 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
     controlledByPlayerId: string;
     name: string;
     category!: T;
-    position: Position;
     stats!: Stats;
     effects: Effect[] = [];
-    spells: Spell[] = [];
-    usedSpells: Spell[] = [];
 
     abstract DefenseDiceType: FightDiceFaces; // the dice value that is needed to block damages
 
-    constructor(controlledByPlayerId: string, name: string, category: T, position: Position, stats: Stats) {
+    constructor(controlledByPlayerId: string, name: string, category: T, stats: Stats) {
         this.id = randomUUID();
         this.controlledByPlayerId = controlledByPlayerId;
         this.name = name;
         this.category = category;
-        this.position = position;
         this.stats = stats;
     }
 
@@ -40,10 +35,6 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
 
     getCategory(): string {
         return typeof this.category;
-    }
-
-    moveTo(newPosition: Position): void {
-        this.position = newPosition;
     }
 
     // -- effects
@@ -76,22 +67,7 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
         return EffectService.canPhaseThroughMonsters(this);
     }
 
-    // -- spells
-    setSpells(spells: Spell[]): void {
-        this.spells = spells;
-    }
-
-    useSpell(spell: Spell): void {
-        this.usedSpells.push(spell);
-    }
-
-    unuseSpell(spell: Spell): void {
-        this.usedSpells = this.usedSpells.filter(s => s !== spell);
-    }
-
-    getSpellsByElement(element: SpellElement): Spell[] {
-        return this.spells.filter(spell => spell.element === element);
-    }
+    
 }
 
 export { Unit };

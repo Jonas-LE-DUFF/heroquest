@@ -1,23 +1,31 @@
-import { SpellElement } from "../../enums/SpellElement.ts";
+import { SpellElement } from "../../enums/SpellElement";
+import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
 
 class Spell {
     id: string;
     name: string;
-    type: "damage" | "healing" | "buff" | "debuff";
     element: SpellElement;
     effect: SpellEffect;
+    target_type: string[];
 
-    constructor(id: string, name: string, type: "damage" | "healing" | "buff" | "debuff", element: SpellElement, effect: SpellEffect) {
+    constructor(
+        id: string,
+        name: string,
+        type: "damage" | "healing" | "buff" | "debuff",
+        element: SpellElement,
+        effect: SpellEffect,
+        target_type: string[],
+    ) {
         this.id = id;
         this.name = name;
-        this.type = type;
         this.element = element;
         this.effect = effect;
+        this.target_type = target_type;
     }
 
-    applyEffect() {
-        this.effect.applyEffect();
+    applyEffect(target: Unit<any>) {
+        this.effect.applyEffect(target);
     }
 }
 

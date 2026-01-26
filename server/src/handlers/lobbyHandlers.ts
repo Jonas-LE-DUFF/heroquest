@@ -2,15 +2,11 @@ import { Server, Socket } from "socket.io";
 import { GameService } from "../services/GameService";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
-import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 import { Player } from "../POO/classes/Server/Player";
 import { Game } from "../POO/classes/Server/Game";
-import {
-    requireGameExists,
-    requireGameExistsGameService,
-} from "../guards/requireGameExists";
-import { positionKey } from "../shared/util";
+import { requireGameExists } from "../guards/requireGameExists";
 import { requireGameMaster } from "../guards/requireGameMaster";
+import { Hero } from "../POO/classes/Units/Hero";
 
 export function registerLobbyHandlers(
     socket: Socket,
@@ -60,7 +56,7 @@ export function registerLobbyHandlers(
             data: { gameId: string },
             callback: (success: boolean, error?: string) => void,
         ) => {
-            if (!requireGameExistsGameService(data.gameId, gameService))
+            if (!requireGameExists(data.gameId, gameService))
                 return callback(false, "Partie non trouvée");
 
             const game = gameService.getGame(data.gameId);
@@ -95,7 +91,7 @@ export function registerLobbyHandlers(
         ) => {
             console.log("Demande de démarrage pour la partie:", data.gameId);
 
-            if (!requireGameExistsGameService(data.gameId, gameService))
+            if (!requireGameExists(data.gameId, gameService))
                 return callback(false, "Partie non trouvée");
 
             if (!requireGameMaster(socket, gameService.getGame(data.gameId)!))
@@ -119,6 +115,105 @@ export function registerLobbyHandlers(
                 game: game!,
             });
             return callback(true);
+        },
+    );
+
+    socket.on(
+        "choose-character",
+        (
+            data: {
+                gameId: string;
+                hero: Hero;
+            },
+            callback,
+        ) => {
+            const { gameId, hero } = data;
+
+            if (!requireGameExists(gameId, gameService))
+                return callback({ success: false, error: "Game not found." });
+
+            const game = gameService.getGame(gameId);
+
+            const player = game!.players.get(socket.id);
+            if (!player) {
+                return callback({ success: false, error: "Player not found." });
+            }
+
+            hero.controlledByPlayerId = socket.id;
+            game?.gameState.addHero(hero);
+
+            // Validate stats
+            const isValid = hero.validateStats();
+            if (!isValid.sucess) {
+                return callback({ success: false, error: isValid.error });
+            }
+            hero.stats.movements = 2; // default movement value for heroes
+
+            // Ensure game is in the lobby state
+            if (game?.gameState.status !== "lobby") {
+                return callback({
+                    success: false,
+                    error: "Cannot change character during the game.",
+                });
+            }
+
+            // Check if the hero class is already selected
+            if (game.gameState.isHeroCategoryTaken(hero.category)) {
+                return callback({
+                    success: false,
+                    error: "Class already selected by another player.",
+                });
+            }
+
+            // Validate spells
+            const spellsTaken = game.gameState.getSpellsTaken(hero.spells);
+            if (spellsTaken.length > 0) {
+                return callback({
+                    success: false,
+                    error: `The spells ${spellsTaken.map((spell) => spell.name).join(", ")} are already selected by another player.`,
+                });
+            }
+
+            player.isReady = true;
+
+            io.to(gameId).emit("game-state-update", {
+                game: game,
+            });
+            return callback({
+                success: true,
+                game: game,
+            });
+        },
+    );
+
+    //unselect-character
+    socket.on(
+        "unselect-character",
+        (
+            data: { gameId: string; heroId: string },
+            callback: { success: boolean; message: string },
+        ) => {
+            const { gameId, heroId } = data;
+            if (!requireGameExists(gameId, gameService)) return;
+
+            const game = gameService.getGame(gameId);
+            const player = game?.players.get(socket.id);
+            if (!game || !player) return;
+
+            const heroesControlled = game.gameState.getHeroesControlledByPlayer(
+                socket.id,
+            );
+
+            const heroToRemove = heroesControlled.find((h) => h.id === heroId);
+            if (!heroToRemove) return;
+            game.gameState.removeUnit(heroToRemove);
+
+            const heroesLeft = heroesControlled.filter((h) => h.id !== heroId);
+            if (heroesLeft.length === 0) player.isReady = false;
+
+            io.to(gameId).emit("game-state-update", {
+                game: game,
+            });
         },
     );
 }

@@ -6,4 +6,4 @@ interface Stats {
     spirit: number;
 }
 
-export { Stats };
+export type { Stats };

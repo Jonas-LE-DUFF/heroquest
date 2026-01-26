@@ -1,14 +1,3 @@
-import {
-  ClientToServerEvents,
-  diceFace,
-  GameState,
-  Player,
-  Position,
-  ServerToClientEvents,
-  SocketData,
-  spellElement,
-  Unit,
-} from "../type";
 import spells from "../game_cards/spells.json";
 import { isPositionVisible } from "./range";
 import {
@@ -16,146 +5,101 @@ import {
   rollFightDice,
   rollRedDice,
 } from "../../services/DiceService";
-import { positionKey, fight, isPlayer } from "../util";
 import { checkUnitDefeat } from "../death/death";
 import { Server, Socket } from "socket.io";
-
-interface Spell {
-  id: string;
-  name: string;
-  school: string;
-  image_path: string;
-  range: string;
-  target_type: string;
-  effect: {
-    type: string;
-    stat: string;
-    value: string | null;
-    comment: string;
-    status_type?: string;
-  };
-}
+import { Spell } from "../../POO/classes/Spell/Spell";
+import { SpellElement } from "../../POO/enums/SpellElement";
+import { Player } from "../../POO/classes/Server/Player";
+import { Position } from "../../POO/classes/Position/Position";
+import { ClientToServerEvents } from "../../POO/interfaces/Events/ClientToServerEvents";
+import { ServerToClientEvents } from "../../POO/interfaces/Events/ServerToClientEvents";
+import { Hero } from "../../POO/classes/Units/Hero";
+import { Game } from "../../POO/classes/Server/Game";
+import { fight } from "../../services/CombatService";
+import { Unit } from "../../POO/classes/Units/Unit";
+import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 
 export function getSpell(spellId: string): Spell | undefined {
   return (spells as unknown as Spell[]).find((s) => s.id === spellId);
 }
 
-export function getSpellSchool(spell: Spell): spellElement | null {
-  const school: spellElement | null = spell
-    ? (spellElement as any)[spell.school as keyof typeof spellElement] ?? null
-    : null;
-
-  return school;
-}
-
 export async function castSpell(
-  gameState: GameState,
-  player: Player,
+  game: Game,
   spellId: string,
-  position: Position,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData, any>
+  targetedPosition: Position,
+  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+  io: Server<ClientToServerEvents, ServerToClientEvents>
 ) {
   console.log("applying effects of casted spell");
+
+  const heroCasting = game.getCurrentHeroTurn();
+  const player = game.getCurrentPlayerTurn();
 
   const spell = getSpell(spellId);
   if (!spell) {
     throw new Error("Spell not found: " + spellId);
   }
 
-  if (!player.stats) {
-    throw new Error("Player stats not found.");
+  if (heroCasting.usedSpells.includes(spell)) {
+    throw new Error("Player already used this spell.");
   }
 
-  if (player.stats.usedSpells && player.stats.usedSpells.includes(spellId)) {
-    throw new Error("Player already used this spell.");
+  if(heroCasting.spells.find(s => s.id === spellId) === undefined){
+    throw new Error("Hero doesn't know this spell.");
   }
 
   if (spell.id.includes("Djinn")) {
     if (spell.id === "Djinn") return; // this spell allows to choose between sub-spells
-    player.stats.usedSpells = player.stats.usedSpells || [];
     if (spell.id === "Djinn Open door") {
-      player.stats.usedSpells.push("Djinn");
+      heroCasting.usedSpells.push(spell);
       throw new Error("Djinn Open door spell effect not implemented yet.");
     }
 
     if (spell.id === "Djinn DIE") {
-      const monsterTargetId = gameState.positionEntities.get(
-        positionKey(position)
-      );
-      if (!monsterTargetId) {
+      const unitTarget = game.gameState.board.getUnitAt(targetedPosition);
+      
+      if (!unitTarget) {
         throw new Error("No target found at the specified position.");
       }
-      const monsterTarget = gameState.monsters.get(monsterTargetId);
-      if (!monsterTarget) {
-        throw new Error("Monster target not found.");
-      }
-      grantSpecialRollAuthorization(gameState, socket, 5, "fight", player.id);
-      fight(io, gameState, player, monsterTarget, 5);
-
-      player.stats.usedSpells.push("Djinn");
-      return gameState;
+      grantSpecialRollAuthorization(game, io, 5, "fight", player.id);
+      fight(io, socket, game, heroCasting, unitTarget, 5);
+      heroCasting.usedSpells.push(spell);
+      return;
     }
+    throw new Error("Unknown Djinn sub-spell: " + spell.id);
   }
 
-  const spellSchool = getSpellSchool(spell);
-  if (!spellSchool) {
-    throw new Error("Spell school not found.");
-  }
+  const position = game.gameState.board.getPositionOfUnit(heroCasting.id);
 
-  if (!player.stats.spells || !player.stats.spells.includes(spellSchool)) {
-    throw new Error(
-      "Player does not know this spell. : " +
-        spellSchool +
-        " not in " +
-        player.stats.spells
-    );
-  }
-
-  const playerPosition = gameState.entityPositions.get(player.id);
-  if (!playerPosition) {
+  if (!position) {
     throw new Error("Player position not found.");
   }
 
-  if (isPositionVisible(playerPosition, position) === false) {
+  if (isPositionVisible(position, targetedPosition) === false) {
     throw new Error("Target position is not visible.");
   }
 
-  const target_id = gameState.positionEntities.get(positionKey(position));
-  if (!target_id && spell.target_type !== "no target") {
-    throw new Error("No target found at the specified position.");
-  }
-  const entity_target = gameState.players.get(target_id || "") || gameState.monsters.get(target_id || "");
-  if (!entity_target) {
-    if(spell?.target_type !== "no target"){
+  const target : Unit<HeroCategory | MonsterCategory> | undefined = game.gameState.board.getUnitAt(targetedPosition);
+
+  if (!target) {
+    if(spell.target_type.includes("no target")){
       throw new Error("Target entity not found.");
     }
   }else{
-    if (entity_target.id === player.id && !spell.target_type.includes("self")) {
+    if (target.id === player.id && !spell.target_type.includes("self")) {
       throw new Error("Spell can't be cast on self.");
     }
-    if (isPlayer(entity_target) && !spell.target_type.includes("hero")) {
+    if (target.getCategory() !== "HeroCategory" && !spell.target_type.includes("hero")) {
       throw new Error("Spell can't be cast on heroes.");
     }
-    if (!isPlayer(entity_target) && !spell.target_type.includes("monster")) {
+    if (target.getCategory() !== "MonsterCategory" && !spell.target_type.includes("monster")) {
       throw new Error("Spell can't be cast on monsters.");
     }
   }
 
-  switch (spell.effect.type) {
-    case "heal":
-      if (!entity_target || !entity_target.stats){
-        throw new Error("No target to heal found.");
-      };
-
-      if (entity_target.stats.hp !== undefined && entity_target.stats.maxHp) {
-        const healValue = parseInt(spell.effect.value!.replace("+", ""));
-        entity_target.stats.hp = Math.min(
-          entity_target.stats.hp + healValue,
-          entity_target.stats.maxHp
-        );
-      }
-      break;
+  spell.applyEffect(target ? target : heroCasting);
+  switch (spell.effect) {
     case "buff": {
       if (!entity_target || !entity_target.stats){
         throw new Error("No target to buff found.");

@@ -1,6 +1,8 @@
 import { HeroCategory } from "../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../enums/Categories/MonsterCategory";
+import { SpecialAuthorizedHero } from "../interfaces/SpecialAuthorizedHero";
 import { Board } from "./Board/Board";
+import { Spell } from "./Spell/Spell";
 import { Hero } from "./Units/Hero";
 import { Monster } from "./Units/Monster";
 import { Unit } from "./Units/Unit";
@@ -9,6 +11,7 @@ class GameState {
     Units: Unit<HeroCategory | MonsterCategory>[];
     board: Board
     status: "lobby" | "playing" | "finished";
+    private specialAuthorizedHero: SpecialAuthorizedHero | undefined = undefined;
 
     constructor() {
         this.Units = [];
@@ -26,6 +29,7 @@ class GameState {
 
     removeUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
         this.Units = this.Units.filter(u => u !== unit);
+        this.board.removeUnitFromTile(unit);
     }
 
     getUnitById(id: string): Unit<HeroCategory | MonsterCategory> | undefined {
@@ -62,6 +66,42 @@ class GameState {
         }
         return { success: true };
     }
+    
+    isHeroCategoryTaken(category: HeroCategory): boolean {
+        return this.Units.some(u => u instanceof Hero && u.category === category);
+    }
+
+    getSpellsTaken(spells: Spell[]): Spell[] {
+        const heroes = this.Units.filter(u => u instanceof Hero) as Hero[];
+        const spellsTaken = [];
+        for (const spell of spells) {
+            for (const hero of heroes) {
+                if (hero.spells.includes(spell)) {
+                    spellsTaken.push(spell);
+                }
+            }
+        }
+        return spellsTaken;
+    }
+
+    getHeroesControlledByPlayer(playerId: string): Hero[] {
+        return this.Units.filter(u => u instanceof Hero && u.controlledByPlayerId === playerId) as Hero[];
+    }
+
+    getSpecialAuthorizedHero(): SpecialAuthorizedHero | undefined {
+        return this.specialAuthorizedHero;
+    }
+
+    setSpecialAuthorizedHero(specialAuthorizedHero: SpecialAuthorizedHero | undefined): void {
+        this.specialAuthorizedHero = specialAuthorizedHero;
+    }
+
+    getAttackDicesForHero(category: HeroCategory): number {
+
+        const hero = this.getHeroByCategory(category);
+        return hero.getAttackDiceCount();
+    }
+
 }
 
 export { GameState };

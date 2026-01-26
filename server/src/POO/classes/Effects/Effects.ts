@@ -4,7 +4,9 @@ import { EffectType } from "../../enums/Effects/EffectType";
 import { StatType } from "../../enums/Effects/StatType";
 
 class Effect {
+
     name: string;
+    isBuff: boolean;
     effectType: EffectType;
     duration: EffectDuration;
 
@@ -19,6 +21,7 @@ class Effect {
         name: string,
         effectType: EffectType,
         duration: EffectDuration,
+        isBuff: boolean,
         options?: {
             stat?: StatType;
             value?: number;
@@ -28,12 +31,23 @@ class Effect {
         this.name = name;
         this.effectType = effectType;
         this.duration = duration;
-
+        this.isBuff = isBuff;
         if (options) {
             this.stat = options.stat;
             this.value = options.value;
             this.ability = options.ability;
         }
+    }
+
+    /**
+     * Handle duration tick for the effect
+     * @returns true if the effect has expired and should be removed
+     */
+    durationTick() : boolean {
+        if(EffectDuration.ONE_TURN === this.duration){
+            return true;
+        };
+        return false;
     }
 }
 
@@ -44,6 +58,7 @@ class EffectFactory {
             "Courage",
             EffectType.CONDITIONAL_BUFF,
             EffectDuration.UNTIL_CONDITION,
+            true,
             {
                 stat: StatType.ATTACK,
                 value: 2,
@@ -56,6 +71,7 @@ class EffectFactory {
             "Phase Through Walls",
             EffectType.ABILITY_GRANT,
             EffectDuration.ONE_TURN,
+            true,
             {
                 ability: AbilityType.PHASE_THROUGH_WALLS,
             },
@@ -67,6 +83,7 @@ class EffectFactory {
             "Phase Through Monsters",
             EffectType.ABILITY_GRANT,
             EffectDuration.ONE_TURN,
+            true,
             {
                 ability: AbilityType.PHASE_THROUGH_MONSTERS,
             },
@@ -78,6 +95,7 @@ class EffectFactory {
             "Swift",
             EffectType.STAT_MULTIPLIER,
             EffectDuration.ONE_TURN,
+            true,
             {
                 stat: StatType.MOVEMENT,
                 value: 2,
@@ -91,7 +109,7 @@ class EffectFactory {
         value: number,
         duration: EffectDuration = EffectDuration.ONE_TURN,
     ): Effect {
-        return new Effect(name, EffectType.STAT_MODIFIER, duration, {
+        return new Effect(name, EffectType.STAT_MODIFIER, duration, value > 0, {
             stat,
             value,
         });

@@ -4,6 +4,8 @@ import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
 import { registerGameHandlers } from "../handlers/gamehandlers";
 import { registerLobbyHandlers } from "../handlers/lobbyHandlers";
+import { registerMovementHandlers } from "../handlers/movementsHandlers";
+import { registerDiceHandlers } from "../handlers/diceHandler";
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
     const { io } = server;
@@ -20,9 +22,9 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
         registerLobbyHandlers(socket, io, gameService);
         registerGameHandlers(socket, io, gameService);
         registerMovementHandlers(socket, io, gameService);
-        registerCombatHandlers(socket, io, gameService);
+        registerDiceHandlers(socket, io, gameService);
+        registerGameActionsHandlers(socket, io, gameService);
         registerMasterHandlers(socket, io, gameService);
-        registerConnectionHandler(socket, io, gameService);
 
         socket.on("disconnect", () => {
             const modifiedGames = gameService.removePlayerFromAllGames(socket.id);

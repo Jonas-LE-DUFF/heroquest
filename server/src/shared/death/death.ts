@@ -1,26 +1,19 @@
-import { GameState, Monster, Player } from "../type";
-import { positionKey } from "../util";
+import { GameState } from "../../POO/classes/GameState";
+import { Unit } from "../../POO/classes/Units/Unit";
+import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 
 export function checkUnitDefeat(
   gameState: GameState,
-  monsterTarget: Monster|Player
+  target: Unit<MonsterCategory|HeroCategory>
 ) {
-  console.log("Checking defeat for monster:", monsterTarget);
-  if (monsterTarget.stats?.hp === undefined || monsterTarget.stats.hp > 0) {
-    console.log(monsterTarget.stats?.hp, "HP remaining. Monster not defeated.");
+  console.log("Checking defeat for monster:", target);
+  if (target.stats?.health === undefined || target.stats.health > 0) {
+    console.log(target.stats?.health, "HP remaining. Target not defeated.");
     return gameState;
   }
-  console.log(`Monster ${monsterTarget.id} defeated.`);
-  gameState.monsters.delete(monsterTarget.id);
-  const pos = gameState.entityPositions.get(monsterTarget.id);
-  if (!pos) {
-    console.error(
-      `Position for monster ${monsterTarget.id} not found during defeat check.`
-    );
-    return gameState;
-  }
-  gameState.positionEntities.delete(positionKey(pos));
-  gameState.entityPositions.delete(monsterTarget.id);
+  console.log(`Monster ${target.id} defeated.`);
+  gameState.removeUnit(target);
 
   return gameState;
 }

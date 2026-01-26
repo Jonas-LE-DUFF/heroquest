@@ -1,11 +1,12 @@
 import { Board } from "../POO/classes/Board/Board";
 import { Position } from "../POO/classes/Position/Position";
+import { Game } from "../POO/classes/Server/Game";
 import { Unit } from "../POO/classes/Units/Unit";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 
-export const canMove = (
+const canMove = (
     board: Board,
     from: Position,
     direction: Direction,
@@ -15,7 +16,7 @@ export const canMove = (
         unitMoved instanceof Unit && unitMoved.getCategory() === "Hero";
     const canPhaseThroughWalls = unitMoved.canPhaseThroughWalls();
     const canPhaseThroughMonsters = unitMoved.canPhaseThroughMonsters();
-    const to = getPositionAfterMove(from, direction);
+    const to = from.afterMove(direction);
 
     if (!to.isValid(board.BOARD_WIDTH, board.BOARD_HEIGHT)) {
         console.error("move out of bounds");
@@ -40,20 +41,52 @@ export const canMove = (
     return true;
 };
 
-export const getPositionAfterMove = (
+export function moveUnit(
+    board: Board,
     from: Position,
     direction: Direction,
-): Position => {
-    switch (direction) {
-        case Direction.UP:
-            return new Position(from.x, from.y - 1);
-        case Direction.DOWN:
-            return new Position(from.x, from.y + 1);
-        case Direction.LEFT:
-            return new Position(from.x - 1, from.y);
-        case Direction.RIGHT:
-            return new Position(from.x + 1, from.y);
-        default:
-            return from;
+    unitMoved: Unit<HeroCategory | MonsterCategory>,
+): void {
+    if(!canMove(board, from, direction, unitMoved)) {
+        throw new Error("Unit cannot move to the desired position");
     }
-};
+
+    const to = from.afterMove(direction);
+    const tile = board.getTileAtPosition(from);
+    const newTile = board.getTileAtPosition(to);
+    if (!tile || !newTile) {
+        throw new Error("Tiles not found on board");
+    }
+    tile.unit = null;
+    newTile.unit = unitMoved;
+}
+
+export function handleDoorOpening(
+    board: Board,
+    position: Position,
+    direction: Direction,
+): void {
+    if (board.hasDoorAt(position, direction)) {
+        board.openDoor(position, direction);
+    }
+}
+
+export function getUnitToMove(
+    game: Game,
+    unitId: string,
+    isGameMaster: boolean,
+): Unit<HeroCategory | MonsterCategory> | null {
+    let unitMoved: Unit<HeroCategory | MonsterCategory> | undefined;
+    if (isGameMaster) {
+        unitMoved = game?.gameState.getUnitById(unitId);
+    } else {
+        try {
+            unitMoved = game?.getCurrentHeroTurn();
+        } catch {
+            console.error("couldn't get current hero turn");
+            return null;
+        }
+    }
+    return unitMoved || null;
+}
+

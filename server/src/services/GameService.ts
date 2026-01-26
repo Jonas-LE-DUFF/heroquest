@@ -1,13 +1,13 @@
 import { Game } from "../POO/classes/Server/Game";
 import { Player } from "../POO/classes/Server/Player";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
 
 // services/GameService.ts
 export class GameService {
-    private games = new Map<string, Game>();
 
-    createGame(gameName: string, player: Player): Game {
-        const newGame = new Game(gameName);
-        this.games.set(newGame.id, newGame);
+    static createGame(gameName: string, player: Player): Game {
+        const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        const newGame = serverHeroQuest.createGame(gameName);
         newGame.addPlayer(player);
 
         console.log(
@@ -17,50 +17,23 @@ export class GameService {
         return newGame;
     }
 
-    getGame(gameId: string): Game | undefined {
-        return this.games.get(gameId);
+    static getGame(gameId: string): Game | null {
+        const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        return serverHeroQuest.getGame(gameId);
     }
 
-    getGameByName(gameName: string): Game | undefined {
-        for (const game of this.games.values()) {
-            if (game.name === gameName) {
-                return game;
-            }
-        }
-        return undefined;
-    }
-
-    hasGame(gameName: string): boolean {
-        this.games.forEach((game) => {
-            if (game.name === gameName) {
-                return true;
-            }
-        });
-        return false;
+    static hasGame(gameName: string): boolean {
+        const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        return serverHeroQuest.getGameByName(gameName) !== null;
     }
     
-    removePlayerFromAllGames(playerId: string): Game[] {
-        const modifiedGames: Game[] = [];
-        this.games.forEach((game) => {
-            if (game.players.has(playerId)) {
-                game.removePlayer(playerId);
-                modifiedGames.push(game);
-            }
-        });
-        return modifiedGames;
+    static removePlayerFromAllGames(playerId: string): Game[] {
+        const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        return serverHeroQuest.removePlayerFromAllGames(playerId);
     }
 
-    removeGame(gameId: string): void {
-        this.games.delete(gameId);
-    }
-
-    startGame(game: Game): void {
-        game.launchGame();
-        // ... place heroes, set first turn, etc.
-    }
-
-    endTurn(game: Game): void {
-        // ... handle status effects, get next player
-        game.endTurn();
+    static removeGame(gameId: string): void {
+        const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        serverHeroQuest.removeGame(gameId);
     }
 }

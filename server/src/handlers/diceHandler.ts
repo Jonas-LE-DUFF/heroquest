@@ -8,13 +8,22 @@ import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEve
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { SocketData } from "../POO/interfaces/Socket/SocketData";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
-import { Game } from "../POO/classes/Server/Game";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { requireGameExists } from "../guards/requireGameExists";
+import { GameService } from "../services/GameService";
 
-export function handleSpecialRollAuthorization(
-    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-    games: Map<string, Game>,
+export function registerDiceHandlers(
+    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+    io: Server<ClientToServerEvents, ServerToClientEvents>,
+) {
+    handleSpecialRollAuthorization(io, socket);
+    handleRollRedDice(io, socket);
+    handleRollFightDice(io, socket);
+}
+
+function handleSpecialRollAuthorization(
+    io: Server<ClientToServerEvents, ServerToClientEvents>,
+    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
 ) {
     socket.on(
         "authorize-special-throw-dices",
@@ -24,15 +33,15 @@ export function handleSpecialRollAuthorization(
             typeOfDices: "fight" | "red";
             playerClass: HeroCategory;
         }) => {
-            const gameState = games.get(data.gameId);
+            const gameState = GameService.getGame(data.gameId);
 
-            if (!requireGameExists(data.gameId, games)) return;
+            if (!requireGameExists(data.gameId)) return;
 
             if (!requireGameMaster(socket, gameState!)) return;
 
             const callback = grantSpecialRollAuthorization(
                 gameState!,
-                socket,
+                io,
                 data.numberOfDices,
                 data.typeOfDices,
                 data.playerClass,
@@ -43,10 +52,9 @@ export function handleSpecialRollAuthorization(
     );
 }
 
-export function handleRollRedDice(
-    io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
-    socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-    games: Map<string, Game>,
+function handleRollRedDice(
+    io: Server<ClientToServerEvents, ServerToClientEvents>,
+    socket: Socket<ClientToServerEvents, ServerToClientEvents>,
 ) {
     socket.on(
         "roll-red-dice",
@@ -54,13 +62,13 @@ export function handleRollRedDice(
             data: { gameId: string; currentNumberOfDices: number },
             callback,
         ) => {
-            const gameState = games.get(data.gameId);
+            const gameState = GameService.getGame(data.gameId);
 
-            if (!requireGameExists(data.gameId, games)) return;
+            if (!requireGameExists(data.gameId)) return;
 
             const result = await rollRedDice(
                 io,
-                socket.id,
+                socket,
                 gameState!,
                 data.currentNumberOfDices,
             );
@@ -69,10 +77,9 @@ export function handleRollRedDice(
     );
 }
 
-export function handleRollFightDice(
+function handleRollFightDice(
     io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
     socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-    games: Map<string, Game>,
 ) {
     socket.on(
         "roll-dice",
@@ -84,13 +91,13 @@ export function handleRollFightDice(
             },
             callback: (response: { success: boolean; error?: string }) => void,
         ) => {
-            const gameState = games.get(data.gameId);
+            const gameState = GameService.getGame(data.gameId);
 
-            if (!requireGameExists(data.gameId, games)) return;
-
+            if (!requireGameExists(data.gameId)) return;
+            
             const result = await rollFightDice(
                 io,
-                data.playerId,
+                socket,
                 gameState!,
                 data.numberOfDice,
             );
