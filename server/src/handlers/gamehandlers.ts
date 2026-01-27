@@ -13,7 +13,7 @@ import {
 export function registerGameHandlers(socket: Socket) {
     socket.on(
         "start-game",
-        withErrorHandling((socket, callback) => {
+        withErrorHandling(socket, (socket, callback) => {
             const gameId = socket.data.gameId;
             const game = GameService.getGame(gameId);
 
@@ -43,7 +43,7 @@ export function registerGameHandlers(socket: Socket) {
 
     socket.on(
         "end-turn",
-        withErrorHandling((socket, callback) => {
+        withErrorHandling(socket, (socket, callback) => {
             const gameId = socket.data.gameId;
             const game = GameService.getGame(gameId);
 

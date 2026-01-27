@@ -23,7 +23,7 @@ import {
 function registerMovementHandlers(socket: Socket) {
     socket.on(
         "move-unit-one-step",
-        withValidation(moveUnitOneStepSchema, (socket, data, callback) => {
+        withValidation(socket, moveUnitOneStepSchema, (socket, data, callback) => {
             const { unitId, direction } = data;
             const gameId = socket.data.gameId;
 

@@ -19,7 +19,7 @@ export function registerGameActionsHandlers(socket: Socket) {
     // cast-spell
     socket.on(
         "cast-spell",
-        withValidation(castSpellSchema, async (socket, data, callback) => {
+        withValidation(socket, castSpellSchema, async (socket, data, callback) => {
             console.debug("casting spell", data);
             const { spellId, position } = data;
             const gameId = socket.data.gameId;
@@ -75,7 +75,7 @@ export function registerGameActionsHandlers(socket: Socket) {
 
     socket.on(
         "attack",
-        withValidation(attackSchema, async (socket, data, callback) => {
+        withValidation(socket, attackSchema, async (socket, data, callback) => {
             const { attackerId, targetId, wishedNumberOfDices } = data;
             const gameId = socket.data.gameId;
 
