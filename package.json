@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev:server": "cd server && npm run dev",
-    "dev:client": "cd client && npm start",
+    "dev:client": "cd client && npm run dev",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/Jonas-LE-DUFF/heroquest#readme",
   "dependencies": {
+    "typeof": "^1.0.0",
     "uuid": "^13.0.0"
   }
 }

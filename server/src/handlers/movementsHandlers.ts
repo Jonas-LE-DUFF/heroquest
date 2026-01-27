@@ -1,8 +1,5 @@
-import { Socket, Server } from "socket.io";
-import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
-import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
+import { Socket } from "socket.io";
 import { GameService } from "../services/GameService";
-import { Direction } from "../POO/enums/Direction";
 import { requireGameExists } from "../guards/requireGameExists";
 import { requirePlayerTurn } from "../guards/requirePlayerTurn";
 import { Unit } from "../POO/classes/Units/Unit";
@@ -15,63 +12,70 @@ import {
 } from "../services/MovementService";
 import { Board } from "../POO/classes/Board/Board";
 import { Position } from "../POO/classes/Position/Position";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import {
+    withValidation,
+    successResponse,
+    errorResponse,
+    moveUnitOneStepSchema,
+} from "../validation";
 
-function registerMovementHandlers(
-    socket: Socket,
-    io: Server<ClientToServerEvents, ServerToClientEvents>,
-    gameService: GameService,
-) {
+function registerMovementHandlers(socket: Socket) {
     socket.on(
         "move-unit-one-step",
-        (
-            data: { gameId: string; unitId: string; direction: Direction },
-            callback: (response: { success: boolean; error?: string }) => void,
-        ) => {
-            if (!requireGameExists(data.gameId, gameService)) {
-                return callback({
-                    success: false,
-                    error: "La partie n'existe plus.",
-                });
+        withValidation(moveUnitOneStepSchema, (socket, data, callback) => {
+            const { unitId, direction } = data;
+            const gameId = socket.data.gameId;
+
+            if (!requireGameExists(gameId)) {
+                return callback(errorResponse("La partie n'existe plus."));
             }
 
-            if (!requirePlayerTurn(socket, gameService.getGame(data.gameId)!)) {
-                return callback({
-                    success: false,
-                    error: "Ce n'est pas votre tour.",
-                });
+            if (!requirePlayerTurn(socket, GameService.getGame(gameId)!)) {
+                return callback(errorResponse("Ce n'est pas votre tour."));
             }
-            const game = gameService.getGame(data.gameId);
 
-            const isGameMaster = game!.getGameMaster()?.id === socket.id;
+            const game = GameService.getGame(gameId);
+            const isGameMaster =
+                game!.getGameMaster()?.id === socket.data.playerId;
 
             const unitMoved: Unit<HeroCategory | MonsterCategory> | null =
-                getUnitToMove(game!, data.unitId, isGameMaster);
+                getUnitToMove(game!, unitId, isGameMaster);
+
+            if (!unitMoved) {
+                return callback(
+                    errorResponse("L'unité à déplacer est introuvable."),
+                );
+            }
 
             const position: Position | null =
                 game!.gameState.board.getPositionOfUnit(unitMoved?.id);
 
-            if (!position || !unitMoved) {
+            if (!position) {
                 console.error(
                     "position of unit couldn't be found in move-unit-one-step",
                 );
-                return callback({
-                    success: false,
-                    error: "La position de l'unité n'a pas été trouvée.",
-                });
+                return callback(
+                    errorResponse(
+                        "La position de l'unité n'a pas été trouvée.",
+                    ),
+                );
             }
 
             const board: Board = game!.gameState.board;
 
-            moveUnit(board, position, data.direction, unitMoved);
+            moveUnit(board, position, direction, unitMoved);
 
-            handleDoorOpening(board, position, data.direction);
+            handleDoorOpening(board, position, direction);
 
-            io.to(data.gameId).emit("game-state-update", {
+            const io = ServerHeroQuest.getServerInstance().getIo();
+
+            io.to(gameId).emit("game-state-update", {
                 game: game!,
             });
 
-            return callback({ success: true });
-        },
+            callback(successResponse());
+        }),
     );
 }
 

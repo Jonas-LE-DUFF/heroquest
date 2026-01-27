@@ -11,6 +11,21 @@ class Tile {
         this.type = type;
         this.unit = null;
     }
+
+    /**
+     * clears the tile
+     * @returns the unit removed when clearing or null if there were no unit
+     */
+    eraseTile() : Unit<HeroCategory | MonsterCategory> | null {
+        this.type = TileType.FLOOR;
+        const unitRemoved = this.unit;
+        this.unit = null;
+        return unitRemoved;
+    }
+
+    isOccupied() : boolean {
+        return this.type !== TileType.FLOOR || this.unit !== null;
+    }
 }
 
 export { Tile };

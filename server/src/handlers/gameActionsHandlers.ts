@@ -1,127 +1,103 @@
+import { Socket } from "socket.io";
 import { requireGameExists } from "../guards/requireGameExists";
 import { requirePlayerTurn } from "../guards/requirePlayerTurn";
-import { Position } from "../POO/classes/Position/Position";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { fight } from "../services/CombatService";
 import { GameService } from "../services/GameService";
+import {
+    withValidation,
+    successResponse,
+    errorResponse,
+    toPosition,
+    castSpellSchema,
+    attackSchema,
+} from "../validation";
 
-export function registerGameActionsHandlers(
-  socket: any,
-  io: any,
-) {
- ///** common player and game master actions **///
-    //end-turn
-    socket.on("end-turn", (data: { gameId: string }) => {
-      console.log("end-turn");
-
-      const game = GameService.getGame(data.gameId);
-
-      if (game!.getCurrentPlayerTurnId() !== socket.id) {
-        console.error("can't end turn, it's not your turn...");
-        return;
-      }
-
-      game!.endTurn();
-      if (player.role !== "game-master" && player.stats?.statusEffects) {
-        const newStatusEffects = player.stats?.statusEffects?.filter(
-          (statusEffect) => {
-            if (!statusEffect) {
-              return false;
-            }
-            if (statusEffect.duration === "until the end of next turn") {
-              return false;
-            }
-            return true;
-          },
-        );
-        player.stats.statusEffects = newStatusEffects;
-      } else {
-        console.info(
-          "end of game-master's turn removing status effects of monsters",
-        );
-        for (const monster of game.monsters.values()) {
-          monster.stats.statusEffects = monster.stats.statusEffects?.filter(
-            (statusEffect) => {
-              if (!statusEffect) {
-                return false;
-              }
-              if (statusEffect.duration === "until the end of next turn") {
-                return false;
-              }
-              return true;
-            },
-          );
-        }
-      }
-      game.currentTurn = nextPlayer;
-
-      io.to(data.gameId).emit("game-state-update", {
-        game: game,
-      });
-    });
+export function registerGameActionsHandlers(socket: Socket) {
+    ///** common player and game master actions **///
 
     // cast-spell
     socket.on(
-      "cast-spell",
-      async (
-        data: { gameId: string; spellId: string; position: Position },
-        callback: (response: { success: boolean; error?: string }) => void,
-      ) => {
-        console.debug("casting spell", data);
-        const { gameId, spellId, position } = data;
-        let game = GameService.getGame(gameId);
-        if (!requireGameExists(gameId)){
-          return callback({
-            success: false,
-            error: "game couldn't be found in cast-spell",
-          });
-        }
-        if (!requirePlayerTurn(socket, game!)) {
-          return callback({
-            success: false,
-            error: "it's not your turn to play in cast-spell",
-          });
-        }
-        try{
-            const castingPlayer = game!.getCurrentPlayerTurn();
-            console.debug("spell cast by player", castingPlayer?.name);
-        } catch (error){
-          return callback({
-            success: false,
-            error: "player casting spell couldn't be found : " + (error as Error).message,
-          });
-        }
-        try {
-          await castSpell(
-            gameState,
-            castingPlayer,
-            spellId,
-            position,
-            socket,
-            io,
-          );
-        } catch (error) {
-          const errorMessage = (error as Error).message;
-          console.error("error while casting spell :", errorMessage);
-          return callback({
-            success: false,
-            error: "You couldn't cast this spell because : " + errorMessage,
-          });
-        }
+        "cast-spell",
+        withValidation(castSpellSchema, async (socket, data, callback) => {
+            console.debug("casting spell", data);
+            const { spellId, position } = data;
+            const gameId = socket.data.gameId;
+            const game = GameService.getGame(gameId);
 
-        // Marking spell as used for the player
-        if (castingPlayer.stats) {
-          if (!castingPlayer.stats.usedSpells) {
-            castingPlayer.stats.usedSpells = [];
-          }
-          castingPlayer.stats.usedSpells.push(spellId);
-        }
+            if (!requireGameExists(gameId)) {
+                return callback(
+                    errorResponse("game couldn't be found in cast-spell"),
+                );
+            }
 
-        console.log("spell casted successfully Player :", castingPlayer.stats);
-        if (!gameState) return;
-        io.to(gameId).emit("game-state-update", {
-          game: game,
-        });
+            if (!requirePlayerTurn(socket, game!)) {
+                return callback(
+                    errorResponse("it's not your turn to play in cast-spell"),
+                );
+            }
 
-        return callback({ success: true });
-      },
+            try {
+                const castingPlayer = game!.getCurrentPlayerTurn();
+                console.debug("spell cast by player", castingPlayer?.name);
+            } catch (error) {
+                return callback(
+                    errorResponse(
+                        "player casting spell couldn't be found : " +
+                            (error as Error).message,
+                    ),
+                );
+            }
+
+            const heroCaster = game!.getCurrentHeroTurn();
+            const spellToCast = heroCaster.getSpellById(spellId);
+            const targetUnit = game!
+                .getGameState()
+                .board.getUnitAt(toPosition(position));
+
+            if (!spellToCast || !targetUnit) {
+                return callback(
+                    errorResponse("spell or target unit not found"),
+                );
+            }
+
+            heroCaster.castSpell(spellToCast, targetUnit);
+
+            const io = ServerHeroQuest.getServerInstance().getIo();
+
+            io.to(gameId).emit("game-state-update", {
+                game: game!,
+            });
+
+            callback(successResponse());
+        }),
+    );
+
+    socket.on(
+        "attack",
+        withValidation(attackSchema, async (socket, data, callback) => {
+            const { attackerId, targetId, wishedNumberOfDices } = data;
+            const gameId = socket.data.gameId;
+
+            if (!requireGameExists(gameId)) {
+                return callback(
+                    errorResponse("game couldn't be found in attack"),
+                );
+            }
+
+            const game = GameService.getGame(gameId);
+
+            const attacker = game!.getGameState().getUnitById(attackerId);
+            const defender = game!.getGameState().getUnitById(targetId);
+
+            if (!attacker || !defender) {
+                return callback(
+                    errorResponse("attacker or defender not found in attack"),
+                );
+            }
+
+            fight(socket, game!, attacker, defender, wishedNumberOfDices);
+            callback(successResponse());
+        }),
     );
 }

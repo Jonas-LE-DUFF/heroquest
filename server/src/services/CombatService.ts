@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { rollFightDice } from "./DiceService";
 import { Unit } from "../POO/classes/Units/Unit";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
@@ -8,9 +8,9 @@ import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { checkUnitDefeat } from "../shared/death/death";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 
 async function fight(
-    io: Server<ClientToServerEvents, ServerToClientEvents>,
     socket: Socket<ClientToServerEvents, ServerToClientEvents>,
     game: Game,
     attacker: Unit<MonsterCategory | HeroCategory>,
@@ -19,30 +19,45 @@ async function fight(
 ) {
     const isGameMaster = socket.id === game.getGameMaster()?.id;
 
-    const attackDice = isGameMaster ? wishedNumberOfDices : attacker.getAttackDiceCount();
-    const roll = await rollFightDice(io, socket, game, attackDice);
-    if (!roll.success || !roll.results) {
+    const defenderRole: PlayerRole = defender.getRole();
+    const attackerRole: PlayerRole = attacker.getRole();
+    const defenderDiceAmount = defender.getDefenseDiceCount();
+    const attackDiceAmount = isGameMaster
+        ? wishedNumberOfDices
+        : attacker.getAttackDiceCount();
+
+    const attackerRoll = await rollFightDice(
+        game.id,
+        attackDiceAmount,
+        attackerRole,
+    );
+    if (!attackerRoll.success || !attackerRoll.results) {
         throw new Error("Failed to roll fight dice for Djinn DIE spell.");
     }
-    const playerThrow = roll.results || [];
-    const monsterRoll = await rollFightDice(
-        io,
-        socket,
-        game,
-        defender.getDefenseDiceCount(),
+    const defenderRoll = await rollFightDice(
+        game.id,
+        defenderDiceAmount,
+        defenderRole,
     );
-    if (!monsterRoll.success || !monsterRoll.results) {
+    if (!defenderRoll.success || !defenderRoll.results) {
         throw new Error(
             "Failed to roll fight dice for Djinn DIE spell monster.",
         );
     }
-    const monsterThrow = monsterRoll.results || [];
+    const defenderThrow = defenderRoll.results;
+    const attackerThrow = attackerRoll.results;
     const damageDealt =
-        playerThrow.filter((d) => d == FightDiceFaces.Hit).length -
-        monsterThrow.filter((d) => d == FightDiceFaces.BlackShield).length;
-    if (damageDealt > 0) {
-        defender.stats.health -= damageDealt;
-        checkUnitDefeat(game.gameState, defender);
-    }
+        attackerThrow.filter((d) => d == FightDiceFaces.Hit).length -
+        defenderThrow.filter((d) => d == FightDiceFaces.BlackShield).length;
+
+    dealDamage(game.id, defender, damageDealt);
 }
-export { fight };
+
+function dealDamage(gameId: string, target: Unit<HeroCategory | MonsterCategory>, damage: number) {
+    if (target.stats.health !== undefined && damage > 0) {
+        target.stats.health = Math.max(target.stats.health - damage, 0);
+    }
+    checkUnitDefeat(gameId, target);
+}
+
+export { fight, dealDamage };

@@ -8,6 +8,7 @@ import { EffectService } from "../../../services/EffectService";
 import { Spell } from "../Spell/Spell";
 import { Stats } from "./Stats";
 import { randomUUID } from "crypto";
+import { PlayerRole } from "../../enums/PlayerRole";
 
 abstract class Unit<T extends HeroCategory | MonsterCategory> {
     id: string;
@@ -19,7 +20,12 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
 
     abstract DefenseDiceType: FightDiceFaces; // the dice value that is needed to block damages
 
-    constructor(controlledByPlayerId: string, name: string, category: T, stats: Stats) {
+    constructor(
+        controlledByPlayerId: string,
+        name: string,
+        category: T,
+        stats: Stats,
+    ) {
         this.id = randomUUID();
         this.controlledByPlayerId = controlledByPlayerId;
         this.name = name;
@@ -33,9 +39,42 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
 
     abstract getMovementPoints(): number;
 
+    endTurnEffects(): void {
+        this.effects = this.effects.filter((effect) => {
+            return !effect.durationTick();
+        });
+    }
+
+    /**
+     * this method should be overridden by subclasses to implement specific stat validation logic
+     */
+    protected abstract validateStatsImplementation(): {
+        success: boolean;
+        error?: string;
+    };
+
+    /**
+     * shouldn't be overridden
+     * @returns an object saying if the stats are validated or not : if not it gives the reason
+     */
+    validateStats(): { success: boolean; error?: string } {
+        // Ensure all stats are non-negative integers
+        for (const value of Object.values(this.stats)) {
+            if (value < 0) {
+                return { success: false, error: "Stats cannot be negative" };
+            }
+        }
+        if (this.stats.health > this.stats.maxHealth) {
+            return { success: false, error: "Health cannot exceed max health" };
+        }
+        return this.validateStatsImplementation();
+    }
+
     getCategory(): string {
         return typeof this.category;
     }
+
+    abstract getRole(): PlayerRole;
 
     // -- effects
     addEffect(effect: Effect): void {
@@ -43,11 +82,11 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
     }
 
     removeEffect(effect: Effect): void {
-        this.effects = this.effects.filter(e => e !== effect);
+        this.effects = this.effects.filter((e) => e !== effect);
     }
 
     removeEffectByName(effectName: string): void {
-        this.effects = this.effects.filter(e => e.name !== effectName);
+        this.effects = this.effects.filter((e) => e.name !== effectName);
     }
 
     clearEffects(): void {
@@ -66,8 +105,6 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
     canPhaseThroughMonsters(): boolean {
         return EffectService.canPhaseThroughMonsters(this);
     }
-
-    
 }
 
 export { Unit };

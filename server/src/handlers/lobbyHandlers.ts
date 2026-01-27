@@ -1,44 +1,44 @@
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { GameService } from "../services/GameService";
-import { PlayerRole } from "../POO/enums/PlayerRole";
-import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { Player } from "../POO/classes/Server/Player";
 import { Game } from "../POO/classes/Server/Game";
 import { requireGameExists } from "../guards/requireGameExists";
 import { requireGameMaster } from "../guards/requireGameMaster";
-import { Hero } from "../POO/classes/Units/Hero";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import {
+    withValidation,
+    successResponse,
+    errorResponse,
+    joinGameSchema,
+    chooseCharacterSchema,
+    unselectCharacterSchema,
+    withErrorHandling,
+} from "../validation";
 
-export function registerLobbyHandlers(
-    socket: Socket,
-    io: Server<ServerToClientEvents>,
-    gameService: GameService,
-) {
+export function registerLobbyHandlers(socket: Socket) {
     socket.on(
         "join-game",
-        (
-            data: { gameName: string; playerName: string; role: PlayerRole },
-            callback: (success: boolean, error?: string, game?: Game) => void,
-        ) => {
+        withValidation(joinGameSchema, (socket, data, callback) => {
             const { gameName, playerName, role } = data;
-            console.log("gameName : ", gameName, "playerName : ", playerName);
+            console.log("gameName:", gameName, "playerName:", playerName);
 
-            if (!gameName || !playerName || !role) {
-                return callback(false, "Données manquantes");
-            }
-
-            const isThereGame: boolean = gameService.hasGame(gameName);
+            const isThereGame: boolean = GameService.hasGame(gameName);
             let game: Game;
 
-            const newPlayer = new Player(data.playerName, role);
+            const newPlayer = new Player(playerName, role);
 
             if (!isThereGame) {
-                game = gameService.createGame(gameName, newPlayer);
+                game = GameService.createGame(gameName, newPlayer);
             } else {
-                game = gameService.getGameByName(gameName)!;
+                game = GameService.getGameByName(gameName)!;
                 game.addPlayer(newPlayer);
             }
 
             socket.join(game.id);
+            socket.data.gameId = game.id;
+            socket.data.playerId = newPlayer.id;
+            socket.data.playerName = playerName;
+            const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(game.id).emit("game-state-update", {
                 game: game,
@@ -46,174 +46,174 @@ export function registerLobbyHandlers(
 
             console.log(`${playerName} a rejoint la partie ${game.id}`);
 
-            return callback(true, undefined, game);
-        },
+            callback(successResponse());
+        }),
     );
 
     socket.on(
         "leave-lobby",
-        (
-            data: { gameId: string },
-            callback: (success: boolean, error?: string) => void,
-        ) => {
-            if (!requireGameExists(data.gameId, gameService))
-                return callback(false, "Partie non trouvée");
+        withErrorHandling((socket, callback) => {
+            const gameId = socket.data.gameId;
 
-            const game = gameService.getGame(data.gameId);
+            if (!requireGameExists(gameId)) {
+                return callback(errorResponse("Partie non trouvée"));
+            }
 
-            game!.removePlayer(socket.id);
+            const game = GameService.getGame(gameId);
 
-            socket.leave(data.gameId);
+            game!.removePlayer(socket.data.playerId);
 
-            console.log("Utilisateur déconnecté:", socket.id);
+            socket.leave(gameId);
 
-            if (game!.players.size === 0) {
+            console.log("Utilisateur déconnecté:", socket.data.playerId);
+
+            if (game!.getAmountOfPlayers() === 0) {
                 console.log(
                     "Suppression de la partie vide avec l'id :",
                     game!.id,
                 );
-                gameService.removeGame(game!.id);
+                GameService.removeGame(game!.id);
             }
-
-            // we shouldn't have to remove that many informations but just making sure
-            io.to(data.gameId).emit("game-state-update", {
+            const io = ServerHeroQuest.getServerInstance().getIo();
+            io.to(gameId).emit("game-state-update", {
                 game: game!,
             });
-            return callback(true);
-        },
+            callback(successResponse());
+        }),
     );
 
     socket.on(
         "start-game",
-        (
-            data: { gameId: string },
-            callback: (success: boolean, error?: string) => void,
-        ) => {
-            console.log("Demande de démarrage pour la partie:", data.gameId);
+        withErrorHandling((socket, callback) => {
+            const gameId = socket.data.gameId;
+            console.log("Demande de démarrage pour la partie:", gameId);
 
-            if (!requireGameExists(data.gameId, gameService))
-                return callback(false, "Partie non trouvée");
+            if (!requireGameExists(gameId)) {
+                return callback(errorResponse("Partie non trouvée"));
+            }
 
-            if (!requireGameMaster(socket, gameService.getGame(data.gameId)!))
-                return callback(false, "Utilisateur non autorisé");
+            if (!requireGameMaster(socket, GameService.getGame(gameId)!)) {
+                return callback(errorResponse("Utilisateur non autorisé"));
+            }
 
-            const game = gameService.getGame(data.gameId);
+            const game = GameService.getGame(gameId);
 
             try {
-                gameService.startGame(game!);
+                game!.launchGame();
             } catch (error: any) {
                 console.log(
                     "Erreur lors du lancement de la partie :",
                     error.message,
                 );
-                return callback(false, error.message);
+                return callback(errorResponse(error.message));
             }
 
             console.log("Conditions remplies, lancement de la partie...");
+            const io = ServerHeroQuest.getServerInstance().getIo();
 
-            io.to(data.gameId).emit("game-start", {
+            io.to(gameId).emit("game-start", {
                 game: game!,
             });
-            return callback(true);
-        },
+            callback(successResponse());
+        }),
     );
 
     socket.on(
         "choose-character",
-        (
-            data: {
-                gameId: string;
-                hero: Hero;
-            },
-            callback,
-        ) => {
-            const { gameId, hero } = data;
+        withValidation(chooseCharacterSchema, (socket, data, callback) => {
+            const { hero } = data;
+            const gameId = socket.data.gameId;
 
-            if (!requireGameExists(gameId, gameService))
-                return callback({ success: false, error: "Game not found." });
-
-            const game = gameService.getGame(gameId);
-
-            const player = game!.players.get(socket.id);
-            if (!player) {
-                return callback({ success: false, error: "Player not found." });
+            if (!requireGameExists(gameId)) {
+                return callback(errorResponse("Game not found."));
             }
 
-            hero.controlledByPlayerId = socket.id;
+            const game = GameService.getGame(gameId);
+
+            const player = game!.getPlayer(socket.data.playerId);
+            if (!player) {
+                return callback(errorResponse("Player not found."));
+            }
+
+            hero.controlledByPlayerId = socket.data.playerId;
             game?.gameState.addHero(hero);
 
             // Validate stats
             const isValid = hero.validateStats();
-            if (!isValid.sucess) {
-                return callback({ success: false, error: isValid.error });
+            if (!isValid.success) {
+                return callback(errorResponse(isValid.error!));
             }
             hero.stats.movements = 2; // default movement value for heroes
 
             // Ensure game is in the lobby state
             if (game?.gameState.status !== "lobby") {
-                return callback({
-                    success: false,
-                    error: "Cannot change character during the game.",
-                });
+                return callback(
+                    errorResponse("Cannot change character during the game."),
+                );
             }
 
             // Check if the hero class is already selected
             if (game.gameState.isHeroCategoryTaken(hero.category)) {
-                return callback({
-                    success: false,
-                    error: "Class already selected by another player.",
-                });
+                return callback(
+                    errorResponse("Class already selected by another player."),
+                );
             }
 
             // Validate spells
             const spellsTaken = game.gameState.getSpellsTaken(hero.spells);
             if (spellsTaken.length > 0) {
-                return callback({
-                    success: false,
-                    error: `The spells ${spellsTaken.map((spell) => spell.name).join(", ")} are already selected by another player.`,
-                });
+                return callback(
+                    errorResponse(
+                        `The spells ${spellsTaken.map((spell) => spell.name).join(", ")} are already selected by another player.`,
+                    ),
+                );
             }
 
             player.isReady = true;
+            const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(gameId).emit("game-state-update", {
                 game: game,
             });
-            return callback({
-                success: true,
-                game: game,
-            });
-        },
+            callback(successResponse());
+        }),
     );
 
     //unselect-character
     socket.on(
         "unselect-character",
-        (
-            data: { gameId: string; heroId: string },
-            callback: { success: boolean; message: string },
-        ) => {
-            const { gameId, heroId } = data;
-            if (!requireGameExists(gameId, gameService)) return;
+        withValidation(unselectCharacterSchema, (socket, data, callback) => {
+            const { heroId } = data;
+            const gameId = socket.data.gameId;
 
-            const game = gameService.getGame(gameId);
-            const player = game?.players.get(socket.id);
-            if (!game || !player) return;
+            if (!requireGameExists(gameId)) {
+                return callback(errorResponse("Game not found."));
+            }
+
+            const game = GameService.getGame(gameId);
+            const player = game?.getPlayer(socket.data.playerId);
+            if (!game || !player) {
+                return callback(errorResponse("Player not found."));
+            }
 
             const heroesControlled = game.gameState.getHeroesControlledByPlayer(
-                socket.id,
+                socket.data.playerId,
             );
 
             const heroToRemove = heroesControlled.find((h) => h.id === heroId);
-            if (!heroToRemove) return;
+            if (!heroToRemove) {
+                return callback(errorResponse("Hero not found."));
+            }
             game.gameState.removeUnit(heroToRemove);
 
             const heroesLeft = heroesControlled.filter((h) => h.id !== heroId);
             if (heroesLeft.length === 0) player.isReady = false;
+            const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(gameId).emit("game-state-update", {
                 game: game,
             });
-        },
+            callback(successResponse());
+        }),
     );
 }

@@ -7,6 +7,7 @@ import { Stats } from "./Stats";
 import { Unit } from "./Unit";
 import { Spell } from "../Spell/Spell";
 import { SpellElement } from "../../enums/SpellElement";
+import { PlayerRole } from "../../enums/PlayerRole";
 
 class Hero extends Unit<HeroCategory> {
     
@@ -51,30 +52,19 @@ class Hero extends Unit<HeroCategory> {
         return Math.floor((baseMovement + modifier) * multiplier);
     }
 
-    validateStats(): {sucess: boolean; error?: string} {
-        // Ensure all stats are non-negative integers
-        for (const value of Object.values(this.stats)) {
-            if (value < 0) {
-                return { sucess: false, error: "Stats cannot be negative" };
-            }
-        }
-
-        if (this.stats.health > this.stats.maxHealth) {
-            return { sucess: false, error: "Health cannot exceed max health" };
-        }
-
+    validateStatsImplementation(): {success: boolean; error?: string} {
         if (this.category === HeroCategory.Cleric) {
             if(this.spells.length !== 9) {
-                return { sucess: false, error: "Cleric must have 9 spells" };
+                return { success: false, error: "Cleric must have 9 spells" };
             }
         } 
         if (this.category === HeroCategory.Elf) {
             if(this.spells.length !== 3) {
-                return { sucess: false, error: "Elf must have 3 spells" };
+                return { success: false, error: "Elf must have 3 spells" };
             }   
         }
 
-        return { sucess: true };
+        return { success: true };
     }
 
     // -- spells
@@ -82,8 +72,13 @@ class Hero extends Unit<HeroCategory> {
         this.spells = spells;
     }
 
-    useSpell(spell: Spell): void {
+    castSpell(spell: Spell, target: Unit<any>): void {
+        spell.applyEffect(target);
         this.usedSpells.push(spell);
+    }
+
+    getSpellById(spellId: string): Spell | undefined {
+        return this.spells.find(spell => spell.id === spellId);
     }
 
     unuseSpell(spell: Spell): void {
@@ -94,10 +89,8 @@ class Hero extends Unit<HeroCategory> {
         return this.spells.filter(spell => spell.element === element);
     }
 
-    endTurnEffects() {
-        this.effects = this.effects.filter(effect => {
-            return !effect.durationTick();
-        });
+    getRole(): PlayerRole {
+        return PlayerRole.HERO;
     }
 }
 

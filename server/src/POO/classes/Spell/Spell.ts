@@ -12,7 +12,6 @@ class Spell {
     constructor(
         id: string,
         name: string,
-        type: "damage" | "healing" | "buff" | "debuff",
         element: SpellElement,
         effect: SpellEffect,
         target_type: string[],

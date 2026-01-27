@@ -12,9 +12,9 @@ class Board {
     BOARD_WIDTH = 19;
     BOARD_HEIGHT = 26;
 
-    Map: Tile[][];
-    Walls: WallGrid;
-    Doors: DoorGrid;
+    private Map: Tile[][];
+    private Walls: WallGrid;
+    private Doors: DoorGrid;
 
     constructor() {
         this.Map = BoardInitializer.initializeBoard();
@@ -34,10 +34,7 @@ class Board {
         return this.Map[position.y]![position.x];
     }
 
-    getPositionOfUnit(unitId?: string): Position | null {
-        if(!unitId) {
-            return null;
-        }
+    getPositionOfUnit(unitId: string): Position | null {
         for (let y = 0; y < this.BOARD_HEIGHT; y++) {
             for (let x = 0; x < this.BOARD_WIDTH; x++) {
                 const tile = this.Map[y]![x];
@@ -55,6 +52,16 @@ class Board {
         return this.getTileAtPosition(position)?.unit || undefined;
     }
 
+    placeUnitAt(
+        unit: Unit<HeroCategory | MonsterCategory>,
+        position: Position,
+    ): void {
+        const tile = this.getTileAtPosition(position);
+        if (tile) {
+            tile.unit = unit;
+        }
+    }
+
     hasWallAt(position: Position, direction: Direction): boolean {
         if (
             !position.isValid(this.BOARD_WIDTH, this.BOARD_HEIGHT) ||
@@ -67,7 +74,7 @@ class Board {
         const isCrossingHorizontal = this.isCrossingHorizontal(direction);
         if (isCrossingHorizontal) {
             return this.Walls.horizontal[position.y]![position.x]!;
-        }else{
+        } else {
             return this.Walls.vertical[position.y]![position.x]!;
         }
     }
@@ -82,9 +89,13 @@ class Board {
         }
         const isCrossingHorizontal = this.isCrossingHorizontal(direction);
         if (isCrossingHorizontal) {
-            return this.Doors.horizontal[positionAfterMove.y]![positionAfterMove.x]!;
-        }else{
-            return this.Doors.vertical[positionAfterMove.y]![positionAfterMove.x]!;
+            return this.Doors.horizontal[positionAfterMove.y]![
+                positionAfterMove.x
+            ]!;
+        } else {
+            return this.Doors.vertical[positionAfterMove.y]![
+                positionAfterMove.x
+            ]!;
         }
     }
 
@@ -92,31 +103,79 @@ class Board {
         return direction === Direction.UP || direction === Direction.DOWN;
     }
 
-    openDoor(position: Position, direction: Direction): void {
-        if (!this.hasDoorAt(position, direction)) {
-            return;
+    private setDoorStateAt(
+        position: Position,
+        direction: Direction,
+        isClosed: boolean,
+    ): {
+        success: boolean;
+        doorPlace?: {
+            position: Position;
+            verticalOrHorizontal: "vertical" | "horizontal";
+        };
+    } {
+        const doorPosition = position.afterMove(direction);
+        if (
+            !position.isValid(this.BOARD_WIDTH, this.BOARD_HEIGHT) ||
+            !doorPosition.isValid(this.BOARD_WIDTH, this.BOARD_HEIGHT)
+        ) {
+            return { success: false };
         }
-        const positionAfterMove = position.afterMove(direction);
         const isCrossingHorizontal = this.isCrossingHorizontal(direction);
 
         if (isCrossingHorizontal) {
-            this.Doors.horizontal[positionAfterMove.y]![positionAfterMove.x] = false;
-            this.Walls.horizontal[positionAfterMove.y]![positionAfterMove.x] = false;
-        }else{
-            this.Doors.vertical[positionAfterMove.y]![positionAfterMove.x] = false;
-            this.Walls.vertical[positionAfterMove.y]![positionAfterMove.x] = false;
+            this.Doors.horizontal[doorPosition.y]![doorPosition.x] = isClosed;
+            this.Walls.horizontal[doorPosition.y]![doorPosition.x] = isClosed;
+            return {
+                success: true,
+                doorPlace: {
+                    position: doorPosition,
+                    verticalOrHorizontal: "horizontal",
+                },
+            };
+        } else {
+            this.Doors.vertical[doorPosition.y]![doorPosition.x] = isClosed;
+            this.Walls.vertical[doorPosition.y]![doorPosition.x] = isClosed;
+            return {
+                success: true,
+                doorPlace: {
+                    position: doorPosition,
+                    verticalOrHorizontal: "vertical",
+                },
+            };
         }
     }
 
-    removeUnitFromTile(unit: Unit<HeroCategory | MonsterCategory>): void {
+    openDoor(position: Position, direction: Direction): void {
+        this.setDoorStateAt(position, direction, false);
+    }
+
+    placeDoor(
+        position: Position,
+        direction: Direction,
+    ): {
+        success: boolean;
+        doorPlace?: {
+            position: Position;
+            verticalOrHorizontal: "vertical" | "horizontal";
+        };
+    } {
+        return this.setDoorStateAt(position, direction, true);
+    }
+
+    removeUnitFromTile(unit: Unit<HeroCategory | MonsterCategory>): Unit<HeroCategory | MonsterCategory> | null {
         const position = this.getPositionOfUnit(unit.id);
-        if (position) {
-            const tile = this.getTileAtPosition(position);
-            if (tile) {
-                tile.unit = null;
-            }
+        return this.clearTileAtPosition(position!);
+    }
+
+    clearTileAtPosition(
+        position: Position,
+    ): Unit<HeroCategory | MonsterCategory> | null {
+        const tile = this.getTileAtPosition(position);
+        if (tile) {
+            return tile.eraseTile();
         }
+        return null;
     }
 }
-
 export { Board };

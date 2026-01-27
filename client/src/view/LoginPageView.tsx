@@ -10,20 +10,20 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState("a");
-  const [gameId, setGameId] = useState("a");
+  const [gameName, setGameName] = useState("a");
   const [role, setRole] = useState<"hero" | "game-master">("hero");
 
   const handleJoinGame = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!playerName.trim() || !gameId.trim()) {
+    if (!playerName.trim() || !gameName.trim()) {
       alert("Veuillez remplir tous les champs");
       return;
     }
 
-    console.log("📤 Envoi des données:", gameId, playerName, role);
+    console.log("📤 Envoi des données:", gameName, playerName, role);
     // Émettre l'événement de connexion au serveur
-    socket.emit("join-game", { gameId, playerName, role });
+    socket.emit("join-game", { gameName, playerName, role });
 
     // Écouter la réponse du serveur
     socket.once(
@@ -59,11 +59,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         </div>
 
         <div className="form-group">
-          <label>ID de la partie :</label>
+          <label>Nom de la partie :</label>
           <input
             type="text"
-            value={gameId}
-            onChange={(e) => setGameId(e.target.value)}
+            value={gameName}
+            onChange={(e) => setGameName(e.target.value)}
             placeholder="Ex: partie-1"
             required
           />

@@ -22,6 +22,11 @@ export class GameService {
         return serverHeroQuest.getGame(gameId);
     }
 
+    static getGameByName(gameName: string): Game | null {
+        const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        return serverHeroQuest.getGameByName(gameName);
+    }
+
     static hasGame(gameName: string): boolean {
         const serverHeroQuest = ServerHeroQuest.getServerInstance();
         return serverHeroQuest.getGameByName(gameName) !== null;

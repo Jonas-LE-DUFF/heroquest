@@ -2,18 +2,19 @@ import { Game } from "../POO/classes/Server/Game";
 
 import express from "express";
 import { createServer } from "http";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import { SocketData } from "../POO/interfaces/Socket/SocketData";
 import path from "path/win32";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
+import { registerSocketHandlers } from "../socket/SocketRouter";
 
 class ServerHeroQuest {
     private static serverInstance: ServerHeroQuest | undefined = undefined;
 
-    app = express();
-    httpServer = createServer(this.app);
-    io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
+    private app = express();
+    private httpServer = createServer(this.app);
+    private io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
         this.httpServer,
         {
             cors: {
@@ -27,7 +28,14 @@ class ServerHeroQuest {
 
     private constructor() {
         this.games = new Map<string, Game>();
-        this.app.use(express.static(path.join(__dirname, "../../client/build")));
+        this.app.use(
+            express.static(path.join(__dirname, "../../client/build")),
+        );
+        const PORT = process.env.PORT || 5000;
+        this.httpServer.listen(PORT, () => {
+            console.log(`Serveur démarré sur le port ${PORT}`);
+        });
+        registerSocketHandlers(this);
     }
 
     static getServerInstance(): ServerHeroQuest {
@@ -73,6 +81,10 @@ class ServerHeroQuest {
             }
         });
         return modifiedGames;
+    }
+
+    getIo(): Server<ClientToServerEvents, ServerToClientEvents, SocketData> {
+        return this.io;
     }
 }
 

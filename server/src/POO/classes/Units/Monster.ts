@@ -4,6 +4,7 @@ import { StatType } from "../../enums/Effects/StatType";
 import { EffectService } from "../../../services/EffectService";
 import { Stats } from "./Stats";
 import { Unit } from "./Unit";
+import { PlayerRole } from "../../enums/PlayerRole";
 
 class Monster extends Unit<MonsterCategory> {
     DefenseDiceType = FightDiceFaces.BlackShield;
@@ -40,6 +41,23 @@ class Monster extends Unit<MonsterCategory> {
         const multiplier = EffectService.getStatMultiplier(this, StatType.MOVEMENT);
         
         return Math.floor((baseMovement + modifier) * multiplier);
+    }
+
+    validateStatsImplementation(): {success: boolean; error?: string} {
+        // Ensure all stats are non-negative integers
+        for (const value of Object.values(this.stats)) {
+            if (value < 0) {
+                return { success: false, error: "Stats cannot be negative" };
+            }
+        }
+        if (this.stats.health > this.stats.maxHealth) {
+            return { success: false, error: "Health cannot exceed max health" };
+        }
+        return { success: true };
+    }
+
+    getRole(): PlayerRole {
+        return PlayerRole.GAME_MASTER;
     }
 }
 

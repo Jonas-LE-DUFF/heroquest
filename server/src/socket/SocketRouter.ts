@@ -2,32 +2,34 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import { loggerMiddleware } from "../middlewares/loggerMiddleware";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
-import { registerGameHandlers } from "../handlers/gamehandlers";
+import { registerGameActionsHandlers } from "../handlers/gameActionsHandlers";
 import { registerLobbyHandlers } from "../handlers/lobbyHandlers";
 import { registerMovementHandlers } from "../handlers/movementsHandlers";
 import { registerDiceHandlers } from "../handlers/diceHandler";
+import { registerGameHandlers } from "../handlers/gamehandlers";
+import { registerMasterHandlers } from "../handlers/masterHandlers";
+import { Socket } from "socket.io";
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
-    const { io } = server;
-    const gameService = new GameService();
+    const io = server.getIo();
 
     // Apply middlewares
     io.use(authMiddleware);
     io.use(loggerMiddleware);
 
-    io.on("connection", (socket) => {
+    io.on("connection", (socket: Socket) => {
         console.log("Connected:", socket.id);
 
         // Register all handlers
-        registerLobbyHandlers(socket, io, gameService);
-        registerGameHandlers(socket, io, gameService);
-        registerMovementHandlers(socket, io, gameService);
-        registerDiceHandlers(socket, io, gameService);
-        registerGameActionsHandlers(socket, io, gameService);
-        registerMasterHandlers(socket, io, gameService);
-
+        registerLobbyHandlers(socket);
+        registerGameActionsHandlers(socket);
+        registerMovementHandlers(socket);
+        registerDiceHandlers(socket);
+        registerGameHandlers(socket);
+        registerMasterHandlers(socket);
+        
         socket.on("disconnect", () => {
-            const modifiedGames = gameService.removePlayerFromAllGames(socket.id);
+            const modifiedGames = GameService.removePlayerFromAllGames(socket.id);
             modifiedGames.forEach(game => {
                 io.emit("game-state-update", { game: game });
             });

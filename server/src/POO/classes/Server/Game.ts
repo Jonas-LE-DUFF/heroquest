@@ -3,6 +3,7 @@ import { GameState } from "../GameState";
 import { Player } from "./Player";
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { Hero } from "../Units/Hero";
+import { Monster } from "../Units/Monster";
 
 class Game {
     id: string;
@@ -22,6 +23,11 @@ class Game {
         this.gameState = new GameState();
     }
 
+    /**
+     * Add a player to the game
+     * @throws Error if the player cannot be added
+     * @param player the player you want to add to the game
+     */
     addPlayer(player: Player): void {
         if (this.players.has(player.id)) {
             throw new Error(
@@ -63,6 +69,14 @@ class Game {
         return this.players.has(playerId);
     }
 
+    getAmountOfPlayers(): number {
+        return this.players.size;
+    }
+
+    /**
+     * Launch the game if all conditions are met
+     * @throws Error if the game cannot be launched
+     */
     launchGame(): void {
         if (this.players.size < 1) {
             throw new Error("Not enough players to start the game.");
@@ -92,6 +106,11 @@ class Game {
         this.gameState.status = "playing";
     }
 
+    /**
+     * this functions fetches the playerId of the player whose turn it is currently
+     * @throws Error if no current player turn found
+     * @returns the playerId to play the current turn
+     */
     getCurrentPlayerTurnId(): string {
         if (this.isMonsterTurn) {
             return this.getGameMaster()!.id;
@@ -104,6 +123,10 @@ class Game {
             .controlledByPlayerId;
     }
 
+    /**
+     * @throws Error if no current player found
+     * @returns the player who controlls the hero whose turn it is currently
+     */
     getCurrentPlayerTurn(): Player {
         const player = this.players.get(this.getCurrentPlayerTurnId());
         if (!player) {
@@ -112,6 +135,10 @@ class Game {
         return player;
     }
 
+    /**
+     * @throws Error if no current hero turn found or if it's monster turn
+     * @returns the Hero whose turn it is currently
+     */
     getCurrentHeroTurn(): Hero {
         if (this.isMonsterTurn) {
             throw new Error("It's currently the monsters' turn.");
@@ -140,15 +167,17 @@ class Game {
         try {
             const heroTurn = this.getCurrentHeroTurn();
             heroTurn.endTurnEffects();
-
+            this.currentTurnIndex =
+                (this.currentTurnIndex + 1) % this.playOrder.length;
         } catch {
             // it's monster turn
             this.isMonsterTurn = false;
             this.currentTurnIndex = 0;
+            this.gameState.getMonsters().forEach((monster : Monster) => {
+                monster.endTurnEffects();
+            });
             return;
         }
-        this.currentTurnIndex =
-            (this.currentTurnIndex + 1) % this.playOrder.length;
     }
 
     private createTurnOrder(): void {
