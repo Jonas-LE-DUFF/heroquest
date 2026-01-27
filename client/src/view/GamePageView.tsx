@@ -46,7 +46,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     location.state.gameState
   );
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
-  const user = currentGameState.players.get(socket.id);
+  const user = currentGameState.players.get(socket.data.playerId);
   const weapons = user?.stats?.equipments?.filter(equipment => getEquipmentType(equipment) === "Weapon") || [];
   console.log("User weapons :", weapons);
   const [statsVisible, setStatsVisible] = useState(false);
@@ -251,7 +251,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         setTargetMode(false);
         return;
       }
-      const player = currentGameState.players.get(socket.id);
+      const player = currentGameState.players.get(socket.data.playerId);
       if(!player) {
         console.error("Current player not found in game state.");
         setTargetMode(false);
@@ -308,7 +308,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       gameId,
       position,
       selectedType,
-      playerId: socket.id,
+      playerId: socket.data.playerId,
     });
   };
 
@@ -317,9 +317,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       {spellPageVisible && (
         <SpellsPopUp
           socket={socket}
-          spellSchools={currentGameState.players.get(socket.id)?.stats?.spells}
+          spellSchools={currentGameState.players.get(socket.data.playerId)?.stats?.spells}
           spellAlreadyUsed={
-            currentGameState.players.get(socket.id)?.stats?.usedSpells
+            currentGameState.players.get(socket.data.playerId)?.stats?.usedSpells
           }
           onSpellClick={(selectedSpell: string) => {
             setSelectedSpell(selectedSpell);
@@ -335,13 +335,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             gameId={currentGameState.id}
             isCurrentTurnPlayer={
               currentGameState.currentTurn ===
-              currentGameState.players.get(socket.id)?.id
+              currentGameState.players.get(socket.data.playerId)?.id
             }
             currentTurnPlayerName={getPlayerName(
               currentGameState,
               currentGameState.currentTurn
             )}
-            player={currentGameState.players.get(socket.id)}
+            player={currentGameState.players.get(socket.data.playerId)}
             statsOpen={statsVisible}
             setStatsOpen={setStatsVisible}
             setSelectedUnit={setSelectedUnit}

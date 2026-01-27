@@ -59,7 +59,7 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
       } else {
         // Log si pas de callback (pour debugging)
         if (!response.success) {
-          console.warn(`[Socket ${socket.id}] Pas de callback fourni. Erreur non envoyée: ${response.error}`);
+          console.warn(`[Socket ${socket.data.playerId}] Pas de callback fourni. Erreur non envoyée: ${response.error}`);
         }
       }
     };
@@ -70,7 +70,7 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
 
       if (!result.success) {
         const errorMessages = formatZodError(result.error);
-        console.warn(`[Socket ${socket.id}] Validation échouée: ${errorMessages}`);
+        console.warn(`[Socket ${socket.data.playerId}] Validation échouée: ${errorMessages}`);
         safeCallback({ success: false, error: `Données invalides: ${errorMessages}` });
         return;
       }
@@ -80,7 +80,7 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erreur interne du serveur";
-      console.error(`[Socket ${socket.id}] Erreur dans le handler:`, error);
+      console.error(`[Socket ${socket.data.playerId}] Erreur dans le handler:`, error);
       safeCallback({ success: false, error: errorMessage });
     }
   };
@@ -106,7 +106,7 @@ export function withErrorHandling<TResponse = unknown>(
       await handler(socket, safeCallback);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erreur interne du serveur";
-      console.error(`[Socket ${socket.id}] Erreur dans le handler:`, error);
+      console.error(`[Socket ${socket.data.playerId}] Erreur dans le handler:`, error);
       safeCallback({ success: false, error: errorMessage });
     }
   };

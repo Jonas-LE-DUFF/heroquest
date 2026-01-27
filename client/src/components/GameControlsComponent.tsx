@@ -59,12 +59,12 @@ const GameControls = ({
   isElementsShown.set("monsterDices", true);
   isElementsShown.set("masterControls", false);
 
-  const [player, setPlayer] = useState(game.players.get(socket.id));
+  const [player, setPlayer] = useState(game.players.get(socket.data.playerId));
 
   useEffect(() => {
     if (!game) return;
 
-    setPlayer(game.players.get(socket.id));
+    setPlayer(game.players.get(socket.data.playerId));
 
     socket.on("player-moved", (data: any) => {
       setMessage(`${data.playerName} s'est déplacé`);
@@ -80,7 +80,7 @@ const GameControls = ({
       "move-unit-one-step",
       {
         gameId,
-        unitId: socket.id,
+        unitId: socket.data.playerId,
         direction: direction,
       },
       (response: { success: boolean; error?: string }) => {
@@ -224,7 +224,7 @@ const GameControls = ({
           </AccordionSummary>
           <h3>Actions</h3>
           {role === "hero" &&
-            game.currentTurn === socket.id &&
+            game.currentTurn === socket.data.playerId &&
             renderMovementControls(role)}
           <div className="dices-section">
             <RedDices
@@ -256,7 +256,7 @@ const GameControls = ({
             </div>
           )}
           {message && <div className="game-message">{message}</div>}
-          {game.currentTurn === socket.id && (
+          {game.currentTurn === socket.data.playerId && (
             <div>
               <button onClick={endTurn}>END TURN</button>
             </div>

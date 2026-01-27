@@ -17,7 +17,7 @@ async function fight(
     defender: Unit<MonsterCategory | HeroCategory>,
     wishedNumberOfDices: number,
 ) {
-    const isGameMaster = socket.id === game.getGameMaster()?.id;
+    const isGameMaster = socket.data.playerId === game.getGameMaster()?.id;
 
     const defenderRole: PlayerRole = defender.getRole();
     const attackerRole: PlayerRole = attacker.getRole();

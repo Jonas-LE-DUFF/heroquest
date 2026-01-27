@@ -45,7 +45,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
     }) => {
       console.log("special-authorization received :", data);
       if (
-        data.playerId === socket.id &&
+        data.playerId === socket.data.playerId &&
         data.typeOfDices === "fight" &&
         role === "hero"
       ) {
@@ -68,7 +68,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       "roll-dice",
       {
         gameId,
-        playerId: socket.id,
+        playerId: socket.data.playerId,
         numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {

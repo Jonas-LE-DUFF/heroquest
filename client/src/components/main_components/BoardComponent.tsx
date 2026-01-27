@@ -55,11 +55,11 @@ const Board = ({
       return;
     }
     const tile = gameState.board[position.x][position.y];
-    if (!tile || !socket.id) return;
+    if (!tile || !socket.data.playerId) return;
 
     if (
-      gameState.players.get(socket.id)?.role === "hero" &&
-      gameState.currentTurn !== socket.id
+      gameState.players.get(socket.data.playerId)?.role === "hero" &&
+      gameState.currentTurn !== socket.data.playerId
     ) {
       return;
     }

@@ -26,7 +26,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     location.state.game
   );
   const gameId = gameState?.id;
-  const role = gameState?.players.get(socket.id)?.role;
+  const role = gameState?.players.get(socket.data.playerId)?.role;
 
   useEffect(() => {
     if (!gameState || !playerName) {
@@ -202,7 +202,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           </button>
         )}
         {!isGameMaster &&
-          gameState.players.get(socket.id)?.class !== undefined && (
+          gameState.players.get(socket.data.playerId)?.class !== undefined && (
             <button onClick={unselectCharacter} className="unselectCharacter">
               Retirer son personnage
             </button>

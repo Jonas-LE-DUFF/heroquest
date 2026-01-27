@@ -38,7 +38,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const [gameState, setGameState] = useState(location.state?.gameState || null);
   const { playerName, gameId } = location.state || {};
-  const player: Player | undefined = gameState.players.get(socket.id);
+  const player: Player | undefined = gameState.players.get(socket.data.playerId);
   const [heroType, setHeroType] = useState<heroClass>(
     player?.class ?? getAvailableClasses()[0]
   );
@@ -296,7 +296,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     const statsSent = {
       gameId,
-      playerId: socket.id,
+      playerId: socket.data.playerId,
       heroType: heroType,
       stats: stats,
     };
@@ -458,7 +458,7 @@ function isSpellElementDisabled(
 ) {
   if (!game) return false;
   for (let player of game.players.values()) {
-    if (player.id === socket.id) continue;
+    if (player.id === socket.data.playerId) continue;
     if (player.stats?.spells?.includes(element)) {
       return true;
     }
