@@ -3,7 +3,6 @@ import { Game } from "../POO/classes/Server/Game";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { SocketData } from "../POO/interfaces/Socket/SocketData";
 import path from "path/win32";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
@@ -14,7 +13,7 @@ class ServerHeroQuest {
 
     private app = express();
     private httpServer = createServer(this.app);
-    private io = new Server<ClientToServerEvents, ServerToClientEvents, SocketData>(
+    private io = new Server<ClientToServerEvents, ServerToClientEvents>(
         this.httpServer,
         {
             cors: {
@@ -83,7 +82,7 @@ class ServerHeroQuest {
         return modifiedGames;
     }
 
-    getIo(): Server<ClientToServerEvents, ServerToClientEvents, SocketData> {
+    getIo(): Server<ClientToServerEvents, ServerToClientEvents> {
         return this.io;
     }
 }

@@ -21,8 +21,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         "cast-spell",
         withValidation(castSpellSchema, async (socket, data, callback) => {
             console.debug("casting spell", data);
-            const { spellId, position } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, spellId, position } = data;
             const game = GameService.getGame(gameId);
 
             if (!requireGameExists(gameId)) {
@@ -76,8 +75,7 @@ export function registerGameActionsHandlers(socket: Socket) {
     socket.on(
         "attack",
         withValidation(attackSchema, async (socket, data, callback) => {
-            const { attackerId, targetId, wishedNumberOfDices } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, attackerId, targetId, wishedNumberOfDices } = data;
 
             if (!requireGameExists(gameId)) {
                 return callback(

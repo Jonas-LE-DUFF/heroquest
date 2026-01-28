@@ -5,16 +5,17 @@ import { GameService } from "../services/GameService";
 import { requireGameExists } from "../guards/requireGameExists";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import {
-    withErrorHandling,
     successResponse,
     errorResponse,
+    withValidation,
+    gameIdSchema,
 } from "../validation";
 
 export function registerGameHandlers(socket: Socket) {
     socket.on(
         "start-game",
-        withErrorHandling((socket, callback) => {
-            const gameId = socket.data.gameId;
+        withValidation(gameIdSchema, (socket, data, callback) => {
+            const { gameId } = data;
             const game = GameService.getGame(gameId);
 
             if (!requireGameExists(gameId)) {
@@ -43,8 +44,8 @@ export function registerGameHandlers(socket: Socket) {
 
     socket.on(
         "end-turn",
-        withErrorHandling((socket, callback) => {
-            const gameId = socket.data.gameId;
+        withValidation(gameIdSchema, (socket, data, callback) => {
+            const { gameId } = data;
             const game = GameService.getGame(gameId);
 
             if (!requireGameExists(gameId)) {

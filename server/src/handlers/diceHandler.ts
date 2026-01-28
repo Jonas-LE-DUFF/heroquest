@@ -29,8 +29,7 @@ function handleSpecialRollAuthorization(socket: Socket) {
         withValidation(
             authorizeSpecialThrowSchema,
             (socket, data, callback) => {
-                const { numberOfDices, typeOfDices, playerClass } = data;
-                const gameId = socket.data.gameId;
+                const { gameId, numberOfDices, typeOfDices, playerClass } = data;
                 const gameState = GameService.getGame(gameId);
 
                 if (!requireGameExists(gameId)) {
@@ -60,8 +59,7 @@ function handleRollRedDice(socket: Socket) {
     socket.on(
         "roll-red-dice",
         withValidation(rollRedDiceSchema, async (socket, data, callback) => {
-            const { numberOfDice } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, numberOfDice } = data;
             const game = GameService.getGame(gameId);
 
             if (!requireGameExists(gameId)) {
@@ -121,8 +119,7 @@ function handleRollFightDice(socket: Socket) {
     socket.on(
         "roll-dice",
         withValidation(rollDiceSchema, async (socket, data, callback) => {
-            const { numberOfDice } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, numberOfDice } = data;
             const game = GameService.getGame(gameId);
 
             if (!requireGameExists(gameId)) {

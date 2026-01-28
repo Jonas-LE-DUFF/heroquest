@@ -15,6 +15,10 @@ export const positionSchema = z.object({
     y: z.number().int(),
 });
 
+export const gameIdSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
+});
+
 // --- Lobby Events ---
 
 export const joinGameSchema = z.object({
@@ -25,21 +29,25 @@ export const joinGameSchema = z.object({
 
 
 export const chooseCharacterSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     hero: z.any(), // Hero est un objet complexe, on valide juste sa présence
 });
 
 export const unselectCharacterSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     heroId: z.string().min(1, "L'ID du héros est requis"),
 });
 
 // --- Game Actions Events ---
 
 export const castSpellSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     spellId: z.string().min(1, "L'ID du sort est requis"),
     position: positionSchema,
 });
 
 export const attackSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     attackerId: z.string().min(1, "L'ID de l'attaquant est requis"),
     targetId: z.string().min(1, "L'ID de la cible est requis"),
     wishedNumberOfDices: z.number().int().min(1),
@@ -48,27 +56,32 @@ export const attackSchema = z.object({
 // --- Dice Events ---
 
 export const authorizeSpecialThrowSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     numberOfDices: z.number().int().min(1, "Le nombre de dés doit être au moins 1"),
     typeOfDices: z.enum(["fight", "red"]),
     playerClass: z.enum(HeroCategory),
 });
 
 export const rollRedDiceSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     numberOfDice: z.number().int().min(1, "Le nombre de dés doit être au moins 1"),
 });
 
 export const rollDiceSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     numberOfDice: z.number().int().min(1, "Le nombre de dés doit être au moins 1"),
 });
 
 // --- Master Events ---
 
 export const placeElementSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     position: positionSchema,
     selectedType: z.any(), // TileType | Direction | MonsterCategory - complexe à valider
 });
 
 export const updateStatsUnitSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     newStats: z.any(), // Unit<MonsterCategory | HeroCategory> - objet complexe
     position: positionSchema,
 });
@@ -76,6 +89,7 @@ export const updateStatsUnitSchema = z.object({
 // --- Movement Events ---
 
 export const moveUnitOneStepSchema = z.object({
+    gameId: z.string().min(1, "L'ID de la partie est requis"),
     unitId: z.string().min(1, "L'ID de l'unité est requis"),
     direction: z.enum(Direction),
 });

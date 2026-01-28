@@ -13,6 +13,7 @@ import {
     chooseCharacterSchema,
     unselectCharacterSchema,
     withErrorHandling,
+    gameIdSchema,
 } from "../validation";
 
 export function registerLobbyHandlers(socket: Socket) {
@@ -35,9 +36,7 @@ export function registerLobbyHandlers(socket: Socket) {
             }
 
             socket.join(game.id);
-            socket.data.gameId = game.id;
-            socket.data.playerId = newPlayer.id;
-            socket.data.playerName = playerName;
+
             const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(game.id).emit("game-state-update", {
@@ -52,8 +51,8 @@ export function registerLobbyHandlers(socket: Socket) {
 
     socket.on(
         "leave-lobby",
-        withErrorHandling((socket, callback) => {
-            const gameId = socket.data.gameId;
+        withValidation(gameIdSchema, (socket, data, callback) => {
+            const { gameId } = data;
 
             if (!requireGameExists(gameId)) {
                 return callback(errorResponse("Partie non trouvée"));
@@ -84,8 +83,8 @@ export function registerLobbyHandlers(socket: Socket) {
 
     socket.on(
         "start-game",
-        withErrorHandling((socket, callback) => {
-            const gameId = socket.data.gameId;
+        withValidation(gameIdSchema, (socket, data, callback) => {
+            const { gameId } = data;
             console.log("Demande de démarrage pour la partie:", gameId);
 
             if (!requireGameExists(gameId)) {
@@ -121,8 +120,7 @@ export function registerLobbyHandlers(socket: Socket) {
     socket.on(
         "choose-character",
         withValidation(chooseCharacterSchema, (socket, data, callback) => {
-            const { hero } = data;
-            const gameId = socket.data.gameId;
+            const { hero, gameId } = data;
 
             if (!requireGameExists(gameId)) {
                 return callback(errorResponse("Game not found."));
@@ -183,8 +181,7 @@ export function registerLobbyHandlers(socket: Socket) {
     socket.on(
         "unselect-character",
         withValidation(unselectCharacterSchema, (socket, data, callback) => {
-            const { heroId } = data;
-            const gameId = socket.data.gameId;
+            const { heroId, gameId } = data;
 
             if (!requireGameExists(gameId)) {
                 return callback(errorResponse("Game not found."));

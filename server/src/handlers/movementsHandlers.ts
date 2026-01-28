@@ -24,8 +24,7 @@ function registerMovementHandlers(socket: Socket) {
     socket.on(
         "move-unit-one-step",
         withValidation(moveUnitOneStepSchema, (socket, data, callback) => {
-            const { unitId, direction } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, unitId, direction } = data;
 
             if (!requireGameExists(gameId)) {
                 return callback(errorResponse("La partie n'existe plus."));

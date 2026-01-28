@@ -25,8 +25,7 @@ export function registerMasterHandlers(socket: Socket) {
     socket.on(
         "place-element",
         withValidation(placeElementSchema, (socket, data, callback) => {
-            const { position: posData, selectedType } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, position: posData, selectedType } = data;
             const position = toPosition(posData);
 
             if (!requireGameExists(gameId)) {
@@ -104,8 +103,7 @@ export function registerMasterHandlers(socket: Socket) {
     socket.on(
         "update-stats-unit",
         withValidation(updateStatsUnitSchema, (socket, data, callback) => {
-            const { newStats, position: posData } = data;
-            const gameId = socket.data.gameId;
+            const { gameId, newStats, position: posData } = data;
             const position = toPosition(posData);
 
             if (!requireGameExists(gameId)) {
