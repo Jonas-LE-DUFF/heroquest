@@ -1,14 +1,14 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
-import { SpellElement } from "../../enums/SpellElement";
 import { AbilityType } from "../../enums/AbilityType";
 import { Effect } from "../Effects/Effects";
 import { EffectService } from "../../../services/EffectService";
-import { Spell } from "../Spell/Spell";
 import { Stats } from "./Stats";
 import { randomUUID } from "crypto";
 import { PlayerRole } from "../../enums/PlayerRole";
+import { MonsterAsJson } from "../../interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
 
 abstract class Unit<T extends HeroCategory | MonsterCategory> {
     id: string;
@@ -105,6 +105,9 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
     canPhaseThroughMonsters(): boolean {
         return EffectService.canPhaseThroughMonsters(this);
     }
+
+    abstract toJson(): HeroAsJson | MonsterAsJson;
+
 }
 
 export { Unit };

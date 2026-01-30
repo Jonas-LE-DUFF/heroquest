@@ -1,6 +1,7 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
+import { BoardAsJson } from "../../interfaces/ClassAsJson/Board/BoardAsJson";
 import { Position } from "../Position/Position";
 import { Tile } from "../Tile";
 import { Unit } from "../Units/Unit";
@@ -176,6 +177,24 @@ class Board {
             return tile.eraseTile();
         }
         return null;
+    }
+
+    toJson(): BoardAsJson {
+        return {
+            width: this.BOARD_WIDTH,
+            height: this.BOARD_HEIGHT,
+            tiles: this.Map.map((row) =>
+                row.map((tile) => tile.toJson()),
+            ),
+            doors: {
+                horizontalDoors: this.Doors.horizontal,
+                verticalDoors: this.Doors.vertical,
+            },
+            walls: {
+                horizontalWalls: this.Walls.horizontal,
+                verticalWalls: this.Walls.vertical,
+            },
+        };
     }
 }
 export { Board };

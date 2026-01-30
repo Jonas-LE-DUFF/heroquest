@@ -3,6 +3,13 @@ import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
 
 class Spell {
+    toJson(): any {
+        return {
+            id: this.id,
+            name: this.name,
+            element: this.element,
+        }
+    }
     id: string;
     name: string;
     element: SpellElement;

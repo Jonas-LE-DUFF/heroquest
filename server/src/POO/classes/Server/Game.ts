@@ -4,6 +4,7 @@ import { Player } from "./Player";
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { Hero } from "../Units/Hero";
 import { Monster } from "../Units/Monster";
+import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 
 class Game {
     id: string;
@@ -197,6 +198,16 @@ class Game {
                 }
             }
         }
+    }
+
+    toJson(): GameAsJson{
+        const playersAsJson = Array.from(this.players.values()).map((player) => player.toJson());
+        return {
+            id: this.id,
+            name: this.name,
+            players: playersAsJson,
+            gameState: this.gameState.toJson(),
+        };
     }
 }
 

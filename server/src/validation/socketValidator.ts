@@ -35,11 +35,11 @@ function formatZodError(error: z.ZodError): string {
  * 
  * @param schema - Le schéma Zod pour valider les données entrantes
  * @param handler - Le handler qui sera appelé avec les données validées
- * @returns Un handler Socket.IO qui valide les données avant exécution
+ * @returns Une fonction qui prend un socket et retourne un handler Socket.IO validé
  * 
  * @example
  * ```typescript
- * socket.on("join-game", withValidation(joinGameSchema, async (socket, data, callback) => {
+ * socket.on("join-game", withValidation(socket, joinGameSchema, async (socket, data, callback) => {
  *   // data est typé et validé automatiquement
  *   const { gameName, playerName, role } = data;
  *   // ... logique métier
@@ -48,10 +48,11 @@ function formatZodError(error: z.ZodError): string {
  * ```
  */
 export function withValidation<TSchema extends ZodType, TResponse = unknown>(
+  socket: Socket,
   schema: TSchema,
   handler: ValidatedHandler<TSchema, TResponse>
 ) {
-  return async (socket: Socket, rawData: unknown, callback?: SocketCallback<TResponse>) => {
+  return async (rawData: unknown, callback?: SocketCallback<TResponse>) => {
     // Wrapper pour gérer les callbacks optionnels
     const safeCallback = (response: SocketResponse<TResponse>) => {
       if (callback && typeof callback === "function") {
@@ -93,9 +94,10 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
  * @returns Un handler Socket.IO avec gestion d'erreurs et callback optionnel
  */
 export function withErrorHandling<TResponse = unknown>(
+  socket: Socket,
   handler: (socket: Socket, callback: (response: SocketResponse<TResponse>) => void) => void | Promise<void>
 ) {
-  return async (socket: Socket, callback?: SocketCallback<TResponse>) => {
+  return async (callback?: SocketCallback<TResponse>) => {
     const safeCallback = (response: SocketResponse<TResponse>) => {
       if (callback && typeof callback === "function") {
         callback(response);

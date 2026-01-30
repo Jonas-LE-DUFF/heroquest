@@ -2,9 +2,9 @@ import { AbilityType } from "../../enums/AbilityType";
 import { EffectDuration } from "../../enums/Effects/EffectDuration";
 import { EffectType } from "../../enums/Effects/EffectType";
 import { StatType } from "../../enums/Effects/StatType";
+import { EffectAsJson } from "../../interfaces/ClassAsJson/Effect/EffectAsJson";
 
 class Effect {
-
     name: string;
     isBuff: boolean;
     effectType: EffectType;
@@ -48,6 +48,16 @@ class Effect {
             return true;
         };
         return false;
+    }
+
+    toJson(): EffectAsJson {
+        return {
+            name: this.name,
+            isBuff: this.isBuff,
+            effectType: this.effectType,
+            duration: this.duration,
+            ability: this.ability,
+        };
     }
 }
 

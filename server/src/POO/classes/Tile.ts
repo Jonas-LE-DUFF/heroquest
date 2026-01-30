@@ -1,6 +1,7 @@
 import { HeroCategory } from "../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../enums/Categories/MonsterCategory";
 import { TileType } from "../enums/TileType";
+import { TileAsJson } from "../interfaces/ClassAsJson/Board/TileAsJson";
 import { Unit } from "./Units/Unit";
 
 class Tile {
@@ -25,6 +26,13 @@ class Tile {
 
     isOccupied() : boolean {
         return this.type !== TileType.FLOOR || this.unit !== null;
+    }
+
+    toJson(): TileAsJson {
+        return {
+            type: this.type,
+            unit: this.unit ? this.unit.toJson() : null,
+        };
     }
 }
 

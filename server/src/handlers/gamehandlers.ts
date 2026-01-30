@@ -14,7 +14,7 @@ import {
 export function registerGameHandlers(socket: Socket) {
     socket.on(
         "start-game",
-        withValidation(gameIdSchema, (socket, data, callback) => {
+        withValidation(socket, gameIdSchema, (socket, data, callback) => {
             const { gameId } = data;
             const game = GameService.getGame(gameId);
 
@@ -44,7 +44,7 @@ export function registerGameHandlers(socket: Socket) {
 
     socket.on(
         "end-turn",
-        withValidation(gameIdSchema, (socket, data, callback) => {
+        withValidation(socket, gameIdSchema, (socket, data, callback) => {
             const { gameId } = data;
             const game = GameService.getGame(gameId);
 

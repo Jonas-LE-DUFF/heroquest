@@ -1,3 +1,4 @@
+import { ArmorAsJson } from "../../interfaces/ClassAsJson/Equipment/ArmorAsJson";
 import { Item } from "./Item";
 
 class Armor extends Item {
@@ -10,6 +11,16 @@ class Armor extends Item {
         this.defenseValue = defenseValue;
         this.armorMovementDebuff = movementDebuff;
         this.type = type;
+    }
+
+    toJson(): ArmorAsJson {
+        return {
+            id: this.id,
+            name: this.name,
+            defense: this.defenseValue,
+            movementPenalty: this.armorMovementDebuff,
+            cost: this.cost,
+        };
     }
 }
 

@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
 import { PlayerRole } from "../../enums/PlayerRole";
+import { PlayerAsJson } from "../../interfaces/ClassAsJson/Server/PlayerAsJson";
 
 class Player {
+    
     id: string;
     name: string;
     role: PlayerRole;
@@ -12,6 +14,14 @@ class Player {
         this.name = name;
         this.role = role;
         this.isReady = false;
+    }
+
+    toJson(): PlayerAsJson {
+        return {
+            id: this.id,
+            name: this.name,
+            role: this.role,
+        };
     }
 }
 

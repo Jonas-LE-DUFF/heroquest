@@ -1,10 +1,12 @@
-import { Armor } from "./Armor.ts";
-import { Potion } from "./Potions/Potions.ts";
-import { Weapon } from "./Weapon.ts";
+import { Armor } from "./Armor";
+import { Potion } from "./Potions/Potions";
+import { Weapon } from "./Weapon";
 
-import equipmentJson from "../../game_cards/equipments.json";
+import equipmentJson from "../../../shared/game_cards/equipments.json";
+import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 
 class Equipment {
+    
     gold: number;
     weapons: Weapon[] = [];
     selectedWeaponIndex: number = 0;
@@ -94,6 +96,15 @@ class Equipment {
             default:
                 throw new Error(`Unknown equipment type: ${equipmentData.type}`);
         }
+    }
+
+    toJson(): EquipmentAsJson {
+        return {
+            gold : this.gold,
+            selectedWeaponIndex : this.selectedWeaponIndex,
+            weapons : this.weapons.map(weapon => weapon.toJson()),
+            armors : this.armors.map(armor => armor.toJson()),
+        };
     }
 }
 

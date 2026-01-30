@@ -1,5 +1,6 @@
 import { HeroCategory } from "../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../enums/Categories/MonsterCategory";
+import { GameStateAsJson } from "../interfaces/ClassAsJson/Server/GameStateAsJson";
 import { SpecialAuthorizedHero } from "../interfaces/SpecialAuthorizedHero";
 import { Board } from "./Board/Board";
 import { Position } from "./Position/Position";
@@ -10,8 +11,9 @@ import { Unit } from "./Units/Unit";
 
 class GameState {
     Units: Unit<HeroCategory | MonsterCategory>[];
-    board: Board;
+    private board: Board;
     status: "lobby" | "playing" | "finished";
+
     private specialAuthorizedHero: SpecialAuthorizedHero | undefined =
         undefined;
 
@@ -169,6 +171,14 @@ class GameState {
             );
             throw new Error("Unit to update not found or mismatch in ID/category");
         }
+    }
+
+    toJson(): GameStateAsJson {
+        return {
+            Units: this.Units.map((unit) => unit.toJson()),
+            board: this.board.toJson(),
+            status: this.status,
+        };
     }
 }
 

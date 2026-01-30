@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SendableGameState } from "../shared/type";
-import { convertSendableGameStateAsGameState } from "../shared/utils";
 import "./LoginPageView.css";
 interface LoginPageProps {
   socket: any;
@@ -13,7 +11,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const [gameName, setGameName] = useState("a");
   const [role, setRole] = useState<"hero" | "game-master">("hero");
 
-  const handleJoinGame = (e: React.FormEvent) => {
+  const handleJoinGame = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!playerName.trim() || !gameName.trim()) {
@@ -21,18 +19,25 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       return;
     }
 
-    console.log("📤 Envoi des données:", gameName, playerName, role);
+    console.log("Envoi des données:", gameName, playerName, role);
     // Émettre l'événement de connexion au serveur
-    socket.emit("join-game", { gameName, playerName, role });
+    socket.emit("join-game", { gameName, playerName, role }, (response: {success: boolean; message?: string}) => {
+      if (!response.success) {
+        alert(`Erreur: ${response.message}`);
+        return;
+      }
+        console.log("Rejoint la partie avec succès:", response);
+    });
 
     // Écouter la réponse du serveur
     socket.once(
       "join-success",
-      (data: { playerId: string; game: SendableGameState }) => {
+      (data: { playerId: string; game: Game }) => {
+        console.log("Rejoint la partie avec succès:", data);
         navigate("/lobby", {
           state: {
             playerName: playerName,
-            game: convertSendableGameStateAsGameState(data.game),
+            game: data.game,
           },
         });
       }
@@ -75,8 +80,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
             value={role}
             onChange={(e) => setRole(e.target.value as "hero" | "game-master")}
           >
-            <option value="hero">🎭 Héros</option>
-            <option value="game-master">👑 Maître du Jeu</option>
+            <option value="hero">Héros</option>
+            <option value="game-master">Maître du Jeu</option>
           </select>
         </div>
 

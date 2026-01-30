@@ -19,7 +19,7 @@ import {
 export function registerLobbyHandlers(socket: Socket) {
     socket.on(
         "join-game",
-        withValidation(joinGameSchema, (socket, data, callback) => {
+        withValidation(socket, joinGameSchema, (socket, data, callback) => {
             const { gameName, playerName, role } = data;
             console.log("gameName:", gameName, "playerName:", playerName);
 
@@ -39,6 +39,11 @@ export function registerLobbyHandlers(socket: Socket) {
 
             const io = ServerHeroQuest.getServerInstance().getIo();
 
+            socket.emit("join-success", {
+                playerId: newPlayer.id,
+                game: game,
+            });
+
             io.to(game.id).emit("game-state-update", {
                 game: game,
             });
@@ -51,7 +56,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
     socket.on(
         "leave-lobby",
-        withValidation(gameIdSchema, (socket, data, callback) => {
+        withValidation(socket, gameIdSchema, (socket, data, callback) => {
             const { gameId } = data;
 
             if (!requireGameExists(gameId)) {
@@ -83,7 +88,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
     socket.on(
         "start-game",
-        withValidation(gameIdSchema, (socket, data, callback) => {
+        withValidation(socket, gameIdSchema, (socket, data, callback) => {
             const { gameId } = data;
             console.log("Demande de démarrage pour la partie:", gameId);
 
@@ -119,7 +124,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
     socket.on(
         "choose-character",
-        withValidation(chooseCharacterSchema, (socket, data, callback) => {
+        withValidation(socket, chooseCharacterSchema, (socket, data, callback) => {
             const { hero, gameId } = data;
 
             if (!requireGameExists(gameId)) {
@@ -180,7 +185,7 @@ export function registerLobbyHandlers(socket: Socket) {
     //unselect-character
     socket.on(
         "unselect-character",
-        withValidation(unselectCharacterSchema, (socket, data, callback) => {
+        withValidation(socket, unselectCharacterSchema, (socket, data, callback) => {
             const { heroId, gameId } = data;
 
             if (!requireGameExists(gameId)) {
