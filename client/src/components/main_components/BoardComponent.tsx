@@ -1,12 +1,3 @@
-import {
-  Direction,
-  GameState,
-  Monster,
-  monsterClass,
-  Player,
-  Position,
-  tileType,
-} from "../../shared/type";
 import "./BoardComponent.css";
 import {
   Table,
@@ -20,7 +11,6 @@ import { Socket } from "socket.io-client";
 import {
   getIconClassPath,
   getUnitClassName,
-  positionKey,
 } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
 

@@ -94,12 +94,18 @@ class Hero extends Unit<HeroCategory> {
         return PlayerRole.HERO;
     }
 
+    getSpellElements(): SpellElement[] {
+        const elementsSet = new Set<SpellElement>();
+        this.spells.forEach(spell => elementsSet.add(spell.element));
+        return Array.from(elementsSet);
+    }
+
     toJson(): HeroAsJson {
         return {
             id: this.id,
             controlledByPlayerId: this.controlledByPlayerId,
             name: this.name,
-            category: HeroCategory[this.category],
+            category: this.category,
             stats: {
                 health: this.stats.health,
                 maxHealth: this.stats.maxHealth,
@@ -110,6 +116,8 @@ class Hero extends Unit<HeroCategory> {
             },
             equipment: this.equipment.toJson(),
             spells: this.spells.map(spell => spell.toJson()),
+            usedSpells: this.usedSpells.map(spell => spell.toJson()),
+            spellElements: this.getSpellElements(),
         };
     }
 }

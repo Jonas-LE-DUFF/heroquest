@@ -65,7 +65,7 @@ export function registerGameActionsHandlers(socket: Socket) {
             const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(gameId).emit("game-state-update", {
-                game: game!,
+                game: game!.toJson(),
             });
 
             callback(successResponse());

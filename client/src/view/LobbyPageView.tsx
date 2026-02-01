@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { SpellElement } from "../POO/enums/SpellElement";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 
 interface LobbyPageProps {
   socket: any;
@@ -10,11 +16,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const navigate = useNavigate();
 
   const playerName = location.state.playerName;
-  const [game, setgame] = useState<Game | null>(
+  const [game, setgame] = useState<GameAsJson | null>(
     location.state.game
   );
   const gameId = game?.id;
-  const role = game?.getPlayer(socket.id)?.role;
+  const role = game?.players?.find((p) => p.id === socket.id)?.role;
 
   useEffect(() => {
     if (!game || !playerName) {
@@ -34,7 +40,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       role
     );
 
-    const handleGameStart = (data: { game: Game }) => {
+    const handleGameStart = (data: { game: GameAsJson }) => {
       const game = data.game;
       console.log("Game is starting...", game);
       navigate("/game", {
@@ -42,7 +48,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       });
     };
 
-    const handlegameUpdate = (data: { game: Game }) => {
+    const handlegameUpdate = (data: { game: GameAsJson }) => {
       console.log("update of game state received");
       setgame(data.game);
     };
@@ -104,7 +110,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     return spellElements.map((spellElement) => SpellElement[spellElement]).join(", ");
   }
 
-  function renderHeroes(heroes: Hero[]) {
+  function renderHeroes(heroes: HeroAsJson[]) {
     if (heroes.length === 0) return "Pas encore choisi";
     return heroes.map((hero) => {
       let playerClass;
@@ -129,18 +135,17 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
   }
 
-  function renderStatus(players: Map<string, Player>) {
-    if (!players || players.size === 0) {
+  function renderStatus(players: PlayerAsJson[]) {
+    if (!players || players.length === 0) {
       return <div>Aucun Joueur</div>;
     }
 
-    const playersAsArray = Array.from(players.values());
-    return playersAsArray
-      .map((player: Player) => {
+    return players
+      .map((player: PlayerAsJson) => {
         if (!player || typeof player !== "object") {
           return null;
         }
-        const heroes: Hero[] = game
+        const heroes: HeroAsJson[] = game
           ? game.gameState.getHeroesControlledByPlayer(player.id)
           : [];
 
@@ -173,7 +178,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   if (!game) return <div>le game existe pu...</div>;
   const canStartGame = game.gameState.isLaunchable();
   const isGameMaster = role === PlayerRole.GAME_MASTER;
-  const players = game.getPlayers();
+  const players = game.players;
 
   return (
     <div className="lobby-page">
@@ -186,7 +191,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       <div className="players-list">
         <h2>
           Joueurs connectés (
-          {game && players ? players.size : "0"}
+          {game && players ? players.length : "0"}
           /5)
         </h2>
       </div>

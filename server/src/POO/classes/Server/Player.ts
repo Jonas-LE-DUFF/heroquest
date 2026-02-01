@@ -21,6 +21,7 @@ class Player {
             id: this.id,
             name: this.name,
             role: this.role,
+            isReady: this.isReady,
         };
     }
 }

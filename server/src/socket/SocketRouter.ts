@@ -31,7 +31,7 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
         socket.on("disconnect", () => {
             const modifiedGames = GameService.removePlayerFromAllGames(socket.id);
             modifiedGames.forEach(game => {
-                io.emit("game-state-update", { game: game });
+                io.emit("game-state-update", { game: game.toJson() });
             });
             console.log(`Disconnected player: ${socket.id} from games ${modifiedGames.map(g => g.name).join(", ")}`);
         });

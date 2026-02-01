@@ -11,7 +11,7 @@ import { Unit } from "./Units/Unit";
 
 class GameState {
     Units: Unit<HeroCategory | MonsterCategory>[];
-    private board: Board;
+    board: Board;
     status: "lobby" | "playing" | "finished";
 
     private specialAuthorizedHero: SpecialAuthorizedHero | undefined =
@@ -109,7 +109,7 @@ class GameState {
         return { success: true };
     }
 
-    isHeroCategoryTaken(category: HeroCategory): boolean {
+     isHeroCategoryTaken(category: HeroCategory): boolean {
         return this.Units.some(
             (u) => u instanceof Hero && u.category === category,
         );

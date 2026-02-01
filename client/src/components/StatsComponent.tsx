@@ -5,7 +5,7 @@ import {
   getFightDiceFaceNumber,
   getIconClassPath,
   getUnitClassName,
-  isPlayer,
+  isHero,
 } from "../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";

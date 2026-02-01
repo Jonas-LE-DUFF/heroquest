@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPageView.css";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 interface LoginPageProps {
   socket: any;
 }
@@ -32,7 +33,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
     // Écouter la réponse du serveur
     socket.once(
       "join-success",
-      (data: { playerId: string; game: Game }) => {
+      (data: { playerId: string; game: GameAsJson }) => {
         console.log("Rejoint la partie avec succès:", data);
         navigate("/lobby", {
           state: {

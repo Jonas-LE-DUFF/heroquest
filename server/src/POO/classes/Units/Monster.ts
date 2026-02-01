@@ -5,6 +5,7 @@ import { EffectService } from "../../../services/EffectService";
 import { Stats } from "./Stats";
 import { Unit } from "./Unit";
 import { PlayerRole } from "../../enums/PlayerRole";
+import { MonsterAsJson } from "../../interfaces/ClassAsJson/Unit/MonsterAsJson";
 
 class Monster extends Unit<MonsterCategory> {
     DefenseDiceType = FightDiceFaces.BlackShield;
@@ -58,6 +59,22 @@ class Monster extends Unit<MonsterCategory> {
 
     getRole(): PlayerRole {
         return PlayerRole.GAME_MASTER;
+    }
+
+    toJson(): MonsterAsJson {
+        return {
+            id: this.id,
+            name: this.name,
+            category: this.category,
+            stats: {
+                movements: this.stats.movements,
+                health: this.stats.health,
+                maxHealth: this.stats.maxHealth,
+                attack: this.nbAttackDice,
+                defense: this.stats.nbDefenseDice,
+                spirit: this.stats.spirit,
+            },
+        };
     }
 }
 

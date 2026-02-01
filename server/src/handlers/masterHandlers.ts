@@ -55,7 +55,7 @@ export function registerMasterHandlers(socket: Socket) {
                 game?.gameState.clearTileAtPosition(position);
 
                 io.to(gameId).emit("game-state-update", {
-                    game: game!,
+                    game: game!.toJson(),
                 });
                 return callback(successResponse());
             }
@@ -127,7 +127,7 @@ export function registerMasterHandlers(socket: Socket) {
             io.to(gameId).emit("stats-updated", {
                 entityId: newStats.id,
                 newStats: newStats,
-                isPlayer: newStats.getRole() === PlayerRole.HERO,
+                isHero: newStats.getRole() === PlayerRole.HERO,
             });
 
             callback(successResponse());
@@ -195,7 +195,7 @@ function handleMonsterPlacement(
     game!.gameState.board.placeUnitAt(monster, position);
 
     io.to(gameId).emit("game-state-update", {
-        game: game!,
+        game: game!.toJson(),
     });
     return { success: true };
 }

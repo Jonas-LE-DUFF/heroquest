@@ -48,7 +48,7 @@ interface ServerToClientEvents {
   "stats-updated": (data: {
     entityId: string;
     newStats: StatsAsJson;
-    isPlayer: boolean;
+    isHero: boolean;
   }) => void;
 
   // errors

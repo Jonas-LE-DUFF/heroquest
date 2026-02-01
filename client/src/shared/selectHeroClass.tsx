@@ -1,4 +1,3 @@
-import { heroClass } from "./type";
 import { MenuItem } from "@mui/material";
 import { getHeroClassIconPath, getHeroClassName } from "./utils";
 

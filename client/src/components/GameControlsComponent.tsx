@@ -1,13 +1,5 @@
-import React, { useState, useEffect, JSX } from "react";
+import { useState, useEffect, JSX } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  Direction,
-  GameState,
-  Monster,
-  monsterClass,
-  Player,
-  tileType,
-} from "../shared/type";
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import {

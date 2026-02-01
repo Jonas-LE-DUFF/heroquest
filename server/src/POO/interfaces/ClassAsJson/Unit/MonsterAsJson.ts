@@ -1,9 +1,10 @@
+import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
 import { StatsAsJson } from "./StatsAsJson";
 
 interface MonsterAsJson {
     id: string;
     name: string;
-    category: string;
+    category: MonsterCategory;
     stats: StatsAsJson;
 }
 

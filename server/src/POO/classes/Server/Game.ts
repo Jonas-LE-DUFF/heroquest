@@ -207,6 +207,9 @@ class Game {
             name: this.name,
             players: playersAsJson,
             gameState: this.gameState.toJson(),
+            playOrder: this.playOrder,
+            isMonsterTurn: this.isMonsterTurn,
+            currentTurnIndex: this.currentTurnIndex,
         };
     }
 }

@@ -45,7 +45,7 @@ export function registerLobbyHandlers(socket: Socket) {
             });
 
             io.to(game.id).emit("game-state-update", {
-                game: game,
+                game: game.toJson(),
             });
 
             console.log(`${playerName} a rejoint la partie ${game.id}`);
@@ -80,7 +80,7 @@ export function registerLobbyHandlers(socket: Socket) {
             }
             const io = ServerHeroQuest.getServerInstance().getIo();
             io.to(gameId).emit("game-state-update", {
-                game: game!,
+                game: game!.toJson(),
             });
             callback(successResponse());
         }),
@@ -116,7 +116,7 @@ export function registerLobbyHandlers(socket: Socket) {
             const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(gameId).emit("game-start", {
-                game: game!,
+                game: game!.toJson(),
             });
             callback(successResponse());
         }),
@@ -156,7 +156,7 @@ export function registerLobbyHandlers(socket: Socket) {
             }
 
             // Check if the hero class is already selected
-            if (game.gameState.isHeroCategoryTaken(hero.category)) {
+            if (game.gameState. isHeroCategoryTaken(hero.category)) {
                 return callback(
                     errorResponse("Class already selected by another player."),
                 );
@@ -176,7 +176,7 @@ export function registerLobbyHandlers(socket: Socket) {
             const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(gameId).emit("game-state-update", {
-                game: game,
+                game: game.toJson(),
             });
             callback(successResponse());
         }),
@@ -213,7 +213,7 @@ export function registerLobbyHandlers(socket: Socket) {
             const io = ServerHeroQuest.getServerInstance().getIo();
 
             io.to(gameId).emit("game-state-update", {
-                game: game,
+                game: game.toJson(),
             });
             callback(successResponse());
         }),

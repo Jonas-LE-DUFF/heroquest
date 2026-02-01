@@ -1,7 +1,10 @@
+import { PlayerRole } from "../../../enums/PlayerRole";
+
 interface PlayerAsJson {
     id: string;
     name: string;
-    role: "hero" | "game-master";
+    role: PlayerRole;
+    isReady: boolean;
 }
 
 export type { PlayerAsJson };
