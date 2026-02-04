@@ -1,8 +1,7 @@
-import { HeroCategory } from "../../../enums/Categories/HeroCategory";
-import { SpellElement } from "../../../enums/SpellElement";
+import { HeroCategory } from "../../enums/Categories/HeroCategory";
+import { SpellElement } from "../../enums/SpellElement";
 
 interface HeroCreationWish {
-    gameId: string;
     name: string;
     heroCategory: HeroCategory;
     gold: number;

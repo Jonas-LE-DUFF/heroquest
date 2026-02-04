@@ -68,7 +68,7 @@ class Equipment {
         }
 
         switch (equipmentData.type) {
-            case "weapon":
+            case "Weapon":
                 const weapon = new Weapon(
                     equipmentData.id,
                     equipmentData.name,
@@ -79,7 +79,7 @@ class Equipment {
                 );
                 this.addWeapon(weapon);
                 break;
-            case "armor":
+            case "Armor":
                 const armor = new Armor(
                     equipmentData.id,
                     equipmentData.name,
@@ -91,7 +91,7 @@ class Equipment {
                 );
                 this.addArmor(armor);
                 break;
-            case "potion":
+            case "Potion":
                 throw new Error("Potion creation not implemented yet.");
             default:
                 throw new Error(`Unknown equipment type: ${equipmentData.type}`);

@@ -16,8 +16,6 @@ import { renderHeroClassOptions } from "../shared/selectHeroClass";
 import { CardCarouselComponent } from "../components/Card/CardCarouselComponent";
 import { getCardName } from "../components/Card/cardUtils";
 import { CardComponent } from "../components/Card/CardComponent";
-import { getHeroStats } from "../shared/heroesStats";
-import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { getHeroByPlayerId, getHeroes, getPlayerBySocketId } from "../shared/serverUtils";
@@ -35,23 +33,18 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const [game, setGame] = useState<GameAsJson>(location.state?.game || null);
 
   const { playerName, gameId } = location.state || {};
-  const player: PlayerAsJson | undefined = getPlayerBySocketId(
-    socket.id,
-    game
-  ) || undefined;
+
   const hero = getHeroByPlayerId(socket.id, game);
-  const [heroType, setHeroType] = useState<HeroCategory>(
-    getAvailableClasses()[0]
-  );
 
   const [heroCreation, setHeroCreation] = useState<HeroCreationWish>({
+    gameId: game.id,
     name: playerName,
+    heroCategory: getAvailableClasses()[0],
     gold: 0,
     spellElements: [],
     equipments: [],
   });
 
-  const stats = getHeroStats(hero?.stats ?? getAvailableClasses()[0]);
 
   const [centerEquipment, setCenterEquipment] = useState<string | undefined>(
     undefined
@@ -79,12 +72,14 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   }
 
   const handleChangeHeroClass = (event: SelectChangeEvent<number>) => {
-    setHeroType(Number(event.target.value));
-    const unit = getHeroStats(Number(event.target.value));
+    setHeroCreation((prev) => ({
+      ...prev,
+      heroCategory: Number(event.target.value),
+    }));
   };
 
   const handleSpellElementChange = (element: SpellElement) => {
-    if (heroType === HeroCategory.Elf) {
+    if (heroCreation.heroCategory === HeroCategory.Elf) {
       if (heroCreation.spellElements.includes(element)) {
         // Deselect if already selected
         setHeroCreation((prev) => ({
@@ -98,7 +93,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         ...prev,
         spellElements: [element],
       }));
-    } else if (heroType === HeroCategory.Cleric) {
+    } else if (heroCreation.heroCategory === HeroCategory.Cleric) {
       // Toggle selection for Cleric
       setHeroCreation((prev) => ({
         ...prev,
@@ -110,7 +105,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   };
 
   const renderSpellElements = () => {
-    if (heroType !== HeroCategory.Elf && heroType !== HeroCategory.Cleric) {
+    if (heroCreation.heroCategory !== HeroCategory.Elf && heroCreation.heroCategory !== HeroCategory.Cleric) {
       return null;
     }
     const elements: SpellElement[] = [];
@@ -151,7 +146,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   };
 
   useEffect(() => {
-    if (heroType === HeroCategory.Cleric) {
+    if (heroCreation.heroCategory === HeroCategory.Cleric) {
       // Automatically select all elements for Cleric if not already selected
 
       const selectedSpells: SpellElement[] = [];
@@ -172,7 +167,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         ...prev,
         spellElements: selectedSpells,
       }));
-    } else if (heroType === HeroCategory.Elf) {
+    } else if (heroCreation.heroCategory === HeroCategory.Elf) {
       // Clear selections when switching away from elf or cleric
       for (const e in SpellElement) {
         if (
@@ -198,36 +193,24 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         spellElements: [],
       }));
     }
-  }, [socket, game, heroType]);
+  }, [socket, game, heroCreation.heroCategory]);
 
   const handleSubmit = () => {
     if (!game) return;
 
-    const stats: HeroCreationWish = {
-      name: playerName,
-      gold: heroCreation.gold,
-      spellElements: heroCreation.spellElements,
-      equipments: heroCreation.equipments,
-    };
-
-    const statsSent = {
-      gameId,
-      playerId: socket.id,
-      heroType: heroType,
-      stats: stats,
-    };
+    console.debug("Submitting hero creation:", heroCreation);
 
     socket.emit(
       "choose-character",
-      statsSent,
+      { heroCreationWish: heroCreation, gameId: game.id },
       (response: {
         success: boolean;
         error?: string;
-        game?: GameAsJson;
+        data?: GameAsJson;
       }) => {
-        if (response.success && response.game) {
+        if (response.success && response.data) {
           navigate("/lobby", {
-            state: { playerName: playerName, game: response.game },
+            state: { playerName: playerName, game: response.data },
           });
         } else {
           alert(`Error: ${response.error}`);
@@ -245,7 +228,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           <Select
             labelId="label-hero-class"
             id="select-hero-class"
-            value={heroType}
+            value={heroCreation.heroCategory}
             onChange={handleChangeHeroClass}
             autoWidth
           >
@@ -265,7 +248,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             value={heroCreation.gold}
           />
         </div>
-        {[HeroCategory.Cleric, HeroCategory.Elf].includes(heroType) && (
+        {[HeroCategory.Cleric, HeroCategory.Elf].includes(heroCreation.heroCategory) && (
           <div className="spellList">
             <label id="label-spell-elements">éléments de sort</label>
             <div className="spellCards">{renderSpellElements()}</div>

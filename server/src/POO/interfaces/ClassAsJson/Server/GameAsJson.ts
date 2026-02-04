@@ -6,10 +6,14 @@ interface GameAsJson {
     id: string;
     name: string;
     players: PlayerAsJson[];
-    gameState: GameStateAsJson;
     playOrder: HeroCategory[];
     isMonsterTurn: boolean;
     currentTurnIndex: number;
+    gameState: GameStateAsJson;
+    isLaunchable: {
+        success: boolean;
+        reasons: string[];
+    };
 }
 
 export type { GameAsJson };

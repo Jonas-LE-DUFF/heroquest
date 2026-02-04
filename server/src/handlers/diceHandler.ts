@@ -75,7 +75,7 @@ function handleRollRedDice(socket: Socket) {
 
             let amountOfDice;
 
-            const player = game!.getPlayer(socket.data.playerId);
+            const player = game!.getPlayer(socket.id);
             if (!player) {
                 console.error("no player found for rolling fight dices");
                 return callback(
@@ -135,7 +135,7 @@ function handleRollFightDice(socket: Socket) {
 
             let amountOfDice;
 
-            const player = game!.getPlayer(socket.data.playerId);
+            const player = game!.getPlayer(socket.id);
             if (!player) {
                 console.error("no player found for rolling fight dices");
                 return callback(

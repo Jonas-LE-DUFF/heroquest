@@ -1,21 +1,22 @@
 import { MenuItem } from "@mui/material";
 import { getHeroClassIconPath, getHeroClassName } from "./utils";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 
 export function renderHeroClassOptions(
-  disabledClasses: Set<heroClass | undefined> = new Set()
+  disabledClasses: Set<HeroCategory | undefined> = new Set()
 ) {
-  return Object.entries(heroClass)
+  return Object.entries(HeroCategory)
     .filter(([key, value]) => isNaN(Number(key)))
     .map(([key, value]) => (
       <MenuItem
         key={value}
         value={value}
-        disabled={disabledClasses.has(value as heroClass)}
+        disabled={disabledClasses.has(value as HeroCategory)}
       >
         <div className="selectHeroClass">
           <img
             className="heroFaceimage"
-            src={getHeroClassIconPath(value as heroClass)}
+            src={getHeroClassIconPath(value as HeroCategory)}
             alt={"icon" + value}
           ></img>
           {getHeroClassName(Number(value))}

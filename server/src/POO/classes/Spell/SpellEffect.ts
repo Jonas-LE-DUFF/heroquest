@@ -3,9 +3,9 @@
 import { Unit } from "../Units/Unit";
 
 abstract class SpellEffect {
-    type: "damage" | "healing" | "buff" | "debuff";
+    type: "damage" | "healing" | "buff" | "debuff" | "special";
     
-    constructor(type: "damage" | "healing" | "buff" | "debuff") {
+    constructor(type: "damage" | "healing" | "buff" | "debuff" | "special") {
         this.type = type;
     }
 

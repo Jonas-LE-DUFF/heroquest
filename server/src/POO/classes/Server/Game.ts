@@ -202,6 +202,7 @@ class Game {
 
     toJson(): GameAsJson{
         const playersAsJson = Array.from(this.players.values()).map((player) => player.toJson());
+        const isLaunchable = this.gameState.isLaunchable();
         return {
             id: this.id,
             name: this.name,
@@ -210,6 +211,10 @@ class Game {
             playOrder: this.playOrder,
             isMonsterTurn: this.isMonsterTurn,
             currentTurnIndex: this.currentTurnIndex,
+            isLaunchable: {
+                success: isLaunchable.success,
+                reasons: isLaunchable.success ? [] : [isLaunchable.message || "Unknown reason"]
+            },
         };
     }
 }

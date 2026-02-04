@@ -10,6 +10,10 @@ interface GameAsJson {
     isMonsterTurn: boolean;
     currentTurnIndex: number;
     gameState: GameStateAsJson;
+    isLaunchable: {
+        success: boolean;
+        reasons: string[];
+    };
 }
 
 export type { GameAsJson };

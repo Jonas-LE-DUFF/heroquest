@@ -8,6 +8,7 @@ interface EffectAsJson {
     effectType: EffectType;
     duration: EffectDuration;
     ability?: AbilityType | undefined;
+    debuff?: string | undefined;
 }
 
 export type { EffectAsJson };

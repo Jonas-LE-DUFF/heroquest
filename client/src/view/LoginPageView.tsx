@@ -22,19 +22,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
 
     console.log("Envoi des données:", gameName, playerName, role);
     // Émettre l'événement de connexion au serveur
-    socket.emit("join-game", { gameName, playerName, role }, (response: {success: boolean; message?: string}) => {
+    socket.emit("join-game", { gameName, playerName, role }, (response: { success: boolean; message?: string }) => {
       if (!response.success) {
         alert(`Erreur: ${response.message}`);
         return;
       }
-        console.log("Rejoint la partie avec succès:", response);
     });
 
     // Écouter la réponse du serveur
     socket.once(
       "join-success",
       (data: { playerId: string; game: GameAsJson }) => {
-        console.log("Rejoint la partie avec succès:", data);
+        console.log("Rejoint la partie avec succès 2 :", data);
         navigate("/lobby", {
           state: {
             playerName: playerName,

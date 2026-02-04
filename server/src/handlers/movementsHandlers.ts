@@ -36,7 +36,7 @@ function registerMovementHandlers(socket: Socket) {
 
             const game = GameService.getGame(gameId);
             const isGameMaster =
-                game!.getGameMaster()?.id === socket.data.playerId;
+                game!.getGameMaster()?.id === socket.id;
 
             const unitMoved: Unit<HeroCategory | MonsterCategory> | null =
                 getUnitToMove(game!, unitId, isGameMaster);

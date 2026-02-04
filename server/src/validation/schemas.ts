@@ -2,6 +2,7 @@ import { z } from "zod";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Direction } from "../POO/enums/Direction";
+import { SpellElement } from "../POO/enums/SpellElement";
 
 // ============================================
 // Schémas de validation pour les événements Socket.IO
@@ -30,7 +31,13 @@ export const joinGameSchema = z.object({
 
 export const chooseCharacterSchema = z.object({
     gameId: z.string().min(1, "L'ID de la partie est requis"),
-    hero: z.any(), // Hero est un objet complexe, on valide juste sa présence
+    heroCreationWish: z.object({
+        name: z.string().min(1, "Le nom du héros est requis"),
+        heroCategory: z.enum(HeroCategory),
+        gold: z.number().int().min(0, "L'or ne peut pas être négatif"),
+        spellElements: z.array(z.enum(SpellElement)),
+        equipments: z.array(z.string()),
+    })
 });
 
 export const unselectCharacterSchema = z.object({

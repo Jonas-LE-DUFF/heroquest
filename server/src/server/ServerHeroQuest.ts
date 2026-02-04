@@ -76,6 +76,7 @@ class ServerHeroQuest {
         this.games.forEach((game) => {
             if (game.hasPlayer(playerId)) {
                 game.removePlayer(playerId);
+                game.gameState.removeUnitsControlledByPlayer(playerId);
                 modifiedGames.push(game);
             }
         });

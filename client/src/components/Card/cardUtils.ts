@@ -1,8 +1,8 @@
 import equipments from "../../shared/game_cards/equipments.json";
 import spells from "../../shared/game_cards/spells.json";
 import back from "../../shared/game_cards/backCard.json";
-import { spellElement } from "../../shared/type";
 import { getElementName } from "../../shared/utils";
+import { SpellElement } from "../../POO/enums/SpellElement";
 
 type Card = {
   id: string;
@@ -14,7 +14,7 @@ function getAllEquipmentCardNames(): string[] {
   return (equipments as Card[]).map((e) => e.id);
 }
 
-function getSpellListForSchool(spellSchool: spellElement): string[] {
+function getSpellListForSchool(spellSchool: SpellElement): string[] {
   // This is a placeholder implementation.
   // Replace with actual logic to get spell IDs for the given school.
 
@@ -62,7 +62,7 @@ function getCardImagePath(id: string, cardType: string): string | undefined {
 
   const eq = (jsonFile as Card[]).find((e) => e.id === id);
   const image_path = eq?.image_path;
-  const ret = `${process.env.PUBLIC_URL}/${image_path}`;
+  const ret = `${import.meta.env.BASE_URL}${image_path}`;
   return ret;
 }
 

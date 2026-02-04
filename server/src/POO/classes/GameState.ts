@@ -23,12 +23,9 @@ class GameState {
         this.status = "lobby";
     }
 
-    addMonster(unit: Unit<MonsterCategory>): void {
+    addUnit(unit: Unit<HeroCategory | MonsterCategory>, position: Position): void {
         this.Units.push(unit);
-    }
-
-    addHero(unit: Unit<HeroCategory>): void {
-        this.Units.push(unit);
+        this.board.placeUnitAt(unit, position);
     }
 
     /**
@@ -39,6 +36,13 @@ class GameState {
     removeUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
         this.Units = this.Units.filter((u) => u !== unit);
         this.board.removeUnitFromTile(unit);
+    }
+
+    removeUnitsControlledByPlayer(playerId: string) {
+        const unitsToRemove = this.getHeroesControlledByPlayer(playerId)
+        unitsToRemove.forEach((unit) => {
+            this.removeUnit(unit);
+        });
     }
 
     /**
@@ -109,7 +113,9 @@ class GameState {
         return { success: true };
     }
 
-     isHeroCategoryTaken(category: HeroCategory): boolean {
+    isHeroCategoryTaken(category: HeroCategory): boolean {
+        console.log("checking if hero category is taken:", category);
+        console.log(this.Units);
         return this.Units.some(
             (u) => u instanceof Hero && u.category === category,
         );

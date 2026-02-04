@@ -6,6 +6,7 @@ import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
+import { getHeroByPlayerId } from "../shared/serverUtils";
 
 interface LobbyPageProps {
   socket: any;
@@ -20,7 +21,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     location.state.game
   );
   const gameId = game?.id;
-  const role = game?.players?.find((p) => p.id === socket.id)?.role;
+  const role : PlayerRole | undefined = game?.players?.find((p) => p.id === socket.id)?.role;
 
   useEffect(() => {
     if (!game || !playerName) {
@@ -32,7 +33,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     }
 
     console.log(
-      "✅ Données OK - Player:",
+      "Données OK - Player:",
       playerName,
       "Game:",
       gameId,
@@ -145,9 +146,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         if (!player || typeof player !== "object") {
           return null;
         }
-        const heroes: HeroAsJson[] = game
-          ? game.gameState.getHeroesControlledByPlayer(player.id)
-          : [];
 
         let characterName = player?.name || "Joueur sans nom";
 
@@ -164,11 +162,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
               </span>
             )}
             <span className="role">{isGameMaster ? "[icon game-master]" : "[icon hero]"}</span>
-            {!isGameMaster && (
-              <span className="heroes">
-                {renderHeroes(heroes)}
-              </span>
-            )}
+            
 
           </div>
         );
@@ -176,7 +170,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       .filter(Boolean);
   }
   if (!game) return <div>le game existe pu...</div>;
-  const canStartGame = game.gameState.isLaunchable();
+  const canStartGame = game.isLaunchable;
   const isGameMaster = role === PlayerRole.GAME_MASTER;
   const players = game.players;
 
