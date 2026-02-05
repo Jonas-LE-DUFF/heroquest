@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { heroClass } from "../shared/type";
 import { FormControlLabel, Radio, RadioGroup, Select } from "@mui/material";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
 import "./MasterControlsComponent.css";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 
 interface MasterControlsProps {
   socket: any;
@@ -11,7 +11,7 @@ interface MasterControlsProps {
 
 const MasterControls = ({ socket, gameId }: MasterControlsProps) => {
   const [numberOfDices, setNumberOfDices] = useState<number>(1);
-  const [heroType, setHeroType] = useState<heroClass>(heroClass.Barbarian);
+  const [heroType, setHeroType] = useState<HeroCategory>(HeroCategory.Barbarian);
   const [diceType, setDiceType] = useState<"fight" | "red">("fight");
 
   const authorizeNumberOfFightDices = () => {
@@ -39,7 +39,7 @@ const MasterControls = ({ socket, gameId }: MasterControlsProps) => {
           labelId="label-hero-class"
           id="select-hero-class"
           value={heroType}
-          onChange={(e) => setHeroType(e.target.value as heroClass)}
+          onChange={(e) => setHeroType(e.target.value as HeroCategory)}
           autoWidth
           sx={{ background: "white" }}
         >

@@ -1,5 +1,5 @@
 import { dealDamage } from "../../../services/CombatService";
-import { rollFightDice, rollRedDice } from "../../../services/DiceService";
+import { rollRedDice } from "../../../services/DiceService";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";

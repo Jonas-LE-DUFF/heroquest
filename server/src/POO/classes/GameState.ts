@@ -1,5 +1,6 @@
 import { HeroCategory } from "../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../enums/Categories/MonsterCategory";
+import { GameStateAsJson } from "../interfaces/ClassAsJson/Server/GameStateAsJson";
 import { SpecialAuthorizedHero } from "../interfaces/SpecialAuthorizedHero";
 import { Board } from "./Board/Board";
 import { Position } from "./Position/Position";
@@ -12,6 +13,7 @@ class GameState {
     Units: Unit<HeroCategory | MonsterCategory>[];
     board: Board;
     status: "lobby" | "playing" | "finished";
+
     private specialAuthorizedHero: SpecialAuthorizedHero | undefined =
         undefined;
 
@@ -21,12 +23,9 @@ class GameState {
         this.status = "lobby";
     }
 
-    addMonster(unit: Unit<MonsterCategory>): void {
+    addUnit(unit: Unit<HeroCategory | MonsterCategory>, position: Position): void {
         this.Units.push(unit);
-    }
-
-    addHero(unit: Unit<HeroCategory>): void {
-        this.Units.push(unit);
+        this.board.placeUnitAt(unit, position);
     }
 
     /**
@@ -37,6 +36,13 @@ class GameState {
     removeUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
         this.Units = this.Units.filter((u) => u !== unit);
         this.board.removeUnitFromTile(unit);
+    }
+
+    removeUnitsControlledByPlayer(playerId: string) {
+        const unitsToRemove = this.getHeroesControlledByPlayer(playerId)
+        unitsToRemove.forEach((unit) => {
+            this.removeUnit(unit);
+        });
     }
 
     /**
@@ -108,6 +114,8 @@ class GameState {
     }
 
     isHeroCategoryTaken(category: HeroCategory): boolean {
+        console.log("checking if hero category is taken:", category);
+        console.log(this.Units);
         return this.Units.some(
             (u) => u instanceof Hero && u.category === category,
         );
@@ -169,6 +177,14 @@ class GameState {
             );
             throw new Error("Unit to update not found or mismatch in ID/category");
         }
+    }
+
+    toJson(): GameStateAsJson {
+        return {
+            Units: this.Units.map((unit) => unit.toJson()),
+            board: this.board.toJson(),
+            status: this.status,
+        };
     }
 }
 

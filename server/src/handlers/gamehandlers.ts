@@ -5,65 +5,36 @@ import { GameService } from "../services/GameService";
 import { requireGameExists } from "../guards/requireGameExists";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import {
-    withErrorHandling,
-    successResponse,
-    errorResponse,
+  successResponse,
+  errorResponse,
+  withValidation,
+  gameIdSchema,
 } from "../validation";
 
 export function registerGameHandlers(socket: Socket) {
-    socket.on(
-        "start-game",
-        withErrorHandling(socket, (socket, callback) => {
-            const gameId = socket.data.gameId;
-            const game = GameService.getGame(gameId);
+  socket.on(
+    "end-turn",
+    withValidation(socket, gameIdSchema, (socket, data, callback) => {
+      const { gameId } = data;
+      const game = GameService.getGame(gameId);
 
-            if (!requireGameExists(gameId)) {
-                return callback(errorResponse("Partie non trouvée"));
-            }
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Partie non trouvée"));
+      }
 
-            if (!requireGameMaster(socket, game!)) {
-                return callback(
-                    errorResponse(
-                        "Seul le maître du jeu peut démarrer la partie",
-                    ),
-                );
-            }
+      if (!requirePlayerTurn(socket, game!)) {
+        return callback(errorResponse("Ce n'est pas votre tour"));
+      }
 
-            game!.launchGame();
+      game!.endTurn();
 
-            const io = ServerHeroQuest.getServerInstance().getIo();
+      const io = ServerHeroQuest.getServerInstance().getIo();
 
-            io.to(gameId).emit("game-start", {
-                game: game!,
-            });
+      io.to(gameId).emit("game-state-update", {
+        game: game!.toJson(),
+      });
 
-            callback(successResponse());
-        }),
-    );
-
-    socket.on(
-        "end-turn",
-        withErrorHandling(socket, (socket, callback) => {
-            const gameId = socket.data.gameId;
-            const game = GameService.getGame(gameId);
-
-            if (!requireGameExists(gameId)) {
-                return callback(errorResponse("Partie non trouvée"));
-            }
-
-            if (!requirePlayerTurn(socket, game!)) {
-                return callback(errorResponse("Ce n'est pas votre tour"));
-            }
-
-            game!.endTurn();
-
-            const io = ServerHeroQuest.getServerInstance().getIo();
-
-            io.to(gameId).emit("game-state-update", {
-                game: game!,
-            });
-
-            callback(successResponse());
-        }),
-    );
+      callback(successResponse());
+    }),
+  );
 }

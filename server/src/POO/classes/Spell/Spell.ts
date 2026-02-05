@@ -26,6 +26,14 @@ class Spell {
     applyEffect(target: Unit<any>) {
         this.effect.applyEffect(target);
     }
+
+    toJson(): any {
+        return {
+            id: this.id,
+            name: this.name,
+            element: this.element,
+        }
+    }
 }
 
 export { Spell };

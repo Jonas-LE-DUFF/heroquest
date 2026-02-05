@@ -1,10 +1,11 @@
 import { AbilityType } from "../../enums/AbilityType";
+import { DebuffType } from "../../enums/DebuffType";
 import { EffectDuration } from "../../enums/Effects/EffectDuration";
 import { EffectType } from "../../enums/Effects/EffectType";
 import { StatType } from "../../enums/Effects/StatType";
+import { EffectAsJson } from "../../interfaces/ClassAsJson/Effect/EffectAsJson";
 
 class Effect {
-
     name: string;
     isBuff: boolean;
     effectType: EffectType;
@@ -16,6 +17,7 @@ class Effect {
 
     // For ABILITY_GRANT
     ability?: AbilityType | undefined;
+    debuff?: DebuffType | undefined;
 
     constructor(
         name: string,
@@ -26,6 +28,7 @@ class Effect {
             stat?: StatType;
             value?: number;
             ability?: AbilityType;
+            debuff?: DebuffType;
         },
     ) {
         this.name = name;
@@ -36,6 +39,7 @@ class Effect {
             this.stat = options.stat;
             this.value = options.value;
             this.ability = options.ability;
+            this.debuff = options.debuff;
         }
     }
 
@@ -49,10 +53,55 @@ class Effect {
         };
         return false;
     }
+
+    toJson(): EffectAsJson {
+        return {
+            name: this.name,
+            isBuff: this.isBuff,
+            effectType: this.effectType,
+            duration: this.duration,
+            ability: this.ability,
+            debuff: this.debuff,
+        };
+    }
 }
 
 // Pre-defined effects factory
 class EffectFactory {
+    static createRockSkin(): Effect {
+        return new Effect(
+            "Rock Skin",
+            EffectType.STAT_MODIFIER,
+            EffectDuration.UNTIL_DAMAGE_TAKEN,
+            true,
+            {
+                stat: StatType.DEFENSE,
+                value: 1,
+            },
+        );
+    }
+    static createTornado(): Effect {
+        return new Effect(
+            "Tornado",
+            EffectType.DEBUFF_GRANT,
+            EffectDuration.ONE_TURN,
+            false,
+            {
+                debuff: DebuffType.SKIP_TURN,
+            }
+        );
+    }
+    static createSleep(): Effect {
+        return new Effect(
+            "Sleep",
+            EffectType.DEBUFF_GRANT,
+            EffectDuration.SPIRIT_CHECK,
+            false,
+            {
+                debuff: DebuffType.ASLEEP,
+            }
+        );
+    }
     static createCourage(): Effect {
         return new Effect(
             "Courage",

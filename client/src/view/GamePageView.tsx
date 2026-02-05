@@ -2,22 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
-import {
-  Direction,
-  GameState,
-  Monster,
-  monsterClass,
-  Player,
-  Position,
-  SendableGameState,
-  tileType,
-  Unit,
-} from "../shared/type";
-import {
-  convertSendableGameStateAsGameState,
-  getPlayerName,
-} from "../shared/utils";
-import { positionKey } from "../shared/utils";
+import { getPlayerName, isHero } from "../shared/utils";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
@@ -25,6 +10,30 @@ import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 import { getEquipmentType } from "../shared/equipments";
+import { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/TileAsJson";
+import { Direction } from "../POO/enums/Direction";
+import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
+import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
+import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
+import {
+  getPositionByUnitId,
+  getTileByPosition,
+  getTileByUnitId,
+  removeUnitFromBoardById,
+  setTileTypeAtPosition,
+} from "../shared/boardUtils";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import {
+  getHeroByPlayerId,
+  getPlayerByHero,
+  getPlayerByHeroCategory,
+} from "../shared/serverUtils";
+import { TileType } from "../POO/enums/TileType";
+import { setDoorAtPosition } from "../shared/doorUtils";
+import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 
 interface GamePageProps {
   socket: any;
@@ -33,96 +42,97 @@ interface GamePageProps {
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const role = location.state.role;
+  console.log(location.state);
 
   const [selectedType, setSelectedType] = useState<
-    tileType | Direction | monsterClass | null
+    TileType | Direction | MonsterCategory | null
   >(null);
-  const [selectedPosition, setSelectedPosition] = useState<Position | null>(
-    null
-  );
+  const [selectedPosition, setSelectedPosition] =
+    useState<PositionAsJson | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
-  const [currentGameState, setCurrentGameState] = useState<GameState>(
-    location.state.gameState
+  const [currentGame, setCurrentGame] = useState<GameAsJson>(
+    location.state.game,
   );
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
-  const user = currentGameState.players.get(socket.data.playerId);
-  const weapons = user?.stats?.equipments?.filter(equipment => getEquipmentType(equipment) === "Weapon") || [];
-  console.log("User weapons :", weapons);
+  const user = currentGame.players.find((p) => p.id === socket.id);
+  const gameState: GameStateAsJson = currentGame.gameState;
+  const hero = getHeroByPlayerId(socket.id, currentGame);
+  if ((!hero || !isHero(hero)) && role !== "game-master") {
+    throw new Error("Hero not found for current player in game state");
+  }
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
-  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(weapons.length > 0 ? weapons[0] : null);
+  const weapons = hero?.equipment.weapons.map((w) => w.id) ?? [];
+  console.log("User weapons :", weapons.join(", "));
+
+  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(
+    weapons[hero?.equipment.selectedWeaponIndex ?? 0] ?? null,
+  );
 
   console.log("Selected weapon in game page :", selectedWeapon);
 
   const [targetMode, setTargetMode] = useState<boolean>(false);
 
   // Handle stats update separately to ensure proper re-render
-  const handleStatsUpdate = useCallback((data: { entityId: string; newStats: Unit; isPlayer: boolean }) => {
-    console.log("stats updated received in game page", data);
-    
-    const isDead = data.newStats.hp !== undefined && data.newStats.hp <= 0;
-    
-    setCurrentGameState((prev) => {
-      if (!prev) return prev;
-      const position = prev.entityPositions.get(data.entityId);
-      if (!position) {
-        console.error("No entity found at position for stats update");
-        return prev;
-      }
+  const handleStatsUpdate = useCallback(
+    (data: { entityId: string; newStats: StatsAsJson; isHero: boolean }) => {
+      console.log("stats updated received in game page", data);
 
-      const players = new Map(prev.players);
-      const monsters = new Map(prev.monsters);
-      const entityPositions = new Map(prev.entityPositions);
-      const positionEntities = new Map(prev.positionEntities);
+      const isDead =
+        data.newStats.health !== undefined && data.newStats.health <= 0;
 
-      if (data.isPlayer) {
-        const player = players.get(data.entityId);
-        if (player) {
+      setCurrentGame((prev) => {
+        if (!prev) return prev;
+        const unit = prev.gameState.Units.find((u) => u.id === data.entityId);
+        const tileOfUnit = getTileByUnitId(data.entityId, prev.gameState.board);
+        if (!unit || !tileOfUnit || !tileOfUnit.unit) return prev;
+        tileOfUnit.unit.stats = data.newStats;
+        unit.stats = data.newStats;
+
+        if (data.isHero) {
+          const player = getPlayerByHero(unit as HeroAsJson, prev.players);
+          if (!player) {
+            console.error("Player not found for hero with id:", data.entityId);
+            return prev;
+          }
           if (isDead) {
             console.log(`Player ${data.entityId} has been defeated.`);
-            players.delete(data.entityId);
-            positionEntities.delete(positionKey(position));
-            entityPositions.delete(data.entityId);
-          } else {
-            players.set(data.entityId, { ...player, stats: data.newStats });
+            prev.players = prev.players.filter((p) => p.id !== player.id);
           }
         }
-      } else {
-        const monster = monsters.get(data.entityId);
-        if (monster) {
-          if (isDead) {
-            console.log(`Monster ${data.entityId} has been defeated.`);
-            monsters.delete(data.entityId);
-            positionEntities.delete(positionKey(position));
-            entityPositions.delete(data.entityId);
-          } else {
-            monsters.set(data.entityId, { ...monster, stats: data.newStats });
-          }
+
+        if (isDead) {
+          prev.gameState.Units = prev.gameState.Units.filter(
+            (u) => u.id !== data.entityId,
+          );
+          removeUnitFromBoardById(data.entityId, prev.gameState.board);
+        } else {
+          unit.stats = data.newStats;
+          tileOfUnit.unit.stats = data.newStats;
         }
+
+        return { ...prev } as GameAsJson;
+      });
+
+      // TODO : try to remove this setTimeout
+      // Force board re-render OUTSIDE the setCurrentGameState callback
+      if (isDead) {
+        setTimeout(() => {
+          setBoardKey((k) => k + 1);
+        }, 0);
       }
-
-      return { ...prev, players, monsters, entityPositions, positionEntities } as GameState;
-    });
-
-    // Force board re-render OUTSIDE the setCurrentGameState callback
-    if (isDead) {
-      setTimeout(() => {
-        setBoardKey((k) => k + 1);
-      }, 0);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
-    socket.on("game-state-update", (data: { gameState: SendableGameState }) => {
-      const updatedGameState = convertSendableGameStateAsGameState(
-        data.gameState
-      );
-      console.log("c'est l'update du gamePage", updatedGameState);
+    socket.on("game-state-update", (data: { game: GameAsJson }) => {
+      console.log("c'est l'update du gamePage", data.game);
       const selectedId = selectedEntityId;
       if (selectedId) {
-        const pos = updatedGameState.entityPositions.get(selectedId);
+        const pos = getPositionByUnitId(selectedId, data.game.gameState.board);
         if (pos) {
           setSelectedPosition(pos);
           setSelectedEntityId(selectedId);
@@ -131,15 +141,16 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           setSelectedEntityId(null);
         }
       } else if (selectedPosition) {
-        const unit = getUnitAtSelectedPosition(
+        const unit = getTileByPosition(
           selectedPosition,
-          updatedGameState
-        );
+          data.game.gameState.board,
+        )?.unit;
         if (unit) setSelectedEntityId(unit.id);
       }
 
-      setCurrentGameState(updatedGameState);
+      setCurrentGame(data.game);
       // Also increment board key on full game state updates
+      // TODO : try to remove this setTimeout
       setBoardKey((k) => k + 1);
     });
 
@@ -147,53 +158,46 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
     socket.on(
       "tile-placed",
-      (data: { position: Position; tileType: tileType }) => {
+      (data: { position: PositionAsJson; TileType: TileType }) => {
         console.log("tile placed received in game page", data);
-        setCurrentGameState((prev) => {
+        setCurrentGame((prev) => {
           if (!prev) return prev;
 
-          const board = prev.board.map((row) => row.slice());
-          board[data.position.x][data.position.y] = data.tileType;
+          setTileTypeAtPosition(
+            data.position,
+            data.TileType,
+            prev.gameState.board,
+          );
 
-          return { ...prev, board } as GameState;
+          return { ...prev } as GameAsJson;
         });
+
+        // TODO : try to remove this setTimeout
         setBoardKey((k) => k + 1);
-      }
+      },
     );
 
     socket.on(
       "door-placed",
       (data: {
-        position: Position;
+        position: PositionAsJson;
         verticalOrHorizontal: "vertical" | "horizontal";
       }) => {
         console.log("door placed received in game page", data);
-        setCurrentGameState((prev) => {
+        setCurrentGame((prev) => {
           if (!prev) return prev;
-          const newState: GameState = {
-            ...prev,
-            doors: {
-              horizontal: prev.doors.horizontal.map((row) =>
-                row ? [...row] : []
-              ),
-              vertical: prev.doors.vertical.map((row) => (row ? [...row] : [])),
-            },
-          };
+          setDoorAtPosition(
+            data.position,
+            data.verticalOrHorizontal,
+            prev.gameState.board,
+          );
 
-          if (data.verticalOrHorizontal === "horizontal") {
-            const row = newState.doors.horizontal[data.position.x] ?? [];
-            row[data.position.y] = true;
-            newState.doors.horizontal[data.position.x] = row;
-          } else if (data.verticalOrHorizontal === "vertical") {
-            const row = newState.doors.vertical[data.position.x] ?? [];
-            row[data.position.y] = true;
-            newState.doors.vertical[data.position.x] = row;
-          }
-
-          return newState;
+          return { ...prev } as GameAsJson;
         });
+
+        //TODO : try to remove this setTimeout
         setBoardKey((k) => k + 1);
-      }
+      },
     );
 
     return () => {
@@ -204,18 +208,27 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     };
   }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate]);
 
-  const setSelectedUnit = (unit: Player | Monster | null) => {
+  const setSelectedUnit = (unit: HeroAsJson | MonsterAsJson | null) => {
     if (!unit) return;
-    const position = currentGameState.entityPositions.get(unit.id);
+    const position = getPositionByUnitId(unit.id, currentGame.gameState.board);
     if (!position) return;
     setSelectedPosition(position);
     setSelectedEntityId(unit.id);
   };
+  const getSelectedUnit = (
+    position: PositionAsJson | null,
+    board: BoardAsJson,
+  ): HeroAsJson | MonsterAsJson | null => {
+    if (!position) return null;
+    const tile = getTileByPosition(position, board);
+    if (!tile || !tile.unit) return null;
+    return tile.unit as HeroAsJson | MonsterAsJson;
+  };
 
   const handleTileClick = (
     gameId: string,
-    position: Position,
-    selectedType: tileType | Direction | monsterClass | null
+    position: PositionAsJson,
+    selectedType: TileType | Direction | MonsterCategory | null,
   ) => {
     if (selectedSpell !== null) {
       console.log("Casting spell:", selectedSpell, "at position:", position);
@@ -234,26 +247,20 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           } else {
             console.error("Failed to cast spell:", response.error);
           }
-        }
+        },
       );
       return;
     }
 
-    if(targetMode) {
+    if (targetMode) {
       console.log("In target mode, clicking on position:", position);
 
-      const target = getUnitAtSelectedPosition(
+      const target = getTileByPosition(
         position,
-        currentGameState
-      );
-      if(!target) {
+        currentGame.gameState.board,
+      )?.unit;
+      if (!target) {
         console.log("No unit at selected position to target.");
-        setTargetMode(false);
-        return;
-      }
-      const player = currentGameState.players.get(socket.data.playerId);
-      if(!player) {
-        console.error("Current player not found in game state.");
         setTargetMode(false);
         return;
       }
@@ -262,7 +269,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         "attack",
         {
           gameId,
-          attackerId: player.id,
+          attackerId: socket.id,
           targetId: target.id,
           weaponId: selectedWeapon,
         },
@@ -272,7 +279,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           } else {
             console.error("Failed to execute attack:", response.error);
           }
-        }
+        },
       );
       setTargetMode(false);
       return;
@@ -290,9 +297,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     } else {
       setSelectedPosition(position);
       // set selected entity id based on current game state mapping
-      const idAtPos = currentGameState?.positionEntities.get(
-        positionKey(position)
-      );
+      const idAtPos = getTileByPosition(position, currentGame.gameState.board)
+        ?.unit?.id;
       if (!idAtPos) {
         setStatsVisible(false);
       }
@@ -317,10 +323,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       {spellPageVisible && (
         <SpellsPopUp
           socket={socket}
-          spellSchools={currentGameState.players.get(socket.data.playerId)?.stats?.spells}
-          spellAlreadyUsed={
-            currentGameState.players.get(socket.data.playerId)?.stats?.usedSpells
-          }
+          spellSchools={hero?.spellElements}
+          spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
           onSpellClick={(selectedSpell: string) => {
             setSelectedSpell(selectedSpell);
             setTargetMode(true);
@@ -332,16 +336,19 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className="Navbar">
           <Navbar
             socket={socket}
-            gameId={currentGameState.id}
+            gameId={currentGame.id}
             isCurrentTurnPlayer={
-              currentGameState.currentTurn ===
-              currentGameState.players.get(socket.data.playerId)?.id
+              currentGame.playOrder[currentGame.currentTurnIndex] ===
+              hero?.category
             }
             currentTurnPlayerName={getPlayerName(
-              currentGameState,
-              currentGameState.currentTurn
+              currentGame,
+              getPlayerByHeroCategory(
+                currentGame.playOrder[currentGame.currentTurnIndex],
+                currentGame,
+              )?.name || "Unknown",
             )}
-            player={currentGameState.players.get(socket.data.playerId)}
+            player={user}
             statsOpen={statsVisible}
             setStatsOpen={setStatsVisible}
             setSelectedUnit={setSelectedUnit}
@@ -352,12 +359,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           <LeftMenu
             statsVisible={statsVisible}
             socket={socket}
-            currentGameState={currentGameState}
+            currentGameState={currentGame}
             selectedPosition={selectedPosition}
-            selectedUnit={getUnitAtSelectedPosition(
-              selectedPosition!,
-              currentGameState
-            )}
+            selectedUnit={setSelectedUnit}
             setStatsVisible={setStatsVisible}
             role={role}
           />
@@ -366,7 +370,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className={"Board" + (targetMode ? " target" : "")}>
           <Board
             key={`board-${boardKey}`}
-            gameState={currentGameState}
             socket={socket}
             onTileClick={handleTileClick}
             selectedPosition={selectedPosition}
@@ -377,13 +380,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className="RightMenu">
           <RightMenu
             socket={socket}
-            currentGameState={currentGameState}
+            currentGameState={currentGame}
             setSelectedType={setSelectedType}
             selectedType={selectedType}
-            selectedUnit={getUnitAtSelectedPosition(
-              selectedPosition!,
-              currentGameState
-            )}
+            selectedUnit={
+              getSelectedUnit(selectedPosition, currentGame.gameState.board) ||
+              null
+            }
             setTargetMode={setTargetMode}
             setSelectedWeapon={setSelectedWeapon}
             selectedWeapon={selectedWeapon}
@@ -395,18 +398,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       </Grid>
     </>
   );
-};
-
-const getUnitAtSelectedPosition = (
-  pos: Position,
-  game: GameState
-): Monster | Player | null => {
-  if (!pos) return null;
-  const id = game.positionEntities.get(positionKey(pos));
-  if (!id) return null;
-  const unit = game.players.get(id) || game.monsters.get(id);
-  if (!unit) return null;
-  return unit;
 };
 
 export default GamePage;

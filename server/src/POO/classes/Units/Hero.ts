@@ -8,6 +8,7 @@ import { Unit } from "./Unit";
 import { Spell } from "../Spell/Spell";
 import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
+import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
 
 class Hero extends Unit<HeroCategory> {
     
@@ -91,6 +92,33 @@ class Hero extends Unit<HeroCategory> {
 
     getRole(): PlayerRole {
         return PlayerRole.HERO;
+    }
+
+    getSpellElements(): SpellElement[] {
+        const elementsSet = new Set<SpellElement>();
+        this.spells.forEach(spell => elementsSet.add(spell.element));
+        return Array.from(elementsSet);
+    }
+
+    toJson(): HeroAsJson {
+        return {
+            id: this.id,
+            controlledByPlayerId: this.controlledByPlayerId,
+            name: this.name,
+            category: this.category,
+            stats: {
+                health: this.stats.health,
+                maxHealth: this.stats.maxHealth,
+                attack: this.getAttackDiceCount(),
+                defense: this.getDefenseDiceCount(),
+                movements: this.getMovementPoints(),
+                spirit: this.stats.spirit,
+            },
+            equipment: this.equipment.toJson(),
+            spells: this.spells.map(spell => spell.toJson()),
+            usedSpells: this.usedSpells.map(spell => spell.toJson()),
+            spellElements: this.getSpellElements(),
+        };
     }
 }
 

@@ -12,7 +12,7 @@ const canMove = (
     direction: Direction,
     unitMoved: Unit<HeroCategory | MonsterCategory>,
 ): boolean => {
-    const isPlayer =
+    const isHero =
         unitMoved instanceof Unit && unitMoved.getCategory() === "Hero";
     const canPhaseThroughWalls = unitMoved.canPhaseThroughWalls();
     const canPhaseThroughMonsters = unitMoved.canPhaseThroughMonsters();
@@ -25,7 +25,7 @@ const canMove = (
 
     if (
         board.hasWallAt(from, direction) &&
-        (!board.hasDoorAt(from, direction) || !isPlayer) &&
+        (!board.hasDoorAt(from, direction) || !isHero) &&
         !canPhaseThroughWalls // A monster can't open doors
     ) {
         console.error("wall in the way");

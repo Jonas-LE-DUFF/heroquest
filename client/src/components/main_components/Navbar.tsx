@@ -1,19 +1,21 @@
 import { Socket } from "socket.io-client";
-import { Monster, Player } from "../../shared/type";
 import "./Navbar.css";
 import { getHeroClassIconPath, getHeroClassName } from "../../shared/utils";
 import { Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
 interface NavbarProps {
   socket: Socket;
   gameId: string;
-  player?: Player;
+  player?: PlayerAsJson;
   isCurrentTurnPlayer: boolean;
   currentTurnPlayerName: string;
   statsOpen: boolean;
   setStatsOpen: (arg0: boolean) => void;
-  setSelectedUnit: (arg0: Player | Monster | null) => void;
+  setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
 }
 
@@ -52,7 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({
               role="button"
               onClick={() => {
                 console.log("not yet implemented");
-                setSelectedUnit(player);
+                setSelectedUnit(player.hero ?? null);
                 setStatsOpen(!statsOpen);
               }}
             />

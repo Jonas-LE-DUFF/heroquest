@@ -36,7 +36,7 @@ function formatZodError(error: z.ZodError): string {
  * @param socket - Le socket courant (capturé dans la closure)
  * @param schema - Le schéma Zod pour valider les données entrantes
  * @param handler - Le handler qui sera appelé avec les données validées
- * @returns Un handler Socket.IO qui valide les données avant exécution
+ * @returns Une fonction qui prend un socket et retourne un handler Socket.IO validé
  * 
  * @example
  * ```typescript

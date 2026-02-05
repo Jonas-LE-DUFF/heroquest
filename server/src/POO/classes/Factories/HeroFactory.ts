@@ -6,26 +6,31 @@ import { Stats } from "../Units/Stats";
 import heroStats from "../../../shared/game_cards/heroes.json";
 import { Equipment } from "../Equipment/Equipment";
 import { randomUUID } from "crypto";
+import { HeroCreationWish } from "../FromClient/HeroCreationWish";
+import { getSpellsForElements } from "../../../services/SpellService";
 
 class HeroFactory {
-    createHero(heroCategory: HeroCategory, position: Position, name: string): Hero | null {
+    createHero(gameId: string, heroCreationWish: HeroCreationWish): Hero | null {
 
         const id : string = randomUUID();
+
+        const heroCategory : HeroCategory = heroCreationWish.heroCategory;
 
         const stats: Stats = getHeroBaseStats(heroCategory);
 
         const equipment: Equipment = getHeroStartingEquipment(heroCategory);
 
-        const startingPosition: Position = position;
+        const spells = getSpellsForElements(gameId, heroCreationWish.spellElements);
 
-        return new Hero(
+        const hero =  new Hero(
             id,
-            name,
+            heroCreationWish.name,
             heroCategory,
-            startingPosition,
             stats,
-            equipment
+            equipment,
         );
+        hero.spells = spells;
+        return hero;
     };
 }
 

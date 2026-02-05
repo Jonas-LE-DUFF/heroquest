@@ -1,13 +1,12 @@
-import { GameState } from "../../classes/GameState";
-import { Position } from "../../classes/Position/Position";
-import { Game } from "../../classes/Server/Game";
-import { Unit } from "../../classes/Units/Unit";
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { SpellElement } from "../../enums/SpellElement";
 import { TileType } from "../../enums/TileType";
+import { PositionAsJson } from "../ClassAsJson/PositionAsJson";
+import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
+import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
 
 interface ClientToServerEvents {
     //login actions
@@ -36,7 +35,7 @@ interface ClientToServerEvents {
         callback: (response: {
             success: boolean;
             error?: string;
-            gameState?: GameState;
+            gameState?: GameAsJson;
         }) => void,
     ) => void; // Updated choose-character event definition
 
@@ -62,17 +61,17 @@ interface ClientToServerEvents {
         data: {
             gameId: string;
             spellId: string;
-            position: Position;
+            position: PositionAsJson;
         },
         callback: (response: { success: boolean; error?: string }) => void,
     ) => void;
     "check-for-treasures": (data: {
         gameId: string;
-        position: Position;
+        position: PositionAsJson;
     }) => void;
-    "check-traps": (data: { gameId: string; postion: Position }) => void;
-    "check-secret-doors": (data: { gameId: string; postion: Position }) => void;
-    "disarm-trap": (data: { gameId: string; trapTargeted: Position }) => void;
+    "check-traps": (data: { gameId: string; postion: PositionAsJson }) => void;
+    "check-secret-doors": (data: { gameId: string; postion: PositionAsJson }) => void;
+    "disarm-trap": (data: { gameId: string; trapTargeted: PositionAsJson }) => void;
 
     // ############################ game master actions ############################
     // lobby actions
@@ -93,7 +92,7 @@ interface ClientToServerEvents {
     "place-element": (
         data: {
             gameId: string;
-            position: Position;
+            position: PositionAsJson;
             selectedType: TileType | Direction | MonsterCategory;
             playerId: string;
         },
@@ -113,8 +112,8 @@ interface ClientToServerEvents {
     "update-stats-unit": (
         data: {
             gameId: string;
-            newStats: Unit<HeroCategory | MonsterCategory>;
-            position: Position;
+            newStats: StatsAsJson;
+            position: PositionAsJson;
         },
         callback: (response: { success: boolean; error?: string }) => void,
     ) => void;

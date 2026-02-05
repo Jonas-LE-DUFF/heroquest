@@ -4,7 +4,7 @@ export function requireGameExists(
     gameId: string,
 ): boolean {
     const serverHeroQuest = ServerHeroQuest.getServerInstance();
-    if (serverHeroQuest.getGame(gameId) === undefined){
+    if (!serverHeroQuest.getGame(gameId)){
         console.error("Game not found with id:", gameId);
         return false;
     }

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { diceFace } from "../../shared/type";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../../shared/utils";
+import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
 
 interface DicesProps {
   socket: any;
@@ -12,8 +12,8 @@ interface DicesProps {
 }
 
 const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
-  const [currentDiceFaces, setCurrentDiceFaces] = useState<diceFace[] | null>(
-    Array.of(diceFace.Hit)
+  const [currentDiceFaces, setCurrentDiceFaces] = useState<FightDiceFaces[] | null>(
+    Array.of(FightDiceFaces.Hit)
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
   const playerRole = viewerRole;
@@ -23,14 +23,14 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       setCurrentDiceFaces((prev) => {
         const faceList = prev ? [...prev] : [];
         for (let i = 0; i < numberOfDices; i++) {
-          if (faceList[i] === undefined) faceList[i] = diceFace.Hit;
+          if (faceList[i] === undefined) faceList[i] = FightDiceFaces.Hit;
         }
         return faceList;
       });
     };
 
     const onDiceUpdate = (data: {
-      listResults: diceFace[];
+      listResults: FightDiceFaces[];
       role: "hero" | "game-master";
     }) => {
       if (data.role !== role) return; // update is not for this component
@@ -80,7 +80,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
   };
 
   function renderDices(
-    currentDiceFaces: Array<diceFace> | null,
+    currentDiceFaces: Array<FightDiceFaces> | null,
     currentNumberOfDices: number
   ) {
     if (currentDiceFaces === null) {

@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  GameState,
-  Player,
-  SendableGameState,
-  spellElement,
-} from "../shared/type";
-import {
-  convertSendableGameStateAsGameState,
-  everyOneReady,
-  getElementName,
-  getHeroClassName,
-} from "../shared/utils";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { SpellElement } from "../POO/enums/SpellElement";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
+import { PlayerRole } from "../POO/enums/PlayerRole";
+import { getHeroByPlayerId } from "../shared/serverUtils";
 
 interface LobbyPageProps {
   socket: any;
@@ -22,83 +17,108 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const navigate = useNavigate();
 
   const playerName = location.state.playerName;
-  const [gameState, setGameState] = useState<GameState | null>(
-    location.state.game
-  );
-  const gameId = gameState?.id;
-  const role = gameState?.players.get(socket.data.playerId)?.role;
+  const [game, setgame] = useState<GameAsJson | null>(location.state.game);
+  const gameId = game?.id;
+  const role: PlayerRole | undefined = game?.players?.find(
+    (p) => p.id === socket.id,
+  )?.role;
 
   useEffect(() => {
-    if (!gameState || !playerName) {
-      console.log("trucs qui marchent pas", playerName, gameState);
+    if (!game || !playerName) {
+      console.log("trucs qui marchent pas", playerName, game);
 
-      console.log("❌ Données manquantes, redirection...");
+      console.log("Données manquantes, redirection...");
       navigate("/");
       return;
     }
 
     console.log(
-      "✅ Données OK - Player:",
+      "Données OK - Player:",
       playerName,
       "Game:",
       gameId,
       "Role:",
-      role
+      role,
     );
 
-    const handleGameStart = (data: { gameState: SendableGameState }) => {
-      const game = convertSendableGameStateAsGameState(data.gameState);
+    const handleGameStart = (data: { game: GameAsJson }) => {
+      const game = data.game;
       console.log("Game is starting...", game);
       navigate("/game", {
-        state: { playerName, gameId, role, gameState: game },
+        state: { playerName, gameId, role, game: game },
       });
     };
 
-    const handleGameStateUpdate = (data: { gameState: SendableGameState }) => {
+    const handlegameUpdate = (data: { game: GameAsJson }) => {
       console.log("update of game state received");
-      const convertedGameState = convertSendableGameStateAsGameState(
-        data.gameState
-      );
-      setGameState(convertedGameState);
+      setgame(data.game);
     };
 
     // Écouter les mises à jour des joueurs
     socket.on("game-start", handleGameStart);
-    socket.on("game-state-update", handleGameStateUpdate);
+    socket.on("game-state-update", handlegameUpdate);
 
     return () => {
       socket.off("game-start", handleGameStart);
-      socket.off("game-state-update", handleGameStateUpdate);
+      socket.off("game-state-update", handlegameUpdate);
     };
-  }, [navigate, playerName, socket, gameState, gameId, role]);
+  }, [navigate, playerName, socket, game, gameId, role]);
 
   const startGame = () => {
-    console.log("🔄 Tentative de lancement de la partie...");
+    console.log("Tentative de lancement de la partie...");
 
-    socket.emit("start-game", { gameId });
+    socket.emit(
+      "start-game",
+      { gameId },
+      (response: { success: boolean; error?: string; data?: GameAsJson }) => {
+        if (response.success) {
+          console.log("Partie lancée avec succès ! partie :", response.data);
+          const game = response.data;
+          navigate("/game", {
+            state: { playerName, gameId, role, game },
+          });
+        } else {
+          console.error(
+            "Erreur lors du lancement de la partie:",
+            response.error,
+          );
+          alert(`Erreur: ${response.error}`);
+        }
+      },
+    );
 
     socket.once("error", (error: any) => {
-      console.log("❌ Erreur:", error);
+      console.log("Erreur:", error);
       alert(`Erreur: ${error}`);
     });
   };
 
   const leaveLobby = () => {
-    console.log("leaving lobby");
-    socket.emit("leave-lobby", { gameId });
-
-    navigate("/");
+    console.log("Leaving lobby");
+    socket.emit(
+      "leave-lobby",
+      { gameId },
+      (response: { success: boolean; error?: string }) => {
+        if (response.success) {
+          console.log("Left lobby successfully");
+          navigate("/");
+        } else {
+          console.error("Error leaving lobby:", response.error);
+          alert(`Error: ${response.error}`);
+        }
+      },
+    );
   };
 
   const chooseCharacter = () => {
-    if (!gameState) {
+    if (!game) {
       alert("Game state is missing. Cannot proceed to character selection.");
       return;
     }
 
     navigate("/charaterChoice", {
       state: {
-        gameState,
+        game,
         playerName,
         gameId,
         role,
@@ -107,38 +127,67 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   };
 
   const unselectCharacter = () => {
-    if (!gameState) {
+    if (!game) {
       alert("Game state is missing. Cannot proceed to character unselection.");
       return;
     }
-    socket.emit("unselect-character", { gameId });
+    socket.emit(
+      "unselect-character",
+      { gameId },
+      (response: { success: boolean; error?: string }) => {
+        if (response.success) {
+          console.log("Character unselected successfully");
+        } else {
+          console.error("Error unselecting character:", response.error);
+          alert(`Error: ${response.error}`);
+        }
+      },
+    );
   };
 
-  function renderSpellElements(spells: spellElement[]) {
-    if (spells.length === 0) return "Aucun";
-    return spells.map((spell) => getElementName(spell)).join(", ");
+  function renderSpellElements(spellElements: SpellElement[]) {
+    if (spellElements.length === 0) return "Aucun";
+    return spellElements
+      .map((spellElement) => SpellElement[spellElement])
+      .join(", ");
   }
 
-  function renderStatus(players: Map<string, Player>) {
-    if (!players || players.size === 0) {
+  function renderHeroes(heroes: HeroAsJson[]) {
+    if (heroes.length === 0) return "Pas encore choisi";
+    return heroes.map((hero) => {
+      let playerClass;
+      if (hero.category === undefined) {
+        playerClass = "ERREUR";
+      } else {
+        // TODO : should get the icon of the hero class
+        playerClass = HeroCategory[hero.category];
+      }
+      const spellElements = hero.spells.map((spell) => spell.element) || [];
+      return (
+        <>
+          <span className="Hero class">{playerClass}</span>
+          <span className="spells">
+            {" "}
+            - Sorts: {renderSpellElements(spellElements)}
+          </span>
+        </>
+      );
+    });
+  }
+
+  function renderStatus(players: PlayerAsJson[]) {
+    if (!players || players.length === 0) {
       return <div>Aucun Joueur</div>;
     }
 
-    const playersAsArray = Array.from(players.values());
-    return playersAsArray
-      .map((player: Player) => {
+    return players
+      .map((player: PlayerAsJson) => {
         if (!player || typeof player !== "object") {
           return null;
         }
 
-        let characterName = player.stats?.name || "Joueur sans nom";
-        let playerClass;
-        if (player.class === undefined) {
-          playerClass = "Non choisi";
-        } else {
-          playerClass = getHeroClassName(player.class);
-        }
-        let spells = player.stats?.spells || [];
+        let characterName = player?.name || "Joueur sans nom";
+
         const isGameMaster = player.role === "game-master";
 
         return (
@@ -146,43 +195,35 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
             <span>{characterName}</span>
             {!isGameMaster && (
               <span
-                className={`status ${player.ready ? "ready" : "not-ready"}`}
+                className={`status ${player.isReady ? "ready" : "not-ready"}`}
               >
-                {player.ready ? "✅ Prêt" : "❌ Non prêt"}
+                {player.isReady ? "Prêt" : "Non prêt"}
               </span>
             )}
-            <span className="role">{isGameMaster ? "👑" : "🎭"}</span>
-            {!isGameMaster && (
-              <span className="class">Classe - {playerClass}</span>
-            )}
-            {!isGameMaster && (
-              <span className="spells">
-                {" "}
-                - Sorts: {renderSpellElements(spells)}
-              </span>
-            )}
-            {isGameMaster && <span></span>}
+            <span className="role">
+              {isGameMaster ? "[icon game-master]" : "[icon hero]"}
+            </span>
           </div>
         );
       })
       .filter(Boolean);
   }
-  if (!gameState) return <div>le gameState existe pu...</div>;
-  const canStartGame = gameState.players.size >= 2 && everyOneReady(gameState);
-  const isGameMaster = role === "game-master";
+  if (!game) return <div>le game existe pu...</div>;
+  const canStartGame = game.isLaunchable;
+  const isGameMaster = role === PlayerRole.GAME_MASTER;
+  const players = game.players;
 
   return (
     <div className="lobby-page">
       <h1>Lobby - {gameId}</h1>
       <p>
         Bienvenue, <strong>{playerName}</strong> (
-        {role === "game-master" ? "👑 Maître du Jeu" : "🎭 Héros"})
+        {role === PlayerRole.GAME_MASTER ? "Maître du Jeu" : "Héros"})
       </p>
-      {gameState && renderStatus(gameState.players)}
+      {game && renderStatus(players)}
       <div className="players-list">
         <h2>
-          Joueurs connectés (
-          {gameState && gameState.players ? gameState.players.size : "0"}
+          Joueurs connectés ({game && players ? players.length : "0"}
           /5)
         </h2>
       </div>
@@ -201,12 +242,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
             Choisir son personnage
           </button>
         )}
-        {!isGameMaster &&
-          gameState.players.get(socket.data.playerId)?.class !== undefined && (
-            <button onClick={unselectCharacter} className="unselectCharacter">
-              Retirer son personnage
-            </button>
-          )}
       </div>
 
       <div className="game-rules">
