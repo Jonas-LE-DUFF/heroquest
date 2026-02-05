@@ -17,11 +17,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const navigate = useNavigate();
 
   const playerName = location.state.playerName;
-  const [game, setgame] = useState<GameAsJson | null>(
-    location.state.game
-  );
+  const [game, setgame] = useState<GameAsJson | null>(location.state.game);
   const gameId = game?.id;
-  const role : PlayerRole | undefined = game?.players?.find((p) => p.id === socket.id)?.role;
+  const role: PlayerRole | undefined = game?.players?.find(
+    (p) => p.id === socket.id,
+  )?.role;
 
   useEffect(() => {
     if (!game || !playerName) {
@@ -38,7 +38,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       "Game:",
       gameId,
       "Role:",
-      role
+      role,
     );
 
     const handleGameStart = (data: { game: GameAsJson }) => {
@@ -67,7 +67,25 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const startGame = () => {
     console.log("Tentative de lancement de la partie...");
 
-    socket.emit("start-game", { gameId });
+    socket.emit(
+      "start-game",
+      { gameId },
+      (response: { success: boolean; error?: string; data?: GameAsJson }) => {
+        if (response.success) {
+          console.log("Partie lancée avec succès ! partie :", response.data);
+          const game = response.data;
+          navigate("/game", {
+            state: { playerName, gameId, role, game },
+          });
+        } else {
+          console.error(
+            "Erreur lors du lancement de la partie:",
+            response.error,
+          );
+          alert(`Erreur: ${response.error}`);
+        }
+      },
+    );
 
     socket.once("error", (error: any) => {
       console.log("Erreur:", error);
@@ -77,9 +95,19 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const leaveLobby = () => {
     console.log("Leaving lobby");
-    socket.emit("leave-lobby", { gameId });
-
-    navigate("/");
+    socket.emit(
+      "leave-lobby",
+      { gameId },
+      (response: { success: boolean; error?: string }) => {
+        if (response.success) {
+          console.log("Left lobby successfully");
+          navigate("/");
+        } else {
+          console.error("Error leaving lobby:", response.error);
+          alert(`Error: ${response.error}`);
+        }
+      },
+    );
   };
 
   const chooseCharacter = () => {
@@ -103,12 +131,25 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       alert("Game state is missing. Cannot proceed to character unselection.");
       return;
     }
-    socket.emit("unselect-character", { gameId });
+    socket.emit(
+      "unselect-character",
+      { gameId },
+      (response: { success: boolean; error?: string }) => {
+        if (response.success) {
+          console.log("Character unselected successfully");
+        } else {
+          console.error("Error unselecting character:", response.error);
+          alert(`Error: ${response.error}`);
+        }
+      },
+    );
   };
 
   function renderSpellElements(spellElements: SpellElement[]) {
     if (spellElements.length === 0) return "Aucun";
-    return spellElements.map((spellElement) => SpellElement[spellElement]).join(", ");
+    return spellElements
+      .map((spellElement) => SpellElement[spellElement])
+      .join(", ");
   }
 
   function renderHeroes(heroes: HeroAsJson[]) {
@@ -124,9 +165,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       const spellElements = hero.spells.map((spell) => spell.element) || [];
       return (
         <>
-          <span className="Hero class">
-            {playerClass}
-          </span>
+          <span className="Hero class">{playerClass}</span>
           <span className="spells">
             {" "}
             - Sorts: {renderSpellElements(spellElements)}
@@ -161,9 +200,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
                 {player.isReady ? "Prêt" : "Non prêt"}
               </span>
             )}
-            <span className="role">{isGameMaster ? "[icon game-master]" : "[icon hero]"}</span>
-            
-
+            <span className="role">
+              {isGameMaster ? "[icon game-master]" : "[icon hero]"}
+            </span>
           </div>
         );
       })
@@ -184,8 +223,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       {game && renderStatus(players)}
       <div className="players-list">
         <h2>
-          Joueurs connectés (
-          {game && players ? players.length : "0"}
+          Joueurs connectés ({game && players ? players.length : "0"}
           /5)
         </h2>
       </div>

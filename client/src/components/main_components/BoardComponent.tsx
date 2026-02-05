@@ -8,53 +8,56 @@ import {
   Paper,
 } from "@mui/material";
 import { Socket } from "socket.io-client";
-import {
-  getIconClassPath,
-  getUnitClassName,
-} from "../../shared/utils";
+import { getIconClassPath, getUnitClassName } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
+import { TileAsJson } from "../../POO/interfaces/ClassAsJson/Board/TileAsJson";
+import { Direction } from "../../POO/enums/Direction";
+import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
+import { useLocation } from "react-router-dom";
+import { getPlayerToPlay } from "../../shared/serverUtils";
+import { TileType } from "../../POO/enums/TileType";
 
 interface BoardProps {
-  gameState: GameState | null;
   socket: Socket;
   onTileClick: (
     gameId: string,
-    position: Position,
-    selectedType: tileType | Direction | monsterClass | null
+    position: PositionAsJson,
+    selectedType: TileType | Direction | MonsterCategory | null,
   ) => void;
-  selectedPosition: Position | null;
+  selectedPosition: PositionAsJson | null;
   selectedEntityId: string | null;
-  selectedType: tileType | Direction | monsterClass | null;
+  selectedType: TileType | Direction | MonsterCategory | null;
 }
 
 const Board = ({
-  gameState,
   socket,
   onTileClick,
   selectedPosition,
   selectedEntityId,
   selectedType,
 }: BoardProps) => {
+  const location = useLocation();
+  const role = location.state.role;
+  const game = location.state.game as GameAsJson;
 
   const handleTileClick = (
-    position: Position,
-    selectedType: tileType | Direction | monsterClass | null
+    position: PositionAsJson,
+    selectedType: TileType | Direction | MonsterCategory | null,
   ) => {
-    if (!gameState || !gameState.board[position.x]) {
+    if (!game || !game.gameState.board.tiles[position.x]) {
       console.error("gameState is not defined");
       return;
     }
-    const tile = gameState.board[position.x][position.y];
+    const tile = game.gameState.board.tiles[position.x][position.y];
     if (!tile || !socket.id) return;
 
-    if (
-      gameState.players.get(socket.id)?.role === "hero" &&
-      gameState.currentTurn !== socket.id
-    ) {
+    if (role === "hero" && getPlayerToPlay(game)?.id !== socket.id) {
       return;
     }
 
-    onTileClick(gameState.id, position, selectedType);
+    onTileClick(game.id, position, selectedType);
 
     if (selectedType !== null) {
       return;
@@ -63,12 +66,12 @@ const Board = ({
 
   const renderGrid = () => {
     const grid = [];
-    if (!gameState) {
+    if (!game) {
       return;
     }
-    for (let row = 0; row < gameState.board.length; row++) {
+    for (let row = 0; row < game.gameState.board.tiles.length; row++) {
       const cells = [];
-      for (let col = 0; col < gameState?.board[row]?.length; col++) {
+      for (let col = 0; col < game.gameState.board.tiles[row].length; col++) {
         cells.push(
           <TableCell
             key={col}
@@ -76,13 +79,13 @@ const Board = ({
             sx={getTileStyle(
               row,
               col,
-              gameState,
-              selectedPosition ?? selectedEntityId
+              game.gameState,
+              selectedPosition ?? selectedEntityId,
             )}
             onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
           >
             {getTileContent(row, col)}
-          </TableCell>
+          </TableCell>,
         );
       }
       grid.push(<TableRow key={row}>{cells}</TableRow>);
@@ -92,37 +95,31 @@ const Board = ({
   };
 
   const getTileContent = (x: number, y: number) => {
-    const tile: tileType | undefined = gameState?.board[x]?.[y];
+    const tile: TileAsJson | undefined = game.gameState.board.tiles[x]?.[y];
     if (!tile) {
       console.error("Tile is undefined at position:", x, y);
       return null;
     }
-    const pos: Position = { x: x, y: y };
-    const entityId = gameState?.positionEntities.get(positionKey(pos));
-    if (!entityId) {
-      if (tile === tileType.empty) return `${x},${y}`;
-      return tileType[tile];
+    const pos: PositionAsJson = { x: x, y: y };
+    const unit = tile.unit;
+    if (!unit) {
+      if (tile.type === TileType.FLOOR) return `${x},${y}`;
+      return TileType[tile.type];
     }
 
-    let entity: Player | Monster | undefined =
-      gameState?.players.get(entityId);
-    if (!entity) entity = gameState?.monsters.get(entityId);
-
-    if (entity && entity.class) {
+    if (unit?.category) {
       return (
         <img
           className="boardImg"
-          src={getIconClassPath(entity)}
-          alt={getUnitClassName(entity)}
+          src={getIconClassPath(unit)}
+          alt={getUnitClassName(unit)}
         />
       );
     }
 
-    console.error("Entity not found for id:", entityId);
-    console.error("Current GameState:", gameState?.monsters);
-    console.log(typeof entity);
-    console.log(entity);
-    return tileType[tile];
+    console.log(typeof unit);
+    console.log(unit);
+    return TileType[tile.type];
   };
 
   return (

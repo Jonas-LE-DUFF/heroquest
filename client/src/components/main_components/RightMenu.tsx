@@ -5,16 +5,16 @@ import {
   Direction,
   GameState,
   Monster,
-  monsterClass,
+  MonsterCategory,
   Player,
-  tileType,
+  TileType,
 } from "../../shared/type";
 
 interface RightMenuProps {
   socket: Socket;
   currentGameState: GameState;
   setSelectedType: (type: any) => void;
-  selectedType: tileType | Direction | monsterClass | null;
+  selectedType: TileType | Direction | MonsterCategory | null;
   selectedUnit: Player | Monster | null;
   setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;

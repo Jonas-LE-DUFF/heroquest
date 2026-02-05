@@ -27,9 +27,7 @@ import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { SpellElement } from "../POO/enums/SpellElement";
 
-function isHero(
-  entity: HeroAsJson | MonsterAsJson,
-): entity is HeroAsJson {
+function isHero(entity: HeroAsJson | MonsterAsJson): entity is HeroAsJson {
   return (entity as HeroAsJson).controlledByPlayerId !== undefined;
 }
 
@@ -45,7 +43,7 @@ function getIconClassPath(entityType: HeroAsJson | MonsterAsJson): string {
   if (entityType.category === undefined) {
     return "unknown";
   }
-  if ( isHero(entityType)) {
+  if (isHero(entityType)) {
     return getHeroClassIconPath(entityType.category);
   } else {
     return getMonsterIconPath(entityType.category);
@@ -132,7 +130,7 @@ function getUnitClassName(unit: HeroAsJson | MonsterAsJson) {
   if (unit.category === undefined) {
     return "Inconnu";
   }
-  if ( isHero(unit)) {
+  if (isHero(unit)) {
     return getHeroClassName(unit.category);
   } else {
     return getMonsterClassName(unit.category);

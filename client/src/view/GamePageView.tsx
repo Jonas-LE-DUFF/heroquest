@@ -2,10 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
-import {
-  getPlayerName,
-  isHero,
-} from "../shared/utils";
+import { getPlayerName, isHero } from "../shared/utils";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
@@ -20,13 +17,23 @@ import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
 import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
-import { getPositionByUnitId, getTileByPosition, getTileByUnitId, removeUnitFromBoardById, setTileTypeAtPosition } from "../shared/boardUtils";
+import {
+  getPositionByUnitId,
+  getTileByPosition,
+  getTileByUnitId,
+  removeUnitFromBoardById,
+  setTileTypeAtPosition,
+} from "../shared/boardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { getHeroByPlayerId, getPlayerByHero, getPlayerByHeroCategory } from "../shared/serverUtils";
+import {
+  getHeroByPlayerId,
+  getPlayerByHero,
+  getPlayerByHeroCategory,
+} from "../shared/serverUtils";
 import { TileType } from "../POO/enums/TileType";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import { get } from "http";
+import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 
 interface GamePageProps {
   socket: any;
@@ -35,83 +42,90 @@ interface GamePageProps {
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const role = location.state.role;
+  console.log(location.state);
 
   const [selectedType, setSelectedType] = useState<
-    TileAsJson | Direction | MonsterCategory | null
+    TileType | Direction | MonsterCategory | null
   >(null);
-  const [selectedPosition, setSelectedPosition] = useState<PositionAsJson | null>(
-    null
-  );
+  const [selectedPosition, setSelectedPosition] =
+    useState<PositionAsJson | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
   const [currentGame, setCurrentGame] = useState<GameAsJson>(
-    location.state.gameState
+    location.state.game,
   );
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
-  const user = currentGame.players.find(p => p.id === socket.id);
-  const gameState: GameStateAsJson = currentGame.gameState
-  const hero = gameState.Units.find((unit) => isHero(unit) && unit.controlledByPlayerId === socket.id);
-  if (!hero || !isHero(hero)) {
+  const user = currentGame.players.find((p) => p.id === socket.id);
+  const gameState: GameStateAsJson = currentGame.gameState;
+  const hero = getHeroByPlayerId(socket.id, currentGame);
+  if ((!hero || !isHero(hero)) && role !== "game-master") {
     throw new Error("Hero not found for current player in game state");
   }
-  const weapons = hero.equipment.weapons.map(w => w.id);
-  console.log("User weapons :", weapons.join(", "));
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
-  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(weapons[hero.equipment.selectedWeaponIndex] ?? null);
+  const weapons = hero?.equipment.weapons.map((w) => w.id) ?? [];
+  console.log("User weapons :", weapons.join(", "));
+
+  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(
+    weapons[hero?.equipment.selectedWeaponIndex ?? 0] ?? null,
+  );
 
   console.log("Selected weapon in game page :", selectedWeapon);
 
   const [targetMode, setTargetMode] = useState<boolean>(false);
 
   // Handle stats update separately to ensure proper re-render
-  const handleStatsUpdate = useCallback((data: { entityId: string; newStats: StatsAsJson; isHero: boolean }) => {
-    console.log("stats updated received in game page", data);
+  const handleStatsUpdate = useCallback(
+    (data: { entityId: string; newStats: StatsAsJson; isHero: boolean }) => {
+      console.log("stats updated received in game page", data);
 
-    const isDead = data.newStats.health !== undefined && data.newStats.health <= 0;
+      const isDead =
+        data.newStats.health !== undefined && data.newStats.health <= 0;
 
-    setCurrentGame((prev) => {
-      if (!prev) return prev;
-      const unit = prev.gameState.Units.find((u) => u.id === data.entityId);
-      const tileOfUnit = getTileByUnitId(data.entityId, prev.gameState.board);
-      if (!unit || !tileOfUnit || !tileOfUnit.unit) return prev;
-      tileOfUnit.unit.stats = data.newStats;
-      unit.stats = data.newStats;
-
-      if (data.isHero) {
-        const player = getPlayerByHero(unit as HeroAsJson, prev.players);
-        if (!player) {
-          console.error("Player not found for hero with id:", data.entityId);
-          return prev;
-        }
-        if (isDead) {
-          console.log(`Player ${data.entityId} has been defeated.`);
-          prev.players = prev.players.filter(p => p.id !== player.id);
-        }
-      }
-
-      if (isDead) {
-        prev.gameState.Units = prev.gameState.Units.filter(u => u.id !== data.entityId);
-        removeUnitFromBoardById(data.entityId, prev.gameState.board);
-      } else {
-        unit.stats = data.newStats;
+      setCurrentGame((prev) => {
+        if (!prev) return prev;
+        const unit = prev.gameState.Units.find((u) => u.id === data.entityId);
+        const tileOfUnit = getTileByUnitId(data.entityId, prev.gameState.board);
+        if (!unit || !tileOfUnit || !tileOfUnit.unit) return prev;
         tileOfUnit.unit.stats = data.newStats;
+        unit.stats = data.newStats;
+
+        if (data.isHero) {
+          const player = getPlayerByHero(unit as HeroAsJson, prev.players);
+          if (!player) {
+            console.error("Player not found for hero with id:", data.entityId);
+            return prev;
+          }
+          if (isDead) {
+            console.log(`Player ${data.entityId} has been defeated.`);
+            prev.players = prev.players.filter((p) => p.id !== player.id);
+          }
+        }
+
+        if (isDead) {
+          prev.gameState.Units = prev.gameState.Units.filter(
+            (u) => u.id !== data.entityId,
+          );
+          removeUnitFromBoardById(data.entityId, prev.gameState.board);
+        } else {
+          unit.stats = data.newStats;
+          tileOfUnit.unit.stats = data.newStats;
+        }
+
+        return { ...prev } as GameAsJson;
+      });
+
+      // TODO : try to remove this setTimeout
+      // Force board re-render OUTSIDE the setCurrentGameState callback
+      if (isDead) {
+        setTimeout(() => {
+          setBoardKey((k) => k + 1);
+        }, 0);
       }
-
-
-
-      return { ...prev } as GameAsJson;
-    });
-
-    // TODO : try to remove this setTimeout
-    // Force board re-render OUTSIDE the setCurrentGameState callback
-    if (isDead) {
-      setTimeout(() => {
-        setBoardKey((k) => k + 1);
-      }, 0);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
     socket.on("game-state-update", (data: { game: GameAsJson }) => {
@@ -129,7 +143,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       } else if (selectedPosition) {
         const unit = getTileByPosition(
           selectedPosition,
-          data.game.gameState.board
+          data.game.gameState.board,
         )?.unit;
         if (unit) setSelectedEntityId(unit.id);
       }
@@ -144,19 +158,23 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
     socket.on(
       "tile-placed",
-      (data: { position: PositionAsJson; tileType: TileType }) => {
+      (data: { position: PositionAsJson; TileType: TileType }) => {
         console.log("tile placed received in game page", data);
         setCurrentGame((prev) => {
           if (!prev) return prev;
 
-          setTileTypeAtPosition(data.position, data.tileType, prev.gameState.board);
+          setTileTypeAtPosition(
+            data.position,
+            data.TileType,
+            prev.gameState.board,
+          );
 
           return { ...prev } as GameAsJson;
         });
 
         // TODO : try to remove this setTimeout
         setBoardKey((k) => k + 1);
-      }
+      },
     );
 
     socket.on(
@@ -171,7 +189,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           setDoorAtPosition(
             data.position,
             data.verticalOrHorizontal,
-            prev.gameState.board
+            prev.gameState.board,
           );
 
           return { ...prev } as GameAsJson;
@@ -179,7 +197,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
         //TODO : try to remove this setTimeout
         setBoardKey((k) => k + 1);
-      }
+      },
     );
 
     return () => {
@@ -197,11 +215,20 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     setSelectedPosition(position);
     setSelectedEntityId(unit.id);
   };
+  const getSelectedUnit = (
+    position: PositionAsJson | null,
+    board: BoardAsJson,
+  ): HeroAsJson | MonsterAsJson | null => {
+    if (!position) return null;
+    const tile = getTileByPosition(position, board);
+    if (!tile || !tile.unit) return null;
+    return tile.unit as HeroAsJson | MonsterAsJson;
+  };
 
   const handleTileClick = (
     gameId: string,
     position: PositionAsJson,
-    selectedType: TileType | Direction | MonsterCategory | null
+    selectedType: TileType | Direction | MonsterCategory | null,
   ) => {
     if (selectedSpell !== null) {
       console.log("Casting spell:", selectedSpell, "at position:", position);
@@ -220,7 +247,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           } else {
             console.error("Failed to cast spell:", response.error);
           }
-        }
+        },
       );
       return;
     }
@@ -230,7 +257,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
       const target = getTileByPosition(
         position,
-        currentGame.gameState.board
+        currentGame.gameState.board,
       )?.unit;
       if (!target) {
         console.log("No unit at selected position to target.");
@@ -252,7 +279,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           } else {
             console.error("Failed to execute attack:", response.error);
           }
-        }
+        },
       );
       setTargetMode(false);
       return;
@@ -270,10 +297,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     } else {
       setSelectedPosition(position);
       // set selected entity id based on current game state mapping
-      const idAtPos = getTileByPosition(
-        position,
-        currentGame.gameState.board
-      )?.unit?.id;
+      const idAtPos = getTileByPosition(position, currentGame.gameState.board)
+        ?.unit?.id;
       if (!idAtPos) {
         setStatsVisible(false);
       }
@@ -298,10 +323,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       {spellPageVisible && (
         <SpellsPopUp
           socket={socket}
-          spellSchools={hero.spellElements}
-          spellAlreadyUsed={
-            hero.usedSpells.map((spell) => spell.id)
-          }
+          spellSchools={hero?.spellElements}
+          spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
           onSpellClick={(selectedSpell: string) => {
             setSelectedSpell(selectedSpell);
             setTargetMode(true);
@@ -315,11 +338,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             socket={socket}
             gameId={currentGame.id}
             isCurrentTurnPlayer={
-              currentGame.playOrder[currentGame.currentTurnIndex] === hero.category
+              currentGame.playOrder[currentGame.currentTurnIndex] ===
+              hero?.category
             }
             currentTurnPlayerName={getPlayerName(
               currentGame,
-              getPlayerByHeroCategory(currentGame.playOrder[currentGame.currentTurnIndex], currentGame)?.name || "Unknown"
+              getPlayerByHeroCategory(
+                currentGame.playOrder[currentGame.currentTurnIndex],
+                currentGame,
+              )?.name || "Unknown",
             )}
             player={user}
             statsOpen={statsVisible}
@@ -334,10 +361,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             socket={socket}
             currentGameState={currentGame}
             selectedPosition={selectedPosition}
-            selectedUnit={getTileByPosition(
-              selectedPosition!,
-              currentGame.gameState.board
-            )?.unit || null}
+            selectedUnit={setSelectedUnit}
             setStatsVisible={setStatsVisible}
             role={role}
           />
@@ -346,7 +370,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className={"Board" + (targetMode ? " target" : "")}>
           <Board
             key={`board-${boardKey}`}
-            gameState={currentGame}
             socket={socket}
             onTileClick={handleTileClick}
             selectedPosition={selectedPosition}
@@ -360,10 +383,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             currentGameState={currentGame}
             setSelectedType={setSelectedType}
             selectedType={selectedType}
-            selectedUnit={getTileByPosition(
-              selectedPosition!,
-              currentGame.gameState.board
-            )?.unit || null}
+            selectedUnit={
+              getSelectedUnit(selectedPosition, currentGame.gameState.board) ||
+              null
+            }
             setTargetMode={setTargetMode}
             setSelectedWeapon={setSelectedWeapon}
             selectedWeapon={selectedWeapon}
@@ -376,6 +399,5 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     </>
   );
 };
-
 
 export default GamePage;

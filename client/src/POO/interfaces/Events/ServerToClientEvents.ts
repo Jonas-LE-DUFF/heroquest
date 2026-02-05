@@ -13,7 +13,7 @@ interface ServerToClientEvents {
 
   // game-state updates
   "game-state-update": (data: { game: GameAsJson }) => void; // very slow and expensive, use only when necessary
-  
+
   "dice-update": (data: {
     listResults: FightDiceFaces[];
     role: "hero" | "game-master";
@@ -34,7 +34,10 @@ interface ServerToClientEvents {
   }) => void;
 
   // specific in-game actions
-  "unit-moved": (data: { playerId: string; newPosition: PositionAsJson }) => void;
+  "unit-moved": (data: {
+    playerId: string;
+    newPosition: PositionAsJson;
+  }) => void;
   "monster-spawned": (data: {
     monsterType: string;
     position: PositionAsJson;
@@ -43,7 +46,10 @@ interface ServerToClientEvents {
     position: PositionAsJson;
     verticalOrHorizontal: "vertical" | "horizontal";
   }) => void;
-  "tile-placed": (data: { position: PositionAsJson; tileType: TileType }) => void;
+  "tile-placed": (data: {
+    position: PositionAsJson;
+    TileType: TileType;
+  }) => void;
 
   "stats-updated": (data: {
     entityId: string;
