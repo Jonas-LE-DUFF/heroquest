@@ -5,6 +5,7 @@ import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { Hero } from "../Units/Hero";
 import { Monster } from "../Units/Monster";
 import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
+import { PlayerRole } from "../../enums/PlayerRole";
 
 class Game {
   id: string;
@@ -41,16 +42,16 @@ class Game {
     if (this.players.size >= 5) {
       throw new Error("Cannot add more than 5 players to the game.");
     }
-    if (player.role === "game-master") {
+    if (player.role === PlayerRole.GAME_MASTER) {
       for (const p of this.players.values()) {
-        if (p.role === "game-master") {
+        if (p.role === PlayerRole.GAME_MASTER) {
           throw new Error("A game master already exists in the game.");
         }
       }
     }
     if (
       this.players.size === 4 &&
-      player.role !== "game-master" &&
+      player.role !== PlayerRole.GAME_MASTER &&
       this.getGameMaster() === null
     ) {
       throw new Error("Cannot add more than 4 hero players to the game.");
@@ -88,7 +89,7 @@ class Game {
     }
     if (
       ![...this.players.values()].some(
-        (player) => player.role === "game-master",
+        (player) => player.role === PlayerRole.GAME_MASTER,
       )
     ) {
       throw new Error("A game master is required to start the game.");
@@ -152,7 +153,7 @@ class Game {
 
   getGameMaster(): Player | null {
     for (const player of this.players.values()) {
-      if (player.role === "game-master") {
+      if (player.role === PlayerRole.GAME_MASTER) {
         return player;
       }
     }
@@ -183,7 +184,7 @@ class Game {
   private createTurnOrder(): void {
     this.playOrder = [];
     for (const player of this.players.values()) {
-      if (player.role !== "game-master") {
+      if (player.role !== PlayerRole.GAME_MASTER) {
         const heroCategory: HeroCategory = this.gameState.Units.find(
           (unit) =>
             unit instanceof Hero && unit.controlledByPlayerId === player.id,

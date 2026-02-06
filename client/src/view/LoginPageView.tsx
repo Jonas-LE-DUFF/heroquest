@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPageView.css";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 interface LoginPageProps {
   socket: any;
 }
@@ -10,7 +11,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState("a");
   const [gameName, setGameName] = useState("a");
-  const [role, setRole] = useState<"hero" | "game-master">("hero");
+  const [role, setRole] = useState<PlayerRole>(PlayerRole.HERO);
 
   const handleJoinGame = (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -82,10 +83,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
           <label>Rôle :</label>
           <select
             value={role}
-            onChange={(e) => setRole(e.target.value as "hero" | "game-master")}
+            onChange={(e) => setRole(e.target.value as PlayerRole)}
           >
-            <option value="hero">Héros</option>
-            <option value="game-master">Maître du Jeu</option>
+            <option value={PlayerRole.HERO}>Héros</option>
+            <option value={PlayerRole.GAME_MASTER}>Maître du Jeu</option>
           </select>
         </div>
 

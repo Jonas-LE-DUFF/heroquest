@@ -26,7 +26,13 @@
   },
   "homepage": "https://github.com/Jonas-LE-DUFF/heroquest#readme",
   "dependencies": {
+    "@vitejs/plugin-react": "^5.1.3",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11",
+    "socket.io": "^4.8.3",
+    "ts-node": "^10.9.2",
     "typeof": "^1.0.0",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "vite": "^7.3.1"
   }
 }
