@@ -337,7 +337,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className="Navbar">
           <Navbar
             socket={socket}
-            gameId={currentGame.id}
+            game={currentGame}
             isCurrentTurnPlayer={
               currentGame.playOrder[currentGame.currentTurnIndex] ===
               hero?.category
