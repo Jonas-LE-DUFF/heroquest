@@ -24,7 +24,7 @@ export function registerMasterHandlers(socket: Socket) {
   // place-element
   socket.on(
     "place-element",
-    withValidation(placeElementSchema, (socket, data, callback) => {
+    withValidation(socket, placeElementSchema, (socket, data, callback) => {
       const { position: posData, selectedType } = data;
       const gameId = socket.data.gameId;
       const position = toPosition(posData);
@@ -93,7 +93,7 @@ export function registerMasterHandlers(socket: Socket) {
 
   socket.on(
     "update-stats-unit",
-    withValidation(updateStatsUnitSchema, (socket, data, callback) => {
+    withValidation(socket, updateStatsUnitSchema, (socket, data, callback) => {
       const { newStats, position: posData } = data;
       const gameId = socket.data.gameId;
       const position = toPosition(posData);
