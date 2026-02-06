@@ -26,6 +26,7 @@ import {
   getPlayerBySocketId,
   getPlayerToPlay,
 } from "../shared/serverUtils";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 
 interface GameControlsProps {
   socket: any;
@@ -95,7 +96,7 @@ const GameControls = ({
   };
 
   const moveMonster = (direction: Direction) => {
-    if (!selectedUnit || role !== "game-master") {
+    if (!selectedUnit || role !== PlayerRole.GAME_MASTER) {
       console.error("No unit selected for movement");
       return;
     }
@@ -187,8 +188,8 @@ const GameControls = ({
     return buttons;
   };
 
-  const renderMovementControls = (role: "game-master" | "hero") => {
-    if (role === "hero")
+  const renderMovementControls = (role: PlayerRole) => {
+    if (role === PlayerRole.HERO)
       return (
         <div className="movement-controls">
           <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
@@ -197,7 +198,7 @@ const GameControls = ({
           <button onClick={() => movePlayer(Direction.RIGHT)}>➡️ Droite</button>
         </div>
       );
-    if (role === "game-master")
+    if (role === PlayerRole.GAME_MASTER)
       return (
         <div className="movement-controls">
           <button onClick={() => moveMonster(Direction.UP)}>⬆️ Haut</button>
@@ -226,22 +227,22 @@ const GameControls = ({
             <Typography component="span">Actions Héros</Typography>
           </AccordionSummary>
           <h3>Actions</h3>
-          {role === "hero" && isPlayerTurn && renderMovementControls(role)}
+          {role === PlayerRole.HERO && isPlayerTurn && renderMovementControls(role)}
           <div className="dices-section">
             <RedDices
               socket={socket}
               gameId={gameId}
-              role={"hero"}
+              role={PlayerRole.HERO}
               viewerRole={role}
             />
             <Dices
               socket={socket}
               gameId={gameId}
-              role={"hero"}
+              role={PlayerRole.HERO}
               viewerRole={role}
             />
           </div>
-          {role === "hero" && hero?.equipment && (
+          {role === PlayerRole.HERO && hero?.equipment && (
             <div className="attack-choice">
               Arme selectionnée :
               <select
@@ -272,7 +273,7 @@ const GameControls = ({
         </Accordion>
       </div>
       <div className="game-controls game-master">
-        {role === "game-master" && (
+        {role === PlayerRole.GAME_MASTER && (
           <div>
             <Accordion sx={{ color: "white", background: "inherit" }}>
               <AccordionSummary
@@ -342,21 +343,21 @@ const GameControls = ({
             <RedDices
               socket={socket}
               gameId={gameId}
-              role={"game-master"}
+              role={PlayerRole.GAME_MASTER}
               viewerRole={role}
             />
             <Dices
               socket={socket}
               gameId={gameId}
-              role={"game-master"}
+              role={PlayerRole.GAME_MASTER}
               viewerRole={role}
             />
           </div>
         </Accordion>
-        {role === "game-master" &&
+        {role === PlayerRole.GAME_MASTER &&
           selectedUnit !== null &&
           renderMovementControls(role)}
-        {role === "game-master" && (
+        {role === PlayerRole.GAME_MASTER && (
           <Accordion sx={{ color: "white", background: "inherit" }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}

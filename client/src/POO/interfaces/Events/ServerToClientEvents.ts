@@ -3,6 +3,7 @@ import { TileType } from "../../enums/TileType";
 import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
 import { PositionAsJson } from "../ClassAsJson/PositionAsJson";
+import { PlayerRole } from "../../enums/PlayerRole";
 
 // Événements Socket.io
 interface ServerToClientEvents {
@@ -16,12 +17,12 @@ interface ServerToClientEvents {
 
   "dice-update": (data: {
     listResults: FightDiceFaces[];
-    role: "hero" | "game-master";
+    role: PlayerRole;
   }) => void;
 
   "red-dice-update": (data: {
     listResults: number[];
-    role: "hero" | "game-master";
+    role: PlayerRole;
   }) => void;
 
   //lobby actions

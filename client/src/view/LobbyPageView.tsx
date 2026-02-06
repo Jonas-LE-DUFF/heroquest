@@ -188,7 +188,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
         let characterName = player?.name || "Joueur sans nom";
 
-        const isGameMaster = player.role === "game-master";
+        const isGameMaster = player.role === PlayerRole.GAME_MASTER;
 
         return (
           <div key={player.id} className="player-item">

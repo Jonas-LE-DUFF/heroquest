@@ -61,7 +61,7 @@ function getHeroClassIconPath(heroType: HeroCategory): string {
     case HeroCategory.Elf:
       return iconElf;
     default:
-      return "hero"; // or a default icon
+      return "unknown hero class"; // or a default icon
   }
 }
 
@@ -84,7 +84,7 @@ function getMonsterIconPath(monsterType: MonsterCategory): string {
     case MonsterCategory.Mummy:
       return iconMummy;
     default:
-      return "monster"; // or a default icon
+      return "unknown monster class"; // or a default icon
   }
 }
 

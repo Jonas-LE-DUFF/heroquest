@@ -3,12 +3,13 @@ import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../../shared/utils";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface DicesProps {
   socket: any;
   gameId: string;
-  role: "hero" | "game-master"; //the role to whom this dices belong
-  viewerRole: "hero" | "game-master"; //who is watching the dices
+  role: PlayerRole; //the role to whom this dices belong
+  viewerRole: PlayerRole; //who is watching the dices
 }
 
 const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
@@ -31,7 +32,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
 
     const onDiceUpdate = (data: {
       listResults: FightDiceFaces[];
-      role: "hero" | "game-master";
+      role: PlayerRole;
     }) => {
       if (data.role !== role) return; // update is not for this component
       setCurrentNumberOfDices(data.listResults.length);
@@ -47,7 +48,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       if (
         data.playerId === socket.data.playerId &&
         data.typeOfDices === "fight" &&
-        role === "hero"
+        role === PlayerRole.HERO
       ) {
         setCurrentNumberOfDices(data.amountOfDices);
         fillDiceFaces(data.amountOfDices);
@@ -119,7 +120,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       {playerRole === role && (
         <div className="container">
           <button onClick={rollDice}>lancer les dés</button>
-          {playerRole === "game-master" && (
+          {playerRole === PlayerRole.GAME_MASTER && (
             <input
               className="inputDice"
               type="number"

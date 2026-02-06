@@ -1,6 +1,7 @@
 import React from "react";
 import StatsComponent from "../StatsComponent";
 import "./LeftMenu.css";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface LeftMenuProps {
   statsVisible: boolean;
@@ -31,7 +32,7 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
             position={selectedPosition ?? { x: 0, y: 0 }}
             unit={selectedUnit}
             setStatsVisible={setStatsVisible}
-            isGameMaster={role === "game-master"}
+            isGameMaster={role === PlayerRole.GAME_MASTER}
           />
         </div>
       )}

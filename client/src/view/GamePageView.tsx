@@ -34,6 +34,7 @@ import { TileType } from "../POO/enums/TileType";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 
 interface GamePageProps {
   socket: any;
@@ -58,7 +59,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const user = currentGame.players.find((p) => p.id === socket.id);
   const gameState: GameStateAsJson = currentGame.gameState;
   const hero = getHeroByPlayerId(socket.id, currentGame);
-  if ((!hero || !isHero(hero)) && role !== "game-master") {
+  if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
     throw new Error("Hero not found for current player in game state");
   }
   const [statsVisible, setStatsVisible] = useState(false);

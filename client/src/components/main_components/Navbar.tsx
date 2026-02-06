@@ -6,6 +6,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface NavbarProps {
   socket: Socket;
@@ -41,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <div className="Navbar">
       <div className="nav-elem">Navbar</div>
-      {player.role === "hero" && player.class && (
+      {player.role === PlayerRole.HERO && player.class && (
         <div className="nav-elem">
           <Tooltip
             title={statsOpen ? "Cacher statistiques" : "Voir statistiques"}
