@@ -84,7 +84,7 @@ const GameControls = ({
       "move-unit-one-step",
       {
         gameId,
-        unitId: socket.data.playerId,
+        unitId: socket.id,
         direction: direction,
       },
       (response: { success: boolean; error?: string }) => {
@@ -227,7 +227,9 @@ const GameControls = ({
             <Typography component="span">Actions Héros</Typography>
           </AccordionSummary>
           <h3>Actions</h3>
-          {role === PlayerRole.HERO && isPlayerTurn && renderMovementControls(role)}
+          {role === PlayerRole.HERO &&
+            isPlayerTurn &&
+            renderMovementControls(role)}
           <div className="dices-section">
             <RedDices
               socket={socket}

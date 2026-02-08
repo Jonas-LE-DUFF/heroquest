@@ -18,7 +18,7 @@ interface RedDicesProps {
 
 const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
-    Array.of(1, 1)
+    Array.of(1, 1),
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(2);
   const playerRole = viewerRole;
@@ -44,7 +44,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       console.log("special auth", data);
 
       if (
-        data.playerId === socket.data.playerId &&
+        data.playerId === socket.id &&
         data.typeOfDices === "red" &&
         role === PlayerRole.HERO
       ) {
@@ -72,7 +72,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
         if (!response.success) {
           alert("Erreur lors du lancement des dés rouges : " + response.error);
         }
-      }
+      },
     );
   };
 
@@ -106,7 +106,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
           {currentDiceFaces[i] !== null
             ? getDiceFace(currentDiceFaces[i])
             : "noFace"}
-        </div>
+        </div>,
       );
     }
     return dices;
@@ -126,15 +126,16 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       {playerRole === role && (
         <button onClick={rollDice}>lancer les dés rouges</button>
       )}
-      {playerRole === PlayerRole.GAME_MASTER && role === PlayerRole.GAME_MASTER && (
-        <input
-          className="inputDice"
-          type="number"
-          onChange={(e) =>
-            setCurrentNumberOfDices(Number(e.currentTarget.value))
-          }
-        />
-      )}
+      {playerRole === PlayerRole.GAME_MASTER &&
+        role === PlayerRole.GAME_MASTER && (
+          <input
+            className="inputDice"
+            type="number"
+            onChange={(e) =>
+              setCurrentNumberOfDices(Number(e.currentTarget.value))
+            }
+          />
+        )}
     </div>
   );
 };

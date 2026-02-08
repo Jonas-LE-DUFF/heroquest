@@ -315,7 +315,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       gameId,
       position,
       selectedType,
-      playerId: socket.data.playerId,
+      playerId: socket.id,
     });
   };
 

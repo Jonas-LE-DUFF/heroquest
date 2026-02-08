@@ -13,9 +13,9 @@ interface DicesProps {
 }
 
 const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
-  const [currentDiceFaces, setCurrentDiceFaces] = useState<FightDiceFaces[] | null>(
-    Array.of(FightDiceFaces.Hit)
-  );
+  const [currentDiceFaces, setCurrentDiceFaces] = useState<
+    FightDiceFaces[] | null
+  >(Array.of(FightDiceFaces.Hit));
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
   const playerRole = viewerRole;
 
@@ -46,7 +46,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
     }) => {
       console.log("special-authorization received :", data);
       if (
-        data.playerId === socket.data.playerId &&
+        data.playerId === socket.id &&
         data.typeOfDices === "fight" &&
         role === PlayerRole.HERO
       ) {
@@ -69,20 +69,20 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       "roll-dice",
       {
         gameId,
-        playerId: socket.data.playerId,
+        playerId: socket.id,
         numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           alert("Erreur lancement des dés de combat : " + response.error);
         }
-      }
+      },
     );
   };
 
   function renderDices(
     currentDiceFaces: Array<FightDiceFaces> | null,
-    currentNumberOfDices: number
+    currentNumberOfDices: number,
   ) {
     if (currentDiceFaces === null) {
       return;
@@ -100,7 +100,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
           ) : (
             "noFace"
           )}
-        </div>
+        </div>,
       );
     }
     return dices;

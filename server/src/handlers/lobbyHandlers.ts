@@ -23,7 +23,13 @@ export function registerLobbyHandlers(socket: Socket) {
     "join-game",
     withValidation(socket, joinGameSchema, (socket, data, callback) => {
       const { gameName, playerName, role } = data;
-      console.log("gameName:", gameName, "playerName:", playerName);
+      console.log(
+        playerName,
+        " tente de rejoindre la partie :",
+        gameName,
+        " avec le rôle :",
+        role,
+      );
 
       const isThereGame: boolean = GameService.hasGame(gameName);
       let game: Game;
