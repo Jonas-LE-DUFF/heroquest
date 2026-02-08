@@ -44,7 +44,7 @@ export function registerLobbyHandlers(socket: Socket) {
         try {
           game.addPlayer(newPlayer);
         } catch (error: any) {
-          console.error("Error adding player to game:", error.message);
+          console.error("Error adding player to game:", error);
           return callback(errorResponse("Error adding player to game."));
         }
       }

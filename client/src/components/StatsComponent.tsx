@@ -35,7 +35,7 @@ const StatsComponent = ({
 
   useEffect(() => {
     setStatsEdit(unit.stats);
-  }, [unit]);
+  }, [unit.stats]);
 
   if (!unit?.stats) {
     console.log("no stats found on : ", unit);

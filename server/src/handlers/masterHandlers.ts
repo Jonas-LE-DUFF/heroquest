@@ -25,8 +25,7 @@ export function registerMasterHandlers(socket: Socket) {
   socket.on(
     "place-element",
     withValidation(socket, placeElementSchema, (socket, data, callback) => {
-      const { position: posData, selectedType } = data;
-      const gameId = socket.data.gameId;
+      const { position: posData, selectedType, gameId } = data;
       const position = toPosition(posData);
 
       if (!requireGameExists(gameId)) {
@@ -94,8 +93,7 @@ export function registerMasterHandlers(socket: Socket) {
   socket.on(
     "update-stats-unit",
     withValidation(socket, updateStatsUnitSchema, (socket, data, callback) => {
-      const { newStats, position: posData } = data;
-      const gameId = socket.data.gameId;
+      const { newStats, position: posData, gameId } = data;
       const position = toPosition(posData);
 
       if (!requireGameExists(gameId)) {
@@ -114,12 +112,18 @@ export function registerMasterHandlers(socket: Socket) {
         return callback(errorResponse((error as Error).message));
       }
 
+      const unitId = game?.gameState.getUnitByPosition(position)?.id;
+      if (!unitId) {
+        return callback(
+          errorResponse("Unit not found at the specified position"),
+        );
+      }
+
       const io = ServerHeroQuest.getServerInstance().getIo();
 
       io.to(gameId).emit("stats-updated", {
-        entityId: newStats.id,
+        entityId: unitId,
         newStats: newStats,
-        isHero: newStats.getRole() === PlayerRole.HERO,
       });
 
       callback(successResponse());

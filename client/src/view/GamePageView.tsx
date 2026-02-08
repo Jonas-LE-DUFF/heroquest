@@ -78,7 +78,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
-    (data: { entityId: string; newStats: StatsAsJson; isHero: boolean }) => {
+    (data: { entityId: string; newStats: StatsAsJson }) => {
       console.log("stats updated received in game page", data);
 
       const isDead =
@@ -92,7 +92,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         tileOfUnit.unit.stats = data.newStats;
         unit.stats = data.newStats;
 
-        if (data.isHero) {
+        if (isHero(unit)) {
           const player = getPlayerByHero(unit as HeroAsJson, prev.players);
           if (!player) {
             console.error("Player not found for hero with id:", data.entityId);

@@ -52,11 +52,7 @@ interface ServerToClientEvents {
     TileType: TileType;
   }) => void;
 
-  "stats-updated": (data: {
-    entityId: string;
-    newStats: StatsAsJson;
-    isHero: boolean;
-  }) => void;
+  "stats-updated": (data: { entityId: string; newStats: StatsAsJson }) => void;
 
   // errors
   error: (message: string) => void;
