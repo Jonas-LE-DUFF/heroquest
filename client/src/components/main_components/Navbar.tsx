@@ -13,7 +13,7 @@ import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
 interface NavbarProps {
   socket: Socket;
-  game: GameAsJson
+  game: GameAsJson;
   player?: PlayerAsJson;
   isCurrentTurnPlayer: boolean;
   currentTurnPlayerName: string;
@@ -34,15 +34,15 @@ const Navbar: React.FC<NavbarProps> = ({
   setSelectedUnit,
   openSpellPage,
 }) => {
-  const location = useLocation()
-  const gameId = location.state.gameId
-  const role = location.state.role
-  const playerName = location.state.playerName
+  const location = useLocation();
+  const gameId = location.state.gameId;
+  const role = location.state.role;
+  const playerName = location.state.playerName;
 
   if (!player) {
     return <div>Loading...</div>;
   }
-  const hero = getHeroByPlayerId(player.id, game)
+  const hero = getHeroByPlayerId(player.id, game);
 
   function showSpells() {
     openSpellPage();
@@ -70,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </Tooltip>
         </div>
       )}
-      <div className="nav-elem">Game ID: {gameId}</div>
+      <div className="nav-elem">Nom de la partie: {game.name}</div>
       <div className="nav-elem">Votre nom: {playerName}</div>
       <div className="nav-elem">Votre Rôle: {role}</div>
       {hero?.spells && hero.spells.length > 0 && (
