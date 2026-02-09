@@ -22,6 +22,7 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface BoardProps {
   socket: Socket;
+  game: GameAsJson;
   onTileClick: (
     gameId: string,
     position: PositionAsJson,
@@ -34,6 +35,7 @@ interface BoardProps {
 
 const Board = ({
   socket,
+  game,
   onTileClick,
   selectedPosition,
   selectedEntityId,
@@ -41,7 +43,6 @@ const Board = ({
 }: BoardProps) => {
   const location = useLocation();
   const role = location.state.role;
-  const game = location.state.game as GameAsJson;
 
   const handleTileClick = (
     position: PositionAsJson,
@@ -108,19 +109,13 @@ const Board = ({
       return TileType[tile.type];
     }
 
-    if (unit?.category) {
-      return (
-        <img
-          className="boardImg"
-          src={getIconClassPath(unit)}
-          alt={getUnitClassName(unit)}
-        />
-      );
-    }
-
-    console.log(typeof unit);
-    console.log(unit);
-    return TileType[tile.type];
+    return (
+      <img
+        className="boardImg"
+        src={getIconClassPath(unit)}
+        alt={getUnitClassName(unit)}
+      />
+    );
   };
 
   return (

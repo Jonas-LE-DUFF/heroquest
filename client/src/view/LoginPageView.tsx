@@ -26,9 +26,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
     socket.emit(
       "join-game",
       { gameName, playerName, role },
-      (response: { success: boolean; message?: string }) => {
+      (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur: ${response.message}`);
+          alert(`Erreur: ${response.error}`);
           return;
         }
       },

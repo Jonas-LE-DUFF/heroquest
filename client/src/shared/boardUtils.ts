@@ -11,7 +11,7 @@ function getTileByPosition(
   if (x < 0 || y < 0 || y >= board.tiles.length || x >= board.tiles[y].length) {
     return null;
   }
-  return board.tiles[y][x];
+  return board.tiles[x][y];
 }
 
 function getTileByUnitId(
@@ -32,9 +32,9 @@ function getPositionByUnitId(
   unitId: string,
   board: BoardAsJson,
 ): PositionAsJson | null {
-  for (let y = 0; y < board.tiles.length; y++) {
-    for (let x = 0; x < board.tiles[y].length; x++) {
-      const tile = board.tiles[y][x];
+  for (let x = 0; x < board.tiles.length; x++) {
+    for (let y = 0; y < board.tiles[x].length; y++) {
+      const tile = board.tiles[x][y];
       if (tile.unit?.id === unitId) {
         return { x, y };
       }

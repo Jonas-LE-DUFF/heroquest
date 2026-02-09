@@ -375,6 +375,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           <Board
             key={`board-${boardKey}`}
             socket={socket}
+            game={currentGame}
             onTileClick={handleTileClick}
             selectedPosition={selectedPosition}
             selectedEntityId={selectedEntityId}
