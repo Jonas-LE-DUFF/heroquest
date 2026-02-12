@@ -21,11 +21,7 @@ import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { Direction } from "../POO/enums/Direction";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import {
-  getHeroByPlayerId,
-  getPlayerBySocketId,
-  getPlayerToPlay,
-} from "../shared/serverUtils";
+import { getHeroByPlayerId, getPlayerIdToPlay } from "../shared/serverUtils";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 
 interface GameControlsProps {
@@ -65,8 +61,8 @@ const GameControls = ({
   isElementsShown.set("monsterDices", true);
   isElementsShown.set("masterControls", false);
 
-  const player = getPlayerBySocketId(socket.id, game);
-  const isPlayerTurn = getPlayerToPlay(game)?.id === socket.id;
+  const isPlayerTurn = getPlayerIdToPlay(game) === socket.id;
+
   const hero = getHeroByPlayerId(socket.id, game);
 
   useEffect(() => {
@@ -153,7 +149,15 @@ const GameControls = ({
   };
 
   const endTurn = () => {
-    socket.emit("end-turn", { gameId: gameId });
+    socket.emit(
+      "end-turn",
+      { gameId: gameId },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert(`Erreur de déplacement du monstre: ${response.error}`);
+        }
+      },
+    );
   };
 
   // module-scope helper: list numeric enum values for MonsterCategory

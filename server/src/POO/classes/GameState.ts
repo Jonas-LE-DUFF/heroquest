@@ -117,8 +117,6 @@ class GameState {
   }
 
   isHeroCategoryTaken(category: HeroCategory): boolean {
-    console.log("checking if hero category is taken:", category);
-    console.log(this.Units);
     return this.Units.some((u) => u instanceof Hero && u.category === category);
   }
 

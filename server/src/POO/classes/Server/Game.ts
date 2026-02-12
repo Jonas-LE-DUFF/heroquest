@@ -165,12 +165,15 @@ class Game {
   }
 
   endTurn(): void {
-    try {
+    if (!this.isMonsterTurn) {
       const heroTurn = this.getCurrentHeroTurn();
       heroTurn.endTurnEffects();
+      if (this.currentTurnIndex === this.playOrder.length - 1) {
+        this.isMonsterTurn = true;
+      }
       this.currentTurnIndex =
         (this.currentTurnIndex + 1) % this.playOrder.length;
-    } catch {
+    } else {
       // it's monster turn
       this.isMonsterTurn = false;
       this.currentTurnIndex = 0;

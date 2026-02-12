@@ -2,16 +2,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
-import { getPlayerName, isHero } from "../shared/utils";
+import { isHero } from "../shared/utils";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
-import { getEquipmentType } from "../shared/equipments";
-import { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/TileAsJson";
-import { Direction } from "../POO/enums/Direction";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
@@ -28,13 +25,15 @@ import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import {
   getHeroByPlayerId,
   getPlayerByHero,
-  getPlayerByHeroCategory,
+  getPlayerBySocketId,
+  getPlayerIdToPlay,
 } from "../shared/serverUtils";
 import { TileType } from "../POO/enums/TileType";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
+import { Direction } from "../POO/enums/Direction";
 
 interface GamePageProps {
   socket: any;
@@ -43,7 +42,6 @@ interface GamePageProps {
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const role = location.state.role;
-  console.log(location.state);
 
   const [selectedType, setSelectedType] = useState<
     TileType | Direction | MonsterCategory | null
@@ -57,7 +55,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   );
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
   const user = currentGame.players.find((p) => p.id === socket.id);
-  const gameState: GameStateAsJson = currentGame.gameState;
   const hero = getHeroByPlayerId(socket.id, currentGame);
   if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
     throw new Error("Hero not found for current player in game state");
@@ -66,13 +63,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
   const weapons = hero?.equipment.weapons.map((w) => w.id) ?? [];
-  console.log("User weapons :", weapons.join(", "));
 
   const [selectedWeapon, setSelectedWeapon] = useState<string | null>(
     weapons[hero?.equipment.selectedWeaponIndex ?? 0] ?? null,
   );
-
-  console.log("Selected weapon in game page :", selectedWeapon);
 
   const [targetMode, setTargetMode] = useState<boolean>(false);
 
@@ -339,16 +333,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             socket={socket}
             game={currentGame}
             isCurrentTurnPlayer={
-              currentGame.playOrder[currentGame.currentTurnIndex] ===
-              hero?.category
+              getPlayerIdToPlay(currentGame) === socket.id || false
             }
-            currentTurnPlayerName={getPlayerName(
-              currentGame,
-              getPlayerByHeroCategory(
-                currentGame.playOrder[currentGame.currentTurnIndex],
+            currentTurnPlayerName={
+              getPlayerBySocketId(
+                getPlayerIdToPlay(currentGame) || "Unknown",
                 currentGame,
-              )?.name || "Unknown",
-            )}
+              )?.name || "Unknown"
+            }
             player={user}
             statsOpen={statsVisible}
             setStatsOpen={setStatsVisible}

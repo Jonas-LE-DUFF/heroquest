@@ -1,4 +1,5 @@
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
@@ -57,8 +58,17 @@ function getHeroByPlayerId(
   return null;
 }
 
-function getPlayerToPlay(game: GameAsJson): PlayerAsJson | null {
-  return game.players[game.currentTurnIndex];
+function getPlayerIdToPlay(game: GameAsJson): string | undefined {
+  if (game.isMonsterTurn) {
+    return getGameMasterId(game); // during the monster turn it's the game master to play
+  }
+  const playerCategoryToPlay = game.playOrder[game.currentTurnIndex];
+  const playerToPlay = getPlayerByHeroCategory(playerCategoryToPlay, game);
+  return playerToPlay?.id;
+}
+
+function getGameMasterId(game: GameAsJson): string | undefined {
+  return game.players.find((p) => p.role === PlayerRole.GAME_MASTER)?.id;
 }
 
 export {
@@ -67,5 +77,5 @@ export {
   getPlayerByHeroCategory,
   getHeroByPlayerId,
   getPlayerBySocketId,
-  getPlayerToPlay,
+  getPlayerIdToPlay,
 };

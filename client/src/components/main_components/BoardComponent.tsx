@@ -16,7 +16,7 @@ import { TileAsJson } from "../../POO/interfaces/ClassAsJson/Board/TileAsJson";
 import { Direction } from "../../POO/enums/Direction";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 import { useLocation } from "react-router-dom";
-import { getPlayerToPlay } from "../../shared/serverUtils";
+import { getPlayerIdToPlay } from "../../shared/serverUtils";
 import { TileType } from "../../POO/enums/TileType";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 
@@ -55,7 +55,7 @@ const Board = ({
     const tile = game.gameState.board.tiles[position.x][position.y];
     if (!tile || !socket.id) return;
 
-    if (role === PlayerRole.HERO && getPlayerToPlay(game)?.id !== socket.id) {
+    if (role === PlayerRole.HERO && getPlayerIdToPlay(game) !== socket.id) {
       return;
     }
 
