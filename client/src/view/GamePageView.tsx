@@ -181,7 +181,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         console.log("door placed received in game page", data);
         setCurrentGame((prev) => {
           if (!prev) return prev;
-          setDoorAtPosition(
+          currentGame.gameState.board = setDoorAtPosition(
             data.position,
             data.verticalOrHorizontal,
             prev.gameState.board,
@@ -305,12 +305,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       return;
     }
     console.log("Placing element:", selectedType, "at position:", position);
-    socket.emit("place-element", {
-      gameId,
-      position,
-      selectedType,
-      playerId: socket.id,
-    });
+    socket.emit(
+      "place-element",
+      {
+        gameId,
+        position,
+        selectedType,
+        playerId: socket.id,
+      },
+      (response: { success: boolean; error?: string }) => {
+        if (response.success) {
+          console.log("Element placed successfully");
+        } else {
+          console.error("Failed to place element:", response.error);
+        }
+      },
+    );
   };
 
   return (

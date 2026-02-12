@@ -12,7 +12,7 @@ const canMove = (
   from: Position,
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
-): boolean => {
+): { success: boolean; error?: string } => {
   const isHero =
     unitMoved instanceof Unit && unitMoved.getCategory() === PlayerRole.HERO;
   const canPhaseThroughWalls = unitMoved.canPhaseThroughWalls();
@@ -21,7 +21,7 @@ const canMove = (
 
   if (!to.isValid(board.BOARD_WIDTH, board.BOARD_HEIGHT)) {
     console.error("move out of bounds");
-    return false;
+    return { success: false, error: "move out of bounds" };
   }
 
   if (
@@ -30,16 +30,16 @@ const canMove = (
     !canPhaseThroughWalls // A monster can't open doors
   ) {
     console.error("wall in the way");
-    return false;
+    return { success: false, error: "wall in the way" };
   }
 
   const unit = board.getUnitAt(to);
 
   if (unit && !canPhaseThroughMonsters) {
     console.error("tile is occupied");
-    return false;
+    return { success: false, error: "tile is occupied" };
   }
-  return true;
+  return { success: true };
 };
 
 export function moveUnit(
@@ -47,9 +47,10 @@ export function moveUnit(
   from: Position,
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
-): void {
-  if (!canMove(board, from, direction, unitMoved)) {
-    throw new Error("Unit cannot move to the desired position");
+): { success: boolean; error?: string } {
+  const moveCheck = canMove(board, from, direction, unitMoved);
+  if (!moveCheck.success) {
+    return moveCheck;
   }
 
   const to = from.afterMove(direction);
@@ -60,6 +61,7 @@ export function moveUnit(
   }
   tile.unit = null;
   newTile.unit = unitMoved;
+  return { success: true };
 }
 
 export function handleDoorOpening(

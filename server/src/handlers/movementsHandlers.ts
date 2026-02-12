@@ -59,7 +59,14 @@ function registerMovementHandlers(socket: Socket) {
 
       const board: Board = game!.gameState.board;
 
-      moveUnit(board, position, direction, unitMoved);
+      const movementMessage = moveUnit(board, position, direction, unitMoved);
+      if (!movementMessage.success) {
+        return callback(
+          errorResponse(
+            `Impossible de déplacer l'unité : ${movementMessage.error}`,
+          ),
+        );
+      }
 
       handleDoorOpening(board, position, direction);
 

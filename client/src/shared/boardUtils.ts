@@ -63,7 +63,7 @@ function setTileTypeAtPosition(
   if (x < 0 || y < 0 || y >= board.tiles.length || x >= board.tiles[y].length) {
     return;
   }
-  board.tiles[y][x].type = TileType;
+  board.tiles[x][y].type = TileType;
 }
 
 export {

@@ -41,11 +41,19 @@ export function registerMasterHandlers(socket: Socket) {
       const io = ServerHeroQuest.getServerInstance().getIo();
 
       if (selectedType in Direction) {
-        const direction = selectedType as Direction;
-        const result = handleDoorPlacement(gameId, position, direction);
-        return callback(
-          result.success ? successResponse() : errorResponse(result.error!),
+        console.debug(
+          "placing door at position:",
+          position,
+          "with direction:",
+          selectedType,
         );
+        const direction = selectedType as Direction;
+        const newDoorPlace = position.afterMove(direction);
+        const result = handleDoorPlacement(gameId, position, direction);
+        if (!result.success) {
+          return callback(errorResponse(result.error!));
+        }
+        return callback(successResponse());
       }
 
       if (selectedType === TileType.FLOOR) {
@@ -142,7 +150,7 @@ function handleDoorPlacement(
   if (!newDoor.success) {
     return {
       success: false,
-      error: "Invalid door placement",
+      error: newDoor.error || "Failed to place door",
     };
   }
   console.log("new door placed :", newDoor);
