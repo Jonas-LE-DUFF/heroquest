@@ -65,8 +65,8 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     socket.emit(
       "roll-red-dice",
       {
-        gameId,
-        currentNumberOfDices,
+        gameId: gameId,
+        numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {

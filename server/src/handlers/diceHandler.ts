@@ -86,6 +86,11 @@ function handleRollRedDice(socket: Socket) {
 
         const specialAuthorizedHero =
           game?.gameState.getSpecialAuthorizedHero();
+        if (player.role === PlayerRole.GAME_MASTER) {
+          amountOfDice = numberOfDice;
+          const result = await rollRedDice(gameId, amountOfDice, player.role);
+          return callback(result);
+        }
         const hero = game?.getCurrentHeroTurn();
         if (
           specialAuthorizedHero &&
@@ -141,6 +146,11 @@ function handleRollFightDice(socket: Socket) {
       }
 
       const specialAuthorizedHero = game?.gameState.getSpecialAuthorizedHero();
+      if (player.role === PlayerRole.GAME_MASTER) {
+        amountOfDice = numberOfDice;
+        const result = await rollFightDice(gameId, amountOfDice, player.role);
+        return callback(result);
+      }
       const hero = game?.getCurrentHeroTurn();
       if (
         specialAuthorizedHero &&
