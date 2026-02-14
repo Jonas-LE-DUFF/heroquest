@@ -62,6 +62,7 @@ class Game {
 
   removePlayer(playerId: string): void {
     this.players.delete(playerId);
+    this.gameState.removeUnitsControlledByPlayer(playerId);
   }
 
   getPlayer(playerId: string): Player | undefined {
