@@ -153,7 +153,11 @@ class Board {
     unit: Unit<HeroCategory | MonsterCategory>,
   ): Unit<HeroCategory | MonsterCategory> | null {
     const position = this.getPositionOfUnit(unit.id);
-    return this.clearTileAtPosition(position!);
+    if (!position) {
+      console.error("Unit not found on board:", unit.id);
+      return null;
+    }
+    return this.clearTileAtPosition(position);
   }
 
   clearTileAtPosition(
