@@ -26,7 +26,8 @@ const canMove = (
 
   if (
     board.hasWallAt(from, direction) &&
-    (!board.hasDoorAt(from, direction) || !isHero) &&
+    !board.hasDoorAt(from, direction) &&
+    !isHero &&
     !canPhaseThroughWalls // A monster can't open doors
   ) {
     console.error("wall in the way");
