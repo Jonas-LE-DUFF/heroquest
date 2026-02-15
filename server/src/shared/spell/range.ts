@@ -1,4 +1,4 @@
-import { GameState, Position } from "../type";
+import { Position } from "../../POO/classes/Position/Position";
 
 export function isInRange(
   playerPosition: Position,

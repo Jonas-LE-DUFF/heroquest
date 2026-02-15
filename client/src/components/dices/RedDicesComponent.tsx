@@ -7,17 +7,18 @@ import face3 from "./../images/redDice3.png";
 import face4 from "./../images/redDice4.png";
 import face5 from "./../images/redDice5.png";
 import face6 from "./../images/redDice6.png";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface RedDicesProps {
   socket: any;
   gameId: string;
-  role: "hero" | "game-master";
-  viewerRole: "hero" | "game-master";
+  role: PlayerRole;
+  viewerRole: PlayerRole;
 }
 
 const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
-    Array.of(1, 1)
+    Array.of(1, 1),
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(2);
   const playerRole = viewerRole;
@@ -29,7 +30,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   useEffect(() => {
     const onRedDiceUpdate = (data: {
       listResults: number[];
-      role: "hero" | "game-master";
+      role: PlayerRole;
     }) => {
       if (data.role !== role) return; // update not for us
       setCurrentDiceFaces(data.listResults);
@@ -45,7 +46,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "red" &&
-        role === "hero"
+        role === PlayerRole.HERO
       ) {
         setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1)));
       }
@@ -64,14 +65,14 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     socket.emit(
       "roll-red-dice",
       {
-        gameId,
-        currentNumberOfDices,
+        gameId: gameId,
+        numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           alert("Erreur lors du lancement des dés rouges : " + response.error);
         }
-      }
+      },
     );
   };
 
@@ -105,7 +106,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
           {currentDiceFaces[i] !== null
             ? getDiceFace(currentDiceFaces[i])
             : "noFace"}
-        </div>
+        </div>,
       );
     }
     return dices;
@@ -125,15 +126,16 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       {playerRole === role && (
         <button onClick={rollDice}>lancer les dés rouges</button>
       )}
-      {playerRole === "game-master" && role === "game-master" && (
-        <input
-          className="inputDice"
-          type="number"
-          onChange={(e) =>
-            setCurrentNumberOfDices(Number(e.currentTarget.value))
-          }
-        />
-      )}
+      {playerRole === PlayerRole.GAME_MASTER &&
+        role === PlayerRole.GAME_MASTER && (
+          <input
+            className="inputDice"
+            type="number"
+            onChange={(e) =>
+              setCurrentNumberOfDices(Number(e.currentTarget.value))
+            }
+          />
+        )}
     </div>
   );
 };

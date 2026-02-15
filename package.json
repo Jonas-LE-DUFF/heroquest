@@ -5,15 +5,18 @@
   "main": "index.js",
   "scripts": {
     "dev:server": "cd server && npm run dev",
-    "dev:client": "cd client && npm start",
+    "dev:client": "cd client && npm run dev",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd server && npm test && cd ../client && npm test",
+    "test:server": "cd server && npm test",
+    "test:client": "cd client && npm test",
+    "test:server:watch": "cd server && npm run test:watch",
+    "test:client:watch": "cd client && npm run test:watch",
+    "test:server:coverage": "cd server && npm run test:coverage"
   },
   "devDependencies": {
-    "@types/node": "^24.10.0",
-    "concurrently": "^7.6.0",
-    "socket": "^1.1.25"
+    "concurrently": "^7.6.0"
   },
   "repository": {
     "type": "git",
@@ -28,16 +31,13 @@
   },
   "homepage": "https://github.com/Jonas-LE-DUFF/heroquest#readme",
   "dependencies": {
-    "@mui/material": "^5.18.0",
-    "@mui/styles": "^6.5.0",
-    "jest": "^30.2.0",
-    "jest-mock": "^30.2.0",
-    "mui": "^0.0.1",
-    "nodemon": "^3.1.10",
-    "react-material-ui-carousel": "^3.4.2",
-    "reun": "^0.2.7",
-    "run": "^1.5.0",
+    "@vitejs/plugin-react": "^5.1.3",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11",
+    "socket.io": "^4.8.3",
     "ts-node": "^10.9.2",
-    "ts-script": "^1.0.0"
+    "typeof": "^1.0.0",
+    "uuid": "^13.0.0",
+    "vite": "^7.3.1"
   }
 }

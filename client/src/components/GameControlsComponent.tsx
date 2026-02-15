@@ -1,13 +1,5 @@
-import React, { useState, useEffect, JSX } from "react";
+import { useState, useEffect, JSX } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  Direction,
-  GameState,
-  Monster,
-  monsterClass,
-  Player,
-  tileType,
-} from "../shared/type";
 import Dices from "./dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import {
@@ -23,13 +15,23 @@ import { monsterClassFr } from "../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { getEquipmentName } from "../shared/equipments";
+import { TileType } from "../POO/enums/TileType";
+import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { Direction } from "../POO/enums/Direction";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { getHeroByPlayerId, getPlayerIdToPlay } from "../shared/serverUtils";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 
 interface GameControlsProps {
   socket: any;
-  game: GameState;
-  setSelectedType: (type: tileType | Direction | monsterClass | null) => void; //Direction -> door placement
-  selectedType: tileType | Direction | monsterClass | null;
-  selectedUnit: Player | Monster | null;
+  game: GameAsJson;
+  setSelectedType: (
+    type: TileType | Direction | MonsterCategory | null,
+  ) => void; //Direction -> door placement
+  selectedType: TileType | Direction | MonsterCategory | null;
+  selectedUnit: HeroAsJson | MonsterAsJson | null;
   setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
@@ -59,13 +61,11 @@ const GameControls = ({
   isElementsShown.set("monsterDices", true);
   isElementsShown.set("masterControls", false);
 
-  const [player, setPlayer] = useState(game.players.get(socket.id));
+  const isPlayerTurn = getPlayerIdToPlay(game) === socket.id;
+
+  const hero = getHeroByPlayerId(socket.id, game);
 
   useEffect(() => {
-    if (!game) return;
-
-    setPlayer(game.players.get(socket.id));
-
     socket.on("player-moved", (data: any) => {
       setMessage(`${data.playerName} s'est déplacé`);
     });
@@ -87,12 +87,12 @@ const GameControls = ({
         if (!response.success) {
           alert(`Erreur de déplacement du joueur: ${response.error}`);
         }
-      }
+      },
     );
   };
 
   const moveMonster = (direction: Direction) => {
-    if (!selectedUnit || role !== "game-master") {
+    if (!selectedUnit || role !== PlayerRole.GAME_MASTER) {
       console.error("No unit selected for movement");
       return;
     }
@@ -108,20 +108,20 @@ const GameControls = ({
         if (!response.success) {
           alert(`Erreur de déplacement du monstre: ${response.error}`);
         }
-      }
+      },
     );
   };
 
-  const selectMonster = (monster: monsterClass) => {
+  const selectMonster = (monster: MonsterCategory) => {
     setSelectedType(monster);
   };
 
   const putWall = () => {
-    setSelectedType(tileType.wall);
+    setSelectedType(TileType.WALL);
   };
 
   const putFurniture = () => {
-    setSelectedType(tileType.furniture);
+    setSelectedType(TileType.FURNITURE);
   };
 
   const unSelect = () => {
@@ -129,7 +129,7 @@ const GameControls = ({
   };
 
   const erase = () => {
-    setSelectedType(tileType.empty);
+    setSelectedType(TileType.FLOOR);
   };
 
   const putTopDoor = () => {
@@ -149,13 +149,21 @@ const GameControls = ({
   };
 
   const endTurn = () => {
-    socket.emit("end-turn", { gameId: gameId });
+    socket.emit(
+      "end-turn",
+      { gameId: gameId },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert(`Erreur de déplacement du monstre: ${response.error}`);
+        }
+      },
+    );
   };
 
-  // module-scope helper: list numeric enum values for monsterClass
-  const MONSTER_TYPES: monsterClass[] = Object.values(monsterClass).filter(
-    (v) => typeof v === "number"
-  ) as monsterClass[];
+  // module-scope helper: list numeric enum values for MonsterCategory
+  const MONSTER_TYPES: MonsterCategory[] = Object.values(
+    MonsterCategory,
+  ).filter((v) => typeof v === "number") as MonsterCategory[];
 
   const renderMonsterButtons = () => {
     if (MONSTER_TYPES.length === 0) {
@@ -178,14 +186,14 @@ const GameControls = ({
               <img src={img} alt={name} className="monster-img" />
             </button>
           </Tooltip>
-        </Grid>
+        </Grid>,
       );
     }
     return buttons;
   };
 
-  const renderMovementControls = (role: "game-master" | "hero") => {
-    if (role === "hero")
+  const renderMovementControls = (role: PlayerRole) => {
+    if (role === PlayerRole.HERO)
       return (
         <div className="movement-controls">
           <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
@@ -194,7 +202,7 @@ const GameControls = ({
           <button onClick={() => movePlayer(Direction.RIGHT)}>➡️ Droite</button>
         </div>
       );
-    if (role === "game-master")
+    if (role === PlayerRole.GAME_MASTER)
       return (
         <div className="movement-controls">
           <button onClick={() => moveMonster(Direction.UP)}>⬆️ Haut</button>
@@ -223,31 +231,38 @@ const GameControls = ({
             <Typography component="span">Actions Héros</Typography>
           </AccordionSummary>
           <h3>Actions</h3>
-          {role === "hero" &&
-            game.currentTurn === socket.id &&
+          {role === PlayerRole.HERO &&
+            isPlayerTurn &&
             renderMovementControls(role)}
           <div className="dices-section">
             <RedDices
               socket={socket}
               gameId={gameId}
-              role={"hero"}
+              role={PlayerRole.HERO}
               viewerRole={role}
             />
             <Dices
               socket={socket}
               gameId={gameId}
-              role={"hero"}
+              role={PlayerRole.HERO}
               viewerRole={role}
             />
           </div>
-          {role === "hero" && player?.stats?.equipments && (
+          {role === PlayerRole.HERO && hero?.equipment && (
             <div className="attack-choice">
               Arme selectionnée :
-              <select className="weapons" id="weapons-select" onChange={(e)=> {setSelectedWeapon(e.target.value)}} value={selectedWeapon ?? ""}>
-                {player?.stats?.equipments?.map((equipmentId) => {
+              <select
+                className="weapons"
+                id="weapons-select"
+                onChange={(e) => {
+                  setSelectedWeapon(e.target.value);
+                }}
+                value={selectedWeapon ?? ""}
+              >
+                {hero?.equipment?.weapons?.map((weapon) => {
                   return (
-                    <option key={equipmentId} value={equipmentId}>
-                      {getEquipmentName(equipmentId)}
+                    <option key={weapon.id} value={weapon.id}>
+                      {getEquipmentName(weapon.id)}
                     </option>
                   );
                 })}
@@ -256,7 +271,7 @@ const GameControls = ({
             </div>
           )}
           {message && <div className="game-message">{message}</div>}
-          {game.currentTurn === socket.id && (
+          {isPlayerTurn && (
             <div>
               <button onClick={endTurn}>END TURN</button>
             </div>
@@ -264,7 +279,7 @@ const GameControls = ({
         </Accordion>
       </div>
       <div className="game-controls game-master">
-        {role === "game-master" && (
+        {role === PlayerRole.GAME_MASTER && (
           <div>
             <Accordion sx={{ color: "white", background: "inherit" }}>
               <AccordionSummary
@@ -334,21 +349,21 @@ const GameControls = ({
             <RedDices
               socket={socket}
               gameId={gameId}
-              role={"game-master"}
+              role={PlayerRole.GAME_MASTER}
               viewerRole={role}
             />
             <Dices
               socket={socket}
               gameId={gameId}
-              role={"game-master"}
+              role={PlayerRole.GAME_MASTER}
               viewerRole={role}
             />
           </div>
         </Accordion>
-        {role === "game-master" &&
+        {role === PlayerRole.GAME_MASTER &&
           selectedUnit !== null &&
           renderMovementControls(role)}
-        {role === "game-master" && (
+        {role === PlayerRole.GAME_MASTER && (
           <Accordion sx={{ color: "white", background: "inherit" }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}

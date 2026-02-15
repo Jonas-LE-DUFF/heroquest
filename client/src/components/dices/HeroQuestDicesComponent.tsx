@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react";
-import { diceFace } from "../../shared/type";
 import { Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../../shared/utils";
+import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface DicesProps {
   socket: any;
   gameId: string;
-  role: "hero" | "game-master"; //the role to whom this dices belong
-  viewerRole: "hero" | "game-master"; //who is watching the dices
+  role: PlayerRole; //the role to whom this dices belong
+  viewerRole: PlayerRole; //who is watching the dices
 }
 
 const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
-  const [currentDiceFaces, setCurrentDiceFaces] = useState<diceFace[] | null>(
-    Array.of(diceFace.Hit)
-  );
+  const [currentDiceFaces, setCurrentDiceFaces] = useState<
+    FightDiceFaces[] | null
+  >(Array.of(FightDiceFaces.Hit));
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
   const playerRole = viewerRole;
 
@@ -23,15 +24,15 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       setCurrentDiceFaces((prev) => {
         const faceList = prev ? [...prev] : [];
         for (let i = 0; i < numberOfDices; i++) {
-          if (faceList[i] === undefined) faceList[i] = diceFace.Hit;
+          if (faceList[i] === undefined) faceList[i] = FightDiceFaces.Hit;
         }
         return faceList;
       });
     };
 
     const onDiceUpdate = (data: {
-      listResults: diceFace[];
-      role: "hero" | "game-master";
+      listResults: FightDiceFaces[];
+      role: PlayerRole;
     }) => {
       if (data.role !== role) return; // update is not for this component
       setCurrentNumberOfDices(data.listResults.length);
@@ -47,7 +48,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "fight" &&
-        role === "hero"
+        role === PlayerRole.HERO
       ) {
         setCurrentNumberOfDices(data.amountOfDices);
         fillDiceFaces(data.amountOfDices);
@@ -75,13 +76,13 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
         if (!response.success) {
           alert("Erreur lancement des dés de combat : " + response.error);
         }
-      }
+      },
     );
   };
 
   function renderDices(
-    currentDiceFaces: Array<diceFace> | null,
-    currentNumberOfDices: number
+    currentDiceFaces: Array<FightDiceFaces> | null,
+    currentNumberOfDices: number,
   ) {
     if (currentDiceFaces === null) {
       return;
@@ -99,7 +100,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
           ) : (
             "noFace"
           )}
-        </div>
+        </div>,
       );
     }
     return dices;
@@ -119,7 +120,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       {playerRole === role && (
         <div className="container">
           <button onClick={rollDice}>lancer les dés</button>
-          {playerRole === "game-master" && (
+          {playerRole === PlayerRole.GAME_MASTER && (
             <input
               className="inputDice"
               type="number"

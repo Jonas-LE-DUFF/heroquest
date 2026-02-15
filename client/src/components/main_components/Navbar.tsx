@@ -1,25 +1,31 @@
 import { Socket } from "socket.io-client";
-import { Monster, Player } from "../../shared/type";
 import "./Navbar.css";
 import { getHeroClassIconPath, getHeroClassName } from "../../shared/utils";
 import { Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { useLocation } from "react-router-dom";
+import { getHeroByPlayerId } from "../../shared/serverUtils";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
 interface NavbarProps {
   socket: Socket;
-  gameId: string;
-  player?: Player;
+  game: GameAsJson;
+  player?: PlayerAsJson;
   isCurrentTurnPlayer: boolean;
   currentTurnPlayerName: string;
   statsOpen: boolean;
   setStatsOpen: (arg0: boolean) => void;
-  setSelectedUnit: (arg0: Player | Monster | null) => void;
+  setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   socket,
-  gameId,
+  game,
   player,
   isCurrentTurnPlayer,
   currentTurnPlayerName,
@@ -28,10 +34,15 @@ const Navbar: React.FC<NavbarProps> = ({
   setSelectedUnit,
   openSpellPage,
 }) => {
+  const location = useLocation();
+  const gameId = location.state.gameId;
+  const role = location.state.role;
+  const playerName = location.state.playerName;
 
-  if (!player || !player.stats) {
+  if (!player) {
     return <div>Loading...</div>;
   }
+  const hero = getHeroByPlayerId(player.id, game);
 
   function showSpells() {
     openSpellPage();
@@ -39,7 +50,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <div className="Navbar">
       <div className="nav-elem">Navbar</div>
-      {player.role === "hero" && player.class && (
+      {player.role === PlayerRole.HERO && hero?.category && (
         <div className="nav-elem">
           <Tooltip
             title={statsOpen ? "Cacher statistiques" : "Voir statistiques"}
@@ -47,22 +58,22 @@ const Navbar: React.FC<NavbarProps> = ({
           >
             <img
               className="imgNav"
-              src={getHeroClassIconPath(player.class)}
-              alt={getHeroClassName(player.class)}
+              src={getHeroClassIconPath(hero.category)}
+              alt={getHeroClassName(hero.category)}
               role="button"
               onClick={() => {
                 console.log("not yet implemented");
-                setSelectedUnit(player);
+                setSelectedUnit(hero);
                 setStatsOpen(!statsOpen);
               }}
             />
           </Tooltip>
         </div>
       )}
-      <div className="nav-elem">Game ID: {gameId}</div>
-      <div className="nav-elem">Votre nom: {player.stats.name}</div>
-      <div className="nav-elem">Votre Rôle: {player.role}</div>
-      {player?.stats?.spells && player.stats.spells.length > 0 && (
+      <div className="nav-elem">Nom de la partie: {game.name}</div>
+      <div className="nav-elem">Votre nom: {playerName}</div>
+      <div className="nav-elem">Votre Rôle: {role}</div>
+      {hero?.spells && hero.spells.length > 0 && (
         <div className="nav-elem">
           <Tooltip title="Voir mes sorts" arrow>
             <AutoAwesomeIcon

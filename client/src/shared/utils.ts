@@ -1,14 +1,3 @@
-import {
-  diceFace,
-  GameState,
-  heroClass,
-  Monster,
-  monsterClass,
-  Player,
-  Position,
-  SendableGameState,
-  spellElement,
-} from "./type";
 import iconBarbarian from "./../components/images/icons/hero/barbarian.png";
 import iconCleric from "./../components/images/icons/hero/wizard.png";
 import iconDwarf from "./../components/images/icons/hero/dwarf.png";
@@ -30,116 +19,82 @@ import {
   monsterClassFr,
   spellElementFr,
 } from "./languages/frenchEnums";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
+import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
+import { SpellElement } from "../POO/enums/SpellElement";
 
-function isPlayer(u: Monster | Player): u is Player {
-  return !u.id.match(/^idMonster/);
+function isHero(entity: HeroAsJson | MonsterAsJson): entity is HeroAsJson {
+  return (entity as HeroAsJson).controlledByPlayerId !== undefined;
 }
 
-function convertSendableGameStateAsGameState(
-  game: SendableGameState
-): GameState {
-  const players: Map<string, Player> = new Map<string, Player>();
-  const monsters: Map<string, Monster> = new Map<string, Monster>();
-  const entityPositions: Map<string, Position> = new Map<string, Position>();
-  const positionEntities: Map<string, string> = new Map<string, string>();
-
-  game.players.forEach((player: Player) => {
-    players.set(player.id, player);
-  });
-
-  game.monsters.forEach((monster: Monster) => {
-    monsters.set(monster.id, monster);
-  });
-
-  if (game.ids && game.positions) {
-    game.ids.forEach((id, index) => {
-      const position = game.positions[index];
-      if (id && position) {
-        entityPositions.set(id, position);
-        positionEntities.set(positionKey(position), id);
-      }
-    });
-  }
-
-  return {
-    id: game.id,
-    board: game.board,
-    players: players,
-    monsters: monsters,
-    entityPositions: entityPositions,
-    positionEntities: positionEntities,
-    turnOrder: game.turnOrder,
-    currentTurn: game.currentTurn,
-    status: game.status,
-    walls: game.walls,
-    doors: game.doors,
-  };
-}
-
-function everyOneReady(game: GameState) {
+function everyOneReady(game: GameAsJson) {
   const players = game.players.values();
   for (let player of players) {
-    if (!player.ready) return false;
+    if (!player.isReady) return false;
   }
   return true;
 }
 
-function getIconClassPath(entityType: Player | Monster): string {
-  if (entityType.class === undefined) {
+function getIconClassPath(entityType: HeroAsJson | MonsterAsJson): string {
+  if (entityType.category === undefined) {
     return "unknown";
   }
-  if (isPlayer(entityType)) {
-    return getHeroClassIconPath(entityType.class);
+  if (isHero(entityType)) {
+    return getHeroClassIconPath(entityType.category);
   } else {
-    return getMonsterIconPath(entityType.class);
+    return getMonsterIconPath(entityType.category);
   }
 }
 
-function getHeroClassIconPath(heroType: heroClass): string {
+function getHeroClassIconPath(heroType: HeroCategory): string {
   switch (heroType) {
-    case heroClass.Barbarian:
+    case HeroCategory.Barbarian:
       return iconBarbarian;
-    case heroClass.Cleric:
+    case HeroCategory.Cleric:
       return iconCleric;
-    case heroClass.Dwarf:
+    case HeroCategory.Dwarf:
       return iconDwarf;
-    case heroClass.Elf:
+    case HeroCategory.Elf:
       return iconElf;
     default:
-      return "hero"; // or a default icon
+      return "unknown hero class"; // or a default icon
   }
 }
 
-function getMonsterIconPath(monsterType: monsterClass): string {
+function getMonsterIconPath(monsterType: MonsterCategory): string {
   switch (monsterType) {
-    case monsterClass.Abomination:
+    case MonsterCategory.Abomination:
       return iconAbomination;
-    case monsterClass.Gargoyle:
+    case MonsterCategory.Gargoyle:
       return iconGargoyle;
-    case monsterClass.Goblin:
+    case MonsterCategory.Goblin:
       return iconGobelin;
-    case monsterClass.TerrorWarrior:
+    case MonsterCategory.TerrorWarrior:
       return iconDreadWarrior;
-    case monsterClass.Skeleton:
+    case MonsterCategory.Skeleton:
       return iconSkeleton;
-    case monsterClass.Zombie:
+    case MonsterCategory.Zombie:
       return iconZombie;
-    case monsterClass.Orc:
+    case MonsterCategory.Orc:
       return iconOrc;
-    case monsterClass.Mummy:
+    case MonsterCategory.Mummy:
       return iconMummy;
     default:
-      return "monster"; // or a default icon
+      return "unknown monster class"; // or a default icon
   }
 }
 
-function getFightDiceFace(face: diceFace) {
+function getFightDiceFace(face: FightDiceFaces) {
   switch (face) {
-    case diceFace.Hit:
+    case FightDiceFaces.Hit:
       return diceDeathHead;
-    case diceFace.BlackShield:
+    case FightDiceFaces.BlackShield:
       return diceMonsterShield;
-    case diceFace.WhiteShield:
+    case FightDiceFaces.WhiteShield:
       return diceHeroShield;
     default:
       return "dice"; // or a default icon
@@ -160,47 +115,44 @@ function getFightDiceFaceNumber(face: number) {
   }
 }
 
-function getElementName(element: spellElement, language: string = "en") {
+function getElementName(element: SpellElement, language: string = "en") {
   switch (language) {
     case "fr":
       return spellElementFr[element];
     case "en":
-      return spellElement[element];
+      return spellElementFr[element];
     default:
-      return spellElement[element];
+      return spellElementFr[element];
   }
 }
 
-function getUnitClassName(unit: Player | Monster) {
-  if (unit.class === undefined) {
+function getUnitClassName(unit: HeroAsJson | MonsterAsJson) {
+  if (unit.category === undefined) {
     return "Inconnu";
   }
-  if (isPlayer(unit)) {
-    return getHeroClassName(unit.class);
+  if (isHero(unit)) {
+    return getHeroClassName(unit.category);
   } else {
-    return getMonsterClassName(unit.class);
+    return getMonsterClassName(unit.category);
   }
 }
 
-function getHeroClassName(classHero: heroClass) {
+function getHeroClassName(classHero: HeroCategory) {
   return heroClassFr[classHero];
 }
 
-function getMonsterClassName(classMonster: monsterClass) {
+function getMonsterClassName(classMonster: MonsterCategory) {
   return monsterClassFr[classMonster];
 }
 
-function getPlayerName(game: GameState, playerId: string) {
-  const player = game.players.get(playerId);
-  if (!player || !player.stats) return "Inconnu";
-  return player.stats.name;
+function getPlayerName(game: GameAsJson, playerId: string) {
+  const player = game.players.find((p) => p.id === playerId);
+  if (!player) return "Inconnu";
+  return player.name;
 }
 
-const positionKey = (pos: Position) => `${pos.x},${pos.y}`;
-
 export {
-  isPlayer,
-  convertSendableGameStateAsGameState,
+  isHero,
   everyOneReady,
   getIconClassPath,
   getHeroClassIconPath,
@@ -212,5 +164,4 @@ export {
   getHeroClassName,
   getMonsterClassName,
   getPlayerName,
-  positionKey,
 };

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SendableGameState } from "../shared/type";
-import { convertSendableGameStateAsGameState } from "../shared/utils";
 import "./LoginPageView.css";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { PlayerRole } from "../POO/enums/PlayerRole";
 interface LoginPageProps {
   socket: any;
 }
@@ -10,32 +10,42 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState("a");
-  const [gameId, setGameId] = useState("a");
-  const [role, setRole] = useState<"hero" | "game-master">("hero");
+  const [gameName, setGameName] = useState("a");
+  const [role, setRole] = useState<PlayerRole>(PlayerRole.HERO);
 
-  const handleJoinGame = (e: React.FormEvent) => {
+  const handleJoinGame = (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (!playerName.trim() || !gameId.trim()) {
+    if (!playerName.trim() || !gameName.trim()) {
       alert("Veuillez remplir tous les champs");
       return;
     }
 
-    console.log("📤 Envoi des données:", gameId, playerName, role);
+    console.log("Envoi des données:", gameName, playerName, role);
     // Émettre l'événement de connexion au serveur
-    socket.emit("join-game", { gameId, playerName, role });
+    socket.emit(
+      "join-game",
+      { gameName, playerName, role },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          alert(`Erreur: ${response.error}`);
+          return;
+        }
+      },
+    );
 
     // Écouter la réponse du serveur
     socket.once(
       "join-success",
-      (data: { playerId: string; game: SendableGameState }) => {
+      (data: { playerId: string; game: GameAsJson }) => {
+        console.log("Rejoint la partie avec succès 2 :", data);
         navigate("/lobby", {
           state: {
             playerName: playerName,
-            game: convertSendableGameStateAsGameState(data.game),
+            game: data.game,
           },
         });
-      }
+      },
     );
 
     socket.on("join-error", (error: string) => {
@@ -59,11 +69,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         </div>
 
         <div className="form-group">
-          <label>ID de la partie :</label>
+          <label>Nom de la partie :</label>
           <input
             type="text"
-            value={gameId}
-            onChange={(e) => setGameId(e.target.value)}
+            value={gameName}
+            onChange={(e) => setGameName(e.target.value)}
             placeholder="Ex: partie-1"
             required
           />
@@ -73,10 +83,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
           <label>Rôle :</label>
           <select
             value={role}
-            onChange={(e) => setRole(e.target.value as "hero" | "game-master")}
+            onChange={(e) => setRole(e.target.value as PlayerRole)}
           >
-            <option value="hero">🎭 Héros</option>
-            <option value="game-master">👑 Maître du Jeu</option>
+            <option value={PlayerRole.HERO}>Héros</option>
+            <option value={PlayerRole.GAME_MASTER}>Maître du Jeu</option>
           </select>
         </div>
 

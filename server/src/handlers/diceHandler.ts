@@ -1,79 +1,182 @@
-import { Server, Socket } from "socket.io";
-import { grantSpecialRollAuthorization, rollFightDice, rollRedDice } from "../controllers/dicesControllers";
-import { ClientToServerEvents, GameState, heroClass, ServerToClientEvents, SocketData } from "../shared/type";
+import { Socket } from "socket.io";
+import {
+  grantSpecialRollAuthorization,
+  rollFightDice,
+  rollRedDice,
+} from "../services/DiceService";
+import { requireGameMaster } from "../guards/requireGameMaster";
+import { requireGameExists } from "../guards/requireGameExists";
+import { GameService } from "../services/GameService";
+import { PlayerRole } from "../POO/enums/PlayerRole";
+import {
+  withValidation,
+  successResponse,
+  errorResponse,
+  authorizeSpecialThrowSchema,
+  rollRedDiceSchema,
+  rollDiceSchema,
+} from "../validation";
 
-export function handleSpecialRollAuthorization(
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>
-) {
+export function registerDiceHandlers(socket: Socket) {
+  handleSpecialRollAuthorization(socket);
+  handleRollRedDice(socket);
+  handleRollFightDice(socket);
+}
+
+function handleSpecialRollAuthorization(socket: Socket) {
   socket.on(
     "authorize-special-throw-dices",
-    (data: {
-      gameId: string;
-      numberOfDices: number;
-      typeOfDices: "fight" | "red";
-      playerClass: heroClass;
-    }) => {
-      const gameState = games.get(data.gameId);
-      if (!gameState) {
-        console.error("Game not found for special roll authorization");
-        return;
-      }
-      if(gameState.players.get(socket.id)?.role !== "game-master") {
-        console.error("Only the game-master can authorize special rolls");
-        return;
-      }
-      grantSpecialRollAuthorization(
-        gameState,
-        socket,
-        data.numberOfDices,
-        data.typeOfDices,
-        data.playerClass
-      );
-    }
+    withValidation(
+      socket,
+      authorizeSpecialThrowSchema,
+      (socket, data, callback) => {
+        const { gameId, numberOfDices, typeOfDices, playerClass } = data;
+        const gameState = GameService.getGame(gameId);
+
+        if (!requireGameExists(gameId)) {
+          return callback(errorResponse("Partie non trouvée"));
+        }
+
+        if (!requireGameMaster(socket, gameState!)) {
+          return callback(errorResponse("Vous n'êtes pas le maître du jeu"));
+        }
+
+        grantSpecialRollAuthorization(
+          gameState!,
+          numberOfDices,
+          typeOfDices,
+          playerClass,
+        );
+
+        callback(successResponse());
+      },
+    ),
   );
 }
 
-export function handleRollRedDice(
-  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>
-) {
+function handleRollRedDice(socket: Socket) {
   socket.on(
     "roll-red-dice",
-    async (
-      data: { gameId: string; currentNumberOfDices: number },
-      callback
-    ) => {
-      const result = await rollRedDice(
-        io,
-        socket.id,
-        games.get(data.gameId)!,
-        data.currentNumberOfDices
-      );
-      return callback(result);
-    }
+    withValidation(
+      socket,
+      rollRedDiceSchema,
+      async (socket, data, callback) => {
+        const { gameId, numberOfDice } = data;
+        const game = GameService.getGame(gameId);
+
+        if (!requireGameExists(gameId)) {
+          return callback(errorResponse("Partie non trouvée"));
+        }
+
+        if (numberOfDice <= 0) {
+          return callback(
+            errorResponse("Number of dice must be greater than zero."),
+          );
+        }
+
+        let amountOfDice;
+
+        const player = game!.getPlayer(socket.id);
+        if (!player) {
+          console.error("no player found for rolling fight dices");
+          return callback(
+            errorResponse("le joueur lançant les dés n'a pas pu être trouvé"),
+          );
+        }
+
+        const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
+        if (player.role === PlayerRole.GAME_MASTER) {
+          amountOfDice = numberOfDice;
+          const result = await rollRedDice(gameId, amountOfDice, player.role);
+          return callback(result);
+        }
+        const authorizedHero = game?.gameState.getHeroById(
+          specialAuthorization?.heroId || "",
+        );
+        if (
+          specialAuthorization &&
+          authorizedHero?.controlledByPlayerId === player.id &&
+          specialAuthorization.diceType === "red"
+        ) {
+          amountOfDice = specialAuthorization.numberOfDices;
+          game!.gameState.setSpecialAuthorizedHero(undefined);
+        } else if (player.role === PlayerRole.HERO) {
+          try {
+            const hero = game!.getCurrentHeroTurn();
+            amountOfDice = hero.getMovementPoints();
+          } catch (error: any) {
+            console.error("error while getting current hero turn:", error);
+            return callback(errorResponse(error.message || "erreur interne"));
+          }
+        } else {
+          amountOfDice = numberOfDice;
+        }
+
+        const result = await rollRedDice(gameId, amountOfDice, player.role);
+        callback(result);
+      },
+    ),
   );
 }
 
-export function handleRollFightDice(
-  io: Server<ClientToServerEvents, ServerToClientEvents, SocketData>,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents, SocketData, any>,
-  games: Map<string, GameState>
-) {
+function handleRollFightDice(socket: Socket) {
   socket.on(
     "roll-dice",
-    async (
-      data: {
-        gameId: string;
-        playerId: string;
-        numberOfDice: number;
-      },
-      callback: (response: { success: boolean; error?: string }) => void
-    ) => {
-      const gameState = games.get(data.gameId);
-      const result = await rollFightDice(io, data.playerId, gameState!, data.numberOfDice);
-      return callback(result);
-    }
+    withValidation(socket, rollDiceSchema, async (socket, data, callback) => {
+      const { gameId, numberOfDice } = data;
+      const game = GameService.getGame(gameId);
+
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Partie non trouvée"));
+      }
+
+      if (numberOfDice <= 0) {
+        return callback(
+          errorResponse("Number of dice must be greater than zero."),
+        );
+      }
+
+      let amountOfDice;
+
+      const player = game!.getPlayer(socket.id);
+      if (!player) {
+        console.error("no player found for rolling fight dices");
+        return callback(
+          errorResponse("le joueur lançant les dés n'a pas pu être trouvé"),
+        );
+      }
+
+      const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
+      if (player.role === PlayerRole.GAME_MASTER) {
+        amountOfDice = numberOfDice;
+        const result = await rollFightDice(gameId, amountOfDice, player.role);
+        return callback(result);
+      }
+
+      const authorizedHero = game?.gameState.getHeroById(
+        specialAuthorization?.heroId || "",
+      );
+      if (
+        specialAuthorization &&
+        authorizedHero?.controlledByPlayerId === player.id &&
+        specialAuthorization.diceType === "fight"
+      ) {
+        amountOfDice = specialAuthorization.numberOfDices;
+        game!.gameState.setSpecialAuthorizedHero(undefined);
+      } else if (player.role === PlayerRole.HERO) {
+        try {
+          const hero = game!.getCurrentHeroTurn();
+          amountOfDice = hero.getAttackDiceCount();
+        } catch (error: any) {
+          console.error("error while getting current hero turn:", error);
+          return callback(errorResponse(error.message || "erreur interne"));
+        }
+      } else {
+        amountOfDice = numberOfDice;
+      }
+
+      const result = await rollFightDice(gameId, amountOfDice, player.role);
+      callback(result);
+    }),
   );
 }

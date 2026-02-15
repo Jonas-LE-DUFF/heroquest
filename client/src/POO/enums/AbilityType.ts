@@ -1,0 +1,6 @@
+enum AbilityType {
+    PHASE_THROUGH_WALLS = "PHASE_THROUGH_WALLS",
+    PHASE_THROUGH_MONSTERS = "PHASE_THROUGH_MONSTERS",
+}
+
+export { AbilityType };

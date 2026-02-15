@@ -1,21 +1,19 @@
 import React from "react";
 import { GameControls } from "../GameControlsComponent";
 import { Socket } from "socket.io-client";
-import {
-  Direction,
-  GameState,
-  Monster,
-  monsterClass,
-  Player,
-  tileType,
-} from "../../shared/type";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { TileType } from "../../POO/enums/TileType";
+import { Direction } from "../../POO/enums/Direction";
+import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 
 interface RightMenuProps {
   socket: Socket;
-  currentGameState: GameState;
+  currentGameState: GameAsJson;
   setSelectedType: (type: any) => void;
-  selectedType: tileType | Direction | monsterClass | null;
-  selectedUnit: Player | Monster | null;
+  selectedType: TileType | Direction | MonsterCategory | null;
+  selectedUnit: HeroAsJson | MonsterAsJson | null;
   setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;

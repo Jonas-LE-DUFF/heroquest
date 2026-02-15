@@ -1,21 +1,24 @@
 import { Box, LinearProgress, Paper } from "@mui/material";
-import { Monster, Player, Position, Unit } from "../shared/type";
 import "./StatsComponent.css";
 import {
   getFightDiceFaceNumber,
   getIconClassPath,
   getUnitClassName,
-  isPlayer,
+  isHero,
 } from "../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { getEquipmentName } from "../shared/equipments";
+import { Position } from "../POO/classes/Position/Position";
+import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 
 interface StatsComponentProps {
   socket: Socket;
   gameId: string;
   position: Position;
-  unit: Monster | Player | null;
+  unit: MonsterAsJson | HeroAsJson;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
 }
@@ -28,13 +31,11 @@ const StatsComponent = ({
   setStatsVisible,
   isGameMaster,
 }: StatsComponentProps) => {
-  const [statsEdit, setStatsEdit] = useState<Unit>(
-    unit?.stats ?? { name: "no stats found", statusEffects: [] }
-  );
+  const [statsEdit, setStatsEdit] = useState<StatsAsJson>(unit.stats);
 
   useEffect(() => {
-    setStatsEdit(unit?.stats ?? { name: "no stats found", statusEffects: [] });
-  }, [unit]);
+    setStatsEdit(unit.stats);
+  }, [unit.stats]);
 
   if (!unit?.stats) {
     console.log("no stats found on : ", unit);
@@ -48,8 +49,8 @@ const StatsComponent = ({
           X
         </button>
         <div className="stats">
-          <p>{statsEdit.name} Stats</p>
-          {unit.class && (
+          <p>{unit.name} Stats</p>
+          {unit.category && (
             <div className="statElem">
               <p>Classe : </p>
               <img
@@ -63,51 +64,51 @@ const StatsComponent = ({
             <p>Nombre de dés en attaque : </p>
             {isGameMaster && (
               <input
-                value={statsEdit.nbAttackDice}
+                value={statsEdit.attack}
                 onChange={(e) =>
                   setStatsEdit({
                     ...statsEdit,
-                    nbAttackDice: Number(e.target.value),
+                    attack: Number(e.target.value),
                   })
                 }
                 type="number"
               />
             )}
-            {statsEdit?.nbAttackDice && getDices(statsEdit.nbAttackDice)}
+            {statsEdit?.attack && getDices(statsEdit.attack)}
           </div>
           <div className="statElem">
             <p>Nombre de dés en défense : </p>
             {isGameMaster && (
               <input
-                value={statsEdit.nbDefenseDice}
+                value={statsEdit.defense}
                 onChange={(e) =>
                   setStatsEdit({
                     ...statsEdit,
-                    nbDefenseDice: Number(e.target.value),
+                    defense: Number(e.target.value),
                   })
                 }
                 type="number"
               />
             )}
-            {statsEdit.nbDefenseDice && getDices(statsEdit.nbDefenseDice)}
+            {statsEdit.defense && getDices(statsEdit.defense)}
           </div>
           <div className="statElem">
             <p>Points d'esprit : </p>
             {isGameMaster && (
               <input
-                value={statsEdit.spiritPoints}
+                value={statsEdit.spirit}
                 onChange={(e) =>
                   setStatsEdit({
                     ...statsEdit,
-                    spiritPoints: Number(e.target.value),
+                    spirit: Number(e.target.value),
                   })
                 }
                 type="number"
               />
             )}
-            {!isGameMaster && statsEdit.spiritPoints}
+            {!isGameMaster && statsEdit.spirit}
           </div>
-          {statsEdit?.hp && statsEdit.maxHp && (
+          {statsEdit?.health && statsEdit.maxHealth && (
             <Box
               sx={{
                 width: "100%",
@@ -125,20 +126,20 @@ const StatsComponent = ({
                 sx={{ minWidth: "250px", borderRadius: "5px", height: "25px" }}
                 color="error"
                 variant="determinate"
-                value={(statsEdit?.hp / statsEdit?.maxHp) * 100}
+                value={(statsEdit?.health / statsEdit?.maxHealth) * 100}
               />
-              <p>{`${statsEdit?.hp} / ${statsEdit?.maxHp} HP`}</p>
+              <p>{`${statsEdit?.health} / ${statsEdit?.maxHealth} HP`}</p>
             </Box>
           )}
           {isGameMaster && (
             <div className="statElem">
               <label>HP : </label>
               <input
-                value={statsEdit.hp}
+                value={statsEdit.health}
                 onChange={(e) =>
                   setStatsEdit({
                     ...statsEdit,
-                    hp: Number(e.target.value),
+                    health: Number(e.target.value),
                   })
                 }
                 type="number"
@@ -146,76 +147,54 @@ const StatsComponent = ({
             </div>
           )}
           {isGameMaster && (
-            <div className="statsElem">
+            <div className="statElem">
               <label>Max HP : </label>
               <input
-                className="statsElem"
-                value={statsEdit.maxHp}
+                className="statElem"
+                value={statsEdit.maxHealth}
                 onChange={(e) =>
                   setStatsEdit({
                     ...statsEdit,
-                    maxHp: Number(e.target.value),
+                    maxHealth: Number(e.target.value),
                   })
                 }
                 type="number"
               />
             </div>
           )}
-          {isPlayer(unit) && (
-            <div className="statElem">
-              <p>Or : </p>
-              {isGameMaster && (
-                <input
-                  value={statsEdit.gold}
-                  onChange={(e) =>
-                    setStatsEdit({
-                      ...statsEdit,
-                      gold: Number(e.target.value),
-                    })
-                  }
-                  type="number"
-                />
-              )}
-              {!isGameMaster && statsEdit.gold}
-            </div>
-          )}
-          {isPlayer(unit) === false && (
-            <div className="statElem">
-              <p>Déplacements : </p>
-              {statsEdit.movements}
+          <div className="statElem">
+            <p>Déplacements : </p>
+            {statsEdit.movements}
 
-              {isGameMaster && (
-                <input
-                  value={statsEdit.movements}
-                  onChange={(e) =>
-                    setStatsEdit({
-                      ...statsEdit,
-                      movements: Number(e.target.value),
-                    })
-                  }
-                  type="number"
-                />
-              )}
-            </div>
-          )}
+            {isGameMaster && (
+              <input
+                value={statsEdit.movements}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    movements: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            )}
+          </div>
           <div className="statElem">
             <p>Effets : </p>
             <ul>
-              {statsEdit.statusEffects && statsEdit.statusEffects.length > 0 ? (
-                statsEdit.statusEffects.map((status, index) => (
+              {statsEdit.effects.length > 0 ? (
+                statsEdit.effects.map((effect, index) => (
                   <li key={index}>
-                    {status?.effectName} - Durée: {status?.duration} - Sort lié:
-                    {status?.relatedSpell}
+                    {effect}
                     {isGameMaster && (
                       <button
                         onClick={() => {
-                          const newStatusEffects =
-                            statsEdit.statusEffects?.filter(
-                              (statusEffect) => statusEffect !== status
-                            );
+                          const newEffects = statsEdit.effects?.filter(
+                            (statusEffect) => statusEffect !== effect,
+                          );
                           setStatsEdit({
                             ...statsEdit,
-                            statusEffects: newStatusEffects,
+                            effects: newEffects,
                           });
                         }}
                       >
@@ -231,70 +210,33 @@ const StatsComponent = ({
           </div>
           {isGameMaster && (
             <div className="statElem">
-              <input
-                type="text"
-                placeholder="Nom de l'effet"
-                id="effectName"
-              />
-              <button onClick={() => {
-                const effectNameInput = document.getElementById("effectName") as HTMLInputElement;
-                const effectName = effectNameInput.value;
-                if (effectName.trim() === "") return;
-                const newStatusEffect = { effectName, duration: "donné par le MJ", relatedSpell: "N/A" };
-                setStatsEdit({
-                  ...statsEdit,
-                  statusEffects: [...(statsEdit.statusEffects || []), newStatusEffect],
-                });
-                effectNameInput.value = "";
-              }}>Ajouter effet</button>
+              <input type="text" placeholder="Nom de l'effet" id="effectName" />
+              <button
+                onClick={() => {
+                  const effectNameInput = document.getElementById(
+                    "effectName",
+                  ) as HTMLInputElement;
+                  const effectName = effectNameInput.value;
+                  if (effectName.trim() === "") return;
+                  const newEffect = {
+                    effectName,
+                    duration: "donné par le MJ",
+                    relatedSpell: "N/A",
+                  };
+                  setStatsEdit({
+                    ...statsEdit,
+                    effects: [
+                      ...(statsEdit.effects || []),
+                      newEffect.effectName,
+                    ],
+                  });
+                  effectNameInput.value = "";
+                }}
+              >
+                Ajouter effet
+              </button>
             </div>
           )}
-          {isPlayer(unit) && (
-            <div className="statElem">
-              <p>Equipements : </p>
-              <ul>
-                {statsEdit.equipments && statsEdit.equipments.length > 0 ? (
-                  statsEdit.equipments.map((equipment, index) => (
-                    <li key={index}>{getEquipmentName(equipment)}</li>
-                  ))
-                ) : (
-                  <li>Aucun équipement</li>
-                )}
-              </ul>
-            </div>
-          )
-
-          }          <div className="statElem">
-            <p>Équipements : </p>
-            <ul>
-              {statsEdit.equipments && statsEdit.equipments.length > 0 ? (
-                statsEdit.equipments.map((equipment, index) => (
-                  <li key={index}>
-                    {equipment}
-                    {isGameMaster && (
-                      <button
-                        onClick={() => {
-                          const newEquipments =
-                            statsEdit.equipments?.filter(
-                              (equipmentItem) => equipmentItem !== equipment
-                            );
-                          setStatsEdit({
-                            ...statsEdit,
-                            equipments: newEquipments,
-                          });
-                        }}
-                      >
-                        X
-                      </button>
-                    )}
-                  </li>
-                ))
-              ) : (
-                <li>Aucun équipements</li>
-              )}
-            </ul>
-          </div>
-
           {isGameMaster && (
             <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
           )}
@@ -302,7 +244,7 @@ const StatsComponent = ({
       </div>
     </Paper>
   );
-  function sendNewStats(newStats: Unit) {
+  function sendNewStats(newStats: StatsAsJson) {
     // Send the new stats to the server or update the state
     socket.emit(
       "update-stats-unit",
@@ -313,7 +255,7 @@ const StatsComponent = ({
         } else {
           console.log("Stats updated successfully");
         }
-      }
+      },
     );
   }
 };
@@ -328,7 +270,7 @@ function getDices(numDices: number) {
           src={getFightDiceFaceNumber(i)}
           alt={`dé face`}
         />
-      </div>
+      </div>,
     );
   }
   return dices;
