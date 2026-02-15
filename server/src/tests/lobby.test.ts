@@ -107,7 +107,7 @@ function setupGameWithHeroes(heroCount: number = 1): {
     const hero = createTestHero({
       controlledById: player.id,
       name: `Hero${i + 1}`,
-      category: categories[i],
+      category: categories[i % categories.length]!,
     });
     game.gameState.addUnit(hero, new Position(i, 0));
     heroes.push(hero);
