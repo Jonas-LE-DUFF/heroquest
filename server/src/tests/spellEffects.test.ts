@@ -97,7 +97,7 @@ function createMockGameState(): GameState {
 // Helper to create a mock Player
 function createMockPlayer(
   id: string = "player1",
-  spells: spellElement[] = []
+  spells: spellElement[] = [],
 ): Player {
   const stats: Unit = {
     nbAttackDice: 2,
@@ -137,7 +137,7 @@ describe("castSpell", () => {
       const position: Position = { x: 0, y: 0 };
 
       await expect(
-        castSpell(gameState, player, "invalid-spell-id", position, mockIo)
+        castSpell(gameState, player, "invalid-spell-id", position, mockIo),
       ).rejects.toThrow("Spell not found");
     });
 
@@ -148,7 +148,7 @@ describe("castSpell", () => {
       const position: Position = { x: 0, y: 0 };
 
       await expect(
-        castSpell(gameState, player, "heal-spell-1", position, mockIo)
+        castSpell(gameState, player, "heal-spell-1", position, mockIo),
       ).rejects.toThrow("Player stats not found");
     });
 
@@ -158,7 +158,7 @@ describe("castSpell", () => {
       const position: Position = { x: 0, y: 0 };
 
       await expect(
-        castSpell(gameState, player, "heal-spell-1", position, mockIo)
+        castSpell(gameState, player, "heal-spell-1", position, mockIo),
       ).rejects.toThrow("Player does not know this spell");
     });
 
@@ -169,7 +169,7 @@ describe("castSpell", () => {
       const position: Position = { x: 0, y: 0 };
 
       await expect(
-        castSpell(gameState, player, "heal-spell-1", position, mockIo)
+        castSpell(gameState, player, "heal-spell-1", position, mockIo),
       ).rejects.toThrow("Player already used this spell");
     });
 
@@ -179,7 +179,7 @@ describe("castSpell", () => {
       const position: Position = { x: 0, y: 0 };
 
       await expect(
-        castSpell(gameState, player, "heal-spell-1", position, mockIo)
+        castSpell(gameState, player, "heal-spell-1", position, mockIo),
       ).rejects.toThrow("Player position not found");
     });
 
@@ -195,7 +195,7 @@ describe("castSpell", () => {
       isPositionVisible.mockReturnValue(false);
 
       await expect(
-        castSpell(gameState, player, "heal-spell-1", targetPos, mockIo)
+        castSpell(gameState, player, "heal-spell-1", targetPos, mockIo),
       ).rejects.toThrow("Target position is not visible");
     });
 
@@ -208,7 +208,7 @@ describe("castSpell", () => {
       gameState.entityPositions.set("player1", playerPos);
 
       await expect(
-        castSpell(gameState, player, "buff-spell-1", targetPos, mockIo)
+        castSpell(gameState, player, "buff-spell-1", targetPos, mockIo),
       ).rejects.toThrow("No target found at the specified position");
     });
   });
