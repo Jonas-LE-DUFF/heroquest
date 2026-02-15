@@ -23,6 +23,63 @@ For now the game isn't really playable but the main fonctionnalities are there.
 My first objective is to make it playable and not to automate the game.
 At some point the game-master could be optional but it's not my objective for now...
 
+## Installation
+
+```bash
+npm run install:all
+```
+
+## Launch the project
+
+```bash
+npm run dev
+```
+
+## Launch the tests
+
+Run all tests (server + client):
+```bash
+npm test
+```
+
+Run only server tests (Jest):
+```bash
+npm run test:server
+```
+
+Run only client tests (Vitest):
+```bash
+npm run test:client
+```
+
+Run server tests in watch mode:
+```bash
+npm run test:server:watch
+```
+
+Run client tests in watch mode:
+```bash
+npm run test:client:watch
+```
+
+Run server tests with coverage:
+```bash
+npm run test:server:coverage
+```
+
+You can also run the tests directly from each project folder:
+```bash
+# Server (Jest)
+cd server
+npm test
+
+# Client (Vitest)
+cd client
+npm test
+```
+
+---
+
 This project is also a way for me to practice coding (and allow me to have fun with a few friends)
 For legal reasons i won't make a public website out of this code (i have no authorizations of hero quest game makers)
 So please don't make this repo famous except if you're the hero quest foundator and you allow me to do this. 
