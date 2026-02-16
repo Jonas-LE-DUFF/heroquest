@@ -1,15 +1,17 @@
-abstract class Item {
-    id: string;
-    name: string;
-    cost: number;
-    image: string;
+import { randomUUID } from "crypto";
 
-    constructor(id: string, name: string, cost: number, image: string) {
-        this.id = id;
-        this.name = name;
-        this.cost = cost;
-        this.image = image;
-    }
+abstract class Item {
+  id: string;
+  name: string;
+  cost: number;
+  image: string;
+
+  constructor(name: string, cost: number, image: string) {
+    this.id = randomUUID();
+    this.name = name;
+    this.cost = cost;
+    this.image = image;
+  }
 }
 
 export { Item };
