@@ -10,6 +10,7 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
 import { getHeroByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import backpackIcon from "../../../public/assets/images/icons/navbar/backpack.png";
 
 interface NavbarProps {
   socket: Socket;
@@ -35,7 +36,6 @@ const Navbar: React.FC<NavbarProps> = ({
   openSpellPage,
 }) => {
   const location = useLocation();
-  const gameId = location.state.gameId;
   const role = location.state.role;
   const playerName = location.state.playerName;
 
@@ -88,6 +88,9 @@ const Navbar: React.FC<NavbarProps> = ({
         {isCurrentTurnPlayer
           ? "À toi de jouer !"
           : "Au tour de " + currentTurnPlayerName}
+      </div>
+      <div className="nav-elem">
+        <img src={backpackIcon} alt="Backpack" className="imgNav" />
       </div>
     </div>
   );
