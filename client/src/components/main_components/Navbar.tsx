@@ -1,7 +1,7 @@
 import { Socket } from "socket.io-client";
 import "./Navbar.css";
 import { getHeroClassIconPath, getHeroClassName } from "../../shared/utils";
-import { Tooltip } from "@mui/material";
+import { Dialog, Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -11,6 +11,8 @@ import { useLocation } from "react-router-dom";
 import { getHeroByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "../../../public/assets/images/icons/navbar/backpack.png";
+import { useState } from "react";
+import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 
 interface NavbarProps {
   socket: Socket;
@@ -39,10 +41,15 @@ const Navbar: React.FC<NavbarProps> = ({
   const role = location.state.role;
   const playerName = location.state.playerName;
 
+  const [showEquipments, setShowEquipments] = useState(false);
+
   if (!player) {
     return <div>Loading...</div>;
   }
   const hero = getHeroByPlayerId(player.id, game);
+  if (!hero) {
+    return <div>Loading...</div>;
+  }
 
   function showSpells() {
     openSpellPage();
@@ -90,8 +97,20 @@ const Navbar: React.FC<NavbarProps> = ({
           : "Au tour de " + currentTurnPlayerName}
       </div>
       <div className="nav-elem">
-        <img src={backpackIcon} alt="Backpack" className="imgNav" />
+        <img
+          src={backpackIcon}
+          alt="Backpack"
+          className="imgNav"
+          onClick={() => {
+            setShowEquipments(!showEquipments);
+          }}
+        />
       </div>
+      {showEquipments && (
+        <Dialog open={showEquipments} onClose={() => setShowEquipments(false)}>
+          <EquipmentsDialogComponent equipment={hero?.equipment} />
+        </Dialog>
+      )}
     </div>
   );
 };
