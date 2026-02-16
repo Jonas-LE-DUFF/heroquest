@@ -1,14 +1,45 @@
+import { PotionAsJson } from "../../../interfaces/ClassAsJson/Equipment/PotionAsJson";
 import { Item } from "../Item";
 
 abstract class Potion extends Item {
-    effect: string;
+  effect: string;
 
-    constructor(id: string, name: string, cost: number, image: string, effect: string) {
-        super(id, name, cost, image);
-        this.effect = effect;
-    }
+  constructor(name: string, cost: number, image: string, effect: string) {
+    super(name, cost, image);
+    this.effect = effect;
+  }
 
-    abstract applyEffect(target: any): boolean;
+  abstract applyEffect(target: any): boolean;
+
+  toJson(): PotionAsJson {
+    return {
+      id: this.id,
+      name: this.name,
+      cost: this.cost,
+      image: this.image,
+      effect: this.effect,
+    };
+  }
+}
+class HealthPotion extends Potion {
+  healingAmount: number;
+
+  constructor(
+    name: string,
+    cost: number,
+    image: string,
+    effect: string,
+    healingAmount: number,
+  ) {
+    super(name, cost, image, effect);
+    this.healingAmount = healingAmount;
+  }
+
+  applyEffect(target: any): boolean {
+    // Logic to heal the target
+    console.log(`${target.name} is healed by ${this.healingAmount} points!`);
+    return true;
+  }
 }
 
-export { Potion };
+export { Potion, HealthPotion };
