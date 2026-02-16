@@ -42,7 +42,6 @@ const Board = ({
   selectedType,
 }: BoardProps) => {
   const location = useLocation();
-  const role = location.state.role;
 
   const handleTileClick = (
     position: PositionAsJson,
@@ -52,18 +51,8 @@ const Board = ({
       console.error("gameState is not defined");
       return;
     }
-    const tile = game.gameState.board.tiles[position.x][position.y];
-    if (!tile || !socket.id) return;
-
-    if (role === PlayerRole.HERO && getPlayerIdToPlay(game) !== socket.id) {
-      return;
-    }
 
     onTileClick(game.id, position, selectedType);
-
-    if (selectedType !== null) {
-      return;
-    }
   };
 
   const renderGrid = () => {
@@ -102,7 +91,6 @@ const Board = ({
       console.error("Tile is undefined at position:", x, y);
       return null;
     }
-    const pos: PositionAsJson = { x: x, y: y };
     const unit = tile.unit;
     if (!unit) {
       if (tile.type === TileType.FLOOR) return `${x},${y}`;
