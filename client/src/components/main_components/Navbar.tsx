@@ -108,7 +108,7 @@ const Navbar: React.FC<NavbarProps> = ({
       </div>
       {showEquipments && (
         <Dialog open={showEquipments} onClose={() => setShowEquipments(false)}>
-          <EquipmentsDialogComponent equipment={hero?.equipment} />
+          <EquipmentsDialogComponent socket={socket} hero={hero} />
         </Dialog>
       )}
     </div>

@@ -1,14 +1,18 @@
+import { Socket } from "socket.io-client";
 import { EquipmentAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
+import { HeroAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
 interface EquipmentsDialogComponentProps {
-  equipment: EquipmentAsJson;
+  socket: Socket;
+  hero: HeroAsJson;
 }
 
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
-  const armor = props.equipment.armors;
-  const weapons = props.equipment.weapons;
-  //const potions = props.equipment.potions;
-  const gold = props.equipment.gold;
+  const equipment: EquipmentAsJson = props.hero.equipment;
+  const armor = equipment.armors;
+  const weapons = equipment.weapons;
+  //const potions = equipment.potions;
+  const gold = equipment.gold;
   return (
     <div className="equipments-dialog">
       <h2>Équipements</h2>
