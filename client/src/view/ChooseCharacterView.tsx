@@ -11,8 +11,7 @@ import {
 import { getElementName } from "../shared/utils";
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
-import { CardCarouselComponent } from "../components/Card/CardCarouselComponent";
-import { getCardName } from "../components/Card/cardUtils";
+import { EquipmentSelectionComponent } from "../components/EquipmentSelectionComponent";
 import { CardComponent } from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
@@ -46,10 +45,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     spellElements: [],
     equipments: [],
   });
-
-  const [centerEquipment, setCenterEquipment] = useState<string | undefined>(
-    undefined,
-  );
 
   socket.on("game-state-update", (data: { game: GameAsJson }) => {
     setGame(data.game);
@@ -255,38 +250,13 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           </div>
         )}
 
-        <div style={{ width: "100%" }}>
-          <div>
-            équipements :{" "}
-            {heroCreation.equipments
-              .map((id) => getCardName(id, "equipment"))
-              .join(", ")}
-          </div>
-          <CardCarouselComponent
-            socket={socket}
-            onCenterChange={(id) => setCenterEquipment(id)}
-          />
-          <button
-            onClick={() => {
-              if (!centerEquipment) return alert("Aucune carte sélectionnée");
-              // add selected equipment locally to formValues (example behavior)
-              setHeroCreation((prev) => ({
-                ...prev,
-                equipments: [...prev.equipments, centerEquipment],
-              }));
-            }}
-          >
-            ajouter equipement :{" "}
-            {getCardName(centerEquipment ?? "", "equipment")}
-          </button>
-          <button
-            onClick={() =>
-              setHeroCreation((prev) => ({ ...prev, equipments: [] }))
-            }
-          >
-            retirer tout les équipements
-          </button>
-        </div>
+        <EquipmentSelectionComponent
+          socket={socket}
+          equipments={heroCreation.equipments}
+          onEquipmentsChange={(equipments) =>
+            setHeroCreation((prev) => ({ ...prev, equipments }))
+          }
+        />
         <div>
           <button className="button" onClick={() => handleSubmit()}>
             sauvegarder les modifications

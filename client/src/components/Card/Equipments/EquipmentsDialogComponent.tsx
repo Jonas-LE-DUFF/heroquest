@@ -1,40 +1,145 @@
 import { Socket } from "socket.io-client";
 import { EquipmentAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { HeroAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { useLocation } from "react-router-dom";
+import { PlayerRole } from "../../../POO/enums/PlayerRole";
+import { useState } from "react";
+import { ArmorAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ArmorAsJson";
+import { WeaponAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/WeaponAsJson";
+import { PotionAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/PotionAsJson";
+import AddEquipmentDialogComponent from "./AddEquipmentDialogComponent";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
   hero: HeroAsJson;
 }
 
+interface Item {
+  id: string;
+  name: string;
+}
+
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
-  const equipment: EquipmentAsJson = props.hero.equipment;
-  const armor = equipment.armors;
-  const weapons = equipment.weapons;
-  const potions = equipment.potions;
-  const gold = equipment.gold;
+  const location = useLocation();
+  const role = location.state?.role;
+
+  const { socket, hero } = props;
+  const equipment = hero.equipment;
+
+  const [armors, setArmors] = useState<ArmorAsJson[]>(equipment.armors);
+  const [weapons, setWeapons] = useState<WeaponAsJson[]>(equipment.weapons);
+  const [potions, setPotions] = useState<PotionAsJson[]>(equipment.potions);
+  const [gold, setGold] = useState<number>(equipment.gold);
+
+  const [editionState, setEditionState] = useState(false);
+
+  const equipmentList = <T extends Item>(
+    equipments: T[],
+    setEquipments: (equipments: T[]) => void,
+  ) => (
+    <ul>
+      {equipments.map((equipment) => (
+        <li key={equipment.id}>
+          {equipment.name}
+          {editionState && role === PlayerRole.GAME_MASTER && (
+            <button
+              onClick={() => {
+                const updatedEquipments = equipments.filter(
+                  (e) => e.id !== equipment.id,
+                );
+                setEquipments(updatedEquipments);
+              }}
+            >
+              Supprimer
+            </button>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+  function saveEditions(): void {
+    const updatedEquipment: EquipmentAsJson = {
+      armors,
+      weapons,
+      potions,
+      gold,
+      selectedWeaponIndex: hero.equipment.selectedWeaponIndex,
+    };
+
+    socket.emit(
+      "updateEquipment",
+      { updatedEquipment, heroId: hero.id },
+      (response: { success: boolean; message: string }) => {
+        if (response.success) {
+          alert("Équipement mis à jour avec succès !");
+          setEditionState(false);
+        } else {
+          alert(
+            "Erreur lors de la mise à jour de l'équipement : " +
+              response.message,
+          );
+        }
+      },
+    );
+
+    setEditionState(false);
+  }
+
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+
+  const handleAddEquipment = (newEquipment: EquipmentAsJson) => {
+    setArmors(newEquipment.armors);
+    setWeapons(newEquipment.weapons);
+    setPotions(newEquipment.potions);
+    setGold(newEquipment.gold);
+  };
+
+  const openAddEquipmentMenu = () => {
+    setOpenAddDialog(true);
+  };
+
+  const closeAddEquipmentMenu = (value: EquipmentAsJson) => {
+    handleAddEquipment(value);
+    setOpenAddDialog(false);
+  };
+
   return (
     <div className="equipments-dialog">
       <h2>Équipements</h2>
       <h3>Armure</h3>
-      <ul>
-        {armor.map((equipment) => (
-          <li key={equipment.id}>{equipment.name}</li>
-        ))}
-      </ul>
+      {equipmentList(armors, setArmors)}
       <h3>Armes</h3>
-      <ul>
-        {weapons.map((equipment) => (
-          <li key={equipment.id}>{equipment.name}</li>
-        ))}
-      </ul>
+      {equipmentList(weapons, setWeapons)}
       <h3>Potions</h3>
-      <ul>
-        {potions.map((equipment) => (
-          <li key={equipment.id}>{equipment.name}</li>
-        ))}
-      </ul>
-      <p>Or : {gold} pièces d'or</p>
+      {equipmentList(potions, setPotions)}
+      <p>
+        Or :{" "}
+        {editionState ? (
+          <input
+            type="number"
+            value={gold}
+            onChange={(e) => setGold(Number(e.target.value))}
+          />
+        ) : (
+          gold
+        )}
+      </p>
+      {role === PlayerRole.GAME_MASTER && !editionState && (
+        <button onClick={() => setEditionState(true)}>Édition</button>
+      )}
+      {editionState && role === PlayerRole.GAME_MASTER && (
+        <button onClick={() => saveEditions()}>Terminer l'édition</button>
+      )}
+      {editionState && role === PlayerRole.GAME_MASTER && (
+        <button onClick={() => openAddEquipmentMenu()}>
+          ajouter un équipement
+        </button>
+      )}
+      <AddEquipmentDialogComponent
+        equipment={equipment}
+        open={openAddDialog}
+        onClose={closeAddEquipmentMenu}
+      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import { SimpleCarousel } from "./SimpleCarousel";
 import { getAllEquipmentCardNames } from "./cardUtils";
 import { CardComponent } from "./CardComponent";
@@ -24,7 +23,7 @@ const CardCarouselComponent = ({
             cardName={equipmentCardNames[i]}
             cardType="equipment"
           />
-        </div>
+        </div>,
       );
     }
     return images;

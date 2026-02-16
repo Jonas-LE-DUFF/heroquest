@@ -10,7 +10,7 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
 import { getHeroByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import backpackIcon from "../../../public/assets/images/icons/navbar/backpack.png";
+import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import { useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 
