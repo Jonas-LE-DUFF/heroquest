@@ -279,7 +279,12 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setTargetMode(false);
       return;
     }
-
+    console.log(
+      "Tile clicked at position:",
+      position,
+      "with selectedType:",
+      selectedType,
+    );
     if (
       selectedPosition !== null &&
       selectedPosition.x === position.x &&
@@ -353,6 +358,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             }
             player={user}
             statsOpen={statsVisible}
+            selectedUnit={
+              getSelectedUnit(selectedPosition, currentGame.gameState.board) ||
+              null
+            }
             setStatsOpen={setStatsVisible}
             setSelectedUnit={setSelectedUnit}
             openSpellPage={() => setSpellPageVisible(true)}

@@ -11,7 +11,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
   const equipment: EquipmentAsJson = props.hero.equipment;
   const armor = equipment.armors;
   const weapons = equipment.weapons;
-  //const potions = equipment.potions;
+  const potions = equipment.potions;
   const gold = equipment.gold;
   return (
     <div className="equipments-dialog">
@@ -29,9 +29,11 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         ))}
       </ul>
       <h3>Potions</h3>
-      {
-        //TODO implement potions
-      }
+      <ul>
+        {potions.map((equipment) => (
+          <li key={equipment.id}>{equipment.name}</li>
+        ))}
+      </ul>
       <p>Or : {gold} pièces d'or</p>
     </div>
   );

@@ -21,6 +21,7 @@ interface NavbarProps {
   isCurrentTurnPlayer: boolean;
   currentTurnPlayerName: string;
   statsOpen: boolean;
+  selectedUnit: HeroAsJson | MonsterAsJson | null;
   setStatsOpen: (arg0: boolean) => void;
   setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
@@ -33,6 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({
   isCurrentTurnPlayer,
   currentTurnPlayerName,
   statsOpen,
+  selectedUnit,
   setStatsOpen,
   setSelectedUnit,
   openSpellPage,
@@ -46,8 +48,13 @@ const Navbar: React.FC<NavbarProps> = ({
   if (!player) {
     return <div>Loading...</div>;
   }
-  const hero = getHeroByPlayerId(player.id, game);
-  if (!hero) {
+  let hero: HeroAsJson | null = null;
+  if (role === PlayerRole.HERO) {
+    hero = getHeroByPlayerId(player.id, game);
+  } else {
+    hero = selectedUnit as HeroAsJson;
+  }
+  if (!hero && role === PlayerRole.HERO) {
     return <div>Loading...</div>;
   }
 
@@ -96,20 +103,25 @@ const Navbar: React.FC<NavbarProps> = ({
           ? "À toi de jouer !"
           : "Au tour de " + currentTurnPlayerName}
       </div>
-      <div className="nav-elem">
-        <img
-          src={backpackIcon}
-          alt="Backpack"
-          className="imgNav"
-          onClick={() => {
-            setShowEquipments(!showEquipments);
-          }}
-        />
-      </div>
-      {showEquipments && (
-        <Dialog open={showEquipments} onClose={() => setShowEquipments(false)}>
-          <EquipmentsDialogComponent socket={socket} hero={hero} />
-        </Dialog>
+      {hero && (
+        <>
+          <div className="nav-elem">
+            <img
+              src={backpackIcon}
+              alt="Backpack"
+              className="imgNav"
+              onClick={() => {
+                setShowEquipments(!showEquipments);
+              }}
+            />
+          </div>
+          <Dialog
+            open={showEquipments}
+            onClose={() => setShowEquipments(false)}
+          >
+            <EquipmentsDialogComponent socket={socket} hero={hero} />
+          </Dialog>
+        </>
       )}
     </div>
   );
