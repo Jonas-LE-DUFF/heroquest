@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { CardCarouselComponent } from "./Card/CardCarouselComponent";
-import { getCardName } from "./Card/cardUtils";
+import { CardCarouselComponent } from "../CardCarouselComponent";
+import { getCardName } from "../cardUtils";
+import { EquipmentAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 
 interface EquipmentSelectionComponentProps {
   socket: any;
-  equipments: string[];
+  equipments: EquipmentAsJson[];
   onEquipmentsChange: (equipments: string[]) => void;
 }
 
@@ -12,7 +13,7 @@ export const EquipmentSelectionComponent: React.FC<
   EquipmentSelectionComponentProps
 > = ({ socket, equipments, onEquipmentsChange }) => {
   const [centerEquipment, setCenterEquipment] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const handleAddEquipment = () => {
@@ -31,7 +32,9 @@ export const EquipmentSelectionComponent: React.FC<
     <div style={{ width: "100%" }}>
       <div>
         équipements :{" "}
-        {equipments.map((id) => getCardName(id, "equipment")).join(", ")}
+        {equipments
+          .map((equipment) => getCardName(equipment, "equipment"))
+          .join(", ")}
       </div>
       <CardCarouselComponent
         socket={socket}

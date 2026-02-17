@@ -1,9 +1,8 @@
-interface ArmorAsJson {
-    id: string;
-    name: string;
-    defense: number;
-    movementPenalty: number;
-    cost: number;
+import { ItemAsJson } from "./ItemAsJson";
+
+interface ArmorAsJson extends ItemAsJson {
+  defense: number;
+  movementPenalty: number;
 }
 
 export type { ArmorAsJson };

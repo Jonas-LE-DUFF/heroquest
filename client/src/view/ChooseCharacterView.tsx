@@ -11,7 +11,7 @@ import {
 import { getElementName } from "../shared/utils";
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
-import { EquipmentSelectionComponent } from "../components/EquipmentSelectionComponent";
+import { EquipmentSelectionComponent } from "../components/Card/Equipments/EquipmentSelectionComponent";
 import { CardComponent } from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";

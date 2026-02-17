@@ -7,7 +7,9 @@ import { useState } from "react";
 import { ArmorAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ArmorAsJson";
 import { WeaponAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/WeaponAsJson";
 import { PotionAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/PotionAsJson";
-import AddEquipmentDialogComponent from "./AddEquipmentDialogComponent";
+import Dialog from "@mui/material/Dialog";
+import { EquipmentSelectionComponent } from "./EquipmentSelectionComponent";
+import { getEquipmentById } from "../../../shared/equipments";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -87,11 +89,20 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
 
-  const handleAddEquipment = (newEquipment: EquipmentAsJson) => {
-    setArmors(newEquipment.armors);
-    setWeapons(newEquipment.weapons);
-    setPotions(newEquipment.potions);
-    setGold(newEquipment.gold);
+  const handleAddEquipment = (newEquipment: string[]) => {
+    newEquipment.forEach((id) => {
+      const equipment = getEquipmentById(id);
+      if (equipment) {
+        if (equipment.type === "Armor") {
+          setArmors((prev) => [...prev, equipment as ArmorAsJson]);
+        } else if (equipment.type === "Weapon") {
+          setWeapons((prev) => [...prev, equipment as WeaponAsJson]);
+        } else if (equipment.type === "Consumable") {
+          setPotions((prev) => [...prev, equipment as PotionAsJson]);
+        }
+      } else {
+        alert(`Équipement avec l'id ${id} non trouvé`);
+      }
   };
 
   const openAddEquipmentMenu = () => {
@@ -135,11 +146,13 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           ajouter un équipement
         </button>
       )}
-      <AddEquipmentDialogComponent
-        equipment={equipment}
-        open={openAddDialog}
-        onClose={closeAddEquipmentMenu}
-      />
+      <Dialog open={openAddDialog} onClose={closeAddEquipmentMenu}>
+        <EquipmentSelectionComponent
+          socket={socket}
+          equipments={[]}
+          onEquipmentsChange={handleAddEquipment}
+        />
+      </Dialog>
     </div>
   );
 };

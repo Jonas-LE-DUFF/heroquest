@@ -1,16 +1,17 @@
+import { WeaponRange } from "../../enums/WeaponRange";
 import { WeaponAsJson } from "../../interfaces/ClassAsJson/Equipment/WeaponAsJson";
 import { Item } from "./Item";
 
 class Weapon extends Item {
   damage: number;
-  range: "melee" | "ranged" | "long-melee";
+  range: WeaponRange;
 
   constructor(
     name: string,
     cost: number,
     imagePath: string,
     damage: number,
-    range: "melee" | "ranged" | "long-melee",
+    range: WeaponRange,
   ) {
     super(name, cost, imagePath);
     this.damage = damage;
@@ -21,6 +22,7 @@ class Weapon extends Item {
     return {
       id: this.id,
       name: this.name,
+      type: "Weapon",
       damage: this.damage,
       range: this.range,
       cost: this.cost,

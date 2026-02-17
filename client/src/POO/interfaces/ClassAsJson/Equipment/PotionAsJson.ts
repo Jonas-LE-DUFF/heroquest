@@ -1,8 +1,6 @@
-interface PotionAsJson {
-  id: string;
-  name: string;
-  cost: number;
-  image: string;
+import { ItemAsJson } from "./ItemAsJson";
+
+interface PotionAsJson extends ItemAsJson {
   effect: string;
 }
 
