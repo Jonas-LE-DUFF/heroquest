@@ -101,6 +101,12 @@ export const updateStatsUnitSchema = z.object({
   position: positionSchema,
 });
 
+export const updateEquipmentSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+  equipment: z.array(z.string()), // Liste d'IDs d'équipements
+});
+
 // --- Movement Events ---
 
 export const moveUnitOneStepSchema = z.object({

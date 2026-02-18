@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 abstract class Item {
   id: string;
   reference: string;
+  abstract type: string;
   name: string;
   cost: number;
   image: string;
@@ -23,6 +24,7 @@ abstract class Item {
       name: this.name,
       cost: this.cost,
       image_path: this.image,
+      type: this.type,
     };
   }
 }

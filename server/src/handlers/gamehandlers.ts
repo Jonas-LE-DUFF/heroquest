@@ -9,6 +9,7 @@ import {
   errorResponse,
   withValidation,
   gameIdSchema,
+  updateEquipmentSchema,
 } from "../validation";
 
 export function registerGameHandlers(socket: Socket) {
@@ -34,6 +35,30 @@ export function registerGameHandlers(socket: Socket) {
         game: game!.toJson(),
       });
 
+      callback(successResponse());
+    }),
+  );
+
+  socket.on(
+    "updateEquipment",
+    withValidation(socket, updateEquipmentSchema, (socket, data, callback) => {
+      const { gameId } = data;
+      const game = GameService.getGame(gameId);
+
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Partie non trouvée"));
+      }
+      if (!requireGameMaster(socket, game!)) {
+        return callback(errorResponse("Seul le maître du jeu peut faire cela"));
+      }
+
+      const { equipment, heroId } = data;
+
+      game!.updateHeroEquipment(heroId, equipment);
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      io.to(gameId).emit("game-state-update", {
+        game: game!.toJson(),
+      });
       callback(successResponse());
     }),
   );

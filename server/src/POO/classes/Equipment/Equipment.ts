@@ -5,6 +5,7 @@ import { Weapon } from "./Weapon";
 import equipmentJson from "../../../shared/game_cards/equipments.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { WeaponRange } from "../../enums/WeaponRange";
+import { ArmorType } from "../../enums/ArmorType";
 
 class Equipment {
   gold: number;
@@ -54,8 +55,8 @@ class Equipment {
 
   addArmor(armor: Armor) {
     if (
-      armor.type === "chestPiece" &&
-      this.armors.find((a) => a.type === "chestPiece")
+      armor.armorType === ArmorType.CHEST_PIECE &&
+      this.armors.find((a) => a.armorType === ArmorType.CHEST_PIECE)
     ) {
       throw new Error("Only one chest piece can be equipped at a time.");
     }
@@ -83,7 +84,7 @@ class Equipment {
           (equipmentData.range || "melee") as WeaponRange,
         );
         this.addWeapon(weapon);
-        break;
+        return weapon;
       case "Armor":
         const armor = new Armor(
           equipmentData.id,
@@ -92,10 +93,10 @@ class Equipment {
           equipmentData.image_path,
           equipmentData.modifiers.defense || 0,
           equipmentData.modifiers.movementDebuff || 0,
-          equipmentData.type as "helmet" | "chestPiece" | "shield",
+          equipmentData.type as ArmorType,
         );
         this.addArmor(armor);
-        break;
+        return armor;
       case "Potion":
         throw new Error("Potion creation not implemented yet.");
       default:

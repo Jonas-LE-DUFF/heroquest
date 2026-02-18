@@ -9,6 +9,10 @@ import { Spell } from "../Spell/Spell";
 import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
+import { Item } from "../Equipment/Item";
+import { Weapon } from "../Equipment/Weapon";
+import { Armor } from "../Equipment/Armor";
+import { Potion } from "../Equipment/Potions/Potions";
 
 class Hero extends Unit<HeroCategory> {
   DefenseDiceType = FightDiceFaces.WhiteShield;
@@ -56,6 +60,14 @@ class Hero extends Unit<HeroCategory> {
     const multiplier = EffectService.getStatMultiplier(this, StatType.MOVEMENT);
 
     return Math.floor((baseMovement + modifier) * multiplier);
+  }
+
+  updateEquipment(equipment: string[]) {
+    const newEquipment = new Equipment(this.equipment.gold);
+    equipment.forEach((id) => {
+      newEquipment.addEquipmentById(id);
+    });
+    this.equipment = newEquipment;
   }
 
   validateStatsImplementation(): { success: boolean; error?: string } {

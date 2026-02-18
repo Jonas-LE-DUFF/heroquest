@@ -5,6 +5,7 @@ import { Item } from "./Item";
 class Weapon extends Item {
   damage: number;
   range: WeaponRange;
+  type = "Weapon";
 
   constructor(
     reference: string,
@@ -23,7 +24,6 @@ class Weapon extends Item {
     const baseJson = super.getBaseJson();
     return {
       ...baseJson,
-      type: "Weapon",
       damage: this.damage,
       range: this.range,
     };

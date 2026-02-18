@@ -14,6 +14,7 @@ import {
   getAllEquipmentsAsCards,
 } from "../../../shared/equipments";
 import { getItemAsCard } from "../cardUtils";
+import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -27,6 +28,7 @@ interface Item {
 
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
   const location = useLocation();
+  const gameId = location.state?.gameId;
   const role = location.state?.role;
 
   const { socket, hero } = props;
@@ -39,7 +41,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const [editionState, setEditionState] = useState(false);
 
-  const equipmentList = <T extends Item>(
+  const equipmentList = <T extends ItemAsJson>(
     equipments: T[],
     setEquipments: (equipments: T[]) => void,
   ) => (
@@ -74,7 +76,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
     socket.emit(
       "updateEquipment",
-      { updatedEquipment, heroId: hero.id },
+      { gameId, heroId: hero.id, equipment: updatedEquipment },
       (response: { success: boolean; message: string }) => {
         if (response.success) {
           alert("Équipement mis à jour avec succès !");
@@ -103,10 +105,22 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const closeAddEquipmentMenu = () => {
     setOpenAddDialog(false);
-    socket.emit("updateEquipment", {
-      updatedEquipment: equipmentAsCards.map((card) => card.id),
-      heroId: hero.id,
-    });
+    socket.emit(
+      "updateEquipment",
+      {
+        gameId,
+        equipment: equipmentAsCards.map((card) => card.id),
+        heroId: hero.id,
+      },
+      (response: { success: boolean; message: string }) => {
+        if (!response.success) {
+          alert(
+            "Erreur lors de la mise à jour de l'équipement : " +
+              response.message,
+          );
+        }
+      },
+    );
   };
 
   return (
