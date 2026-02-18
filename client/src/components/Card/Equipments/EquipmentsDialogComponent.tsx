@@ -91,9 +91,9 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     setEditionState(false);
   }
 
-  const equipmentAsCards = flattenEquipment(equipment).map((e) =>
-    getItemAsCard(e),
-  );
+  const [equipmentAsCards, setEquipmentAsCards] = useState(() => {
+    return flattenEquipment(equipment).map((e) => getItemAsCard(e));
+  });
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
 
@@ -101,8 +101,12 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     setOpenAddDialog(true);
   };
 
-  const closeAddEquipmentMenu = (value: EquipmentAsJson) => {
+  const closeAddEquipmentMenu = () => {
     setOpenAddDialog(false);
+    socket.emit("updateEquipment", {
+      updatedEquipment: equipmentAsCards.map((card) => card.id),
+      heroId: hero.id,
+    });
   };
 
   return (
@@ -142,7 +146,9 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           socket={socket}
           selectedCards={equipmentAsCards}
           cards={getAllEquipmentsAsCards()}
-          onCardsChange={() => console.log("cards changed")}
+          onCardsChange={(newSelectedCards) => {
+            setEquipmentAsCards(newSelectedCards);
+          }}
         />
       </Dialog>
     </div>
