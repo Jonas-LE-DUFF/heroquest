@@ -3,6 +3,7 @@ import spells from "../../shared/game_cards/spells.json";
 import back from "../../shared/game_cards/backCard.json";
 import { getElementName } from "../../shared/utils";
 import { SpellElement } from "../../POO/enums/SpellElement";
+import { Card as Card2, CardType } from "./Card";
 
 type Card = {
   id: string;
@@ -10,8 +11,15 @@ type Card = {
   [k: string]: any;
 };
 
-function getAllEquipmentCardNames(): string[] {
-  return (equipments as Card[]).map((e) => e.id);
+export function getSpellEllementAsCard(element: SpellElement): Card2 {
+  const elementName = SpellElement[element];
+  return {
+    id: elementName,
+    name: getElementName(element, "en"),
+    image_path: getCardImagePath(elementName, "back") || "",
+    back_image_path: getCardImagePath(elementName, "back") || "",
+    type: CardType.Back,
+  };
 }
 
 function getSpellListForSchool(spellSchool: SpellElement): string[] {
@@ -79,9 +87,4 @@ function getCardName(id: string, cardType: string): string | undefined {
   return eq ? eq.name : undefined;
 }
 
-export {
-  getSpellListForSchool,
-  getCardImagePath,
-  getAllEquipmentCardNames,
-  getCardName,
-};
+export { getSpellListForSchool, getCardImagePath, getCardName };

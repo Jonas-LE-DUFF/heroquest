@@ -4,6 +4,7 @@ import { Weapon } from "./Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
+import { WeaponRange } from "../../enums/WeaponRange";
 
 class Equipment {
   gold: number;
@@ -78,7 +79,7 @@ class Equipment {
           equipmentData.cost,
           equipmentData.image_path,
           equipmentData.modifiers.damage || 0,
-          (equipmentData.range || "melee") as "ranged" | "melee" | "long-melee",
+          (equipmentData.range || "melee") as WeaponRange,
         );
         this.addWeapon(weapon);
         break;

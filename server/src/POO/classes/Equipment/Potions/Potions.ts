@@ -14,9 +14,9 @@ abstract class Potion extends Item {
   toJson(): PotionAsJson {
     return {
       id: this.id,
+      type: "Consummable",
       name: this.name,
       cost: this.cost,
-      image: this.image,
       effect: this.effect,
     };
   }

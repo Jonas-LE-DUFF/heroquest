@@ -23,6 +23,7 @@ class Armor extends Item {
   toJson(): ArmorAsJson {
     return {
       id: this.id,
+      type: "Armor",
       name: this.name,
       defense: this.defenseValue,
       movementPenalty: this.armorMovementDebuff,

@@ -262,7 +262,7 @@ const GameControls = ({
                 {hero?.equipment?.weapons?.map((weapon) => {
                   return (
                     <option key={weapon.id} value={weapon.id}>
-                      {getEquipmentName(weapon.id)}
+                      {getEquipmentName(weapon.name)}
                     </option>
                   );
                 })}

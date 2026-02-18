@@ -8,20 +8,21 @@ import {
   TextField,
   Checkbox,
 } from "@mui/material";
-import { getElementName } from "../shared/utils";
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
-import { EquipmentSelectionComponent } from "../components/Card/Equipments/EquipmentSelectionComponent";
-import { CardComponent } from "../components/Card/CardComponent";
+import { CardSelectionComponent } from "../components/Card/CardSelectionComponent";
+import { BackCardComponent } from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import {
-  getHeroByPlayerId,
-  getHeroes,
-  getPlayerBySocketId,
-} from "../shared/serverUtils";
+import { getHeroByPlayerId, getHeroes } from "../shared/serverUtils";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { HeroCreationWish } from "../POO/interfaces/ClassAsJson/FromClient/HeroCreationWish";
+import {
+  getAllEquipmentsAsCards,
+  getEquipmentById,
+} from "../shared/equipments";
+import { getSpellEllementAsCard } from "../components/Card/cardUtils";
+import { CardType } from "../components/Card/Card";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -107,41 +108,38 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     ) {
       return null;
     }
-    const elements: SpellElement[] = [];
-    for (const e in SpellElement) {
-      if (isNaN(Number(e))) {
-        elements.push(SpellElement[e as keyof typeof SpellElement]);
-      }
-    }
-    if (elements.length === 0) {
+    const spellElementsCards = Object.values(SpellElement).filter(
+      (value) => typeof value === "number",
+    ) as SpellElement[];
+
+    if (spellElementsCards.length === 0) {
       console.error("spellElement enum is empty or not properly defined");
       return null;
     }
 
-    return elements.map((element) => (
-      <div
-        className="singleSpellCard"
-        role="button"
-        onClick={() => handleSpellElementChange(element)}
-      >
-        <FormControlLabel
-          key={getElementName(element)}
-          control={
-            <Checkbox
-              checked={heroCreation.spellElements.includes(element)}
-              onChange={() => handleSpellElementChange(element)}
-              disabled={isSpellElementDisabled(hero?.id ?? "", game, element)}
-            />
-          }
-          label={getElementName(element)}
-        />
-        <CardComponent
-          socket={socket}
-          cardName={getElementName(element, "en")}
-          cardType="back"
-        />
-      </div>
-    ));
+    return spellElementsCards.map((element: SpellElement) => {
+      const card = getSpellEllementAsCard(element);
+      return (
+        <div
+          className="singleSpellCard"
+          role="button"
+          onClick={() => handleSpellElementChange(element)}
+        >
+          <FormControlLabel
+            key={card.id}
+            control={
+              <Checkbox
+                checked={heroCreation.spellElements.includes(element)}
+                onChange={() => handleSpellElementChange(element)}
+                disabled={isSpellElementDisabled(hero?.id ?? "", game, element)}
+              />
+            }
+            label={card.name}
+          />
+          <BackCardComponent socket={socket} card={card} />
+        </div>
+      );
+    });
   };
 
   useEffect(() => {
@@ -212,6 +210,12 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     );
   };
 
+  const equipmentsAsCardList = heroCreation.equipments.map((equipment) => ({
+    id: equipment,
+    name: equipment,
+    img_path: getEquipmentById(equipment)?.image_path ?? "", // You can set this to the correct path if needed
+  }));
+
   return (
     <div className="character-page">
       <h1>Choisissez votre personnage {playerName}</h1>
@@ -250,11 +254,21 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           </div>
         )}
 
-        <EquipmentSelectionComponent
+        <CardSelectionComponent
           socket={socket}
-          equipments={heroCreation.equipments}
-          onEquipmentsChange={(equipments) =>
-            setHeroCreation((prev) => ({ ...prev, equipments }))
+          cards={getAllEquipmentsAsCards()}
+          selectedCards={heroCreation.equipments.map((id) => ({
+            id,
+            name: id,
+            type: CardType.Equipment,
+            image_path: getEquipmentById(id)?.image_path ?? "",
+            back_image_path: getEquipmentById(id)?.image_path ?? "",
+          }))}
+          onCardsChange={(equipments) =>
+            setHeroCreation((prev) => ({
+              ...prev,
+              equipments: equipments.map((e) => e.id),
+            }))
           }
         />
         <div>

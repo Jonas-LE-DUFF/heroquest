@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { spellElement } from "../../../shared/type";
 import SchoolSpellList from "./SchoolSpellList";
 import "./SpellsPopUp.css";
 import SpellList from "./SpellList";
 import { getSpellListForSchool } from "../cardUtils";
+import { SpellElement } from "../../../POO/enums/SpellElement";
 
 interface SpellsPopUpProps {
   socket: any;
-  spellSchools: spellElement[] | undefined;
+  spellSchools: SpellElement[] | undefined;
   spellAlreadyUsed: string[] | undefined; // list of spell IDs
   onSpellClick: (selectedSpell: string) => void;
   closeSpellPage: () => void;
@@ -22,7 +22,7 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
 }) => {
   const [spellPage, setSpellPage] = useState<number>(1);
   const [selectedSpellSchool, setSelectedSpellSchool] =
-    useState<spellElement | null>(null);
+    useState<SpellElement | null>(null);
   // spellPage 1 => spell schools
   // spellPage 2 => spells in a school
   // spellPage 3 => spell details (when clicking on a spell)
@@ -55,7 +55,7 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
             socket={socket}
             spellSchools={spellSchools}
             spellAlreadyUsed={spellAlreadyUsed}
-            onSpellClick={(spellElement: spellElement) => {
+            onSpellClick={(spellElement: SpellElement) => {
               setSelectedSpellSchool(spellElement);
               setSpellPage(2);
               console.log("Selected spell school: ", spellElement);
@@ -65,7 +65,7 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
         );
       case 2:
         const spellList = getSpellListForSchool(
-          selectedSpellSchool ?? spellSchools[0]
+          selectedSpellSchool ?? spellSchools[0],
         );
         return (
           <SpellList

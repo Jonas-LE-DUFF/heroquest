@@ -8,8 +8,7 @@ import { ArmorAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/Armor
 import { WeaponAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/WeaponAsJson";
 import { PotionAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/PotionAsJson";
 import Dialog from "@mui/material/Dialog";
-import { EquipmentSelectionComponent } from "./EquipmentSelectionComponent";
-import { getEquipmentById } from "../../../shared/equipments";
+import { CardSelectionComponent } from "../CardSelectionComponent";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -89,28 +88,11 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const [openAddDialog, setOpenAddDialog] = useState(false);
 
-  const handleAddEquipment = (newEquipment: string[]) => {
-    newEquipment.forEach((id) => {
-      const equipment = getEquipmentById(id);
-      if (equipment) {
-        if (equipment.type === "Armor") {
-          setArmors((prev) => [...prev, equipment as ArmorAsJson]);
-        } else if (equipment.type === "Weapon") {
-          setWeapons((prev) => [...prev, equipment as WeaponAsJson]);
-        } else if (equipment.type === "Consumable") {
-          setPotions((prev) => [...prev, equipment as PotionAsJson]);
-        }
-      } else {
-        alert(`Équipement avec l'id ${id} non trouvé`);
-      }
-  };
-
   const openAddEquipmentMenu = () => {
     setOpenAddDialog(true);
   };
 
   const closeAddEquipmentMenu = (value: EquipmentAsJson) => {
-    handleAddEquipment(value);
     setOpenAddDialog(false);
   };
 
@@ -147,10 +129,10 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         </button>
       )}
       <Dialog open={openAddDialog} onClose={closeAddEquipmentMenu}>
-        <EquipmentSelectionComponent
+        <CardSelectionComponent
           socket={socket}
-          equipments={[]}
-          onEquipmentsChange={handleAddEquipment}
+          cards={[]}
+          onCardsChange={() => console.log("cards changed")}
         />
       </Dialog>
     </div>

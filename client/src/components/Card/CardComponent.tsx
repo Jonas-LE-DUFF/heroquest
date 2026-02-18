@@ -1,16 +1,15 @@
-import { getCardImagePath } from "./cardUtils";
+import { Card } from "./Card";
 
 interface CardProps {
   socket: any;
-  cardName: string;
-  cardType: string;
+  card: Card;
 }
 
-const CardComponent = ({ socket, cardName, cardType }: CardProps) => {
+const CardComponent = ({ socket, card }: CardProps) => {
   return (
     <img
-      src={getCardImagePath(cardName, cardType)}
-      alt={cardName}
+      src={card.image_path}
+      alt={card.name}
       style={{
         width: "fit-content",
         height: "fit-content",
@@ -23,4 +22,21 @@ const CardComponent = ({ socket, cardName, cardType }: CardProps) => {
   );
 };
 
-export { CardComponent };
+const BackCardComponent = ({ socket, card }: CardProps) => {
+  return (
+    <img
+      src={card.back_image_path}
+      alt={card.name}
+      style={{
+        width: "fit-content",
+        height: "fit-content",
+        maxHeight: "100%",
+        maxWidth: "100%",
+        display: "block",
+        objectFit: "scale-down",
+      }}
+    />
+  );
+};
+
+export { CardComponent, BackCardComponent };

@@ -1,28 +1,24 @@
 import { SimpleCarousel } from "./SimpleCarousel";
-import { getAllEquipmentCardNames } from "./cardUtils";
 import { CardComponent } from "./CardComponent";
+import { Card } from "./Card";
 
 interface CardCarouselProps {
   socket: any;
+  cards: Card[];
   onCenterChange?: (id: string | undefined) => void;
 }
 
 const CardCarouselComponent = ({
   socket,
+  cards,
   onCenterChange,
 }: CardCarouselProps) => {
-  const equipmentCardNames = getAllEquipmentCardNames();
-
   function getImages(): any[] {
     const images: any[] = [];
-    for (let i = 0; i < equipmentCardNames.length; i++) {
+    for (let i = 0; i < cards.length; i++) {
       images.push(
         <div className="singleSpellCard">
-          <CardComponent
-            socket={socket}
-            cardName={equipmentCardNames[i]}
-            cardType="equipment"
-          />
+          <CardComponent socket={socket} card={cards[i]} />
         </div>,
       );
     }
@@ -31,9 +27,7 @@ const CardCarouselComponent = ({
 
   return (
     <div>
-      <SimpleCarousel
-        onIndexChange={(idx) => onCenterChange?.(equipmentCardNames[idx])}
-      >
+      <SimpleCarousel onIndexChange={(idx) => onCenterChange?.(cards[idx]?.id)}>
         {getImages()}
       </SimpleCarousel>
     </div>
