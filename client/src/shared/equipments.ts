@@ -1,6 +1,6 @@
-import { fileURLToPath } from "url";
 import equipmentsData from "./game_cards/equipments.json";
 import { Card, CardType } from "../components/Card/Card";
+import { EquipmentAsJson } from "../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 
 export interface EquipmentModifiers {
   nbAttackDice?: number;
@@ -35,7 +35,7 @@ export function getAllEquipmentsAsCards(): Card[] {
   return equipments.map((eq) => ({
     id: eq.id,
     name: eq.name,
-    type: CardType.Equipment,
+    type: CardType.Item,
     image_path: eq.image_path,
     back_image_path: "path/to/back/image", // You can set this to the correct path if needed
   }));
@@ -47,4 +47,12 @@ export function getAllEquipmentsAsCards(): Card[] {
 export function getEquipmentName(id: string): string {
   const equipment = getEquipmentById(id);
   return equipment?.name ?? id;
+}
+
+export function flattenEquipment(equipment: EquipmentAsJson): string[] {
+  const equipmentIds: string[] = [];
+  equipmentIds.push(...equipment.armors.map((armor) => armor.id));
+  equipmentIds.push(...equipment.weapons.map((weapon) => weapon.id));
+  equipmentIds.push(...equipment.potions.map((potion) => potion.id));
+  return equipmentIds;
 }

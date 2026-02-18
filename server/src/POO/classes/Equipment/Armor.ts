@@ -7,6 +7,7 @@ class Armor extends Item {
   armorMovementDebuff: number = 0;
 
   constructor(
+    reference: string,
     name: string,
     cost: number,
     image: string,
@@ -14,20 +15,19 @@ class Armor extends Item {
     movementDebuff: number,
     type: "chestPiece" | "helmet" | "shield",
   ) {
-    super(name, cost, image);
+    super(reference, name, cost, image);
     this.defenseValue = defenseValue;
     this.armorMovementDebuff = movementDebuff;
     this.type = type;
   }
 
   toJson(): ArmorAsJson {
+    const baseJson = this.getBaseJson();
     return {
-      id: this.id,
+      ...baseJson,
       type: "Armor",
-      name: this.name,
       defense: this.defenseValue,
       movementPenalty: this.armorMovementDebuff,
-      cost: this.cost,
     };
   }
 }

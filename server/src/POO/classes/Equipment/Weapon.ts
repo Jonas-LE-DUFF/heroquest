@@ -7,25 +7,25 @@ class Weapon extends Item {
   range: WeaponRange;
 
   constructor(
+    reference: string,
     name: string,
     cost: number,
     imagePath: string,
     damage: number,
     range: WeaponRange,
   ) {
-    super(name, cost, imagePath);
+    super(reference, name, cost, imagePath);
     this.damage = damage;
     this.range = range;
   }
 
   toJson(): WeaponAsJson {
+    const baseJson = super.getBaseJson();
     return {
-      id: this.id,
-      name: this.name,
+      ...baseJson,
       type: "Weapon",
       damage: this.damage,
       range: this.range,
-      cost: this.cost,
     };
   }
 }

@@ -9,6 +9,11 @@ import { WeaponAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/Weap
 import { PotionAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/PotionAsJson";
 import Dialog from "@mui/material/Dialog";
 import { CardSelectionComponent } from "../CardSelectionComponent";
+import {
+  flattenEquipment,
+  getAllEquipmentsAsCards,
+} from "../../../shared/equipments";
+import { getItemAsCard } from "../cardUtils";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -86,6 +91,10 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     setEditionState(false);
   }
 
+  const equipmentAsCards = flattenEquipment(equipment).map((e) =>
+    getItemAsCard(e),
+  );
+
   const [openAddDialog, setOpenAddDialog] = useState(false);
 
   const openAddEquipmentMenu = () => {
@@ -131,7 +140,8 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       <Dialog open={openAddDialog} onClose={closeAddEquipmentMenu}>
         <CardSelectionComponent
           socket={socket}
-          cards={[]}
+          selectedCards={equipmentAsCards}
+          cards={getAllEquipmentsAsCards()}
           onCardsChange={() => console.log("cards changed")}
         />
       </Dialog>

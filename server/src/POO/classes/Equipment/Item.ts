@@ -2,15 +2,28 @@ import { randomUUID } from "crypto";
 
 abstract class Item {
   id: string;
+  reference: string;
   name: string;
   cost: number;
   image: string;
 
-  constructor(name: string, cost: number, image: string) {
+  constructor(reference: string, name: string, cost: number, image: string) {
     this.id = randomUUID();
+    this.reference = reference;
     this.name = name;
     this.cost = cost;
     this.image = image;
+  }
+
+  abstract toJson(): any;
+
+  protected getBaseJson() {
+    return {
+      id: this.reference,
+      name: this.name,
+      cost: this.cost,
+      image_path: this.image,
+    };
   }
 }
 

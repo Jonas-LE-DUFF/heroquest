@@ -1,5 +1,5 @@
 enum CardType {
-  Equipment = "equipment",
+  Item = "item",
   Spell = "spell",
   Back = "back", // for spell element choice and others
 }

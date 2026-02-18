@@ -22,6 +22,21 @@ export function getSpellEllementAsCard(element: SpellElement): Card2 {
   };
 }
 
+export function getItemAsCard(id: string): Card2 {
+  const item = equipments.find((eq) => eq.id === id);
+  if (!item) {
+    console.error(`Item with id ${id} not found`);
+    throw new Error(`Item with id ${id} not found`);
+  }
+  return {
+    id: item.id,
+    name: item.name,
+    image_path: getCardImagePath(item.id, "equipment") || "",
+    back_image_path: getCardImagePath(item.id, "equipment") || "",
+    type: CardType.Item,
+  };
+}
+
 function getSpellListForSchool(spellSchool: SpellElement): string[] {
   // This is a placeholder implementation.
   // Replace with actual logic to get spell IDs for the given school.

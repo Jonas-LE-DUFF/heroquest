@@ -4,19 +4,24 @@ import { Item } from "../Item";
 abstract class Potion extends Item {
   effect: string;
 
-  constructor(name: string, cost: number, image: string, effect: string) {
-    super(name, cost, image);
+  constructor(
+    reference: string,
+    name: string,
+    cost: number,
+    image: string,
+    effect: string,
+  ) {
+    super(reference, name, cost, image);
     this.effect = effect;
   }
 
   abstract applyEffect(target: any): boolean;
 
   toJson(): PotionAsJson {
+    const baseJson = this.getBaseJson();
     return {
-      id: this.id,
+      ...baseJson,
       type: "Consummable",
-      name: this.name,
-      cost: this.cost,
       effect: this.effect,
     };
   }
@@ -25,13 +30,14 @@ class HealthPotion extends Potion {
   healingAmount: number;
 
   constructor(
+    reference: string,
     name: string,
     cost: number,
     image: string,
     effect: string,
     healingAmount: number,
   ) {
-    super(name, cost, image, effect);
+    super(reference, name, cost, image, effect);
     this.healingAmount = healingAmount;
   }
 

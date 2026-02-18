@@ -75,6 +75,7 @@ class Equipment {
     switch (equipmentData.type) {
       case "Weapon":
         const weapon = new Weapon(
+          equipmentData.id,
           equipmentData.name,
           equipmentData.cost,
           equipmentData.image_path,
@@ -85,6 +86,7 @@ class Equipment {
         break;
       case "Armor":
         const armor = new Armor(
+          equipmentData.id,
           equipmentData.name,
           equipmentData.cost,
           equipmentData.image_path,
