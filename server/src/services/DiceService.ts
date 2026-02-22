@@ -1,109 +1,106 @@
-import { Server, Socket } from "socket.io";
-import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
-import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { Game } from "../POO/classes/Server/Game";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
-import { requirePlayerTurn } from "../guards/requirePlayerTurn";
 import { SpecialAuthorizedHero } from "../POO/interfaces/SpecialAuthorizedHero";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 
 const sleep = (ms: number) => {
-    return new Promise((r) => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 };
 
 export async function rollFightDice(
-    gameId: string,
-    wishedNumberOfDices: number,
-    playerRole: PlayerRole,
+  gameId: string,
+  wishedNumberOfDices: number,
+  playerRole: PlayerRole,
 ) {
-    const io = ServerHeroQuest.getServerInstance().getIo();
-    
-    let results: FightDiceFaces[] = [];
-    for (let j = 0; j < 15; j++) {
-        results = [];
-        for (let i = 0; i < wishedNumberOfDices; i++) {
-            const randomNumber = Math.floor(Math.random() * 6 + 1);
-            let face: FightDiceFaces = FightDiceFaces.Hit;
-            if (randomNumber === 1) {
-                face = FightDiceFaces.BlackShield;
-            } else if (randomNumber < 3) {
-                face = FightDiceFaces.WhiteShield;
-            } else {
-                face = FightDiceFaces.Hit;
-            }
-            results.push(face);
-        }
-        io.to(gameId).emit("dice-update", {
-            listResults: results,
-            role: playerRole,
-        });
+  const io = ServerHeroQuest.getServerInstance().getIo();
 
-        await sleep(75);
+  let results: FightDiceFaces[] = [];
+  for (let j = 0; j < 15; j++) {
+    results = [];
+    for (let i = 0; i < wishedNumberOfDices; i++) {
+      const randomNumber = Math.floor(Math.random() * 6 + 1);
+      let face: FightDiceFaces = FightDiceFaces.Hit;
+      if (randomNumber === 1) {
+        face = FightDiceFaces.BlackShield;
+      } else if (randomNumber < 3) {
+        face = FightDiceFaces.WhiteShield;
+      } else {
+        face = FightDiceFaces.Hit;
+      }
+      results.push(face);
     }
-    return { success: true, results: results };
+    io.to(gameId).emit("dice-update", {
+      listResults: results,
+      role: playerRole,
+    });
+
+    await sleep(75);
+  }
+  return { success: true, results: results };
 }
 
 export async function rollRedDice(
-    gameId: string,
-    numberOfDices: number,
-    playerRole: PlayerRole,
+  gameId: string,
+  numberOfDices: number,
+  playerRole: PlayerRole,
 ) {
-    console.log("roll-red-dice");
-    
-    const io = ServerHeroQuest.getServerInstance().getIo();
+  console.log("roll-red-dice");
 
-    let results: number[] = [];
-    for (let j = 0; j < 15; j++) {
-        results = [];
-        for (let i = 0; i < numberOfDices; i++) {
-            const randomNumber = Math.floor(Math.random() * 6 + 1);
-            results.push(randomNumber);
-        }
-        io.to(gameId).emit("red-dice-update", {
-            listResults: results,
-            role: playerRole,
-        });
-        await sleep(75);
+  const io = ServerHeroQuest.getServerInstance().getIo();
+
+  let results: number[] = [];
+  for (let j = 0; j < 15; j++) {
+    results = [];
+    for (let i = 0; i < numberOfDices; i++) {
+      const randomNumber = Math.floor(Math.random() * 6 + 1);
+      results.push(randomNumber);
     }
-    return { success: true, results: results };
+    io.to(gameId).emit("red-dice-update", {
+      listResults: results,
+      role: playerRole,
+    });
+    await sleep(75);
+  }
+  return { success: true, results: results };
 }
 
 export async function grantSpecialRollAuthorization(
-    game: Game,
-    numberOfDices: number,
-    typeOfDices: "fight" | "red",
-    playerId: HeroCategory | string, // can be playerId or heroClass
+  game: Game,
+  numberOfDices: number,
+  typeOfDices: "fight" | "red",
+  playerId: HeroCategory | string, // can be playerId or heroClass
 ) {
-    const io = ServerHeroQuest.getServerInstance().getIo();
-    let hero;
-    if (typeof playerId !== "string") {
-        hero = game.gameState.getHeroByCategory(playerId);
-    }else{
-        hero = game.gameState.getHeroById(playerId);
-    }
+  const io = ServerHeroQuest.getServerInstance().getIo();
+  let hero;
+  if (typeof playerId !== "string") {
+    hero = game.gameState.getHeroByCategory(playerId);
+  } else {
+    hero = game.gameState.getHeroById(playerId);
+  }
 
-    if (!hero) {
-        console.error("hero couldn't be found for special dice authorization");
-        return {
-            success: false,
-            error: "le héros n'a pas pu être trouvé pour l'autorisation spéciale de lancer des dés",
-        };
-    }
-
-    const specialAuthorizedHero : SpecialAuthorizedHero = {
-        heroId: hero.id,
-        numberOfDices,
-        diceType: typeOfDices,
+  if (!hero) {
+    console.error("hero couldn't be found for special dice authorization");
+    return {
+      success: false,
+      error:
+        "le héros n'a pas pu être trouvé pour l'autorisation spéciale de lancer des dés",
     };
-    game.gameState.setSpecialAuthorizedHero(specialAuthorizedHero);
+  }
 
-    io.to(game.id).emit("special-authorization", {
-        playerId: hero.controlledByPlayerId,
-        amountOfDices: numberOfDices,
-        typeOfDices: typeOfDices,
-    });
+  const specialAuthorizedHero: SpecialAuthorizedHero = {
+    heroId: hero.id,
+    numberOfDices,
+    diceType: typeOfDices,
+  };
+  game.gameState.setSpecialAuthorizedHero(specialAuthorizedHero);
 
-    return { success: true };
+  io.to(game.id).emit("special-authorization", {
+    playerId: hero.controlledByPlayerId,
+    amountOfDices: numberOfDices,
+    typeOfDices: typeOfDices,
+  });
+
+  return { success: true };
 }
