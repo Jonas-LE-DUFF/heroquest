@@ -15,6 +15,7 @@ import {
 } from "../../../shared/equipments";
 import { getItemAsCard } from "../cardUtils";
 import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
+import { CardComponent } from "../CardComponent";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -32,6 +33,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
   const [armors, setArmors] = useState<ArmorAsJson[]>(equipment.armors);
   const [weapons, setWeapons] = useState<WeaponAsJson[]>(equipment.weapons);
   const [potions, setPotions] = useState<PotionAsJson[]>(equipment.potions);
+  const [tools, setTools] = useState<ItemAsJson[]>(equipment.tools);
   const [gold, setGold] = useState<number>(equipment.gold);
 
   const [editionState, setEditionState] = useState(false);
@@ -110,6 +112,8 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       {equipmentList(weapons, setWeapons)}
       <h3>Potions</h3>
       {equipmentList(potions, setPotions)}
+      <h3>Outils</h3>
+      {equipmentList(tools, setTools)}
       <p>
         Or :{" "}
         {editionState ? (

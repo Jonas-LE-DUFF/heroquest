@@ -6,6 +6,7 @@ import equipmentJson from "../../../shared/game_cards/equipments.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { WeaponRange } from "../../enums/WeaponRange";
 import { ArmorType } from "../../enums/ArmorType";
+import { Tool } from "./Tool";
 
 class Equipment {
   gold: number;
@@ -14,6 +15,7 @@ class Equipment {
 
   armors: Armor[] = [];
   potions: Potion[] = [];
+  tools: Tool[] = [];
 
   constructor(gold: number) {
     this.gold = gold;
@@ -67,6 +69,10 @@ class Equipment {
     this.potions.push(potion);
   }
 
+  addTool(tool: Tool) {
+    this.tools.push(tool);
+  }
+
   addEquipmentById(equipmentId: string) {
     const equipmentData = equipmentJson.find((e) => e.id === equipmentId);
     if (!equipmentData) {
@@ -99,8 +105,15 @@ class Equipment {
         return armor;
       case "Potion":
         throw new Error("Potion creation not implemented yet.");
-      default:
-        throw new Error(`Unknown equipment type: ${equipmentData.type}`);
+      case "Tool":
+        const tool = new Tool(
+          equipmentData.id,
+          equipmentData.name,
+          equipmentData.cost,
+          equipmentData.image_path,
+        );
+        this.addTool(tool);
+        return tool;
     }
   }
 
@@ -111,6 +124,7 @@ class Equipment {
       weapons: this.weapons.map((weapon) => weapon.toJson()),
       armors: this.armors.map((armor) => armor.toJson()),
       potions: this.potions.map((potion) => potion.toJson()),
+      tools: this.tools.map((tool) => tool.toJson()),
     };
   }
 }
