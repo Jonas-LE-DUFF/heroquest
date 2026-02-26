@@ -9,6 +9,8 @@ import { checkUnitDefeat } from "../shared/death/death";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 import { PlayerRole } from "../POO/enums/PlayerRole";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { GameService } from "./GameService";
 
 async function fight(
   socket: Socket<ClientToServerEvents, ServerToClientEvents>,
@@ -59,7 +61,19 @@ function dealDamage(
   if (target.stats.health !== undefined && damage > 0) {
     target.stats.health = Math.max(target.stats.health - damage, 0);
   }
-  checkUnitDefeat(gameId, target);
+  const defeated = checkUnitDefeat(gameId, target);
+  if (defeated) {
+    console.log(
+      `Unit ${target.id} has been defeated and removed from the game.`,
+    );
+    const io = ServerHeroQuest.getServerInstance().getIo();
+    const game = GameService.getGame(gameId);
+    if (game) {
+      io.emit("game-state-update", { game: game.toJson() });
+    } else {
+      console.error("Game not found for gameId:", gameId);
+    }
+  }
 }
 
 export { fight, dealDamage };
