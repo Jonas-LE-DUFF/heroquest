@@ -1,57 +1,113 @@
-import { HeroCategory } from "../../../enums/Categories/HeroCategory";
-import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
 import { PotionAsJson } from "../../../interfaces/ClassAsJson/Equipment/PotionAsJson";
-import { Unit } from "../../Units/Unit";
+import { Effect } from "../../Effects/Effects";
 import { Item } from "../Item";
+import { EffectType } from "../../../enums/Effects/EffectType";
+import { EffectDuration } from "../../../enums/Effects/EffectDuration";
+import { StatType } from "../../../enums/Effects/StatType";
+import { Monster } from "../../Units/Monster";
+import { MonsterType } from "../../../enums/MonsterType";
+import { dealDamage } from "../../../../services/CombatService";
 
 abstract class Potion extends Item {
-  effect: string;
-  type = "Potion"
+  effect: Effect;
+  type = "Potion";
 
   constructor(
     reference: string,
     name: string,
     cost: number,
     image: string,
-    effect: string,
+    effect: Effect,
   ) {
     super(reference, name, cost, image);
     this.effect = effect;
   }
 
-  abstract applyEffect(target: any): boolean;
+  abstract applyEffect(gameId: string, target: any): boolean;
 
   toJson(): PotionAsJson {
     const baseJson = this.getBaseJson();
     return {
       ...baseJson,
-      type: "Consummable",
-      effect: this.effect,
+      effect: this.effect.name,
     };
   }
-}
-class HealthPotion extends Potion {
-  healingAmount: number;
 
-  constructor(
-    reference: string,
-    name: string,
-    cost: number,
-    image: string,
-    effect: string,
-    healingAmount: number,
-  ) {
-    super(reference, name, cost, image, effect);
-    this.healingAmount = healingAmount;
+  static createPotionFromReference(id: string) {
+    throw new Error("Method not implemented.");
+  }
+}
+
+interface equipmentData {
+  id: string;
+  name: string;
+  cost: number;
+  image_path: string;
+  type: string;
+  modifiers: {
+    stat?: string;
+    amount?: number;
+    operation?: string;
+  };
+}
+
+class SwiftPotion extends Potion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData.id,
+      equipementData.name,
+      equipementData.cost,
+      equipementData.image_path,
+      new Effect(
+        "Swift Potion Effect",
+        EffectType.STAT_MULTIPLIER,
+        EffectDuration.ONE_TURN,
+        true,
+        { stat: StatType.MOVEMENT, value: 2 },
+      ),
+    );
   }
 
-  applyEffect(target: Unit<MonsterCategory | HeroCategory>): boolean {
-    // Logic to heal the target
-    console.log(`${target.name} is healed by ${this.healingAmount} points!`);
-    const newHealth = target.stats.health + this.healingAmount
-    target.stats.health = Math.max(newHealth, target.stats.maxHealth)
+  applyEffect(gameId: string, target: any): boolean {
+    // Logic to apply the effect to the target
+    console.log(`${target.name} is affected by Swift Potion!`);
+    target.effects.push(this.effect);
     return true;
   }
 }
 
-export { Potion, HealthPotion };
+class HolyWater extends Potion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData.id,
+      equipementData.name,
+      equipementData.cost,
+      equipementData.image_path,
+      new Effect(
+        "No Effect",
+        EffectType.STAT_MULTIPLIER,
+        EffectDuration.ONE_TURN,
+        true,
+      ),
+    );
+  }
+
+  applyEffect(gameId: string, target: any): boolean {
+    if (!(target instanceof Monster)) {
+      console.log(
+        `${target.name} is not a monster and can't be affected by Holy Water!`,
+      );
+      return false;
+    }
+    if (target.monsterType !== MonsterType.UNDEAD) {
+      console.log(
+        `${target.name} is not an Undead monster and can't be affected by Holy Water!`,
+      );
+      return false;
+    }
+    dealDamage(gameId, target, target.stats.health);
+    return true;
+  }
+}
+
+export { Potion, SwiftPotion, HolyWater };

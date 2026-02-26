@@ -1,5 +1,5 @@
 import { Armor } from "./Armor";
-import { Potion } from "./Potions/Potions";
+import { HolyWater, Potion, SwiftPotion } from "./Potions/Potions";
 import { Weapon } from "./Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
@@ -104,7 +104,21 @@ class Equipment {
         this.addArmor(armor);
         return armor;
       case "Potion":
-        throw new Error("Potion creation not implemented yet.");
+        let potion: Potion;
+        switch (equipmentData.id) {
+          case "swift_potion":
+            potion = new SwiftPotion(equipmentData);
+            break;
+          case "holy_water":
+            potion = new HolyWater(equipmentData);
+            break;
+          default:
+            throw new Error(
+              `Potion with id ${equipmentData.id} not implemented.`,
+            );
+        }
+        this.addPotion(potion);
+        return potion;
       case "Tool":
         const tool = new Tool(
           equipmentData.id,

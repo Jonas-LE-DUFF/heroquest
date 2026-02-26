@@ -9,10 +9,6 @@ import { Spell } from "../Spell/Spell";
 import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
-import { Item } from "../Equipment/Item";
-import { Weapon } from "../Equipment/Weapon";
-import { Armor } from "../Equipment/Armor";
-import { Potion } from "../Equipment/Potions/Potions";
 
 class Hero extends Unit<HeroCategory> {
   DefenseDiceType = FightDiceFaces.WhiteShield;
