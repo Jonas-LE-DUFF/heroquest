@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CardComponent } from "../CardComponent";
-import { getDjinnSpells } from "../cardUtils";
+import { getDjinnSpells, getSpellAsCard } from "../cardUtils";
 import "./SpellsPopUp.css";
 
 interface SpellListProps {
@@ -42,7 +42,7 @@ const SpellList: React.FC<SpellListProps> = ({
       setDisplayedSpells(djinnSpells);
       console.log(
         "Djinn spell clicked, expanding to sub-spells: ",
-        djinnSpells
+        djinnSpells,
       );
       setOnReturnHandler(() => {
         setDisplayedSpells(spellList);
@@ -63,7 +63,7 @@ const SpellList: React.FC<SpellListProps> = ({
           role="button"
           onClick={isUsed ? undefined : () => onSpellClickInternal(spellId)}
         >
-          <CardComponent socket={socket} cardName={spellId} cardType="spell" />
+          <CardComponent socket={socket} card={getSpellAsCard(spellId)} />
         </div>
       );
     });

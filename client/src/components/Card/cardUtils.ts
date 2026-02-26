@@ -22,6 +22,21 @@ export function getSpellEllementAsCard(element: SpellElement): Card2 {
   };
 }
 
+export function getSpellAsCard(spellId: string): Card2 {
+  const spell = spells.find((s) => s.id === spellId);
+  if (!spell) {
+    console.error(`Spell with id ${spellId} not found`);
+    throw new Error(`Spell with id ${spellId} not found`);
+  }
+  return {
+    id: spell.id,
+    name: spell.name,
+    image_path: getCardImagePath(spell.id, "spell") || "",
+    back_image_path: getCardImagePath(spell.id, "spell") || "",
+    type: CardType.Spell,
+  };
+}
+
 export function getItemAsCard(id: string): Card2 {
   const item = equipments.find((eq) => eq.id === id);
   if (!item) {

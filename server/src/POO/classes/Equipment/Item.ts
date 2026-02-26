@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 
 abstract class Item {
   id: string;
-  reference: string;
+  reference: string; // the name of the item in the json file
   abstract type: string;
   name: string;
   cost: number;
