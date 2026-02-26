@@ -46,6 +46,10 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       {equipments.map((equipment) => (
         <li key={equipment.id}>
           {equipment.name}
+          {equipment.type === "Potion" && (
+            <button onClick={() => drinkPotion(equipment.id)}>boire</button>
+          )}
+
           {editionState && role === PlayerRole.GAME_MASTER && (
             <button
               onClick={() => {
@@ -86,6 +90,28 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     );
 
     setEditionState(false);
+  }
+
+  function drinkPotion(potionId: string): void {
+    socket.emit(
+      "usePotion",
+      {
+        potionId: potionId,
+        heroId: hero.id,
+        gameId,
+      },
+      (response: { success: boolean; message: string }) => {
+        if (response.success) {
+          alert("Potion utilisée avec succès !");
+
+          // TODO : update local equipment state with the new one
+        } else {
+          alert(
+            "Erreur lors de l'utilisation de la potion : " + response.message,
+          );
+        }
+      },
+    );
   }
 
   const [equipmentAsCards, setEquipmentAsCards] = useState(() => {
