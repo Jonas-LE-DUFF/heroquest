@@ -128,7 +128,7 @@
         "image_path": "assets/images/cards/equipments/holyWater.png",
         "cost":400,
         "amountOfCopies":1,
-        "type": "Consumable",
+        "type": "Potion",
         "unique_usage": true,
         "cleric_bearable": true,
         "modifiers": {},
@@ -204,7 +204,7 @@
         "image_path": "assets/images/cards/equipments/speedPotion.png",
         "cost":200,
         "amountOfCopies":1,
-        "type": "Consumable",
+        "type": "Potion",
         "unique_usage": true,
         "cleric_bearable": true,
         "modifiers": {
@@ -233,7 +233,7 @@
         "image_path": "assets/images/cards/equipments/toolkit.png",
         "cost":250,
         "amountOfCopies":1,
-        "type": "Consumable",
+        "type": "Tool",
         "unique_usage": true,
         "cleric_bearable": true,
         "modifiers": {
