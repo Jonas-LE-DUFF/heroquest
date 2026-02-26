@@ -1,8 +1,12 @@
+import { HeroCategory } from "../../../enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
 import { PotionAsJson } from "../../../interfaces/ClassAsJson/Equipment/PotionAsJson";
+import { Unit } from "../../Units/Unit";
 import { Item } from "../Item";
 
 abstract class Potion extends Item {
   effect: string;
+  type = "Potion"
 
   constructor(
     reference: string,
@@ -41,9 +45,11 @@ class HealthPotion extends Potion {
     this.healingAmount = healingAmount;
   }
 
-  applyEffect(target: any): boolean {
+  applyEffect(target: Unit<MonsterCategory | HeroCategory>): boolean {
     // Logic to heal the target
     console.log(`${target.name} is healed by ${this.healingAmount} points!`);
+    const newHealth = target.stats.health + this.healingAmount
+    target.stats.health = Math.max(newHealth, target.stats.maxHealth)
     return true;
   }
 }
