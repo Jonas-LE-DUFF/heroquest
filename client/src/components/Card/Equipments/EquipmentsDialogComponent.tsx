@@ -21,11 +21,6 @@ interface EquipmentsDialogComponentProps {
   hero: HeroAsJson;
 }
 
-interface Item {
-  id: string;
-  name: string;
-}
-
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
   const location = useLocation();
   const gameId = location.state?.gameId;
@@ -66,21 +61,19 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     </ul>
   );
   function saveEditions(): void {
-    const updatedEquipment: EquipmentAsJson = {
-      armors,
-      weapons,
-      potions,
-      gold,
-      selectedWeaponIndex: hero.equipment.selectedWeaponIndex,
-    };
-
     socket.emit(
       "updateEquipment",
-      { gameId, heroId: hero.id, equipment: updatedEquipment },
+      {
+        gameId,
+        heroId: hero.id,
+        equipment: equipmentAsCards.map((card) => card.id),
+      },
       (response: { success: boolean; message: string }) => {
         if (response.success) {
           alert("Équipement mis à jour avec succès !");
+
           setEditionState(false);
+          // TODO : update local equipment state with the new one
         } else {
           alert(
             "Erreur lors de la mise à jour de l'équipement : " +
@@ -105,22 +98,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const closeAddEquipmentMenu = () => {
     setOpenAddDialog(false);
-    socket.emit(
-      "updateEquipment",
-      {
-        gameId,
-        equipment: equipmentAsCards.map((card) => card.id),
-        heroId: hero.id,
-      },
-      (response: { success: boolean; message: string }) => {
-        if (!response.success) {
-          alert(
-            "Erreur lors de la mise à jour de l'équipement : " +
-              response.message,
-          );
-        }
-      },
-    );
+    saveEditions();
   };
 
   return (

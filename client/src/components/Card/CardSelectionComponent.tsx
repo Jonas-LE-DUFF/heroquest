@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { CardCarouselComponent } from "./CardCarouselComponent";
 import { Card } from "./Card";
 
