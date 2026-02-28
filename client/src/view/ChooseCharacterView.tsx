@@ -123,7 +123,10 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         <div
           className="singleSpellCard"
           role="button"
-          onClick={() => handleSpellElementChange(element)}
+          onClick={() => {
+            if (!isSpellElementDisabled(hero?.id ?? "", game, element))
+              handleSpellElementChange(element);
+          }}
         >
           <FormControlLabel
             key={card.id}
@@ -260,7 +263,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           selectedCards={heroCreation.equipments.map((id) => ({
             id,
             name: id,
-            type: CardType.Equipment,
+            type: CardType.Item,
             image_path: getEquipmentById(id)?.image_path ?? "",
             back_image_path: getEquipmentById(id)?.image_path ?? "",
           }))}
