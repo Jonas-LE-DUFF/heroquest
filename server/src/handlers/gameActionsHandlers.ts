@@ -11,6 +11,7 @@ import {
   toPosition,
   castSpellSchema,
   attackSchema,
+  drinkPotionSchema,
 } from "../validation";
 
 export function registerGameActionsHandlers(socket: Socket) {
@@ -91,5 +92,67 @@ export function registerGameActionsHandlers(socket: Socket) {
       fight(socket, game!, attacker, defender, wishedNumberOfDices);
       callback(successResponse());
     }),
+  );
+
+  socket.on(
+    "drink-potion",
+    withValidation(
+      socket,
+      drinkPotionSchema,
+      async (socket, data, callback) => {
+        const { gameId, potionId, heroId } = data;
+        const game = GameService.getGame(gameId);
+
+        if (!requireGameExists(gameId)) {
+          return callback(
+            errorResponse("game couldn't be found in drink-potion"),
+          );
+        }
+
+        if (!requirePlayerTurn(socket, game!)) {
+          return callback(
+            errorResponse("it's not your turn to play in drink-potion"),
+          );
+        }
+
+        const hero = game!.getCurrentHeroTurn();
+        if (!hero) {
+          return callback(errorResponse("hero not found in drink-potion"));
+        }
+        if (hero.id !== heroId) {
+          return callback(
+            errorResponse(
+              "the hero trying to drink the potion is not the current hero turn in drink-potion",
+            ),
+          );
+        }
+
+        const potion = hero.equipment.potions.find(
+          (p) => p.reference === potionId,
+        );
+        if (!potion) {
+          return callback(
+            errorResponse(
+              "potion not found in drink-potion, maybe the hero doesn't have it?",
+            ),
+          );
+        }
+        try {
+          hero.drinkPotion(gameId, potion);
+        } catch (error) {
+          return callback(
+            errorResponse(`the drinking encountered an error : ${error}`),
+          );
+        }
+
+        const io = ServerHeroQuest.getServerInstance().getIo();
+
+        io.to(gameId).emit("game-state-update", {
+          game: game!.toJson(),
+        });
+
+        return callback(successResponse());
+      },
+    ),
   );
 }

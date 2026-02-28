@@ -69,6 +69,10 @@ class Equipment {
     this.potions.push(potion);
   }
 
+  removePotion(potionId: string) {
+    this.potions = this.potions.filter((p) => p.id !== potionId);
+  }
+
   addTool(tool: Tool) {
     this.tools.push(tool);
   }
