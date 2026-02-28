@@ -74,7 +74,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         heroId: hero.id,
         equipment: equipmentAsCards.map((card) => card.id),
       },
-      (response: { success: boolean; message: string }) => {
+      (response: { success: boolean; error: string }) => {
         if (response.success) {
           alert("Équipement mis à jour avec succès !");
 
@@ -82,8 +82,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           // TODO : update local equipment state with the new one
         } else {
           alert(
-            "Erreur lors de la mise à jour de l'équipement : " +
-              response.message,
+            "Erreur lors de la mise à jour de l'équipement : " + response.error,
           );
         }
       },
@@ -94,20 +93,20 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   function drinkPotion(potionId: string): void {
     socket.emit(
-      "usePotion",
+      "drink-potion",
       {
         potionId: potionId,
         heroId: hero.id,
         gameId,
       },
-      (response: { success: boolean; message: string }) => {
+      (response: { success: boolean; error: string }) => {
         if (response.success) {
           alert("Potion utilisée avec succès !");
 
           // TODO : update local equipment state with the new one
         } else {
           alert(
-            "Erreur lors de l'utilisation de la potion : " + response.message,
+            "Erreur lors de l'utilisation de la potion : " + response.error,
           );
         }
       },

@@ -97,7 +97,7 @@ class Game {
     }
     const callback = this.gameState.isLaunchable();
     if (!callback.success) {
-      throw new Error(`Game State is not launchable: ${callback.message}`);
+      throw new Error(`Game State is not launchable: ${callback.error}`);
     }
 
     this.createTurnOrder();
@@ -228,7 +228,7 @@ class Game {
         success: isLaunchable.success,
         reasons: isLaunchable.success
           ? []
-          : [isLaunchable.message || "Unknown reason"],
+          : [isLaunchable.error || "Unknown reason"],
       },
     };
   }
