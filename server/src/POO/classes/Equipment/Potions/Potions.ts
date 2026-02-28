@@ -23,7 +23,10 @@ abstract class Potion extends Item {
     this.effect = effect;
   }
 
-  abstract applyEffect(gameId: string, target: any): boolean;
+  abstract applyEffect(
+    gameId: string,
+    target: any,
+  ): { success: boolean; error?: string };
 
   toJson(): PotionAsJson {
     const baseJson = this.getBaseJson();
@@ -68,11 +71,14 @@ class SwiftPotion extends Potion {
     );
   }
 
-  applyEffect(gameId: string, target: any): boolean {
+  applyEffect(
+    gameId: string,
+    target: any,
+  ): { success: boolean; error?: string } {
     // Logic to apply the effect to the target
     console.log(`${target.name} is affected by Swift Potion!`);
     target.effects.push(this.effect);
-    return true;
+    return { success: true };
   }
 }
 
@@ -92,21 +98,27 @@ class HolyWater extends Potion {
     );
   }
 
-  applyEffect(gameId: string, target: any): boolean {
+  applyEffect(
+    gameId: string,
+    target: any,
+  ): { success: boolean; error?: string } {
     if (!(target instanceof Monster)) {
       console.log(
         `${target.name} is not a monster and can't be affected by Holy Water!`,
       );
-      return false;
+      return { success: false, error: `${target.name} is not a monster` };
     }
     if (target.monsterType !== MonsterType.UNDEAD) {
       console.log(
         `${target.name} is not an Undead monster and can't be affected by Holy Water!`,
       );
-      return false;
+      return {
+        success: false,
+        error: `${target.name} is not an Undead monster`,
+      };
     }
     dealDamage(gameId, target, target.stats.health);
-    return true;
+    return { success: true };
   }
 }
 
