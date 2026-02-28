@@ -14,7 +14,7 @@ export interface Equipment {
   image_path: string;
   cost: number;
   amountOfCopies: number;
-  type: "Weapon" | "Armor" | "Consumable";
+  type: "Weapon" | "Armor" | "Potion" | "Tool";
   unique_usage: boolean;
   cleric_bearable: boolean;
   modifiers: EquipmentModifiers;
