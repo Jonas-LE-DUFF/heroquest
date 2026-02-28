@@ -1,6 +1,6 @@
 import { PotionAsJson } from "../../../interfaces/ClassAsJson/Equipment/PotionAsJson";
 import { Effect } from "../../Effects/Effects";
-import { Item } from "../Item";
+import { Item } from "./Item";
 import { EffectType } from "../../../enums/Effects/EffectType";
 import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { StatType } from "../../../enums/Effects/StatType";

@@ -1,5 +1,5 @@
-import { ArmorType } from "../../enums/ArmorType";
-import { ArmorAsJson } from "../../interfaces/ClassAsJson/Equipment/ArmorAsJson";
+import { ArmorType } from "../../../enums/ArmorType";
+import { ArmorAsJson } from "../../../interfaces/ClassAsJson/Equipment/ArmorAsJson";
 import { Item } from "./Item";
 
 class Armor extends Item {

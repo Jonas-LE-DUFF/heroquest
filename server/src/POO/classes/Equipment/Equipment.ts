@@ -1,12 +1,12 @@
-import { Armor } from "./Armor";
-import { HolyWater, Potion, SwiftPotion } from "./Potions/Potions";
-import { Weapon } from "./Weapon";
+import { Armor } from "./Items.ts/Armor";
+import { HolyWater, Potion, SwiftPotion } from "./Items.ts/Potions";
+import { Weapon } from "./Items.ts/Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { WeaponRange } from "../../enums/WeaponRange";
 import { ArmorType } from "../../enums/ArmorType";
-import { Tool } from "./Tool";
+import { Tool } from "./Items.ts/Tool";
 
 class Equipment {
   gold: number;

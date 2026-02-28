@@ -1,5 +1,5 @@
-import { WeaponRange } from "../../enums/WeaponRange";
-import { WeaponAsJson } from "../../interfaces/ClassAsJson/Equipment/WeaponAsJson";
+import { WeaponRange } from "../../../enums/WeaponRange";
+import { WeaponAsJson } from "../../../interfaces/ClassAsJson/Equipment/WeaponAsJson";
 import { Item } from "./Item";
 
 class Weapon extends Item {
