@@ -102,23 +102,11 @@ class HolyWater extends Potion {
     gameId: string,
     target: any,
   ): { success: boolean; error?: string } {
-    if (!(target instanceof Monster)) {
-      console.log(
-        `${target.name} is not a monster and can't be affected by Holy Water!`,
-      );
-      return { success: false, error: `${target.name} is not a monster` };
-    }
-    if (target.monsterType !== MonsterType.UNDEAD) {
-      console.log(
-        `${target.name} is not an Undead monster and can't be affected by Holy Water!`,
-      );
-      return {
-        success: false,
-        error: `${target.name} is not an Undead monster`,
-      };
-    }
-    dealDamage(gameId, target, target.stats.health);
-    return { success: true };
+    return {
+      success: false,
+      error:
+        "Veuillez demander au game master d'appliquer cette potion manuellement",
+    };
   }
 }
 
