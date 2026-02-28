@@ -41,10 +41,12 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
           setCenterCard(cards.find((card) => card.id === id))
         }
       />
-      <button onClick={handleAddCard}>
-        ajouter equipement : {centerCard?.name || "Aucune carte sélectionnée"}
-      </button>
-      <button onClick={handleClearCards}>retirer tout les équipements</button>
+      <div className="buttons">
+        <button onClick={handleAddCard}>
+          ajouter equipement : {centerCard?.name || "Aucune carte sélectionnée"}
+        </button>
+        <button onClick={handleClearCards}>retirer tout les équipements</button>
+      </div>
     </div>
   );
 };

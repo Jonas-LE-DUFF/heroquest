@@ -77,7 +77,7 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
 
             const style: React.CSSProperties = {
               // each child's pixel width equals the slot width so visible slots fill the outer container
-              width: "120px",
+              width: "fit-content",
               height: "auto",
               display: isCenter || isSide ? "flex" : "none",
               justifyContent: "center",
@@ -85,13 +85,13 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
               transform: isCenter
                 ? "scale(1)"
                 : isSide
-                ? "scale(0.92)"
-                : "scale(0.85)",
+                  ? "scale(0.92)"
+                  : "scale(0.85)",
               filter: isCenter
                 ? "none"
                 : isSide
-                ? "grayscale(60%) brightness(80%)"
-                : "grayscale(100%) brightness(60%)",
+                  ? "grayscale(60%) brightness(80%)"
+                  : "grayscale(100%) brightness(60%)",
               opacity: isCenter ? 1 : isSide ? 0.9 : 0.0,
               zIndex: isCenter ? 3 : isSide ? 2 : 1,
               // allow pointer events on center and side so side cards can be clicked
@@ -149,7 +149,7 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
         </button>
       </div>
     );
-  }
+  },
 );
 
 export { SimpleCarousel };

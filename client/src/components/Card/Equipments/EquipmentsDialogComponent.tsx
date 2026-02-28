@@ -102,8 +102,6 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       (response: { success: boolean; error: string }) => {
         if (response.success) {
           alert("Potion utilisée avec succès !");
-
-          // TODO : update local equipment state with the new one
         } else {
           alert(
             "Erreur lors de l'utilisation de la potion : " + response.error,
@@ -163,14 +161,16 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         </button>
       )}
       <Dialog open={openAddDialog} onClose={closeAddEquipmentMenu}>
-        <CardSelectionComponent
-          socket={socket}
-          selectedCards={equipmentAsCards}
-          cards={getAllEquipmentsAsCards()}
-          onCardsChange={(newSelectedCards) => {
-            setEquipmentAsCards(newSelectedCards);
-          }}
-        />
+        <div className="equipments-dialog">
+          <CardSelectionComponent
+            socket={socket}
+            selectedCards={equipmentAsCards}
+            cards={getAllEquipmentsAsCards()}
+            onCardsChange={(newSelectedCards) => {
+              setEquipmentAsCards(newSelectedCards);
+            }}
+          />
+        </div>
       </Dialog>
     </div>
   );

@@ -11,7 +11,10 @@ import {
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
 import { CardSelectionComponent } from "../components/Card/CardSelectionComponent";
-import { BackCardComponent } from "../components/Card/CardComponent";
+import {
+  BackCardComponent,
+  GreyCardComponent,
+} from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { getHeroByPlayerId, getHeroes } from "../shared/serverUtils";
@@ -139,7 +142,11 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             }
             label={card.name}
           />
-          <BackCardComponent socket={socket} card={card} />
+          {!isSpellElementDisabled(hero?.id ?? "", game, element) ? (
+            <BackCardComponent socket={socket} card={card} />
+          ) : (
+            <GreyCardComponent socket={socket} card={card} />
+          )}
         </div>
       );
     });
