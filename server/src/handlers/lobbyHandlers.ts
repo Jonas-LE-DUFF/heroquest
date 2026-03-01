@@ -232,9 +232,9 @@ export function registerLobbyHandlers(socket: Socket) {
         const heroesControlled = game.gameState.getHeroesControlledByPlayer(
           socket.id,
         );
+        const heroToRemove = game.gameState.getHeroById(heroId);
 
-        const heroToRemove = heroesControlled.find((h) => h.id === heroId);
-        if (!heroToRemove) {
+        if (!heroToRemove || !heroesControlled.includes(heroToRemove)) {
           return callback(errorResponse("Hero not found."));
         }
         game.gameState.removeUnit(heroToRemove);

@@ -40,7 +40,7 @@ interface ClientToServerEvents {
   ) => void; // Updated choose-character event definition
 
   "unselect-character": (
-    data: { gameId: string },
+    data: { gameId: string; heroId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 

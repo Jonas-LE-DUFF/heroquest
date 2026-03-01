@@ -135,14 +135,14 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     });
   };
 
-  const unselectCharacter = () => {
+  const unselectCharacter = (heroId: string) => {
     if (!game) {
       alert("Game state is missing. Cannot proceed to character unselection.");
       return;
     }
     socket.emit(
       "unselect-character",
-      { gameId },
+      { gameId, heroId },
       (response: { success: boolean; error?: string }) => {
         if (response.success) {
           console.log("Character unselected successfully");
@@ -153,36 +153,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       },
     );
   };
-
-  function renderSpellElements(spellElements: SpellElement[]) {
-    if (spellElements.length === 0) return "Aucun";
-    return spellElements
-      .map((spellElement) => SpellElement[spellElement])
-      .join(", ");
-  }
-
-  function renderHeroes(heroes: HeroAsJson[]) {
-    if (heroes.length === 0) return "Pas encore choisi";
-    return heroes.map((hero) => {
-      let playerClass;
-      if (hero.category === undefined) {
-        playerClass = "ERREUR";
-      } else {
-        // TODO : should get the icon of the hero class
-        playerClass = HeroCategory[hero.category];
-      }
-      const spellElements = hero.spells.map((spell) => spell.element) || [];
-      return (
-        <>
-          <span className="Hero class">{playerClass}</span>
-          <span className="spells">
-            {" "}
-            - Sorts: {renderSpellElements(spellElements)}
-          </span>
-        </>
-      );
-    });
-  }
 
   function renderStatus(game: GameAsJson) {
     const players = game?.players;
@@ -262,6 +232,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
                   <CardComponent key={card.id} card={card} />
                 ))}
             </div>
+            <button
+              style={{ marginLeft: "auto" }}
+              onClick={() => unselectCharacter(hero.id)}
+            >
+              déselectionner
+            </button>
           </span>,
         );
       }

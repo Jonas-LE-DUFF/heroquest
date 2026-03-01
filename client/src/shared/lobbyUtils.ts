@@ -20,6 +20,11 @@ function getPlayerHeroMap(game: GameAsJson): Map<PlayerAsJson, HeroAsJson[]> {
     const existingHeroes = playerHeroMap.get(player) || [];
     playerHeroMap.set(player, [...existingHeroes, hero]);
   });
+  game.players.forEach((player) => {
+    if (!playerHeroMap.has(player)) {
+      playerHeroMap.set(player, []);
+    }
+  });
   return playerHeroMap;
 }
 
