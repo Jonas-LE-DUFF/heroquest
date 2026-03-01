@@ -46,9 +46,10 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       {equipments.map((equipment) => (
         <li key={equipment.id}>
           {equipment.name}
-          {equipment.type === "Potion" && (
-            <button onClick={() => drinkPotion(equipment.id)}>boire</button>
-          )}
+          {equipment.type === "Potion" &&
+            hero.controlledByPlayerId === socket.id && (
+              <button onClick={() => drinkPotion(equipment.id)}>boire</button>
+            )}
 
           {editionState && role === PlayerRole.GAME_MASTER && (
             <button
