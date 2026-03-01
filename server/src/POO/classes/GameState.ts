@@ -50,9 +50,9 @@ class GameState {
    * @param position the position of the tile to clear
    */
   clearTileAtPosition(position: Position): void {
-    const unit = this.board.clearTileAtPosition(position);
-    if (unit) {
-      this.Units = this.Units.filter((u) => u !== unit);
+    const unitId = this.board.clearTileAtPosition(position);
+    if (unitId) {
+      this.Units = this.Units.filter((u) => u.id !== unitId);
     }
   }
 
@@ -63,7 +63,11 @@ class GameState {
   getUnitByPosition(
     position: Position,
   ): Unit<HeroCategory | MonsterCategory> | undefined {
-    return this.board.getUnitAt(position);
+    const unitId = this.board.getUnitAt(position);
+    if (unitId) {
+      return this.getUnitById(unitId);
+    }
+    return undefined;
   }
 
   getHeroById(id: string): Hero | undefined {

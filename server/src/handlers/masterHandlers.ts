@@ -195,7 +195,8 @@ function handleMonsterPlacement(
   const monsterFactory = new MonsterFactory(gameId);
   const monster = monsterFactory.createMonster(monsterType);
 
-  game!.gameState.addUnit(monster, position);
+  game!.gameState.addUnit(monster);
+  game?.gameState.board.placeUnitAt(monster, position);
 
   io.to(gameId).emit("game-state-update", {
     game: game!.toJson(),

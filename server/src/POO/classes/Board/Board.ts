@@ -39,7 +39,7 @@ class Board {
     for (let x = 0; x < this.BOARD_WIDTH; x++) {
       for (let y = 0; y < this.BOARD_HEIGHT; y++) {
         const tile = this.Map[x]![y];
-        if (tile!.unit && tile!.unit.id === unitId) {
+        if (tile!.unitId === unitId) {
           return new Position(x, y);
         }
       }
@@ -47,10 +47,8 @@ class Board {
     return null;
   }
 
-  getUnitAt(
-    position: Position,
-  ): Unit<HeroCategory | MonsterCategory> | undefined {
-    return this.getTileAtPosition(position)?.unit || undefined;
+  getUnitAt(position: Position): string | undefined {
+    return this.getTileAtPosition(position)?.unitId || undefined;
   }
 
   placeUnitAt(
@@ -59,7 +57,7 @@ class Board {
   ): void {
     const tile = this.getTileAtPosition(position);
     if (tile) {
-      tile.unit = unit;
+      tile.unitId = unit.id;
     }
   }
 
@@ -151,7 +149,7 @@ class Board {
 
   removeUnitFromTile(
     unit: Unit<HeroCategory | MonsterCategory>,
-  ): Unit<HeroCategory | MonsterCategory> | null {
+  ): string | null {
     const position = this.getPositionOfUnit(unit.id);
     if (!position) {
       console.error("Unit not found on board:", unit.id);
@@ -160,9 +158,7 @@ class Board {
     return this.clearTileAtPosition(position);
   }
 
-  clearTileAtPosition(
-    position: Position,
-  ): Unit<HeroCategory | MonsterCategory> | null {
+  clearTileAtPosition(position: Position): string | null {
     const tile = this.getTileAtPosition(position);
     if (tile) {
       return tile.eraseTile();

@@ -60,8 +60,8 @@ export function moveUnit(
   if (!tile || !newTile) {
     throw new Error("Tiles not found on board");
   }
-  tile.unit = null;
-  newTile.unit = unitMoved;
+  tile.unitId = null;
+  newTile.unitId = unitMoved.id;
   return { success: true };
 }
 

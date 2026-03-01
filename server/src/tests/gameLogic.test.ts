@@ -203,7 +203,7 @@ describe("moveUnit (MovementService)", () => {
 
     expect(result.success).toBe(true);
     expect(board.getUnitAt(new Position(5, 5))).toBeUndefined();
-    expect(board.getUnitAt(new Position(6, 5))).toBe(hero);
+    expect(board.getUnitAt(new Position(6, 5))).toBe(hero.id);
   });
 
   it("should fail when moving out of bounds", () => {
