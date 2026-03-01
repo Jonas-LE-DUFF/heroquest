@@ -63,7 +63,7 @@ const SpellList: React.FC<SpellListProps> = ({
           role="button"
           onClick={isUsed ? undefined : () => onSpellClickInternal(spellId)}
         >
-          <CardComponent socket={socket} card={getSpellAsCard(spellId)} />
+          <CardComponent card={getSpellAsCard(spellId)} />
         </div>
       );
     });

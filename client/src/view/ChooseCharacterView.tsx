@@ -143,9 +143,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             label={card.name}
           />
           {!isSpellElementDisabled(hero?.id ?? "", game, element) ? (
-            <BackCardComponent socket={socket} card={card} />
+            <BackCardComponent card={card} />
           ) : (
-            <GreyCardComponent socket={socket} card={card} />
+            <GreyCardComponent card={card} />
           )}
         </div>
       );

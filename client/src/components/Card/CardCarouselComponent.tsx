@@ -18,7 +18,7 @@ const CardCarouselComponent = ({
     for (let i = 0; i < cards.length; i++) {
       images.push(
         <div className="singleSpellCard">
-          <CardComponent socket={socket} card={cards[i]} />
+          <CardComponent card={cards[i]} />
         </div>,
       );
     }

@@ -35,10 +35,7 @@ const SchoolSpellList: React.FC<SchoolSpellListProps> = ({
         role="button"
         onClick={() => onSpellClick(school)}
       >
-        <BackCardComponent
-          socket={socket}
-          card={getSpellEllementAsCard(school)}
-        />
+        <BackCardComponent card={getSpellEllementAsCard(school)} />
       </div>
     ));
   };
