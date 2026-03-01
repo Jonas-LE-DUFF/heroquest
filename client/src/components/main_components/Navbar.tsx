@@ -1,7 +1,11 @@
 import { Socket } from "socket.io-client";
 import "./Navbar.css";
-import { getHeroClassIconPath, getHeroClassName } from "../../shared/utils";
-import { Tooltip } from "@mui/material";
+import {
+  getHeroClassIconPath,
+  getHeroClassName,
+  isHero,
+} from "../../shared/utils";
+import { Dialog, Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -10,6 +14,9 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
 import { getHeroByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import backpackIcon from "/assets/images/icons/navbar/backpack.png";
+import { useState } from "react";
+import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 
 interface NavbarProps {
   socket: Socket;
@@ -18,6 +25,7 @@ interface NavbarProps {
   isCurrentTurnPlayer: boolean;
   currentTurnPlayerName: string;
   statsOpen: boolean;
+  selectedUnit: HeroAsJson | MonsterAsJson | null;
   setStatsOpen: (arg0: boolean) => void;
   setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
@@ -30,19 +38,29 @@ const Navbar: React.FC<NavbarProps> = ({
   isCurrentTurnPlayer,
   currentTurnPlayerName,
   statsOpen,
+  selectedUnit,
   setStatsOpen,
   setSelectedUnit,
   openSpellPage,
 }) => {
   const location = useLocation();
-  const gameId = location.state.gameId;
   const role = location.state.role;
   const playerName = location.state.playerName;
+
+  const [showEquipments, setShowEquipments] = useState(false);
 
   if (!player) {
     return <div>Loading...</div>;
   }
-  const hero = getHeroByPlayerId(player.id, game);
+  let hero: HeroAsJson | null = null;
+  if (role === PlayerRole.HERO) {
+    hero = getHeroByPlayerId(player.id, game);
+  } else {
+    if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit as HeroAsJson;
+  }
+  if (!hero && role === PlayerRole.HERO) {
+    return <div>Loading...</div>;
+  }
 
   function showSpells() {
     openSpellPage();
@@ -89,6 +107,26 @@ const Navbar: React.FC<NavbarProps> = ({
           ? "À toi de jouer !"
           : "Au tour de " + currentTurnPlayerName}
       </div>
+      {hero && (
+        <>
+          <div className="nav-elem">
+            <img
+              src={backpackIcon}
+              alt="Backpack"
+              className="imgNav"
+              onClick={() => {
+                setShowEquipments(!showEquipments);
+              }}
+            />
+          </div>
+          <Dialog
+            open={showEquipments}
+            onClose={() => setShowEquipments(false)}
+          >
+            <EquipmentsDialogComponent socket={socket} hero={hero} />
+          </Dialog>
+        </>
+      )}
     </div>
   );
 };

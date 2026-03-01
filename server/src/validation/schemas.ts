@@ -59,6 +59,12 @@ export const attackSchema = z.object({
   wishedNumberOfDices: z.number().int().min(1),
 });
 
+export const drinkPotionSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+  potionId: z.string().min(1, "L'ID de la potion est requis"),
+});
+
 // --- Dice Events ---
 
 export const authorizeSpecialThrowSchema = z.object({
@@ -99,6 +105,12 @@ export const updateStatsUnitSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   newStats: z.any(), // StatsAsJson - objet complexe
   position: positionSchema,
+});
+
+export const updateEquipmentSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+  equipment: z.array(z.string()), // Liste d'IDs d'équipements
 });
 
 // --- Movement Events ---

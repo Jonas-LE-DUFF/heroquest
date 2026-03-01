@@ -1,12 +1,13 @@
-import { spellElement } from "../../../shared/type";
+import { SpellElement } from "../../../POO/enums/SpellElement";
 import { getElementName } from "../../../shared/utils";
-import { CardComponent } from "../CardComponent";
+import { BackCardComponent, CardComponent } from "../CardComponent";
+import { getSpellEllementAsCard } from "../cardUtils";
 
 interface SchoolSpellListProps {
   socket: any;
-  spellSchools: spellElement[];
+  spellSchools: SpellElement[];
   spellAlreadyUsed: string[]; // list of spell IDs
-  onSpellClick: (spellElement: spellElement) => void;
+  onSpellClick: (spellElement: SpellElement) => void;
   onClose: () => void;
 }
 
@@ -26,7 +27,7 @@ const SchoolSpellList: React.FC<SchoolSpellListProps> = ({
   if (spellAlreadyUsed === undefined) {
     spellAlreadyUsed = [];
   }
-  const renderSpellSchools = (spellSchools: spellElement[]) => {
+  const renderSpellSchools = (spellSchools: SpellElement[]) => {
     return spellSchools.map((school) => (
       <div
         key={school}
@@ -34,10 +35,9 @@ const SchoolSpellList: React.FC<SchoolSpellListProps> = ({
         role="button"
         onClick={() => onSpellClick(school)}
       >
-        <CardComponent
+        <BackCardComponent
           socket={socket}
-          cardName={getElementName(school, "en")}
-          cardType="back"
+          card={getSpellEllementAsCard(school)}
         />
       </div>
     ));

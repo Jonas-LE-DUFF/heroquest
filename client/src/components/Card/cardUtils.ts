@@ -3,6 +3,7 @@ import spells from "../../shared/game_cards/spells.json";
 import back from "../../shared/game_cards/backCard.json";
 import { getElementName } from "../../shared/utils";
 import { SpellElement } from "../../POO/enums/SpellElement";
+import { Card as Card2, CardType } from "./Card";
 
 type Card = {
   id: string;
@@ -10,8 +11,45 @@ type Card = {
   [k: string]: any;
 };
 
-function getAllEquipmentCardNames(): string[] {
-  return (equipments as Card[]).map((e) => e.id);
+export function getSpellEllementAsCard(element: SpellElement): Card2 {
+  const elementName = SpellElement[element];
+  return {
+    id: elementName,
+    name: getElementName(element, "en"),
+    image_path: getCardImagePath(elementName, "back") || "",
+    back_image_path: getCardImagePath(elementName, "back") || "",
+    type: CardType.Back,
+  };
+}
+
+export function getSpellAsCard(spellId: string): Card2 {
+  const spell = spells.find((s) => s.id === spellId);
+  if (!spell) {
+    console.error(`Spell with id ${spellId} not found`);
+    throw new Error(`Spell with id ${spellId} not found`);
+  }
+  return {
+    id: spell.id,
+    name: spell.name,
+    image_path: getCardImagePath(spell.id, "spell") || "",
+    back_image_path: getCardImagePath(spell.id, "spell") || "",
+    type: CardType.Spell,
+  };
+}
+
+export function getItemAsCard(id: string): Card2 {
+  const item = equipments.find((eq) => eq.id === id);
+  if (!item) {
+    console.error(`Item with id ${id} not found`);
+    throw new Error(`Item with id ${id} not found`);
+  }
+  return {
+    id: item.id,
+    name: item.name,
+    image_path: getCardImagePath(item.id, "equipment") || "",
+    back_image_path: getCardImagePath(item.id, "equipment") || "",
+    type: CardType.Item,
+  };
 }
 
 function getSpellListForSchool(spellSchool: SpellElement): string[] {
@@ -79,9 +117,4 @@ function getCardName(id: string, cardType: string): string | undefined {
   return eq ? eq.name : undefined;
 }
 
-export {
-  getSpellListForSchool,
-  getCardImagePath,
-  getAllEquipmentCardNames,
-  getCardName,
-};
+export { getSpellListForSchool, getCardImagePath, getCardName };

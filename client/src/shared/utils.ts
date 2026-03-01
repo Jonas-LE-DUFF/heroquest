@@ -120,9 +120,9 @@ function getElementName(element: SpellElement, language: string = "en") {
     case "fr":
       return spellElementFr[element];
     case "en":
-      return spellElementFr[element];
+      return SpellElement[element];
     default:
-      return spellElementFr[element];
+      return SpellElement[element];
   }
 }
 

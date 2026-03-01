@@ -227,7 +227,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   ) => {
     if (selectedSpell !== null) {
       console.log("Casting spell:", selectedSpell, "at position:", position);
-      setTargetMode(false);
       socket.emit(
         "cast-spell",
         {
@@ -238,12 +237,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         (response: { success: boolean; error?: string }) => {
           if (response.success) {
             console.log("Spell cast successfully");
-            setSelectedSpell(null);
           } else {
             console.error("Failed to cast spell:", response.error);
+            alert("Failed to cast spell: " + response.error);
           }
         },
       );
+      setTargetMode(false);
+      setSelectedSpell(null);
       return;
     }
 
@@ -279,7 +280,12 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setTargetMode(false);
       return;
     }
-
+    console.log(
+      "Tile clicked at position:",
+      position,
+      "with selectedType:",
+      selectedType,
+    );
     if (
       selectedPosition !== null &&
       selectedPosition.x === position.x &&
@@ -353,6 +359,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             }
             player={user}
             statsOpen={statsVisible}
+            selectedUnit={
+              getSelectedUnit(selectedPosition, currentGame.gameState.board) ||
+              null
+            }
             setStatsOpen={setStatsVisible}
             setSelectedUnit={setSelectedUnit}
             openSpellPage={() => setSpellPageVisible(true)}

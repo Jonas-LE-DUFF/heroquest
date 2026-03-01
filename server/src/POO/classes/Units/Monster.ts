@@ -6,11 +6,14 @@ import { Stats } from "./Stats";
 import { Unit } from "./Unit";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { MonsterAsJson } from "../../interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { MonsterType } from "../../enums/MonsterType";
 
 class Monster extends Unit<MonsterCategory> {
   DefenseDiceType = FightDiceFaces.BlackShield;
 
   nbAttackDice: number;
+
+  monsterType: MonsterType;
 
   constructor(
     controlledById: string,
@@ -18,9 +21,11 @@ class Monster extends Unit<MonsterCategory> {
     category: MonsterCategory,
     stats: Stats,
     nbAttackDice: number,
+    monsterType: MonsterType,
   ) {
     super(controlledById, name, category, stats);
     this.nbAttackDice = nbAttackDice;
+    this.monsterType = monsterType;
   }
 
   getDefenseDiceCount(): number {

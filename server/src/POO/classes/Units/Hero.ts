@@ -9,6 +9,7 @@ import { Spell } from "../Spell/Spell";
 import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
+import { Potion } from "../Equipment/Items.ts/Potions";
 
 class Hero extends Unit<HeroCategory> {
   DefenseDiceType = FightDiceFaces.WhiteShield;
@@ -58,6 +59,14 @@ class Hero extends Unit<HeroCategory> {
     return Math.floor((baseMovement + modifier) * multiplier);
   }
 
+  updateEquipment(equipment: string[]) {
+    const newEquipment = new Equipment(this.equipment.gold);
+    equipment.forEach((id) => {
+      newEquipment.addEquipmentById(id);
+    });
+    this.equipment = newEquipment;
+  }
+
   validateStatsImplementation(): { success: boolean; error?: string } {
     if (this.category === HeroCategory.Cleric) {
       if (this.spells.length !== 9) {
@@ -103,6 +112,14 @@ class Hero extends Unit<HeroCategory> {
     const elementsSet = new Set<SpellElement>();
     this.spells.forEach((spell) => elementsSet.add(spell.element));
     return Array.from(elementsSet);
+  }
+
+  drinkPotion(gameId: string, potion: Potion) {
+    const response = potion.applyEffect(gameId, this);
+    if (!response.success) {
+      throw new Error(`Failed to apply potion effect: ${response.error}`);
+    }
+    this.equipment.removePotion(potion.id);
   }
 
   toJson(): HeroAsJson {

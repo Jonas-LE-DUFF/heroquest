@@ -1,9 +1,9 @@
-interface WeaponAsJson {
-    id: string;
-    name: string;
-    damage: number;
-    range: "ranged" | "melee" | "long-melee";
-    cost: number;
+import { WeaponRange } from "../../../enums/WeaponRange";
+import { ItemAsJson } from "./ItemAsJson";
+
+interface WeaponAsJson extends ItemAsJson {
+  damage: number;
+  range: WeaponRange;
 }
 
 export type { WeaponAsJson };

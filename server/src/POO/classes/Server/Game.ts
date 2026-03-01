@@ -97,7 +97,7 @@ class Game {
     }
     const callback = this.gameState.isLaunchable();
     if (!callback.success) {
-      throw new Error(`Game State is not launchable: ${callback.message}`);
+      throw new Error(`Game State is not launchable: ${callback.error}`);
     }
 
     this.createTurnOrder();
@@ -203,6 +203,14 @@ class Game {
     }
   }
 
+  updateHeroEquipment(heroId: string, equipment: string[]) {
+    const hero = this.gameState.getHeroById(heroId);
+    if (!hero) {
+      throw new Error(`Hero with id ${heroId} not found.`);
+    }
+    hero.updateEquipment(equipment);
+  }
+
   toJson(): GameAsJson {
     const playersAsJson = Array.from(this.players.values()).map((player) =>
       player.toJson(),
@@ -220,7 +228,7 @@ class Game {
         success: isLaunchable.success,
         reasons: isLaunchable.success
           ? []
-          : [isLaunchable.message || "Unknown reason"],
+          : [isLaunchable.error || "Unknown reason"],
       },
     };
   }

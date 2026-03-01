@@ -93,24 +93,24 @@ class GameState {
     return hero;
   }
 
-  isLaunchable(): { success: boolean; message?: string } {
+  isLaunchable(): { success: boolean; error?: string } {
     const heroes = this.Units.filter((u) => u instanceof Hero);
     if (heroes.length < 1) {
       return {
         success: false,
-        message: "At least one hero is required to start the game.",
+        error: "At least one hero is required to start the game.",
       };
     }
     if (heroes.length > 4) {
       return {
         success: false,
-        message: "No more than four heroes are allowed to start the game.",
+        error: "No more than four heroes are allowed to start the game.",
       };
     }
     if (this.status !== "lobby") {
       return {
         success: false,
-        message: "Game is not in a launchable state.",
+        error: "Game is not in a launchable state.",
       };
     }
     return { success: true };
