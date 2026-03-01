@@ -26,6 +26,8 @@ import { GameState } from "../POO/classes/GameState";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Stats } from "../POO/classes/Units/Stats";
+import { getSpellsForElements } from "../services/SpellService";
+import { SpellElement } from "../POO/enums/SpellElement";
 
 // ── Helper functions ──
 
@@ -109,7 +111,7 @@ function setupGameWithHeroes(heroCount: number = 1): {
       name: `Hero${i + 1}`,
       category: categories[i % categories.length]!,
     });
-    game.gameState.addUnit(hero, new Position(i, 0));
+    game.gameState.addUnit(hero);
     heroes.push(hero);
   }
 
@@ -233,7 +235,7 @@ describe("testLeaveLobby", () => {
       controlledById: player.id,
       category: HeroCategory.Barbarian,
     });
-    game.gameState.addUnit(hero, new Position(0, 0));
+    game.gameState.addUnit(hero);
     expect(game.gameState.Units).toContain(hero);
 
     game.removePlayer(player.id);
@@ -256,17 +258,15 @@ describe("testChooseCharacter", () => {
       category: HeroCategory.Barbarian,
     });
     const pos = new Position(1, 1);
-    game.gameState.addUnit(hero, pos);
+    game.gameState.addUnit(hero);
 
-    // Hero should be on the board
     expect(game.gameState.Units).toContain(hero);
-    expect(game.gameState.getUnitByPosition(new Position(1, 1))).toBe(hero);
   });
 
   it("should report a hero category as taken once chosen", () => {
     const gameState = new GameState();
     const hero = createTestHero({ category: HeroCategory.Elf });
-    gameState.addUnit(hero, new Position(0, 0));
+    gameState.addUnit(hero);
 
     expect(gameState.isHeroCategoryTaken(HeroCategory.Elf)).toBe(true);
     expect(gameState.isHeroCategoryTaken(HeroCategory.Dwarf)).toBe(false);
@@ -308,19 +308,19 @@ describe("testUnselectCharacter", () => {
   it("should remove a hero from GameState after unselecting", () => {
     const gameState = new GameState();
     const hero = createTestHero({ category: HeroCategory.Barbarian });
-    gameState.addUnit(hero, new Position(2, 2));
+    gameState.addUnit(hero);
 
     expect(gameState.Units).toContain(hero);
 
     gameState.removeUnit(hero);
 
-    expect(gameState.getUnitByPosition(new Position(2, 2))).toBeUndefined();
+    expect(gameState.getUnitById(hero.id)).toBeUndefined();
   });
 
   it("should no longer include the hero in GameState.Units", () => {
     const gameState = new GameState();
     const hero = createTestHero({ category: HeroCategory.Dwarf });
-    gameState.addUnit(hero, new Position(3, 3));
+    gameState.addUnit(hero);
 
     gameState.removeUnit(hero);
 
@@ -354,7 +354,7 @@ describe("testStartGame", () => {
       controlledById: player.id,
       category: HeroCategory.Barbarian,
     });
-    game.gameState.addUnit(hero, new Position(0, 0));
+    game.gameState.addUnit(hero);
 
     expect(() => game.launchGame()).toThrow(
       "A game master is required to start the game",
@@ -386,5 +386,36 @@ describe("testStartGame", () => {
     for (const hero of heroes) {
       expect(game.playOrder).toContain(hero.category);
     }
+  });
+
+  it("should throw if the same spell element is chosen for different heroes", () => {
+    const game = new Game("test-game");
+    const gm = createPlayer("GM", PlayerRole.GAME_MASTER);
+    game.addPlayer(gm);
+
+    const hero1 = createTestHero({
+      controlledById: "player-1",
+      name: "Hero1",
+      category: HeroCategory.Barbarian,
+      stats: createTestStats(),
+    });
+    hero1.setSpells(
+      getSpellsForElements(game.id, [SpellElement.Air, SpellElement.Earth]),
+    );
+    const hero2 = createTestHero({
+      controlledById: "player-1",
+      name: "Hero1",
+      category: HeroCategory.Barbarian,
+      stats: createTestStats(),
+    });
+    hero2.setSpells(
+      getSpellsForElements(game.id, [SpellElement.Air, SpellElement.Fire]),
+    );
+    game.gameState.addUnit(hero1);
+    game.gameState.addUnit(hero2);
+
+    expect(() => game.launchGame()).toThrow(
+      "The same spell element cannot be chosen for different heroes.",
+    );
   });
 });

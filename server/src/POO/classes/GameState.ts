@@ -24,12 +24,8 @@ class GameState {
     this.status = "lobby";
   }
 
-  addUnit(
-    unit: Unit<HeroCategory | MonsterCategory>,
-    position: Position,
-  ): void {
+  addUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
     this.Units.push(unit);
-    this.board.placeUnitAt(unit, position);
   }
 
   /**

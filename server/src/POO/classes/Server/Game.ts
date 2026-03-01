@@ -100,6 +100,16 @@ class Game {
       throw new Error(`Game State is not launchable: ${callback.error}`);
     }
 
+    const allSpells = this.gameState.Units.filter(
+      (unit) => unit instanceof Hero,
+    ).flatMap((hero) => (hero as Hero).getSpellElements());
+    const uniqueSpells = new Set(allSpells);
+    if (allSpells.length !== uniqueSpells.size) {
+      throw new Error(
+        "The same spell element cannot be chosen for different heroes.",
+      );
+    }
+
     this.createTurnOrder();
 
     this.currentTurnIndex = 0;

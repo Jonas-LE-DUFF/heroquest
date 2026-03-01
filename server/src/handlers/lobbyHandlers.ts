@@ -197,7 +197,7 @@ export function registerLobbyHandlers(socket: Socket) {
           ),
         );
       }
-      game?.gameState.addUnit(hero, position);
+      game?.gameState.addUnit(hero);
 
       player.isReady = true;
       const io = ServerHeroQuest.getServerInstance().getIo();
