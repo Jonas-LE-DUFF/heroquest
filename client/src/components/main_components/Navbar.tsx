@@ -1,6 +1,10 @@
 import { Socket } from "socket.io-client";
 import "./Navbar.css";
-import { getHeroClassIconPath, getHeroClassName } from "../../shared/utils";
+import {
+  getHeroClassIconPath,
+  getHeroClassName,
+  isHero,
+} from "../../shared/utils";
 import { Dialog, Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
@@ -52,7 +56,7 @@ const Navbar: React.FC<NavbarProps> = ({
   if (role === PlayerRole.HERO) {
     hero = getHeroByPlayerId(player.id, game);
   } else {
-    hero = selectedUnit as HeroAsJson;
+    if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit as HeroAsJson;
   }
   if (!hero && role === PlayerRole.HERO) {
     return <div>Loading...</div>;
