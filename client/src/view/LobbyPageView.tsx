@@ -1,21 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { SpellElement } from "../POO/enums/SpellElement";
-import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
-import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import GameMasterIcon from "../../public/assets/images/icons/playerRole/IconGameMaster.jpeg";
-import HeroIcon from "../../public/assets/images/icons/playerRole/iconHero.jpeg";
-import { getPlayerHeroMap } from "../shared/lobbyUtils";
-import { getHeroClassIconPath } from "../shared/utils";
-import { getEquipmentAsCards } from "../shared/equipments";
-import { CardComponent } from "../components/Card/CardComponent";
-import {
-  getSpellAsCard,
-  getSpellEllementAsCard,
-} from "../components/Card/cardUtils";
+import PlayerStatusComponent from "../components/PlayerStatusComponent";
 
 interface LobbyPageProps {
   socket: any;
@@ -154,97 +141,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     );
   };
 
-  function renderStatus(game: GameAsJson) {
-    const players = game?.players;
-    if (!players || players.length === 0) {
-      return <div>Aucun Joueur</div>;
-    }
-    const playerHeroMap = getPlayerHeroMap(game);
-    const statusElements: React.ReactNode[] = [];
-    playerHeroMap.forEach((heroes: HeroAsJson[], player: PlayerAsJson) => {
-      let characterName = player.name || "Joueur sans nom";
-
-      const isGameMaster = player.role === PlayerRole.GAME_MASTER;
-      statusElements.push(
-        <div key={player.id} className="player-item">
-          <div className="player-row">
-            <span>Nom : {characterName}</span>
-            {!isGameMaster && (
-              <span
-                className={`status ${player.isReady ? "ready" : "not-ready"}`}
-              >
-                {player.isReady ? "Prêt" : "Non prêt"}
-              </span>
-            )}
-            <span className="role">
-              {isGameMaster ? (
-                <img src={GameMasterIcon} alt="Game Master" className="icon" />
-              ) : (
-                <img src={HeroIcon} alt="Hero" className="icon" />
-              )}
-            </span>
-          </div>
-          {heroes && getHeroesDetails(heroes)}
-        </div>,
-      );
-    });
-    return <div className="players-status">{statusElements}</div>;
-  }
-
-  function getHeroesDetails(heroes: HeroAsJson[]): React.ReactNode {
-    const HeroDetailsElements = [];
-    for (const hero of heroes) {
-      if (hero.category === undefined) {
-        HeroDetailsElements.push("ERREUR");
-      } else {
-        HeroDetailsElements.push(
-          <span key={hero.id} className="lobby-row">
-            <img
-              src={getHeroClassIconPath(hero.category)}
-              alt={HeroCategory[hero.category]}
-              className="icon"
-            />
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                flexDirection: "row",
-                marginLeft: "10px",
-                maxHeight: "200px",
-              }}
-            >
-              {getEquipmentAsCards(hero.equipment).map((card) => (
-                <CardComponent key={card.id} card={card} />
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                flexDirection: "row",
-                marginLeft: "10px",
-                maxHeight: "200px",
-              }}
-            >
-              {hero.spellElements
-                .map((spell) => getSpellEllementAsCard(spell))
-                .map((card) => (
-                  <CardComponent key={card.id} card={card} />
-                ))}
-            </div>
-            <button
-              style={{ marginLeft: "auto" }}
-              onClick={() => unselectCharacter(hero.id)}
-            >
-              déselectionner
-            </button>
-          </span>,
-        );
-      }
-    }
-    return HeroDetailsElements;
-  }
-
   if (!game) return <div>le game existe pu...</div>;
   const canStartGame = game.isLaunchable;
   const isGameMaster = role === PlayerRole.GAME_MASTER;
@@ -257,7 +153,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         Bienvenue, <strong>{playerName}</strong> (
         {role === PlayerRole.GAME_MASTER ? "Maître du Jeu" : "Héros"})
       </p>
-      {game && renderStatus(game)}
+      {game && (
+        <PlayerStatusComponent
+          game={game}
+          unselectCharacter={unselectCharacter}
+        />
+      )}
       <div className="players-list">
         <h2>
           Joueurs connectés ({game && players ? players.length : "0"}

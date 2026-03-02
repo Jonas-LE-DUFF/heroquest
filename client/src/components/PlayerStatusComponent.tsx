@@ -1,0 +1,118 @@
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { PlayerRole } from "../POO/enums/PlayerRole";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { getEquipmentAsCards } from "../shared/equipments";
+import { getPlayerHeroMap } from "../shared/lobbyUtils";
+import { getHeroClassIconPath } from "../shared/utils";
+import { CardComponent } from "./Card/CardComponent";
+import { getSpellEllementAsCard } from "./Card/cardUtils";
+
+import GameMasterIcon from "../../public/assets/images/icons/playerRole/IconGameMaster.jpeg";
+import HeroIcon from "../../public/assets/images/icons/playerRole/iconHero.jpeg";
+
+interface PlayerStatusProps {
+  game: GameAsJson;
+  unselectCharacter: (heroId: string) => void;
+}
+
+const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
+  game,
+  unselectCharacter,
+}) => {
+  function renderStatus(game: GameAsJson) {
+    const players = game?.players;
+    if (!players || players.length === 0) {
+      return <div>Aucun Joueur</div>;
+    }
+    const playerHeroMap = getPlayerHeroMap(game);
+    const statusElements: React.ReactNode[] = [];
+    playerHeroMap.forEach((heroes: HeroAsJson[], player: PlayerAsJson) => {
+      let characterName = player.name || "Joueur sans nom";
+
+      const isGameMaster = player.role === PlayerRole.GAME_MASTER;
+      statusElements.push(
+        <div key={player.id} className="player-item">
+          <div className="player-row">
+            <span>Nom : {characterName}</span>
+            {!isGameMaster && (
+              <span
+                className={`status ${player.isReady ? "ready" : "not-ready"}`}
+              >
+                {player.isReady ? "Prêt" : "Non prêt"}
+              </span>
+            )}
+            <span className="role">
+              {isGameMaster ? (
+                <img src={GameMasterIcon} alt="Game Master" className="icon" />
+              ) : (
+                <img src={HeroIcon} alt="Hero" className="icon" />
+              )}
+            </span>
+          </div>
+          {heroes && getHeroesDetails(heroes)}
+        </div>,
+      );
+    });
+    return <div className="players-status">{statusElements}</div>;
+  }
+
+  function getHeroesDetails(heroes: HeroAsJson[]): React.ReactNode {
+    const HeroDetailsElements = [];
+    for (const hero of heroes) {
+      if (hero.category === undefined) {
+        HeroDetailsElements.push("ERREUR");
+      } else {
+        HeroDetailsElements.push(
+          <span key={hero.id} className="lobby-row">
+            <img
+              src={getHeroClassIconPath(hero.category)}
+              alt={HeroCategory[hero.category]}
+              className="icon"
+            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flexDirection: "row",
+                marginLeft: "10px",
+                maxHeight: "200px",
+              }}
+            >
+              {getEquipmentAsCards(hero.equipment).map((card) => (
+                <CardComponent key={card.id} card={card} />
+              ))}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flexDirection: "row",
+                marginLeft: "10px",
+                maxHeight: "200px",
+              }}
+            >
+              {hero.spellElements
+                .map((spell) => getSpellEllementAsCard(spell))
+                .map((card) => (
+                  <CardComponent key={card.id} card={card} />
+                ))}
+            </div>
+            <button
+              style={{ marginLeft: "auto" }}
+              onClick={() => unselectCharacter(hero.id)}
+            >
+              déselectionner
+            </button>
+          </span>,
+        );
+      }
+    }
+    return HeroDetailsElements;
+  }
+
+  return renderStatus(game) || <div>Aucun Joueur</div>;
+};
+
+export default PlayerStatusComponent;
