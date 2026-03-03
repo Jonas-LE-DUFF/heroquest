@@ -11,6 +11,7 @@ import LobbyPage from "./view/LobbyPageView";
 import GamePage from "./view/GamePageView";
 import "./App.css";
 import ChooseCharacter from "./view/ChooseCharacterView";
+import GamePreparation from "./view/GamePreparationView";
 
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -38,6 +39,10 @@ function App() {
           <Route
             path="/charaterChoice"
             element={<ChooseCharacter socket={socket} />}
+          />
+          <Route
+            path="/gamePreparation"
+            element={<GamePreparation socket={socket} />}
           />
           <Route path="/game" element={<GamePage socket={socket} />} />
           <Route path="*" element={<Navigate to="/" replace />} />

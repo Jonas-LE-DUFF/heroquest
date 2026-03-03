@@ -141,8 +141,20 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     );
   };
 
+  const prepareGame = () => {
+    console.log("Preparing game...");
+    navigate("/gamePreparation", {
+      state: {
+        game,
+        playerName,
+        gameId,
+        role,
+      },
+    });
+  };
+
   if (!game) return <div>le game existe pu...</div>;
-  const canStartGame = game.isLaunchable;
+  const canStartGame = game.isLaunchable.success;
   const isGameMaster = role === PlayerRole.GAME_MASTER;
   const players = game.players;
 
@@ -167,10 +179,21 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       </div>
 
       <div className="lobby-actions">
-        {isGameMaster && canStartGame && (
-          <button onClick={startGame} className="start-button">
-            lancer la partie
-          </button>
+        {isGameMaster && (
+          <>
+            {canStartGame && (
+              <button onClick={startGame} className="start-button">
+                lancer la partie
+              </button>
+            )}
+            <button
+              onClick={() => {
+                prepareGame();
+              }}
+            >
+              Préparer la partie
+            </button>
+          </>
         )}
         <button onClick={leaveLobby} className="leave-button">
           Sortir du Lobby

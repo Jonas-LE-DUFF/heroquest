@@ -1,6 +1,7 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
+import { TileType } from "../../enums/TileType";
 import { BoardAsJson } from "../../interfaces/ClassAsJson/Board/BoardAsJson";
 import { Position } from "../Position/Position";
 import { Tile } from "../Tile";
@@ -162,6 +163,18 @@ class Board {
     const tile = this.getTileAtPosition(position);
     if (tile) {
       return tile.eraseTile();
+    }
+    return null;
+  }
+
+  getSpawnPointPosition(): Position | null {
+    for (let x = 0; x < this.BOARD_WIDTH; x++) {
+      for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+        const tile = this.Map[x]![y];
+        if (tile!.type === TileType.SPAWN_POINT) {
+          return new Position(x, y);
+        }
+      }
     }
     return null;
   }

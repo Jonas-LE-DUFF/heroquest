@@ -124,6 +124,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       const selectedId = selectedEntityId;
       if (selectedId) {
         const pos = getPositionByUnitId(selectedId, data.game.gameState.board);
+        console.log("position du selected id", pos);
+        console.log("selected id", selectedId);
         if (pos) {
           setSelectedPosition(pos);
           setSelectedEntityId(selectedId);
@@ -313,7 +315,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         gameId: game.id,
         position,
         selectedType,
-        playerId: socket.id,
       },
       (response: { success: boolean; error?: string }) => {
         if (response.success) {

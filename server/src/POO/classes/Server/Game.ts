@@ -6,6 +6,8 @@ import { Hero } from "../Units/Hero";
 import { Monster } from "../Units/Monster";
 import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
+import { Position } from "../Position/Position";
+import { Direction } from "../../enums/Direction";
 
 class Game {
   id: string;
@@ -114,8 +116,42 @@ class Game {
 
     this.currentTurnIndex = 0;
     this.isMonsterTurn = true;
-
+    this.placeHeroesAtStart();
     this.gameState.status = "playing";
+  }
+
+  private placeHeroesAtStart(): void {
+    const startingPosition: Position | null =
+      this.gameState.board.getSpawnPointPosition();
+    if (!startingPosition) {
+      throw new Error("No spawn point found on the board.");
+    }
+    const heroes = this.getHeroes();
+    const positions: Position[] = [
+      startingPosition,
+      startingPosition.afterMove(Direction.RIGHT),
+      startingPosition.afterMove(Direction.DOWN),
+      startingPosition.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
+    ];
+    for (let i = 0; i < heroes.length; i++) {
+      const hero = heroes[i];
+      const position = positions[i];
+      if (
+        !position ||
+        !position.isValid(
+          this.gameState.board.BOARD_WIDTH,
+          this.gameState.board.BOARD_HEIGHT,
+        )
+      ) {
+        console.error("Invalid starting position for hero:", position);
+        throw new Error("Invalid starting position for hero.");
+      }
+      if (!hero) {
+        console.error(`Hero not found for category: ${this.playOrder[i]}`);
+        throw new Error(`Hero not found for category: ${this.playOrder[i]}`);
+      }
+      this.gameState.board.placeUnitAt(hero, position);
+    }
   }
 
   /**
@@ -169,6 +205,12 @@ class Game {
       }
     }
     return null;
+  }
+
+  getHeroes(): Hero[] {
+    return this.gameState.Units.filter(
+      (unit) => unit instanceof Hero,
+    ) as Hero[];
   }
 
   getGameState(): GameState {

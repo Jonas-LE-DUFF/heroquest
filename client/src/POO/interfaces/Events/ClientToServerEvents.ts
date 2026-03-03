@@ -100,7 +100,6 @@ interface ClientToServerEvents {
       gameId: string;
       position: PositionAsJson;
       selectedType: TileType | Direction | MonsterCategory;
-      playerId: string;
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;

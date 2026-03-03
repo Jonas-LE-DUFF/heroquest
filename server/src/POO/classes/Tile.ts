@@ -22,7 +22,12 @@ class Tile {
   }
 
   isOccupied(): boolean {
-    return this.type !== TileType.FLOOR || this.unitId !== null;
+    return (
+      (this.type !== TileType.FLOOR &&
+        this.type !== TileType.SPAWN_POINT &&
+        this.type !== TileType.TRAP) ||
+      this.unitId !== null
+    );
   }
 
   toJson(): TileAsJson {

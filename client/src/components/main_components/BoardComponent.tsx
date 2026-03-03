@@ -15,6 +15,8 @@ import { TileAsJson } from "../../POO/interfaces/ClassAsJson/Board/TileAsJson";
 import { Direction } from "../../POO/enums/Direction";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 import { TileType } from "../../POO/enums/TileType";
+import StairsImage from "/assets/images/icons/Tiles/stairs.png";
+import { JSX } from "react/jsx-runtime";
 
 interface BoardProps {
   game: GameAsJson;
@@ -83,18 +85,36 @@ const Board = ({
       return null;
     }
     const unit = game.gameState.Units.find((u) => u.id === tile.unitId);
+    const elements: JSX.Element[] = [];
     if (!unit) {
       if (tile.type === TileType.FLOOR) return `${x},${y}`;
-      return TileType[tile.type];
+    }
+    if (tile.type === TileType.SPAWN_POINT) {
+      const upperTile = game.gameState.board.tiles[x - 1]?.[y];
+      const leftTile = game.gameState.board.tiles[x]?.[y - 1];
+      if (
+        !(
+          upperTile?.type === TileType.SPAWN_POINT ||
+          leftTile?.type === TileType.SPAWN_POINT
+        )
+      ) {
+        elements.push(
+          <img className="stairsImage" src={StairsImage} alt="Stairs" />,
+        );
+      }
     }
 
-    return (
-      <img
-        className="boardImg"
-        src={getIconClassPath(unit)}
-        alt={getUnitClassName(unit)}
-      />
-    );
+    if (unit) {
+      elements.push(
+        <img
+          className="boardImg"
+          src={getIconClassPath(unit)}
+          alt={getUnitClassName(unit)}
+        />,
+      );
+    }
+
+    return <div>{elements}</div>;
   };
 
   return (

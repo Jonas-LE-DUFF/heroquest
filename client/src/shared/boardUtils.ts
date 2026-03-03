@@ -20,7 +20,7 @@ function getTileByUnitId(
 ): TileAsJson | null {
   for (let row of board.tiles) {
     for (let tile of row) {
-      if (tile.unit?.id === unitId) {
+      if (tile.unitId === unitId) {
         return tile;
       }
     }
@@ -35,7 +35,7 @@ function getPositionByUnitId(
   for (let x = 0; x < board.tiles.length; x++) {
     for (let y = 0; y < board.tiles[x].length; y++) {
       const tile = board.tiles[x][y];
-      if (tile.unit?.id === unitId) {
+      if (tile.unitId === unitId) {
         return { x, y };
       }
     }
@@ -46,8 +46,8 @@ function getPositionByUnitId(
 function removeUnitFromBoardById(unitId: string, board: BoardAsJson): void {
   for (let row of board.tiles) {
     for (let tile of row) {
-      if (tile.unit?.id === unitId) {
-        tile.unit = null;
+      if (tile.unitId === unitId) {
+        tile.unitId = null;
         return;
       }
     }
