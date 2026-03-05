@@ -21,7 +21,7 @@ import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { Direction } from "../POO/enums/Direction";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import { getHeroByPlayerId, getPlayerIdToPlay } from "../shared/serverUtils";
+import { getHeroesByPlayerId, getPlayerIdToPlay } from "../shared/serverUtils";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 
 interface GameControlsProps {
@@ -35,6 +35,7 @@ interface GameControlsProps {
   setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
+  hero: HeroAsJson | null;
 }
 
 const GameControls = ({
@@ -46,6 +47,7 @@ const GameControls = ({
   setTargetMode,
   setSelectedWeapon,
   selectedWeapon,
+  hero,
 }: GameControlsProps) => {
   const location = useLocation();
   const gameId = location.state.gameId;
@@ -62,8 +64,6 @@ const GameControls = ({
   isElementsShown.set("masterControls", false);
 
   const isPlayerTurn = getPlayerIdToPlay(game) === socket.id;
-
-  const hero = getHeroByPlayerId(socket.id, game);
 
   useEffect(() => {
     socket.on("player-moved", (data: any) => {

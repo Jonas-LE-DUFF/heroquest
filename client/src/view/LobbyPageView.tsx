@@ -21,21 +21,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   useEffect(() => {
     if (!game || !playerName) {
-      console.log("trucs qui marchent pas", playerName, game);
-
-      console.log("Données manquantes, redirection...");
+      console.log(
+        `Données manquantes : ${playerName}, ${game}, redirection...`,
+      );
       navigate("/");
       return;
     }
-
-    console.log(
-      "Données OK - Player:",
-      playerName,
-      "Game:",
-      gameId,
-      "Role:",
-      role,
-    );
 
     const handleGameStart = (data: { game: GameAsJson }) => {
       const game = data.game;
@@ -46,7 +37,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     };
 
     const handlegameUpdate = (data: { game: GameAsJson }) => {
-      console.log("update of game state received");
       setgame(data.game);
     };
 
@@ -61,8 +51,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   }, [navigate, playerName, socket, game, gameId, role]);
 
   const startGame = () => {
-    console.log("Tentative de lancement de la partie...");
-
     socket.emit(
       "start-game",
       { gameId },
@@ -82,15 +70,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         }
       },
     );
-
-    socket.once("error", (error: any) => {
-      console.log("Erreur:", error);
-      alert(`Erreur: ${error}`);
-    });
   };
 
   const leaveLobby = () => {
-    console.log("Leaving lobby");
     socket.emit(
       "leave-lobby",
       { gameId },
@@ -142,7 +124,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   };
 
   const prepareGame = () => {
-    console.log("Preparing game...");
     navigate("/gamePreparation", {
       state: {
         game,

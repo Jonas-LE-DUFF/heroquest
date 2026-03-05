@@ -28,6 +28,7 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Stats } from "../POO/classes/Units/Stats";
 import { getSpellsForElements } from "../services/SpellService";
 import { SpellElement } from "../POO/enums/SpellElement";
+import { TileType } from "../POO/enums/TileType";
 
 // ── Helper functions ──
 
@@ -88,6 +89,9 @@ function setupGameWithHeroes(heroCount: number = 1): {
   heroes: Hero[];
 } {
   const game = new Game("test-game");
+  game.gameState.board.getTileAtPosition(new Position(0, 0))!.type =
+    TileType.SPAWN_POINT;
+
   const gm = createPlayer("GameMaster", PlayerRole.GAME_MASTER);
   game.addPlayer(gm);
 

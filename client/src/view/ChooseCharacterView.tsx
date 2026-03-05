@@ -17,7 +17,7 @@ import {
 } from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { getHeroByPlayerId, getHeroes } from "../shared/serverUtils";
+import { getHeroesByPlayerId, getHeroes } from "../shared/serverUtils";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { HeroCreationWish } from "../POO/interfaces/ClassAsJson/FromClient/HeroCreationWish";
 import {
@@ -39,7 +39,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const { playerName, gameId } = location.state || {};
 
-  const hero = getHeroByPlayerId(socket.id, game);
+  const hero = getHeroesByPlayerId(socket.id, game)?.[0] || null;
 
   const [heroCreation, setHeroCreation] = useState<HeroCreationWish>({
     gameId: game.id,

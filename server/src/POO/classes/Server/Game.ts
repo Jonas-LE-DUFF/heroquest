@@ -241,15 +241,14 @@ class Game {
     this.playOrder = [];
     for (const player of this.players.values()) {
       if (player.role !== PlayerRole.GAME_MASTER) {
-        const heroCategory: HeroCategory = this.gameState.Units.find(
+        const heroCategories: HeroCategory[] = this.gameState.Units.filter(
           (unit) =>
             unit instanceof Hero && unit.controlledByPlayerId === player.id,
-        )?.category as HeroCategory;
-        if (
-          heroCategory !== undefined &&
-          !this.playOrder.includes(heroCategory)
-        ) {
-          this.playOrder.push(heroCategory);
+        )?.map((hero) => hero.category) as HeroCategory[];
+        for (const heroCategory of heroCategories) {
+          if (!this.playOrder.includes(heroCategory)) {
+            this.playOrder.push(heroCategory);
+          }
         }
       }
     }

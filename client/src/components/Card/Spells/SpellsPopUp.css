@@ -1,7 +1,7 @@
 .spell-view {
   position: absolute;
   top: 10%;
-  left: 10%;
+  left: 20%;
   width: 60%;
   height: 80%;
   z-index: 200;
@@ -12,15 +12,14 @@
   flex-wrap: wrap;
   justify-content: center;
   flex-direction: row;
-  padding-left: 10%;
-  padding-right: 10%;
   align-content: center;
 }
 
-.spell-school {
+.spell-card {
   width: 30%;
   height: fit-content;
-  margin: 10px;
+  max-width: 90%;
+  max-height: 90%;
   display: flex;
   align-items: center;
   justify-content: center;

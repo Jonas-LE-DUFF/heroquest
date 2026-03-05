@@ -15,7 +15,7 @@ import type { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJso
 import type { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/TileAsJson";
 import {
   getHeroes,
-  getHeroByPlayerId,
+  getHeroesByPlayerId,
   getPlayerByHero,
   getPlayerByHeroCategory,
   getPlayerBySocketId,
@@ -51,7 +51,14 @@ function createHero(overrides?: Partial<HeroAsJson>): HeroAsJson {
     name: "Barbarian",
     category: HeroCategory.Barbarian,
     stats: createStats(),
-    equipment: { gold: 0, selectedWeaponIndex: 0, weapons: [], armors: [] },
+    equipment: {
+      gold: 0,
+      selectedWeaponIndex: 0,
+      weapons: [],
+      armors: [],
+      potions: [],
+      tools: [],
+    },
     spells: [],
     usedSpells: [],
     spellElements: [],
@@ -87,7 +94,7 @@ function createEmptyBoard(
   for (let x = 0; x < width; x++) {
     const row: TileAsJson[] = [];
     for (let y = 0; y < height; y++) {
-      row.push({ type: TileType.FLOOR, unit: null });
+      row.push({ type: TileType.FLOOR, unitId: null });
     }
     tiles.push(row);
   }
@@ -114,6 +121,14 @@ function createEmptyBoard(
   };
 }
 
+function addSpawnPoint(board: BoardAsJson): BoardAsJson {
+  board.tiles[0]![0]!.type = TileType.SPAWN_POINT;
+  board.tiles[0]![1]!.type = TileType.SPAWN_POINT;
+  board.tiles[1]![0]!.type = TileType.SPAWN_POINT;
+  board.tiles[1]![1]!.type = TileType.SPAWN_POINT;
+  return board;
+}
+
 function createGame(overrides?: Partial<GameAsJson>): GameAsJson {
   return {
     id: "game-1",
@@ -124,7 +139,7 @@ function createGame(overrides?: Partial<GameAsJson>): GameAsJson {
     currentTurnIndex: 0,
     gameState: {
       Units: [],
-      board: createEmptyBoard(),
+      board: addSpawnPoint(createEmptyBoard()),
       status: "lobby",
     },
     isLaunchable: { success: false, reasons: [] },
@@ -201,10 +216,10 @@ function createFullPartyGame(): GameAsJson {
 
   const board = createEmptyBoard();
   // Place heroes on the board
-  board.tiles[0]![0]!.unit = hero1;
-  board.tiles[1]![0]!.unit = hero2;
-  board.tiles[2]![0]!.unit = hero3;
-  board.tiles[3]![0]!.unit = hero4;
+  board.tiles[0]![0]!.unitId = hero1.id;
+  board.tiles[1]![0]!.unitId = hero2.id;
+  board.tiles[2]![0]!.unitId = hero3.id;
+  board.tiles[3]![0]!.unitId = hero4.id;
 
   return createGame({
     id: "full-party-game",
@@ -278,8 +293,7 @@ describe("launchFullPartyGame", () => {
     for (const hero of heroUnits) {
       const tile = getTileByUnitId(hero.id, game.gameState.board);
       expect(tile).not.toBeNull();
-      expect(tile!.unit).not.toBeNull();
-      expect(tile!.unit!.id).toBe(hero.id);
+      expect(tile!.unitId).toBe(hero.id);
     }
   });
 
@@ -344,7 +358,7 @@ describe("combatValidationTest", () => {
       stats: createStats({ health: 3, maxHealth: 3 }),
     });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[5]![5]!.unit = monster;
+    game.gameState.board.tiles[5]![5]!.unitId = monster.id;
 
     // Verify both attacker and target are on the board
     const heroTile = getTileByUnitId("hero-barbarian", game.gameState.board);
@@ -432,11 +446,7 @@ describe("spellCastingValidationTest", () => {
 
   it("multiple spells from different elements should work", () => {
     const hero = createHero({
-      spellElements: [
-        SpellElement.Fire,
-        SpellElement.Earth,
-        SpellElement.Air,
-      ],
+      spellElements: [SpellElement.Fire, SpellElement.Earth, SpellElement.Air],
       spells: [
         { id: "fire-1", name: "Fireball", element: SpellElement.Fire },
         { id: "earth-1", name: "Heal", element: SpellElement.Earth },
@@ -558,17 +568,17 @@ describe("moveValidationTest", () => {
   it("moving a unit should update the board tiles", () => {
     const game = createFullPartyGame();
     const board = game.gameState.board;
-    const hero = board.tiles[0]![0]!.unit!;
+    const heroId = board.tiles[0]![0]!.unitId!;
 
     // Simulate moving hero from (0,0) to (0,1) — move RIGHT
-    board.tiles[0]![1]!.unit = hero;
-    board.tiles[0]![0]!.unit = null;
+    board.tiles[0]![1]!.unitId = heroId;
+    board.tiles[0]![0]!.unitId = null;
 
-    const newPos = getPositionByUnitId(hero.id, board);
+    const newPos = getPositionByUnitId(heroId, board);
     expect(newPos).toEqual({ x: 0, y: 1 });
 
     // Old position should be empty
-    expect(board.tiles[0]![0]!.unit).toBeNull();
+    expect(board.tiles[0]![0]!.unitId).toBeNull();
   });
 
   it("should not move to a tile with a unit already on it", () => {
@@ -577,10 +587,10 @@ describe("moveValidationTest", () => {
 
     // (0,0) has hero-barbarian, (1,0) has hero-dwarf
     const targetTile = getTileByPosition({ x: 1, y: 0 }, board);
-    expect(targetTile?.unit).not.toBeNull();
+    expect(targetTile?.unitId).not.toBeNull();
 
     // Validate: tile is occupied
-    const isOccupied = targetTile?.unit !== null;
+    const isOccupied = targetTile?.unitId !== null;
     expect(isOccupied).toBe(true);
   });
 
@@ -611,7 +621,7 @@ describe("unitDefeatValidationTest", () => {
       stats: createStats({ health: 0, maxHealth: 3 }),
     });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[5]![5]!.unit = monster;
+    game.gameState.board.tiles[5]![5]!.unitId = monster.id;
 
     // Verify monster is on the board
     expect(
@@ -654,7 +664,7 @@ describe("unitDefeatValidationTest", () => {
       stats: createStats({ health: 1, maxHealth: 3 }),
     });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[7]![7]!.unit = monster;
+    game.gameState.board.tiles[7]![7]!.unitId = monster.id;
 
     // Simulate lethal damage
     monster.stats.health = 0;
@@ -666,7 +676,7 @@ describe("unitDefeatValidationTest", () => {
     );
 
     // Tile should be empty
-    expect(game.gameState.board.tiles[7]![7]!.unit).toBeNull();
+    expect(game.gameState.board.tiles[7]![7]!.unitId).toBeNull();
 
     // Unit should not be in Units array
     expect(game.gameState.Units.find((u) => u.id === "target")).toBeUndefined();
@@ -678,7 +688,7 @@ describe("unitDefeatValidationTest", () => {
 
     const monster = createMonster({ id: "temp-monster" });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[8]![8]!.unit = monster;
+    game.gameState.board.tiles[8]![8]!.unitId = monster.id;
 
     // Remove monster
     removeUnitFromBoardById("temp-monster", game.gameState.board);
@@ -698,14 +708,14 @@ describe("unitDefeatValidationTest", () => {
     // Set a tile to TRAP and place a monster
     board.tiles[6]![6]!.type = TileType.TRAP;
     const monster = createMonster({ id: "trap-monster" });
-    board.tiles[6]![6]!.unit = monster;
+    board.tiles[6]![6]!.unitId = monster.id;
 
     // Remove monster
     removeUnitFromBoardById("trap-monster", board);
 
     // Tile should still be TRAP type
     expect(board.tiles[6]![6]!.type).toBe(TileType.TRAP);
-    expect(board.tiles[6]![6]!.unit).toBeNull();
+    expect(board.tiles[6]![6]!.unitId).toBeNull();
   });
 });
 
@@ -722,17 +732,17 @@ describe("serverUtils validation", () => {
     expect(heroes[0]!.id).toBe(hero.id);
   });
 
-  it("getHeroByPlayerId should find the correct hero", () => {
+  it("getHeroesByPlayerId should find the correct hero", () => {
     const game = createFullPartyGame();
-    const hero = getHeroByPlayerId("p1", game);
-    expect(hero).not.toBeNull();
-    expect(hero!.controlledByPlayerId).toBe("p1");
+    const heroes = getHeroesByPlayerId("p1", game);
+    expect(heroes).toHaveLength(1);
+    expect(heroes![0]!.controlledByPlayerId).toBe("p1");
   });
 
-  it("getHeroByPlayerId should return null for unknown player", () => {
+  it("getHeroesByPlayerId should return null for unknown player", () => {
     const game = createFullPartyGame();
-    const hero = getHeroByPlayerId("unknown", game);
-    expect(hero).toBeNull();
+    const heroes = getHeroesByPlayerId("unknown", game);
+    expect(heroes).toBeNull();
   });
 
   it("getPlayerByHero should find the controlling player", () => {
@@ -791,7 +801,7 @@ describe("boardUtils validation", () => {
   it("getPositionByUnitId should find unit position", () => {
     const board = createEmptyBoard();
     const hero = createHero({ id: "find-me" });
-    board.tiles[3]![7]!.unit = hero;
+    board.tiles[3]![7]!.unitId = hero.id;
 
     const pos = getPositionByUnitId("find-me", board);
     expect(pos).toEqual({ x: 3, y: 7 });

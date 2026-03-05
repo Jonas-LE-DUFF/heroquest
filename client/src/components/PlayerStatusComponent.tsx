@@ -9,8 +9,8 @@ import { getHeroClassIconPath } from "../shared/utils";
 import { CardComponent } from "./Card/CardComponent";
 import { getSpellEllementAsCard } from "./Card/cardUtils";
 
-import GameMasterIcon from "../../public/assets/images/icons/playerRole/IconGameMaster.jpeg";
-import HeroIcon from "../../public/assets/images/icons/playerRole/iconHero.jpeg";
+import GameMasterIcon from "/assets/images/icons/playerRole/IconGameMaster.jpeg";
+import HeroIcon from "/assets/images/icons/playerRole/iconHero.jpeg";
 
 interface PlayerStatusProps {
   game: GameAsJson;

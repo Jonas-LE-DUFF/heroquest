@@ -39,6 +39,7 @@ import { Stats } from "../POO/classes/Units/Stats";
 import { dealDamage } from "../services/CombatService";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
 import { MonsterType } from "../POO/enums/MonsterType";
+import { TileType } from "../POO/enums/TileType";
 
 // ── Helper functions ──
 
@@ -107,6 +108,8 @@ function createTestMonster(
 
 function setupGameWithPlayers(): Game {
   const game = new Game("test-game");
+  game.gameState.board.getTileAtPosition(new Position(0, 0))!.type =
+    TileType.SPAWN_POINT;
   const gm = new Player("GameMaster", PlayerRole.GAME_MASTER);
   const p1 = new Player("Player1", PlayerRole.HERO);
   const p2 = new Player("Player2", PlayerRole.HERO);

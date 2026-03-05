@@ -12,7 +12,6 @@ import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
 import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import {
   getPositionByUnitId,
@@ -23,7 +22,7 @@ import {
 } from "../shared/boardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import {
-  getHeroByPlayerId,
+  getHeroesByPlayerId,
   getPlayerByHero,
   getPlayerBySocketId,
   getPlayerIdToPlay,
@@ -34,6 +33,7 @@ import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson"
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { Direction } from "../POO/enums/Direction";
+import { PlayerService } from "../POO/PlayerService";
 
 interface GamePageProps {
   socket: any;
@@ -53,20 +53,23 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [game, setGame] = useState<GameAsJson>(location.state.game);
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
   const user = game.players.find((p) => p.id === socket.id);
-  const hero = getHeroByPlayerId(socket.id, game);
+  const [hero, setHero] = useState<HeroAsJson | null>(
+    getHeroesByPlayerId(socket.id, game)?.[0] || null,
+  );
   if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
-    throw new Error("Hero not found for current player in game state");
+    return <div>Couldn't find a hero you control</div>;
   }
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
-  const weapons = hero?.equipment.weapons.map((w) => w.id) ?? [];
-
-  const [selectedWeapon, setSelectedWeapon] = useState<string | null>(
-    weapons[hero?.equipment.selectedWeaponIndex ?? 0] ?? null,
-  );
 
   const [targetMode, setTargetMode] = useState<boolean>(false);
+
+  let selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
+
+  useEffect(() => {
+    selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
+  }, [hero]);
 
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
@@ -79,7 +82,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setGame((prev) => {
         if (!prev) return prev;
         const unit = prev.gameState.Units.find((u) => u.id === data.entityId);
-        const tileOfUnit = getTileByUnitId(data.entityId, prev.gameState.board);
         if (!unit) return prev;
         unit.stats = data.newStats;
 
@@ -266,7 +268,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           gameId: game.id,
           attackerId: socket.id,
           targetId: target.id,
-          weaponId: selectedWeapon,
+          weaponId: PlayerService.getHeroSelectedWeapon(hero) ?? undefined,
         },
         (response: { success: boolean; error?: string }) => {
           if (response.success) {
@@ -358,6 +360,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             setStatsOpen={setStatsVisible}
             setSelectedUnit={setSelectedUnit}
             openSpellPage={() => setSpellPageVisible(true)}
+            setCurrentlyPlayedHero={setHero}
+            currentlyPlayedHero={hero}
           />
         </Grid>
         <Grid className="LeftMenu">
@@ -394,8 +398,23 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }
             setTargetMode={setTargetMode}
-            setSelectedWeapon={setSelectedWeapon}
+            setSelectedWeapon={(weapon) => {
+              setHero((prev) => {
+                return {
+                  ...prev,
+                  equipment: {
+                    ...prev?.equipment,
+                    selectedWeaponIndex:
+                      prev?.equipment.weapons.findIndex(
+                        (w) => w.id === weapon,
+                      ) ?? 0,
+                  },
+                } as HeroAsJson;
+              });
+              setTargetMode(true);
+            }}
             selectedWeapon={selectedWeapon}
+            hero={hero}
           />
         </Grid>
         <Grid className="Footer">
