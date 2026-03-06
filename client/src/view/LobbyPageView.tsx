@@ -94,7 +94,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       return;
     }
 
-    navigate("/charaterChoice", {
+    navigate("/characterChoice", {
       state: {
         game,
         playerName,
@@ -153,10 +153,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         />
       )}
       <div className="players-list">
-        <h2>
-          Joueurs connectés ({game && players ? players.length : "0"}
-          /5)
-        </h2>
+        <h2>Joueurs connectés ({game && players ? players.length : "0"}/5)</h2>
       </div>
 
       <div className="lobby-actions">
@@ -184,15 +181,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
             Choisir son personnage
           </button>
         )}
-      </div>
-
-      <div className="game-rules">
-        <h3>Règles du jeu :</h3>
-        <ul>
-          <li>Les héros coopèrent pour accomplir des quêtes</li>
-          <li>Le Maître du Jeu contrôle les monstres et les pièges</li>
-          <li>Il ne peut y avoir qu'un seul Maitre du jeu</li>
-        </ul>
       </div>
     </div>
   );

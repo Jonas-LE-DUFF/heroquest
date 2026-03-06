@@ -37,7 +37,7 @@ interface ClientToServerEvents {
       error?: string;
       gameState?: GameAsJson;
     }) => void,
-  ) => void; // Updated choose-character event definition
+  ) => void;
 
   "unselect-character": (
     data: { gameId: string; heroId: string },

@@ -37,7 +37,7 @@ function App() {
           <Route path="/" element={<LoginPage socket={socket} />} />
           <Route path="/lobby" element={<LobbyPage socket={socket} />} />
           <Route
-            path="/charaterChoice"
+            path="/characterChoice"
             element={<ChooseCharacter socket={socket} />}
           />
           <Route

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
@@ -21,6 +22,20 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
   game,
   unselectCharacter,
 }) => {
+  const navigate = useNavigate();
+
+  function modifyHero(hero: HeroAsJson) {
+    console.log("Modifying hero:", hero);
+    navigate("/characterChoice", {
+      state: {
+        game,
+        playerName: game.players.find((p) => p.id === hero.controlledByPlayerId)
+          ?.name,
+        hero,
+      },
+    });
+  }
+
   function renderStatus(game: GameAsJson) {
     const players = game?.players;
     if (!players || players.length === 0) {
@@ -51,14 +66,16 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
               )}
             </span>
           </div>
-          {heroes && getHeroesDetails(heroes)}
+          {heroes && getHeroesDetails(heroes, modifyHero)}
         </div>,
       );
     });
     return <div className="players-status">{statusElements}</div>;
   }
-
-  function getHeroesDetails(heroes: HeroAsJson[]): React.ReactNode {
+  function getHeroesDetails(
+    heroes: HeroAsJson[],
+    modifyHero: (hero: HeroAsJson) => void,
+  ): React.ReactNode {
     const HeroDetailsElements = [];
     for (const hero of heroes) {
       if (hero.category === undefined) {
@@ -99,12 +116,19 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
                   <CardComponent key={card.id} card={card} />
                 ))}
             </div>
-            <button
-              style={{ marginLeft: "auto" }}
-              onClick={() => unselectCharacter(hero.id)}
+            <div
+              style={{
+                marginLeft: "auto",
+                display: "flex",
+                gap: "10px",
+                flexDirection: "column",
+              }}
             >
-              déselectionner
-            </button>
+              <button onClick={() => modifyHero(hero)}>modifier</button>
+              <button onClick={() => unselectCharacter(hero.id)}>
+                déselectionner
+              </button>
+            </div>
           </span>,
         );
       }
