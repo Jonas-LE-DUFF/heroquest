@@ -1,4 +1,5 @@
 import treasure from "../../../shared/game_cards/treasure.json";
+import { Hero } from "../Units/Hero";
 
 import { TreasureCard } from "./TreasureCard";
 
@@ -27,5 +28,26 @@ class CardDeck {
         );
       }
     });
+    this.cards = shuffle(this.cards);
+  }
+
+  pickCard(cardPicker: Hero): TreasureCard {
+    const card = this.cards.pop() as TreasureCard;
+    const result = card.applyEffect(this.gameId, cardPicker);
+    if (!result.success) {
+      console.error(`Failed to apply card effect: ${result.error}`);
+      throw new Error(`Failed to apply card effect: ${result.error}`);
+    }
+    return card;
   }
 }
+
+function shuffle<T>(array: T[]): T[] {
+  const shuffledArray = [...array];
+
+  shuffledArray.sort(() => Math.random() - 0.5);
+
+  return shuffledArray;
+}
+
+export { CardDeck };
