@@ -196,21 +196,23 @@ const GameControls = ({
     if (role === PlayerRole.HERO)
       return (
         <div className="movement-controls">
-          <button onClick={() => movePlayer(Direction.UP)}>⬆️ Haut</button>
-          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️ Bas</button>
-          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️ Gauche</button>
-          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️ Droite</button>
+          <div></div>
+          <button onClick={() => movePlayer(Direction.UP)}>⬆️</button>
+          <div></div>
+          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️</button>
+          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️</button>
+          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️</button>
         </div>
       );
     if (role === PlayerRole.GAME_MASTER)
       return (
         <div className="movement-controls">
-          <button onClick={() => moveMonster(Direction.UP)}>⬆️ Haut</button>
-          <button onClick={() => moveMonster(Direction.DOWN)}>⬇️ Bas</button>
-          <button onClick={() => moveMonster(Direction.LEFT)}>⬅️ Gauche</button>
-          <button onClick={() => moveMonster(Direction.RIGHT)}>
-            ➡️ Droite
-          </button>
+          <div></div>
+          <button onClick={() => moveMonster(Direction.UP)}>⬆️</button>
+          <div></div>
+          <button onClick={() => moveMonster(Direction.LEFT)}>⬅️</button>
+          <button onClick={() => moveMonster(Direction.DOWN)}>⬇️</button>
+          <button onClick={() => moveMonster(Direction.RIGHT)}>➡️</button>
         </div>
       );
   };
