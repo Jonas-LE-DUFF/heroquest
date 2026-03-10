@@ -7,7 +7,6 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { Socket } from "socket.io-client";
 import { getIconClassPath, getUnitClassName } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
@@ -15,16 +14,13 @@ import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson"
 import { TileAsJson } from "../../POO/interfaces/ClassAsJson/Board/TileAsJson";
 import { Direction } from "../../POO/enums/Direction";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
-import { useLocation } from "react-router-dom";
-import { getPlayerIdToPlay } from "../../shared/serverUtils";
 import { TileType } from "../../POO/enums/TileType";
-import { PlayerRole } from "../../POO/enums/PlayerRole";
+import StairsImage from "/assets/images/icons/Tiles/stairs.png";
+import { JSX } from "react/jsx-runtime";
 
 interface BoardProps {
-  socket: Socket;
   game: GameAsJson;
   onTileClick: (
-    gameId: string,
     position: PositionAsJson,
     selectedType: TileType | Direction | MonsterCategory | null,
   ) => void;
@@ -34,15 +30,12 @@ interface BoardProps {
 }
 
 const Board = ({
-  socket,
   game,
   onTileClick,
   selectedPosition,
   selectedEntityId,
   selectedType,
 }: BoardProps) => {
-  const location = useLocation();
-
   const handleTileClick = (
     position: PositionAsJson,
     selectedType: TileType | Direction | MonsterCategory | null,
@@ -52,7 +45,7 @@ const Board = ({
       return;
     }
 
-    onTileClick(game.id, position, selectedType);
+    onTileClick(position, selectedType);
   };
 
   const renderGrid = () => {
@@ -91,19 +84,37 @@ const Board = ({
       console.error("Tile is undefined at position:", x, y);
       return null;
     }
-    const unit = tile.unit;
+    const unit = game.gameState.Units.find((u) => u.id === tile.unitId);
+    const elements: JSX.Element[] = [];
     if (!unit) {
       if (tile.type === TileType.FLOOR) return `${x},${y}`;
-      return TileType[tile.type];
+    }
+    if (tile.type === TileType.SPAWN_POINT) {
+      const upperTile = game.gameState.board.tiles[x - 1]?.[y];
+      const leftTile = game.gameState.board.tiles[x]?.[y - 1];
+      if (
+        !(
+          upperTile?.type === TileType.SPAWN_POINT ||
+          leftTile?.type === TileType.SPAWN_POINT
+        )
+      ) {
+        elements.push(
+          <img className="stairsImage" src={StairsImage} alt="Stairs" />,
+        );
+      }
     }
 
-    return (
-      <img
-        className="boardImg"
-        src={getIconClassPath(unit)}
-        alt={getUnitClassName(unit)}
-      />
-    );
+    if (unit) {
+      elements.push(
+        <img
+          className="boardImg"
+          src={getIconClassPath(unit)}
+          alt={getUnitClassName(unit)}
+        />,
+      );
+    }
+
+    return <div>{elements}</div>;
   };
 
   return (

@@ -1,8 +1,23 @@
 .boardImg{
     width: auto;
     height: auto;
-    max-width: 35px;
-    max-height: 35px;
-    align-self: center;
-    margin-right: 0;
+    max-width: 38px;
+    max-height: 38px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.stairsImage{
+    width: 78px;
+    height: 78px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-25%, -25%);
+    z-index: 1;
+    pointer-events: none;
 }

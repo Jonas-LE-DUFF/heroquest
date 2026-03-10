@@ -156,7 +156,6 @@ export function registerLobbyHandlers(socket: Socket) {
       }
 
       const heroFactory = new HeroFactory();
-      const position = new Position(0, 0); // Default position,  TODO : change value
       const hero: Hero | null = heroFactory.createHero(
         gameId,
         heroCreationWish,
@@ -181,8 +180,15 @@ export function registerLobbyHandlers(socket: Socket) {
         );
       }
 
+      const modifiedHero = heroCreationWish.modifiedHeroId
+        ? game.gameState.getHeroById(heroCreationWish.modifiedHeroId!)
+        : null;
+
       // Check if the hero class is already selected
-      if (game.gameState.isHeroCategoryTaken(hero.category)) {
+      if (
+        game.gameState.isHeroCategoryTaken(hero.category) &&
+        modifiedHero?.category !== hero.category
+      ) {
         return callback(
           errorResponse("Class already selected by another player."),
         );
@@ -190,14 +196,31 @@ export function registerLobbyHandlers(socket: Socket) {
 
       // Validate spells
       const spellsTaken = game.gameState.getSpellsTaken(hero.spells);
-      if (spellsTaken.length > 0) {
+      if (
+        spellsTaken.length > 0 &&
+        !spellsTaken.every((spell) => modifiedHero?.spells.includes(spell))
+      ) {
         return callback(
           errorResponse(
             `The spells ${spellsTaken.map((spell) => spell.name).join(", ")} are already selected by another player.`,
           ),
         );
       }
-      game?.gameState.addUnit(hero, position);
+
+      if (heroCreationWish.modifiedHeroId) {
+        const existingHero = game.gameState.getHeroById(
+          heroCreationWish.modifiedHeroId,
+        );
+        if (existingHero) {
+          game.gameState.removeUnit(existingHero);
+        } else {
+          return callback(
+            errorResponse("Existing hero not found for modification."),
+          );
+        }
+      }
+
+      game?.gameState.addUnit(hero);
 
       player.isReady = true;
       const io = ServerHeroQuest.getServerInstance().getIo();
@@ -232,9 +255,9 @@ export function registerLobbyHandlers(socket: Socket) {
         const heroesControlled = game.gameState.getHeroesControlledByPlayer(
           socket.id,
         );
+        const heroToRemove = game.gameState.getHeroById(heroId);
 
-        const heroToRemove = heroesControlled.find((h) => h.id === heroId);
-        if (!heroToRemove) {
+        if (!heroToRemove || !heroesControlled.includes(heroToRemove)) {
           return callback(errorResponse("Hero not found."));
         }
         game.gameState.removeUnit(heroToRemove);

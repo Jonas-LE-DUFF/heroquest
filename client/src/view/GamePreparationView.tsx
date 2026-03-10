@@ -1,0 +1,76 @@
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Board from "../components/main_components/BoardComponent";
+import { TileType } from "../POO/enums/TileType";
+import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
+import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+
+const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const playerName = location.state.playerName;
+  const [game, setGame] = useState<GameAsJson>(location.state.game);
+
+  useEffect(() => {
+    if (!game || !playerName) {
+      console.log("Données manquantes, redirection...");
+      navigate("/");
+      return;
+    }
+  });
+
+  const placeStairs = (pos: PositionAsJson) => {
+    socket.emit(
+      "place-element",
+      {
+        gameId: game.id,
+        position: pos,
+        selectedType: TileType.SPAWN_POINT,
+      },
+      (response: { success: boolean; error?: string; data: BoardAsJson }) => {
+        if (response.success) {
+          console.log("Stairs placed successfully");
+          const newBoard: BoardAsJson = response.data;
+          setGame({
+            ...game,
+            gameState: { ...game.gameState, board: newBoard },
+          });
+        } else {
+          console.error("Failed to place stairs:", response.error);
+          alert("Failed to place stairs: " + response.error);
+        }
+      },
+    );
+  };
+
+  socket.on("game-state-update", (data: { game: GameAsJson }) => {
+    console.log("game update !!!  : ", data.game);
+    setGame(data.game);
+    location.state.game = data.game;
+  });
+
+  const goToLobby = () => {
+    navigate("/lobby", {
+      state: { playerName: playerName, game: game },
+    });
+  };
+
+  return (
+    <div className="game-preparation">
+      <h1>Préparation de la partie...</h1>
+      <Board
+        game={game}
+        onTileClick={(position, selectedType) => {
+          placeStairs(position);
+        }}
+        selectedPosition={null}
+        selectedEntityId={null}
+        selectedType={null}
+      />
+      <button onClick={goToLobby}>Retour au lobby</button>
+    </div>
+  );
+};
+
+export default GamePreparation;

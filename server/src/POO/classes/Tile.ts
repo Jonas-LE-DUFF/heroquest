@@ -1,39 +1,41 @@
-import { HeroCategory } from "../enums/Categories/HeroCategory";
-import { MonsterCategory } from "../enums/Categories/MonsterCategory";
 import { TileType } from "../enums/TileType";
 import { TileAsJson } from "../interfaces/ClassAsJson/Board/TileAsJson";
-import { Unit } from "./Units/Unit";
 
 class Tile {
-    unit : Unit<HeroCategory | MonsterCategory> | null;
-    type : TileType
-    
-    constructor(type: TileType) {
-        this.type = type;
-        this.unit = null;
-    }
+  unitId: string | null;
+  type: TileType;
 
-    /**
-     * clears the tile
-     * @returns the unit removed when clearing or null if there were no unit
-     */
-    eraseTile() : Unit<HeroCategory | MonsterCategory> | null {
-        this.type = TileType.FLOOR;
-        const unitRemoved = this.unit;
-        this.unit = null;
-        return unitRemoved;
-    }
+  constructor(type: TileType) {
+    this.type = type;
+    this.unitId = null;
+  }
 
-    isOccupied() : boolean {
-        return this.type !== TileType.FLOOR || this.unit !== null;
-    }
+  /**
+   * clears the tile
+   * @returns the unit's id removed when clearing or null if there were no unit
+   */
+  eraseTile(): string | null {
+    this.type = TileType.FLOOR;
+    const unitRemovedId = this.unitId;
+    this.unitId = null;
+    return unitRemovedId;
+  }
 
-    toJson(): TileAsJson {
-        return {
-            type: this.type,
-            unit: this.unit ? this.unit.toJson() : null,
-        };
-    }
+  isOccupied(): boolean {
+    return (
+      (this.type !== TileType.FLOOR &&
+        this.type !== TileType.SPAWN_POINT &&
+        this.type !== TileType.TRAP) ||
+      this.unitId !== null
+    );
+  }
+
+  toJson(): TileAsJson {
+    return {
+      type: this.type,
+      unitId: this.unitId,
+    };
+  }
 }
 
 export { Tile };

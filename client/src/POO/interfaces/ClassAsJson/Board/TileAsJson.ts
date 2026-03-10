@@ -1,10 +1,8 @@
 import { TileType } from "../../../enums/TileType";
-import { HeroAsJson } from "../Unit/HeroAsJson";
-import { MonsterAsJson } from "../Unit/MonsterAsJson";
 
 interface TileAsJson {
-    type: TileType;
-    unit: HeroAsJson | MonsterAsJson |null;
+  type: TileType;
+  unitId: string | null;
 }
 
 export type { TileAsJson };

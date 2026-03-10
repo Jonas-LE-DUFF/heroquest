@@ -36,6 +36,7 @@ export const chooseCharacterSchema = z.object({
     gold: z.number().int().min(0, "L'or ne peut pas être négatif"),
     spellElements: z.array(z.enum(SpellElement)),
     equipments: z.array(z.string()),
+    modifiedHeroId: z.string().optional(),
   }),
 });
 

@@ -17,15 +17,17 @@ import {
 } from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { getHeroByPlayerId, getHeroes } from "../shared/serverUtils";
+import { getHeroes } from "../shared/serverUtils";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { HeroCreationWish } from "../POO/interfaces/ClassAsJson/FromClient/HeroCreationWish";
 import {
+  flattenEquipment,
   getAllEquipmentsAsCards,
   getEquipmentById,
 } from "../shared/equipments";
 import { getSpellEllementAsCard } from "../components/Card/cardUtils";
 import { CardType } from "../components/Card/Card";
+import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -37,17 +39,22 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const [game, setGame] = useState<GameAsJson>(location.state?.game || null);
 
-  const { playerName, gameId } = location.state || {};
+  const { playerName, hero } = location.state || {};
+  if (!game || !playerName) {
+    console.log(`Données manquantes : ${playerName}, ${game}, redirection...`);
+    return <div>Données manquantes... faites retour</div>;
+  }
 
-  const hero = getHeroByPlayerId(socket.id, game);
+  const modifiedHero = hero as HeroAsJson | undefined;
 
   const [heroCreation, setHeroCreation] = useState<HeroCreationWish>({
     gameId: game.id,
     name: playerName,
-    heroCategory: getAvailableClasses()[0],
-    gold: 0,
-    spellElements: [],
-    equipments: [],
+    heroCategory: modifiedHero?.category || getAvailableClasses()[0],
+    gold: modifiedHero?.equipment?.gold || 0,
+    spellElements: modifiedHero?.spellElements || [],
+    equipments: modifiedHero ? flattenEquipment(modifiedHero.equipment) : [],
+    modifiedHeroId: modifiedHero?.id,
   });
 
   socket.on("game-state-update", (data: { game: GameAsJson }) => {
@@ -143,9 +150,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             label={card.name}
           />
           {!isSpellElementDisabled(hero?.id ?? "", game, element) ? (
-            <BackCardComponent socket={socket} card={card} />
+            <BackCardComponent card={card} />
           ) : (
-            <GreyCardComponent socket={socket} card={card} />
+            <GreyCardComponent card={card} />
           )}
         </div>
       );
@@ -154,8 +161,10 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   useEffect(() => {
     if (heroCreation.heroCategory === HeroCategory.Cleric) {
-      // Automatically select all elements for Cleric if not already selected
-
+      if (heroCreation.spellElements.length === 3) {
+        return;
+      }
+      // selects the first 3 available elements if the cleric doesn't have all of them already
       const selectedSpells: SpellElement[] = [];
       for (const e in SpellElement) {
         if (
@@ -175,7 +184,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         spellElements: selectedSpells,
       }));
     } else if (heroCreation.heroCategory === HeroCategory.Elf) {
-      // Clear selections when switching away from elf or cleric
+      if (heroCreation.spellElements.length === 1) {
+        return;
+      }
       for (const e in SpellElement) {
         if (
           isNaN(Number(e)) &&
@@ -193,6 +204,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         }
       }
     } else {
+      // Clear selections when switching away from elf or cleric
       setHeroCreation((prev) => ({
         ...prev,
         spellElements: [],
@@ -220,11 +232,14 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     );
   };
 
-  const equipmentsAsCardList = heroCreation.equipments.map((equipment) => ({
-    id: equipment,
-    name: equipment,
-    img_path: getEquipmentById(equipment)?.image_path ?? "", // You can set this to the correct path if needed
-  }));
+  const goBackToLobby = () => {
+    navigate("/lobby", { state: { playerName: playerName, game: game } });
+  };
+
+  console.log(
+    "Rendering ChooseCharacterView with heroCreation state:",
+    heroCreation,
+  );
 
   return (
     <div className="character-page">
@@ -285,6 +300,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           <button className="button" onClick={() => handleSubmit()}>
             sauvegarder les modifications
           </button>
+          <button onClick={() => goBackToLobby()}>Annuler</button>
         </div>
       </div>
     </div>

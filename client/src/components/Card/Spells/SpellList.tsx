@@ -59,11 +59,11 @@ const SpellList: React.FC<SpellListProps> = ({
       return (
         <div
           key={spellId}
-          className={"spell-school " + (isUsed ? "used-spell" : "")}
+          className={"spell-card " + (isUsed ? "used-spell" : "")}
           role="button"
           onClick={isUsed ? undefined : () => onSpellClickInternal(spellId)}
         >
-          <CardComponent socket={socket} card={getSpellAsCard(spellId)} />
+          <CardComponent card={getSpellAsCard(spellId)} />
         </div>
       );
     });

@@ -42,20 +42,15 @@ function getPlayerBySocketId(
   return player;
 }
 
-function getHeroByPlayerId(
+function getHeroesByPlayerId(
   playerId: string,
   game: GameAsJson,
-): HeroAsJson | null {
+): HeroAsJson[] | null {
   const heroes = getHeroes(game.gameState.Units);
-  for (let entity of heroes) {
-    if (
-      "controlledByPlayerId" in entity &&
-      entity.controlledByPlayerId === playerId
-    ) {
-      return entity as HeroAsJson;
-    }
-  }
-  return null;
+  const playerHeroes = heroes.filter(
+    (hero) => hero.controlledByPlayerId === playerId,
+  );
+  return playerHeroes.length > 0 ? playerHeroes : null;
 }
 
 function getPlayerIdToPlay(game: GameAsJson): string | undefined {
@@ -75,7 +70,7 @@ export {
   getPlayerByHero,
   getHeroes,
   getPlayerByHeroCategory,
-  getHeroByPlayerId,
+  getHeroesByPlayerId,
   getPlayerBySocketId,
   getPlayerIdToPlay,
 };

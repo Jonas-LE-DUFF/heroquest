@@ -1,6 +1,5 @@
 import { SpellElement } from "../../../POO/enums/SpellElement";
-import { getElementName } from "../../../shared/utils";
-import { BackCardComponent, CardComponent } from "../CardComponent";
+import { BackCardComponent } from "../CardComponent";
 import { getSpellEllementAsCard } from "../cardUtils";
 
 interface SchoolSpellListProps {
@@ -31,14 +30,11 @@ const SchoolSpellList: React.FC<SchoolSpellListProps> = ({
     return spellSchools.map((school) => (
       <div
         key={school}
-        className="spell-school"
+        className="spell-card"
         role="button"
         onClick={() => onSpellClick(school)}
       >
-        <BackCardComponent
-          socket={socket}
-          card={getSpellEllementAsCard(school)}
-        />
+        <BackCardComponent card={getSpellEllementAsCard(school)} />
       </div>
     ));
   };

@@ -1,23 +1,22 @@
 import { Card } from "./Card";
 
 interface CardProps {
-  socket: any;
   card: Card;
 }
 
-const CardComponent = ({ socket, card }: CardProps) => {
+const CardComponent = ({ card }: CardProps) => {
   return <img src={card.image_path} alt={card.name} className="card" />;
 };
 
-const BackCardComponent = ({ socket, card }: CardProps) => {
+const BackCardComponent = ({ card }: CardProps) => {
   return <img src={card.back_image_path} alt={card.name} className="card" />;
 };
 
-const GreyCardComponent = ({ socket, card }: CardProps) => {
+const GreyCardComponent = ({ card }: CardProps) => {
   return <img src={card.image_path} alt={card.name} className="card greyish" />;
 };
 
-const GreyBackCardComponent = ({ socket, card }: CardProps) => {
+const GreyBackCardComponent = ({ card }: CardProps) => {
   return (
     <img src={card.back_image_path} alt={card.name} className="card greyish" />
   );

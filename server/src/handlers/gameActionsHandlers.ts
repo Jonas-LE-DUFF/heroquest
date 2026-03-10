@@ -51,7 +51,7 @@ export function registerGameActionsHandlers(socket: Socket) {
       const spellToCast = heroCaster.getSpellById(spellId);
       const targetUnit = game!
         .getGameState()
-        .board.getUnitAt(toPosition(position));
+        .getUnitByPosition(toPosition(position));
 
       if (!spellToCast || !targetUnit) {
         return callback(errorResponse("spell or target unit not found"));

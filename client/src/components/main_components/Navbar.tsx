@@ -5,18 +5,21 @@ import {
   getHeroClassName,
   isHero,
 } from "../../shared/utils";
-import { Dialog, Tooltip } from "@mui/material";
+import { Dialog, Select, Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
-import { getHeroByPlayerId } from "../../shared/serverUtils";
+import { getHeroesByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import { useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
+import { PlayerService } from "../../POO/PlayerService";
+import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
+import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 
 interface NavbarProps {
   socket: Socket;
@@ -26,6 +29,8 @@ interface NavbarProps {
   currentTurnPlayerName: string;
   statsOpen: boolean;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
+  currentlyPlayedHero: HeroAsJson | null;
+  setCurrentlyPlayedHero: (arg0: HeroAsJson | null) => void;
   setStatsOpen: (arg0: boolean) => void;
   setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
@@ -42,6 +47,8 @@ const Navbar: React.FC<NavbarProps> = ({
   setStatsOpen,
   setSelectedUnit,
   openSpellPage,
+  currentlyPlayedHero,
+  setCurrentlyPlayedHero,
 }) => {
   const location = useLocation();
   const role = location.state.role;
@@ -54,7 +61,8 @@ const Navbar: React.FC<NavbarProps> = ({
   }
   let hero: HeroAsJson | null = null;
   if (role === PlayerRole.HERO) {
-    hero = getHeroByPlayerId(player.id, game);
+    hero = currentlyPlayedHero;
+    console.log("Current hero:", hero);
   } else {
     if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit as HeroAsJson;
   }
@@ -126,6 +134,37 @@ const Navbar: React.FC<NavbarProps> = ({
             <EquipmentsDialogComponent socket={socket} hero={hero} />
           </Dialog>
         </>
+      )}
+      {role === PlayerRole.HERO && (
+        <div className="nav-elem">
+          <Select
+            labelId="label-hero-class"
+            id="select-hero-class"
+            value={currentlyPlayedHero?.category || ""}
+            onChange={(e) => {
+              const newCategory = e.target.value as HeroCategory;
+              setCurrentlyPlayedHero(
+                PlayerService.getHeroByCategory(game, player.id, newCategory),
+              );
+            }}
+            autoWidth
+            sx={{ background: "white" }}
+          >
+            {renderHeroClassOptions(
+              // disabling heroes the player doesn't control
+              new Set(
+                Object.entries(HeroCategory)
+                  .filter(([key, value]) => {
+                    const hero = getHeroesByPlayerId(player.id, game)?.find(
+                      (h) => h.category === value,
+                    );
+                    return isNaN(Number(key)) && !hero;
+                  })
+                  .map(([key, value]) => value as HeroCategory),
+              ),
+            )}
+          </Select>
+        </div>
       )}
     </div>
   );

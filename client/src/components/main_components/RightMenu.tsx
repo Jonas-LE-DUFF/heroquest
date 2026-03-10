@@ -17,6 +17,7 @@ interface RightMenuProps {
   setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
+  hero: HeroAsJson | null;
 }
 
 const RightMenu: React.FC<RightMenuProps> = ({
@@ -28,6 +29,7 @@ const RightMenu: React.FC<RightMenuProps> = ({
   setTargetMode,
   setSelectedWeapon,
   selectedWeapon,
+  hero,
 }) => {
   return (
     <div>
@@ -40,6 +42,7 @@ const RightMenu: React.FC<RightMenuProps> = ({
         setTargetMode={setTargetMode}
         setSelectedWeapon={setSelectedWeapon}
         selectedWeapon={selectedWeapon}
+        hero={hero}
       />
     </div>
   );

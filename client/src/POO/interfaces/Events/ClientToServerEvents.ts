@@ -37,10 +37,10 @@ interface ClientToServerEvents {
       error?: string;
       gameState?: GameAsJson;
     }) => void,
-  ) => void; // Updated choose-character event definition
+  ) => void;
 
   "unselect-character": (
-    data: { gameId: string },
+    data: { gameId: string; heroId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 
@@ -100,7 +100,6 @@ interface ClientToServerEvents {
       gameId: string;
       position: PositionAsJson;
       selectedType: TileType | Direction | MonsterCategory;
-      playerId: string;
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;

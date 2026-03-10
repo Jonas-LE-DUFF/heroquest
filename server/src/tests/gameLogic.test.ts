@@ -38,6 +38,8 @@ import { SpellElement } from "../POO/enums/SpellElement";
 import { Stats } from "../POO/classes/Units/Stats";
 import { dealDamage } from "../services/CombatService";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
+import { MonsterType } from "../POO/enums/MonsterType";
+import { TileType } from "../POO/enums/TileType";
 
 // ── Helper functions ──
 
@@ -94,11 +96,20 @@ function createTestMonster(
     stats = createTestStats(),
     nbAttackDice = 2,
   } = overrides ?? {};
-  return new Monster(controlledById, name, category, stats, nbAttackDice);
+  return new Monster(
+    controlledById,
+    name,
+    category,
+    stats,
+    nbAttackDice,
+    MonsterType.ORC_LIKE,
+  );
 }
 
 function setupGameWithPlayers(): Game {
   const game = new Game("test-game");
+  game.gameState.board.getTileAtPosition(new Position(0, 0))!.type =
+    TileType.SPAWN_POINT;
   const gm = new Player("GameMaster", PlayerRole.GAME_MASTER);
   const p1 = new Player("Player1", PlayerRole.HERO);
   const p2 = new Player("Player2", PlayerRole.HERO);
@@ -126,8 +137,10 @@ function setupGameWithPlayers(): Game {
     equipment2,
   );
 
-  game.gameState.addUnit(hero1, new Position(0, 0));
-  game.gameState.addUnit(hero2, new Position(1, 0));
+  game.gameState.addUnit(hero1);
+  game.gameState.addUnit(hero2);
+  game.gameState.board.placeUnitAt(hero1, new Position(0, 0));
+  game.gameState.board.placeUnitAt(hero2, new Position(1, 0));
 
   return game;
 }
@@ -140,19 +153,25 @@ beforeEach(() => {
 
 describe("dealDamage (CombatService)", () => {
   it("should reduce health by the damage amount", () => {
-    const monster = createTestMonster({ stats: createTestStats({ health: 5 }) });
+    const monster = createTestMonster({
+      stats: createTestStats({ health: 5 }),
+    });
     dealDamage("test-game", monster, 3);
     expect(monster.stats.health).toBe(2);
   });
 
   it("should not change health when damage is 0", () => {
-    const monster = createTestMonster({ stats: createTestStats({ health: 5 }) });
+    const monster = createTestMonster({
+      stats: createTestStats({ health: 5 }),
+    });
     dealDamage("test-game", monster, 0);
     expect(monster.stats.health).toBe(5);
   });
 
   it("should not change health when damage is negative", () => {
-    const monster = createTestMonster({ stats: createTestStats({ health: 5 }) });
+    const monster = createTestMonster({
+      stats: createTestStats({ health: 5 }),
+    });
     dealDamage("test-game", monster, -2);
     expect(monster.stats.health).toBe(5);
   });
@@ -160,13 +179,17 @@ describe("dealDamage (CombatService)", () => {
 
 describe("dealDamage - lethal damage (CombatService)", () => {
   it("should set health to 0 when damage exceeds health", () => {
-    const monster = createTestMonster({ stats: createTestStats({ health: 3 }) });
+    const monster = createTestMonster({
+      stats: createTestStats({ health: 3 }),
+    });
     dealDamage("test-game", monster, 5);
     expect(monster.stats.health).toBe(0);
   });
 
   it("should set health to 0 when damage equals health", () => {
-    const monster = createTestMonster({ stats: createTestStats({ health: 3 }) });
+    const monster = createTestMonster({
+      stats: createTestStats({ health: 3 }),
+    });
     dealDamage("test-game", monster, 3);
     expect(monster.stats.health).toBe(0);
   });
@@ -183,7 +206,7 @@ describe("moveUnit (MovementService)", () => {
 
     expect(result.success).toBe(true);
     expect(board.getUnitAt(new Position(5, 5))).toBeUndefined();
-    expect(board.getUnitAt(new Position(6, 5))).toBe(hero);
+    expect(board.getUnitAt(new Position(6, 5))).toBe(hero.id);
   });
 
   it("should fail when moving out of bounds", () => {
@@ -235,22 +258,11 @@ describe("handleDoorOpening (MovementService)", () => {
 });
 
 describe("placeMonster (GameState.addUnit)", () => {
-  it("should place a monster at a position and retrieve it", () => {
-    const gameState = new GameState();
-    const monster = createTestMonster();
-    const pos = new Position(3, 3);
-
-    gameState.addUnit(monster, pos);
-
-    const found = gameState.getUnitByPosition(new Position(3, 3));
-    expect(found).toBe(monster);
-  });
-
   it("should include the monster in the Units array", () => {
     const gameState = new GameState();
     const monster = createTestMonster();
 
-    gameState.addUnit(monster, new Position(3, 3));
+    gameState.addUnit(monster);
     expect(gameState.Units).toContain(monster);
   });
 });
@@ -275,7 +287,8 @@ describe("updateUnitStats (GameState)", () => {
   it("should update stats of a unit at a given position", () => {
     const gameState = new GameState();
     const hero = createTestHero();
-    gameState.addUnit(hero, new Position(2, 2));
+    gameState.addUnit(hero);
+    gameState.board.placeUnitAt(hero, new Position(2, 2));
 
     gameState.updateUnitStats(
       {
@@ -339,9 +352,13 @@ describe("castSpell (Hero)", () => {
       stats: createTestStats({ health: 8, maxHealth: 10 }),
     });
     const healEffect = new HealSpellEffect(5);
-    const spell = new Spell("heal-2", "BigHeal", SpellElement.Earth, healEffect, [
-      "self",
-    ]);
+    const spell = new Spell(
+      "heal-2",
+      "BigHeal",
+      SpellElement.Earth,
+      healEffect,
+      ["self"],
+    );
     hero.setSpells([spell]);
 
     hero.castSpell(spell, hero);
@@ -468,7 +485,8 @@ describe("removeUnit (GameState)", () => {
     const monster = createTestMonster();
     const pos = new Position(4, 4);
 
-    gameState.addUnit(monster, pos);
+    gameState.addUnit(monster);
+    gameState.board.placeUnitAt(monster, pos);
     expect(gameState.Units).toContain(monster);
 
     gameState.removeUnit(monster);
@@ -490,7 +508,8 @@ describe("clearTileAtPosition (GameState)", () => {
     const monster = createTestMonster();
     const pos = new Position(4, 4);
 
-    gameState.addUnit(monster, pos);
+    gameState.addUnit(monster);
+    gameState.board.placeUnitAt(monster, pos);
     gameState.clearTileAtPosition(new Position(4, 4));
 
     expect(gameState.getUnitByPosition(new Position(4, 4))).toBeUndefined();
