@@ -4,12 +4,11 @@ import { Item } from "./Item";
 import { EffectType } from "../../../enums/Effects/EffectType";
 import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { StatType } from "../../../enums/Effects/StatType";
-import { Monster } from "../../Units/Monster";
-import { MonsterType } from "../../../enums/MonsterType";
-import { dealDamage } from "../../../../services/CombatService";
+import { rollRedDice } from "../../../../services/DiceService";
+import { PlayerRole } from "../../../enums/PlayerRole";
 
 abstract class Potion extends Item {
-  effect: Effect;
+  effect: Effect | null;
   type = "Potion";
 
   constructor(
@@ -17,7 +16,7 @@ abstract class Potion extends Item {
     name: string,
     cost: number,
     image: string,
-    effect: Effect,
+    effect: Effect | null,
   ) {
     super(reference, name, cost, image);
     this.effect = effect;
@@ -32,12 +31,8 @@ abstract class Potion extends Item {
     const baseJson = this.getBaseJson();
     return {
       ...baseJson,
-      effect: this.effect.name,
+      effect: this.effect?.name || "No effect",
     };
-  }
-
-  static createPotionFromReference(id: string) {
-    throw new Error("Method not implemented.");
   }
 }
 
@@ -54,20 +49,14 @@ interface equipmentData {
   };
 }
 
-class SwiftPotion extends Potion {
-  constructor(equipementData: equipmentData) {
+abstract class ClassicPotion extends Potion {
+  constructor(equipementData: equipmentData, effect: Effect) {
     super(
       equipementData.id,
       equipementData.name,
       equipementData.cost,
       equipementData.image_path,
-      new Effect(
-        "Swift Potion Effect",
-        EffectType.STAT_MULTIPLIER,
-        EffectDuration.ONE_TURN,
-        true,
-        { stat: StatType.MOVEMENT, value: 2 },
-      ),
+      effect,
     );
   }
 
@@ -82,6 +71,21 @@ class SwiftPotion extends Potion {
   }
 }
 
+class SwiftPotion extends ClassicPotion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData,
+      new Effect(
+        "Swift Potion Effect",
+        EffectType.STAT_MULTIPLIER,
+        EffectDuration.ONE_TURN,
+        true,
+        { stat: StatType.MOVEMENT, value: 2 },
+      ),
+    );
+  }
+}
+
 class HolyWater extends Potion {
   constructor(equipementData: equipmentData) {
     super(
@@ -89,12 +93,7 @@ class HolyWater extends Potion {
       equipementData.name,
       equipementData.cost,
       equipementData.image_path,
-      new Effect(
-        "No Effect",
-        EffectType.STAT_MULTIPLIER,
-        EffectDuration.ONE_TURN,
-        true,
-      ),
+      null,
     );
   }
 
@@ -110,4 +109,95 @@ class HolyWater extends Potion {
   }
 }
 
-export { Potion, SwiftPotion, HolyWater };
+class HealthPotion extends Potion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData.id,
+      equipementData.name,
+      0,
+      equipementData.image_path,
+      null,
+    );
+  }
+
+  applyEffect(
+    gameId: string,
+    target: any,
+  ): { success: boolean; error?: string } {
+    console.log(`${target.name} is affected by Health Potion!`);
+
+    rollRedDice(gameId, 1, PlayerRole.HERO).then((diceResult) => {
+      if (!diceResult.success) {
+        console.error("Failed to roll dice for Health Potion:");
+        throw new Error("Failed to roll dice for Health Potion");
+      }
+      const heal = diceResult.results[0];
+      target.health = Math.min(target.maxHealth, target.health + heal);
+    });
+
+    return { success: true };
+  }
+}
+
+class DefensePotion extends ClassicPotion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData,
+      new Effect(
+        "Defense Potion Effect",
+        EffectType.STAT_MODIFIER,
+        EffectDuration.UNTIL_STAT_USED,
+        true,
+        { stat: StatType.DEFENSE, value: 2 },
+      ),
+    );
+  }
+}
+
+class StrengthPotion extends ClassicPotion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData,
+      new Effect(
+        "Strength Potion Effect",
+        EffectType.STAT_MODIFIER,
+        EffectDuration.UNTIL_STAT_USED,
+        true,
+        { stat: StatType.ATTACK, value: 2 },
+      ),
+    );
+  }
+}
+
+class HeroismPotion extends Potion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData.id,
+      equipementData.name,
+      equipementData.cost,
+      equipementData.image_path,
+      null,
+    );
+  }
+
+  applyEffect(
+    gameId: string,
+    target: any,
+  ): { success: boolean; error?: string } {
+    return {
+      success: false,
+      error:
+        "Veuillez demander au game master d'appliquer cette potion manuellement",
+    };
+  }
+}
+
+export {
+  Potion,
+  SwiftPotion,
+  HolyWater,
+  HealthPotion,
+  DefensePotion,
+  StrengthPotion,
+  HeroismPotion,
+};

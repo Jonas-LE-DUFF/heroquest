@@ -1,0 +1,128 @@
+{
+  "back_img_path": "\\assets\\images\\cards\\treasures\\back.png",
+  "deck": [
+    {
+      "id": "wandering_monster",
+      "name": "Monstre errant",
+      "copies": 6,
+      "img_path": "\\assets\\images\\cards\\treasures\\wanderingMonster.png",
+      "is_put_back": true,
+      "effect": {
+        "name": "spawns a monster that attacks"
+      }
+    },
+    {
+      "id": "spike_trap",
+      "name": "Piège à piques",
+      "copies": 2,
+      "img_path": "\\assets\\images\\cards\\treasures\\spikeTrap.png",
+      "is_put_back": true,
+      "effect": {
+        "name": "deal damage and end turn",
+        "amount_of_damage": 1
+      }
+    },
+    {
+      "id": "arrow_trap",
+      "name": "Piège à flèche",
+      "copies": 2,
+      "img_path": "\\assets\\images\\cards\\treasures\\arrowTrap.png",
+      "is_put_back": true,
+      "effect": {
+        "name": "deal damage and end turn",
+        "amount_of_damage": 1
+      }
+    },
+    {
+      "id": "jewels",
+      "name": "Des joyaux !",
+      "copies": 2,
+      "img_path": "\\assets\\images\\cards\\treasures\\jewels.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain gold",
+        "amount_of_gold": 50
+      }
+    },
+    {
+      "id": "precious_rock",
+      "name": "Une pierre précieuse",
+      "copies": 2,
+      "img_path": "\\assets\\images\\cards\\treasures\\preciousStone.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain gold",
+        "amount_of_gold": 35
+      }
+    },
+    {
+      "id": "gold_25",
+      "name": "De l'Or !",
+      "copies": 2,
+      "img_path": "\\assets\\images\\cards\\treasures\\gold25.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain gold",
+        "amount_of_gold": 25
+      }
+    },
+    {
+      "id": "gold_15",
+      "name": "De l'Or !",
+      "copies": 2,
+      "img_path": "\\assets\\images\\cards\\treasures\\gold15.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain gold",
+        "amount_of_gold": 15
+      }
+    },
+    {
+      "id": "defense_potion",
+      "name": "Potion de défense",
+      "copies": 1,
+      "img_path": "\\assets\\images\\cards\\treasures\\defensePotion.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain potion",
+        "potion_gained": "defense_potion"
+      }
+    },
+    {
+      "id": "heal_potion",
+      "name": "Potion de guérison",
+      "copies": 3,
+      "img_path": "\\assets\\images\\cards\\treasures\\healthPotion.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain potion",
+        "potion_gained": "heal_potion"
+      }
+    },
+    {
+      "id": "heroisim_potion",
+      "name": "Potion de d'héroïsme",
+      "copies": 1,
+      "img_path": "\\assets\\images\\cards\\treasures\\heroismPotion.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain potion",
+        "potion_gained": "heroisim_potion"
+      }
+    },
+    {
+      "id": "strengh_potion",
+      "name": "Potion de force",
+      "copies": 1,
+      "img_path": "\\assets\\images\\cards\\treasures\\strengthPotion.png",
+      "is_put_back": false,
+      "effect": {
+        "name": "gain potion",
+        "potion_gained": "strengh_potion"
+      }
+    },
+    {
+      "comment": "penser à ajouter les potions à equipments et le back"
+    }
+  ]
+}
