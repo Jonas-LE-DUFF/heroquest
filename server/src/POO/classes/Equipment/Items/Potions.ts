@@ -6,6 +6,8 @@ import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { StatType } from "../../../enums/Effects/StatType";
 import { rollRedDice } from "../../../../services/DiceService";
 import { PlayerRole } from "../../../enums/PlayerRole";
+import treasures from "../../../../shared/game_cards/treasure.json";
+import equipments from "../../../../shared/game_cards/equipments.json"
 
 abstract class Potion extends Item {
   effect: Effect | null;
@@ -41,12 +43,6 @@ interface equipmentData {
   name: string;
   cost: number;
   image_path: string;
-  type: string;
-  modifiers: {
-    stat?: string;
-    amount?: number;
-    operation?: string;
-  };
 }
 
 abstract class ClassicPotion extends Potion {
@@ -154,10 +150,10 @@ class DefensePotion extends ClassicPotion {
   }
 }
 
-class StrengthPotion extends ClassicPotion {
-  constructor(equipementData: equipmentData) {
+class StrenghPotion extends ClassicPotion {
+  constructor(equipmentData : equipmentData) {
     super(
-      equipementData,
+      equipmentData,
       new Effect(
         "Strength Potion Effect",
         EffectType.STAT_MODIFIER,
@@ -192,12 +188,53 @@ class HeroismPotion extends Potion {
   }
 }
 
-export {
-  Potion,
-  SwiftPotion,
-  HolyWater,
-  HealthPotion,
-  DefensePotion,
-  StrengthPotion,
-  HeroismPotion,
-};
+class TreasurePotionFactory {
+  createPotionFromReference(reference: string): Potion {
+    const treasureData = treasures.deck.find((treasure) => treasure.id === reference)
+    if(!treasureData) throw Error("unknown reference for potion : " + reference)
+      const cleanTreasureData : equipmentData = {
+        id : treasureData.id,
+        name : treasureData.name,
+        cost : 0,
+        image_path: treasureData.img_path,
+      }
+    switch (reference) {
+      case "strengh_potion":
+        return new StrenghPotion(cleanTreasureData);
+      case "heroisim_potion":
+        return new HeroismPotion(cleanTreasureData);
+      case "heal_potion":
+        return new HealthPotion(cleanTreasureData)
+      case "defense_potion":
+        return new DefensePotion(cleanTreasureData)
+      default:
+        throw Error("unknown potion reference");
+    }
+  }
+}
+
+class EquipmentPotionFactory {
+  createPotionFromReference(reference: string): Potion {
+    const equipmentData = equipments.find(
+      (equipment) => equipment.id === reference,
+    );
+    if (!equipmentData)
+      throw Error("unknown reference for potion : " + reference);
+    const cleanEquipmentData: equipmentData = {
+      id: equipmentData.id,
+      name: equipmentData.name,
+      cost: equipmentData.cost,
+      image_path: equipmentData.image_path,
+    };
+    switch (reference) {
+      case "swift_potion":
+        return new SwiftPotion(cleanEquipmentData);
+      case "holy_water":
+        return new HolyWater(cleanEquipmentData);
+      default:
+        throw Error("unknown potion reference");
+    }
+  }
+}
+
+export { Potion, TreasurePotionFactory, EquipmentPotionFactory };

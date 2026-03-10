@@ -1,12 +1,12 @@
-import { Armor } from "./Items.ts/Armor";
-import { HolyWater, Potion, SwiftPotion } from "./Items.ts/Potions";
-import { Weapon } from "./Items.ts/Weapon";
+import { Armor } from "./Items/Armor";
+import { Potion, EquipmentPotionFactory } from "./Items/Potions";
+import { Weapon } from "./Items/Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { WeaponRange } from "../../enums/WeaponRange";
 import { ArmorType } from "../../enums/ArmorType";
-import { Tool } from "./Items.ts/Tool";
+import { Tool } from "./Items/Tool";
 
 class Equipment {
   gold: number;
@@ -108,19 +108,8 @@ class Equipment {
         this.addArmor(armor);
         return armor;
       case "Potion":
-        let potion: Potion;
-        switch (equipmentData.id) {
-          case "swift_potion":
-            potion = new SwiftPotion(equipmentData);
-            break;
-          case "holy_water":
-            potion = new HolyWater(equipmentData);
-            break;
-          default:
-            throw new Error(
-              `Potion with id ${equipmentData.id} not implemented.`,
-            );
-        }
+        const factory = new EquipmentPotionFactory()
+        const potion: Potion = factory.createPotionFromReference(equipmentData.id);
         this.addPotion(potion);
         return potion;
       case "Tool":

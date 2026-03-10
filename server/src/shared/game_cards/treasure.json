@@ -120,9 +120,6 @@
         "name": "gain potion",
         "potion_gained": "strengh_potion"
       }
-    },
-    {
-      "comment": "penser à ajouter les potions à equipments et le back"
     }
   ]
 }
