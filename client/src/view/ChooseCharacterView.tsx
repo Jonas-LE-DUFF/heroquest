@@ -17,7 +17,7 @@ import {
 } from "../components/Card/CardComponent";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { getHeroesByPlayerId, getHeroes } from "../shared/serverUtils";
+import { getHeroes } from "../shared/serverUtils";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { HeroCreationWish } from "../POO/interfaces/ClassAsJson/FromClient/HeroCreationWish";
 import {
@@ -232,6 +232,10 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     );
   };
 
+  const goBackToLobby = () => {
+    navigate("/lobby", { state: { playerName: playerName, game: game } });
+  };
+
   console.log(
     "Rendering ChooseCharacterView with heroCreation state:",
     heroCreation,
@@ -296,6 +300,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           <button className="button" onClick={() => handleSubmit()}>
             sauvegarder les modifications
           </button>
+          <button onClick={() => goBackToLobby()}>Annuler</button>
         </div>
       </div>
     </div>
