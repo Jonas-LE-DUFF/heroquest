@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import PlayerStatusComponent from "../components/PlayerStatusComponent";
+import PlayerStatusComponent from "../components/large_components/PlayerStatusComponent";
 
 interface LobbyPageProps {
   socket: any;

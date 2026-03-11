@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
-import { PlayerRole } from "../POO/enums/PlayerRole";
-import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { PlayerAsJson } from "../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
-import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { getEquipmentAsCards } from "../shared/equipments";
-import { getPlayerHeroMap } from "../shared/lobbyUtils";
-import { getHeroClassIconPath } from "../shared/utils";
-import { CardComponent } from "./Card/CardComponent";
-import { getSpellEllementAsCard } from "./Card/cardUtils";
+import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { getEquipmentAsCards } from "../../shared/equipments";
+import { getPlayerHeroMap } from "../../shared/lobbyUtils";
+import { getHeroClassIconPath } from "../../shared/utils";
+import { CardComponent } from "../Card/CardComponent";
+import { getSpellEllementAsCard } from "../Card/cardUtils";
 
 import GameMasterIcon from "/assets/images/icons/playerRole/IconGameMaster.jpeg";
 import HeroIcon from "/assets/images/icons/playerRole/iconHero.jpeg";

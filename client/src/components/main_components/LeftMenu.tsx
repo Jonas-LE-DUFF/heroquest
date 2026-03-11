@@ -1,5 +1,5 @@
 import React from "react";
-import StatsComponent from "../StatsComponent";
+import StatsComponent from "../large_components/StatsComponent";
 import "./LeftMenu.css";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 

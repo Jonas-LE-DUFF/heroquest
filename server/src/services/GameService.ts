@@ -3,7 +3,6 @@ import { Player } from "../POO/classes/Server/Player";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 
-// services/GameService.ts
 export class GameService {
 
     static createGame(gameName: string, player: Player): Game {

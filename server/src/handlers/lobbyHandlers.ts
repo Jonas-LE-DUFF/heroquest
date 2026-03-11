@@ -15,7 +15,6 @@ import {
   gameIdSchema,
 } from "../validation";
 import { HeroFactory } from "../POO/classes/Factories/HeroFactory";
-import { Position } from "../POO/classes/Position/Position";
 import { Hero } from "../POO/classes/Units/Hero";
 
 export function registerLobbyHandlers(socket: Socket) {
