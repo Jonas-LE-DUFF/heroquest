@@ -1,5 +1,6 @@
 import { Game } from "../POO/classes/Server/Game";
 import { Player } from "../POO/classes/Server/Player";
+import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 
 // services/GameService.ts
@@ -39,6 +40,7 @@ export class GameService {
 
     static removeGame(gameId: string): void {
         const serverHeroQuest = ServerHeroQuest.getServerInstance();
+        TreasureCardDeckHandler.removeDeck(gameId);
         serverHeroQuest.removeGame(gameId);
     }
 }

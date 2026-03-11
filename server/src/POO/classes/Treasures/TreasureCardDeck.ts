@@ -3,7 +3,8 @@ import { Hero } from "../Units/Hero";
 
 import { TreasureCard } from "./TreasureCard";
 
-class CardDeck {
+class TreasureCardDeck {
+
   gameId: string;
   cards: TreasureCard[] = [];
   constructor(gameId: string) {
@@ -50,4 +51,21 @@ function shuffle<T>(array: T[]): T[] {
   return shuffledArray;
 }
 
-export { CardDeck };
+// only one deck per game -> singleton group pattern
+class TreasureCardDeckHandler {
+  private static decks: Map<string, TreasureCardDeck> = new Map();
+
+  static getDeck(gameId: string): TreasureCardDeck {
+    if (!this.decks.has(gameId)) {
+      this.decks.set(gameId, new TreasureCardDeck(gameId));
+    }
+    return this.decks.get(gameId) as TreasureCardDeck;
+  }
+
+  static removeDeck(gameId: string): void {
+    this.decks.delete(gameId);
+  }
+
+}
+
+export { TreasureCardDeckHandler };
