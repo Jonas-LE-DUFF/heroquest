@@ -12,7 +12,11 @@ import {
   castSpellSchema,
   attackSchema,
   drinkPotionSchema,
+  checkForTreasuresSchema,
 } from "../validation";
+import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
+import { requireGameMaster } from "../guards/requireGameMaster";
+import { tr } from "zod/v4/locales";
 
 export function registerGameActionsHandlers(socket: Socket) {
   ///** common player and game master actions **///
@@ -152,6 +156,52 @@ export function registerGameActionsHandlers(socket: Socket) {
         });
 
         return callback(successResponse());
+      },
+    ),
+  );
+
+  socket.on(
+    "check-for-treasures",
+    withValidation(
+      socket,
+      checkForTreasuresSchema,
+      async (socket, data, callback) => {
+        const { gameId, heroId } = data;
+
+        if (!requireGameExists(gameId)) {
+          return callback(
+            errorResponse("game couldn't be found in check-for-treasures"),
+          );
+        }
+        const game = GameService.getGame(gameId);
+
+        if (!requirePlayerTurn(socket, game!)) {
+          return callback(
+            errorResponse("it's not your turn to play in check-for-treasures"),
+          );
+        }
+
+        // player may find a special treasure if the room he is in has one
+        // for now the game does not handle this case, therefore the game master will have to make the change manually if there is somthing to find
+        // Therefore this signal will only work for the game master, who will give the hero looking for the treasure a card
+
+        if (requireGameMaster(socket, game!)) {
+          return callback(
+            errorResponse(
+              "game master cannot check for treasures in check-for-treasures",
+            ),
+          );
+        }
+
+        const hero = game!.getGameState().getHeroById(heroId);
+        if (!hero) {
+          return callback(
+            errorResponse("hero couldn't be found in check-for-treasures"),
+          );
+        }
+
+        const treasureCard =
+          TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
       },
     ),
   );

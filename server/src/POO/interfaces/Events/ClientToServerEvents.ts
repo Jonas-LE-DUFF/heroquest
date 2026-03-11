@@ -65,10 +65,7 @@ interface ClientToServerEvents {
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
-  "check-for-treasures": (data: {
-    gameId: string;
-    position: PositionAsJson;
-  }) => void;
+  "check-for-treasures": (data: { gameId: string; heroId: string }) => void;
   "check-traps": (data: { gameId: string; postion: PositionAsJson }) => void;
   "check-secret-doors": (data: {
     gameId: string;

@@ -66,6 +66,11 @@ export const drinkPotionSchema = z.object({
   potionId: z.string().min(1, "L'ID de la potion est requis"),
 });
 
+export const checkForTreasuresSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+});
+
 // --- Dice Events ---
 
 export const authorizeSpecialThrowSchema = z.object({

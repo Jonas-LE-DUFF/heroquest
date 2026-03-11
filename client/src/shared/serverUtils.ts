@@ -62,6 +62,23 @@ function getPlayerIdToPlay(game: GameAsJson): string | undefined {
   return playerToPlay?.id;
 }
 
+function getHeroToPlay(game: GameAsJson): HeroAsJson | null {
+  if (game.isMonsterTurn) return null; // during the monster turn, no hero is played
+
+  const heroCategoryToPlay = game.playOrder[game.currentTurnIndex];
+  const heroToPlay = getHeroByCategory(game, heroCategoryToPlay);
+  return heroToPlay;
+}
+
+function getHeroByCategory(
+  game: GameAsJson,
+  category: HeroCategory,
+): HeroAsJson | null {
+  const heroes = getHeroes(game.gameState.Units);
+  const hero = heroes.find((h) => h.category === category);
+  return hero || null;
+}
+
 function getGameMasterId(game: GameAsJson): string | undefined {
   return game.players.find((p) => p.role === PlayerRole.GAME_MASTER)?.id;
 }
@@ -73,4 +90,6 @@ export {
   getHeroesByPlayerId,
   getPlayerBySocketId,
   getPlayerIdToPlay,
+  getHeroToPlay,
+  getHeroByCategory,
 };

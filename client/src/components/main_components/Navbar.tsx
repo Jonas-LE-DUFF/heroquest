@@ -12,9 +12,10 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
-import { getHeroesByPlayerId } from "../../shared/serverUtils";
+import { getHeroesByPlayerId, getHeroToPlay } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
+import drawCardIcon from "/assets/images/icons/navbar/card-draw.png";
 import { useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
@@ -73,6 +74,30 @@ const Navbar: React.FC<NavbarProps> = ({
   function showSpells() {
     openSpellPage();
   }
+  function searchTreasures() {
+    if (role === PlayerRole.HERO) {
+      alert(
+        "Pour recher des trésors veuillez demander au game master de le faire pour vous en cliquant sur le bouton de recherche de trésors dans la barre de navigation\n\n(Le système de recherche de trésors est en cours de développement et nécessite une interaction du game master pour le moment)",
+      );
+      return;
+    }
+    socket.emit(
+      "check-for-treasures",
+      { gameId: game.id, heroId: hero?.id },
+      (response: {
+        success: boolean;
+        treasureCardId?: string;
+        error?: string;
+      }) => {
+        if (response.success) {
+          if (response.treasureCardId) {
+            // Handle the case where treasures are found
+          }
+        }
+      },
+    );
+  }
+
   return (
     <div className="Navbar">
       <div className="nav-elem">Navbar</div>
@@ -135,6 +160,12 @@ const Navbar: React.FC<NavbarProps> = ({
           </Dialog>
         </>
       )}
+      {role === PlayerRole.HERO &&
+        currentlyPlayedHero?.id === getHeroToPlay(game)?.id && (
+          <div className="nav-elem" onClick={() => searchTreasures()}>
+            <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+          </div>
+        )}
       {role === PlayerRole.HERO && (
         <div className="nav-elem">
           <Select
