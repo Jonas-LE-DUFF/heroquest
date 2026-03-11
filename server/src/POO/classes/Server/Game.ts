@@ -163,11 +163,11 @@ class Game {
     if (this.isMonsterTurn) {
       return this.getGameMaster()!.id;
     }
-    const currentPlayerId = this.playOrder[this.currentTurnIndex];
-    if (!currentPlayerId) {
+    const heroCategoryToPlay = this.playOrder[this.currentTurnIndex];
+    if (!heroCategoryToPlay) {
       throw new Error("No current player turn found.");
     }
-    return this.gameState.getHeroByCategory(currentPlayerId)
+    return this.gameState.getHeroByCategory(heroCategoryToPlay)
       .controlledByPlayerId;
   }
 
@@ -198,13 +198,13 @@ class Game {
     return this.gameState.getHeroByCategory(currentHeroCategory);
   }
 
-  getGameMaster(): Player | null {
+  getGameMaster(): Player {
     for (const player of this.players.values()) {
       if (player.role === PlayerRole.GAME_MASTER) {
         return player;
       }
     }
-    return null;
+    throw new Error("Game master not found.");
   }
 
   getHeroes(): Hero[] {

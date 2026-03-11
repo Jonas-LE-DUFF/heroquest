@@ -34,6 +34,7 @@ import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerService } from "../POO/PlayerService";
+import { TreasureCardAsJson } from "../POO/interfaces/ClassAsJson/Treasure/TreasureCardAsJson";
 
 interface GamePageProps {
   socket: any;
@@ -74,7 +75,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
     (data: { entityId: string; newStats: StatsAsJson }) => {
-      console.log("stats updated received in game page", data);
 
       const isDead =
         data.newStats.health !== undefined && data.newStats.health <= 0;
@@ -126,8 +126,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       const selectedId = selectedEntityId;
       if (selectedId) {
         const pos = getPositionByUnitId(selectedId, data.game.gameState.board);
-        console.log("position du selected id", pos);
-        console.log("selected id", selectedId);
         if (pos) {
           setSelectedPosition(pos);
           setSelectedEntityId(selectedId);
@@ -195,11 +193,28 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       },
     );
 
+    socket.on(
+      "card-drawn",
+      (data: { hero: HeroAsJson; card: TreasureCardAsJson }) => {
+        console.log("card drawn received in game page", data);
+        setGame((prev) => {
+          if (!prev) return prev;
+          const heroIndex = prev.gameState.Units.findIndex(
+            (u) => u.id === data.hero.id,
+          );
+          if (heroIndex === -1) return prev;
+          prev.gameState.Units[heroIndex] = data.hero;
+          return { ...prev } as GameAsJson;
+        });
+      },
+    );
+
     return () => {
       socket.off("tile-placed");
       socket.off("door-placed");
       socket.off("stats-updated");
       socket.off("game-state-update");
+      socket.off("card-drawn");
     };
   }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate]);
 
@@ -227,7 +242,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     selectedType: TileType | Direction | MonsterCategory | null,
   ) => {
     if (selectedSpell !== null) {
-      console.log("Casting spell:", selectedSpell, "at position:", position);
       socket.emit(
         "cast-spell",
         {
@@ -236,9 +250,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           position: position,
         },
         (response: { success: boolean; error?: string }) => {
-          if (response.success) {
-            console.log("Spell cast successfully");
-          } else {
+          if (!response.success) {
             console.error("Failed to cast spell:", response.error);
             alert("Failed to cast spell: " + response.error);
           }
@@ -250,14 +262,12 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }
 
     if (targetMode) {
-      console.log("In target mode, clicking on position:", position);
       const targetId = getTileByPosition(
         position,
         game.gameState.board,
       )?.unitId;
       const target = game.gameState.Units.find((u) => u.id === targetId);
       if (!target) {
-        console.log("No unit at selected position to target.");
         setTargetMode(false);
         return;
       }
@@ -281,18 +291,12 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setTargetMode(false);
       return;
     }
-    console.log(
-      "Tile clicked at position:",
-      position,
-      "with selectedType:",
-      selectedType,
-    );
+
     if (
       selectedPosition !== null &&
       selectedPosition.x === position.x &&
       selectedPosition.y === position.y
     ) {
-      console.log("Deselecting position:", position);
       setSelectedPosition(null);
       setSelectedEntityId(null);
       setStatsVisible(false);
@@ -307,10 +311,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }
 
     if (!selectedType) {
-      console.log("No element selected to place.");
       return;
     }
-    console.log("Placing element:", selectedType, "at position:", position);
     socket.emit(
       "place-element",
       {
@@ -319,9 +321,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         selectedType,
       },
       (response: { success: boolean; error?: string }) => {
-        if (response.success) {
-          console.log("Element placed successfully");
-        } else {
+        if (!response.success) {
           console.error("Failed to place element:", response.error);
         }
       },

@@ -15,7 +15,7 @@ export function isInRange(
     case "any":
       return true;
     default:
-      console.log("Unknown range type:", range);
+      console.error("Unknown range type:", range);
       return true;
   }
 }

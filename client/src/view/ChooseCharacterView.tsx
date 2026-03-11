@@ -41,7 +41,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const { playerName, hero } = location.state || {};
   if (!game || !playerName) {
-    console.log(`Données manquantes : ${playerName}, ${game}, redirection...`);
+    console.error(`Données manquantes : ${playerName}, ${game}, redirection...`);
     return <div>Données manquantes... faites retour</div>;
   }
 

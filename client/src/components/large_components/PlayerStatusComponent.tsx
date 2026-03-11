@@ -25,7 +25,6 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
   const navigate = useNavigate();
 
   function modifyHero(hero: HeroAsJson) {
-    console.log("Modifying hero:", hero);
     navigate("/characterChoice", {
       state: {
         game,

@@ -47,7 +47,6 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
     if (spellAlreadyUsed === undefined) {
       spellAlreadyUsed = [];
     }
-    console.log("Rendering spell page: ", spellPage);
     switch (spellPage) {
       case 1:
         return (
@@ -58,7 +57,6 @@ const SpellsPopUp: React.FC<SpellsPopUpProps> = ({
             onSpellClick={(spellElement: SpellElement) => {
               setSelectedSpellSchool(spellElement);
               setSpellPage(2);
-              console.log("Selected spell school: ", spellElement);
             }}
             onClose={() => closeSpellPage()}
           />

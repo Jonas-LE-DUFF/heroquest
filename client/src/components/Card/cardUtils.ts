@@ -1,4 +1,5 @@
 import equipments from "../../shared/game_cards/equipments.json";
+import treasures from "../../shared/game_cards/treasure.json";
 import spells from "../../shared/game_cards/spells.json";
 import back from "../../shared/game_cards/backCard.json";
 import { getElementName } from "../../shared/utils";
@@ -39,15 +40,17 @@ export function getSpellAsCard(spellId: string): Card2 {
 
 export function getItemAsCard(id: string): Card2 {
   const item = equipments.find((eq) => eq.id === id);
-  if (!item) {
+  const treasure = treasures.deck.find((t) => t.id === id);
+  const cardItem = item || treasure;
+  if (!cardItem) {
     console.error(`Item with id ${id} not found`);
     throw new Error(`Item with id ${id} not found`);
   }
   return {
-    id: item.id,
-    name: item.name,
-    image_path: getCardImagePath(item.id, "equipment") || "",
-    back_image_path: getCardImagePath(item.id, "equipment") || "",
+    id: cardItem.id,
+    name: cardItem.name,
+    image_path: getCardImagePath(cardItem.id, "equipment") || "",
+    back_image_path: getCardImagePath(cardItem.id, "equipment") || "",
     type: CardType.Item,
   };
 }

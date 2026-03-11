@@ -4,6 +4,8 @@ import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
 import { PositionAsJson } from "../ClassAsJson/PositionAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
+import { TreasureCardAsJson } from "../ClassAsJson/Treasure/TreasureCardAsJson";
+import { HeroAsJson } from "../ClassAsJson/Unit/HeroAsJson";
 
 // Événements Socket.io
 interface ServerToClientEvents {
@@ -53,6 +55,8 @@ interface ServerToClientEvents {
   }) => void;
 
   "stats-updated": (data: { entityId: string; newStats: StatsAsJson }) => void;
+
+  "card-drawn": (data: { hero: HeroAsJson; card: TreasureCardAsJson }) => void;
 
   // errors
   error: (message: string) => void;

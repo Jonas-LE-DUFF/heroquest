@@ -49,7 +49,7 @@ class TreasureCard {
     }
     if (this.effectName?.includes("spawns a monster that attacks")) {
       // TODO : implement this effect
-      return { success: false, error: "manual interaction is required" };
+      return { success: true };
     }
     if (this.effectName?.includes("gain gold")) {
       cardDrawer.equipment.gold += this.effectInfo?.amountOfGold ?? 0;

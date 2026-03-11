@@ -185,10 +185,10 @@ export function registerGameActionsHandlers(socket: Socket) {
         // for now the game does not handle this case, therefore the game master will have to make the change manually if there is somthing to find
         // Therefore this signal will only work for the game master, who will give the hero looking for the treasure a card
 
-        if (requireGameMaster(socket, game!)) {
+        if (!requireGameMaster(socket, game!)) {
           return callback(
             errorResponse(
-              "game master cannot check for treasures in check-for-treasures",
+              "only game master the game master can do this action if you cant to search for treasures it has to be the game master that does this action for the hero",
             ),
           );
         }
@@ -202,6 +202,15 @@ export function registerGameActionsHandlers(socket: Socket) {
 
         const treasureCard =
           TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
+
+        const io = ServerHeroQuest.getServerInstance().getIo();
+
+        io.to(gameId).emit("card-drawn", {
+          hero: hero.toJson(),
+          card: treasureCard.toJson(),
+        });
+
+        return callback(successResponse());
       },
     ),
   );

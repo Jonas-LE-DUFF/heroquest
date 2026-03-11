@@ -41,8 +41,6 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       amountOfDices: number;
       typeOfDices: string;
     }) => {
-      console.log("special auth", data);
-
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "red" &&

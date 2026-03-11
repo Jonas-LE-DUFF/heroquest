@@ -61,7 +61,6 @@ abstract class ClassicPotion extends Potion {
     target: any,
   ): { success: boolean; error?: string } {
     // Logic to apply the effect to the target
-    console.log(`${target.name} is affected by Swift Potion!`);
     target.effects.push(this.effect);
     return { success: true };
   }
@@ -120,7 +119,6 @@ class HealthPotion extends Potion {
     gameId: string,
     target: any,
   ): { success: boolean; error?: string } {
-    console.log(`${target.name} is affected by Health Potion!`);
 
     rollRedDice(gameId, 1, PlayerRole.HERO).then((diceResult) => {
       if (!diceResult.success) {

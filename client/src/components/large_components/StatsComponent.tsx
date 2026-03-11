@@ -36,7 +36,7 @@ const StatsComponent = ({
   }, [unit.stats]);
 
   if (!unit?.stats) {
-    console.log("no stats found on : ", unit);
+    console.error("no stats found on : ", unit);
     setStatsVisible(false);
     return null;
   }
@@ -250,8 +250,6 @@ const StatsComponent = ({
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           alert("Erreur lors de la mise à jour des stats : " + response.error);
-        } else {
-          console.log("Stats updated successfully");
         }
       },
     );

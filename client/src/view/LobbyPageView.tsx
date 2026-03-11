@@ -21,7 +21,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   useEffect(() => {
     if (!game || !playerName) {
-      console.log(
+      console.error(
         `Données manquantes : ${playerName}, ${game}, redirection...`,
       );
       navigate("/");
@@ -56,7 +56,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       { gameId },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success) {
-          console.log("Partie lancée avec succès ! partie :", response.data);
           const game = response.data;
           navigate("/game", {
             state: { playerName, gameId, role, game },
@@ -78,7 +77,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       { gameId },
       (response: { success: boolean; error?: string }) => {
         if (response.success) {
-          console.log("Left lobby successfully");
           navigate("/");
         } else {
           console.error("Error leaving lobby:", response.error);
@@ -113,9 +111,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       "unselect-character",
       { gameId, heroId },
       (response: { success: boolean; error?: string }) => {
-        if (response.success) {
-          console.log("Character unselected successfully");
-        } else {
+        if (!response.success) {
           console.error("Error unselecting character:", response.error);
           alert(`Error: ${response.error}`);
         }

@@ -72,7 +72,7 @@ export function registerLobbyHandlers(socket: Socket) {
     withValidation(socket, gameIdSchema, (socket, data, callback) => {
       const { gameId } = data;
       console.log(
-        "Demande de départ de la partie :",
+        "Demande de sortie de la partie :",
         gameId,
         " Joueur :",
         socket.id,
@@ -122,7 +122,7 @@ export function registerLobbyHandlers(socket: Socket) {
       try {
         game!.launchGame();
       } catch (error: any) {
-        console.log("Erreur lors du lancement de la partie :", error.message);
+        console.error("Erreur lors du lancement de la partie :", error.message);
         return callback(errorResponse(error.message));
       }
 

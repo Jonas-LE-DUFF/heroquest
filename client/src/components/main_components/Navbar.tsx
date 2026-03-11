@@ -63,7 +63,6 @@ const Navbar: React.FC<NavbarProps> = ({
   let hero: HeroAsJson | null = null;
   if (role === PlayerRole.HERO) {
     hero = currentlyPlayedHero;
-    console.log("Current hero:", hero);
   } else {
     if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit as HeroAsJson;
   }
@@ -77,7 +76,7 @@ const Navbar: React.FC<NavbarProps> = ({
   function searchTreasures() {
     if (role === PlayerRole.HERO) {
       alert(
-        "Pour recher des trésors veuillez demander au game master de le faire pour vous en cliquant sur le bouton de recherche de trésors dans la barre de navigation\n\n(Le système de recherche de trésors est en cours de développement et nécessite une interaction du game master pour le moment)",
+        "Pour recher des trésors veuillez demander au maitre du jeu de le faire pour vous en cliquant sur le bouton de recherche de trésors dans la barre de navigation\n\n(Le système de recherche de trésors est en cours de développement et nécessite une interaction du maitre du jeu pour le moment)",
       );
       return;
     }
@@ -94,6 +93,11 @@ const Navbar: React.FC<NavbarProps> = ({
             // Handle the case where treasures are found
           }
         }
+        alert(
+          response.success
+            ? "Recherche de trésors effectuée avec succès."
+            : `Erreur lors de la recherche de trésors : ${response.error}`,
+        );
       },
     );
   }
@@ -113,7 +117,6 @@ const Navbar: React.FC<NavbarProps> = ({
               alt={getHeroClassName(hero.category)}
               role="button"
               onClick={() => {
-                console.log("not yet implemented");
                 setSelectedUnit(hero);
                 setStatsOpen(!statsOpen);
               }}
@@ -160,12 +163,11 @@ const Navbar: React.FC<NavbarProps> = ({
           </Dialog>
         </>
       )}
-      {role === PlayerRole.HERO &&
-        currentlyPlayedHero?.id === getHeroToPlay(game)?.id && (
-          <div className="nav-elem" onClick={() => searchTreasures()}>
-            <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
-          </div>
-        )}
+      {hero && (
+        <div className="nav-elem" onClick={() => searchTreasures()}>
+          <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+        </div>
+      )}
       {role === PlayerRole.HERO && (
         <div className="nav-elem">
           <Select

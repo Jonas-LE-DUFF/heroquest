@@ -44,7 +44,6 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       amountOfDices: number;
       typeOfDices: string;
     }) => {
-      console.log("special-authorization received :", data);
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "fight" &&

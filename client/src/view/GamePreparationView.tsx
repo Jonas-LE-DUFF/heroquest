@@ -14,7 +14,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
 
   useEffect(() => {
     if (!game || !playerName) {
-      console.log("Données manquantes, redirection...");
+      console.error("Données manquantes, redirection...");
       navigate("/");
       return;
     }
@@ -30,7 +30,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
       },
       (response: { success: boolean; error?: string; data: BoardAsJson }) => {
         if (response.success) {
-          console.log("Stairs placed successfully");
+          console.error("Stairs placed successfully");
           const newBoard: BoardAsJson = response.data;
           setGame({
             ...game,
@@ -45,7 +45,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
   };
 
   socket.on("game-state-update", (data: { game: GameAsJson }) => {
-    console.log("game update !!!  : ", data.game);
+    console.log("game update in game preparation view : ", data.game);
     setGame(data.game);
     location.state.game = data.game;
   });

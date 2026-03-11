@@ -46,7 +46,6 @@ export async function rollRedDice(
   numberOfDices: number,
   playerRole: PlayerRole,
 ) {
-  console.log("roll-red-dice");
 
   const io = ServerHeroQuest.getServerInstance().getIo();
 
