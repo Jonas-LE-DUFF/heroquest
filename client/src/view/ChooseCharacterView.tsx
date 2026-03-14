@@ -28,6 +28,7 @@ import {
 import { getSpellEllementAsCard } from "../components/Card/cardUtils";
 import { CardType } from "../components/Card/Card";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { toast } from "react-toastify";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -226,7 +227,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             state: { playerName: playerName, game: response.data },
           });
         } else {
-          alert(`Error: ${response.error}`);
+          toast.error(`Error: ${response.error}`);
         }
       },
     );
@@ -235,11 +236,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const goBackToLobby = () => {
     navigate("/lobby", { state: { playerName: playerName, game: game } });
   };
-
-  console.log(
-    "Rendering ChooseCharacterView with heroCreation state:",
-    heroCreation,
-  );
 
   return (
     <div className="character-page">

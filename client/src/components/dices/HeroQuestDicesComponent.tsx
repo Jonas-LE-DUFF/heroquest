@@ -4,6 +4,7 @@ import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../../shared/utils";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { toast } from "react-toastify";
 
 interface DicesProps {
   socket: any;
@@ -73,7 +74,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert("Erreur lancement des dés de combat : " + response.error);
+          toast.error("Erreur lancement des dés de combat : " + response.error);
         }
       },
     );

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./LoginPageView.css";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
+import { toast } from "react-toastify";
+
 interface LoginPageProps {
   socket: any;
 }
@@ -17,7 +19,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
     e.preventDefault();
 
     if (!playerName.trim() || !gameName.trim()) {
-      alert("Veuillez remplir tous les champs");
+      toast.error("Veuillez remplir tous les champs");
       return;
     }
 
@@ -26,7 +28,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       { gameName, playerName, role },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur: ${response.error}`);
+          toast.error(`Erreur: ${response.error}`);
           return;
         }
       },
@@ -45,7 +47,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
     );
 
     socket.on("join-error", (error: string) => {
-      alert(`Erreur: ${error}`);
+      toast.error(`Erreur: ${error}`);
     });
   };
 

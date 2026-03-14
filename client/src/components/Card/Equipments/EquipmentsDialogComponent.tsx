@@ -16,6 +16,7 @@ import {
 import { getItemAsCard } from "../cardUtils";
 import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
 import { CardComponent } from "../CardComponent";
+import { toast } from "react-toastify";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -77,12 +78,12 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       },
       (response: { success: boolean; error: string }) => {
         if (response.success) {
-          alert("Équipement mis à jour avec succès !");
+          toast.error("Équipement mis à jour avec succès !");
 
           setEditionState(false);
           // TODO : update local equipment state with the new one
         } else {
-          alert(
+          toast.error(
             "Erreur lors de la mise à jour de l'équipement : " + response.error,
           );
         }
@@ -102,9 +103,9 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       },
       (response: { success: boolean; error: string }) => {
         if (response.success) {
-          alert("Potion utilisée avec succès !");
+          toast.error("Potion utilisée avec succès !");
         } else {
-          alert(
+          toast.error(
             "Erreur lors de l'utilisation de la potion : " + response.error,
           );
         }

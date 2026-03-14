@@ -168,6 +168,8 @@ export function registerGameActionsHandlers(socket: Socket) {
       async (socket, data, callback) => {
         const { gameId, heroId } = data;
 
+        console.debug("checking for treasures for hero", heroId, "in game", gameId);
+
         if (!requireGameExists(gameId)) {
           return callback(
             errorResponse("game couldn't be found in check-for-treasures"),
@@ -210,7 +212,9 @@ export function registerGameActionsHandlers(socket: Socket) {
           card: treasureCard.toJson(),
         });
 
-        return callback(successResponse());
+        console.debug("treasure card drawn for hero", hero.name, "card", treasureCard.name);
+
+        return callback(successResponse({ treasureCardId: treasureCard.id }));
       },
     ),
   );

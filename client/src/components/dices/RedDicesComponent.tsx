@@ -8,6 +8,7 @@ import face4 from "./../images/redDice4.png";
 import face5 from "./../images/redDice5.png";
 import face6 from "./../images/redDice6.png";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { toast } from "react-toastify";
 
 interface RedDicesProps {
   socket: any;
@@ -68,7 +69,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert("Erreur lors du lancement des dés rouges : " + response.error);
+          toast.error("Erreur lors du lancement des dés rouges : " + response.error);
         }
       },
     );

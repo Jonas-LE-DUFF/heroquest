@@ -21,8 +21,9 @@ import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { Direction } from "../../POO/enums/Direction";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import { getHeroesByPlayerId, getPlayerIdToPlay } from "../../shared/serverUtils";
+import { getPlayerIdToPlay } from "../../shared/serverUtils";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { toast } from "react-toastify";
 
 interface GameControlsProps {
   socket: any;
@@ -85,7 +86,7 @@ const GameControls = ({
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur de déplacement du joueur: ${response.error}`);
+          toast.error(`Erreur de déplacement du joueur: ${response.error}`);
         }
       },
     );
@@ -106,7 +107,7 @@ const GameControls = ({
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur de déplacement du monstre: ${response.error}`);
+          toast.error(`Erreur de déplacement du monstre: ${response.error}`);
         }
       },
     );
@@ -154,7 +155,7 @@ const GameControls = ({
       { gameId: gameId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur de déplacement du monstre: ${response.error}`);
+          toast.error(`Erreur de déplacement du monstre: ${response.error}`);
         }
       },
     );

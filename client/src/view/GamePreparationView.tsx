@@ -5,6 +5,7 @@ import { TileType } from "../POO/enums/TileType";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { toast } from "react-toastify";
 
 const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
   const location = useLocation();
@@ -38,7 +39,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
           });
         } else {
           console.error("Failed to place stairs:", response.error);
-          alert("Failed to place stairs: " + response.error);
+          toast.error("Failed to place stairs: " + response.error);
         }
       },
     );

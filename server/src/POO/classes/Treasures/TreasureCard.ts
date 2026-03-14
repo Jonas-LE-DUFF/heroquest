@@ -2,6 +2,7 @@ import { dealDamage } from "../../../services/CombatService";
 import { Hero } from "../Units/Hero";
 import { TreasurePotionFactory } from "../Equipment/Items/Potions";
 import { TreasureCardAsJson } from "../../interfaces/ClassAsJson/Treasure/TreasureCardAsJson";
+import treasures from "../../../shared/game_cards/treasure.json";
 
 class TreasureCard {
   id: string;
@@ -17,6 +18,8 @@ class TreasureCard {
         potionReference?: string;
       }
     | undefined;
+
+  backImgPath = treasures.back_img_path;
 
   constructor(
     id: string,
@@ -72,6 +75,7 @@ class TreasureCard {
       id: this.id,
       name: this.name,
       imgPath: this.imgPath,
+      backImgPath: this.backImgPath,
     };
   }
 }

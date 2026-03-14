@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CardCarouselComponent } from "./CardCarouselComponent";
 import { Card } from "./Card";
+import { toast } from "react-toastify";
 
 interface CardSelectionComponentProps {
   socket: any;
@@ -19,7 +20,7 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
 
   const handleAddCard = () => {
     if (!centerCard) {
-      alert("Aucune carte sélectionnée");
+      toast.error("Aucune carte sélectionnée");
       return;
     }
     onCardsChange([...selectedCards, centerCard]);

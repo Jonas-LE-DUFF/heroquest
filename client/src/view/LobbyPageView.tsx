@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import PlayerStatusComponent from "../components/large_components/PlayerStatusComponent";
+import { toast, ToastContainer } from "react-toastify";
 
 interface LobbyPageProps {
   socket: any;
@@ -61,11 +62,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
             state: { playerName, gameId, role, game },
           });
         } else {
-          console.error(
-            "Erreur lors du lancement de la partie:",
-            response.error,
-          );
-          alert(`Erreur: ${response.error}`);
+          toast.error(`Erreur: ${response.error}`);
         }
       },
     );
@@ -80,7 +77,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           navigate("/");
         } else {
           console.error("Error leaving lobby:", response.error);
-          alert(`Error: ${response.error}`);
+          toast.error(`Error: ${response.error}`);
         }
       },
     );
@@ -88,7 +85,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const chooseCharacter = () => {
     if (!game) {
-      alert("Game state is missing. Cannot proceed to character selection.");
+      toast.error("Game state is missing. Cannot proceed to character selection.");
       return;
     }
 
@@ -104,7 +101,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const unselectCharacter = (heroId: string) => {
     if (!game) {
-      alert("Game state is missing. Cannot proceed to character unselection.");
+      toast.error("Game state is missing. Cannot proceed to character unselection.");
       return;
     }
     socket.emit(
@@ -113,7 +110,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           console.error("Error unselecting character:", response.error);
-          alert(`Error: ${response.error}`);
+          toast.error(`Error: ${response.error}`);
         }
       },
     );

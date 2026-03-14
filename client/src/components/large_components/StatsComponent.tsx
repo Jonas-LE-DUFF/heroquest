@@ -11,6 +11,7 @@ import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson"
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
+import { toast } from "react-toastify";
 
 interface StatsComponentProps {
   socket: Socket;
@@ -249,7 +250,7 @@ const StatsComponent = ({
       { gameId, newStats, position },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert("Erreur lors de la mise à jour des stats : " + response.error);
+          toast.error("Erreur lors de la mise à jour des stats : " + response.error);
         }
       },
     );
