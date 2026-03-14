@@ -86,6 +86,9 @@ export function registerMasterHandlers(socket: Socket) {
           }
           const result = placeSpawnPoint(position, game!);
           if (!result.success) {
+            if (existingSpawnPoint){
+              placeSpawnPoint(existingSpawnPoint!, game!); // placing back the spawn point that was removed
+            }
             return callback(errorResponse(result.error!));
           }
           return callback(successResponse(board.toJson()));
