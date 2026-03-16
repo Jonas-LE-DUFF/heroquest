@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
@@ -73,6 +73,19 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   useEffect(() => {
     selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
   }, [hero]);
+
+  useEffect(() => {
+    if (!game) {
+      console.error("Game data is missing");
+      return;
+    }
+    const hero = getHeroesByPlayerId(socket.id, game)?.[0] || null;
+    if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
+      console.error("Couldn't find a hero for the current player");
+      return;
+    }
+    setHero(hero);
+  }, [game, socket.id, role]);
 
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
@@ -196,6 +209,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     socket.on(
       "card-drawn",
       (data: { hero: HeroAsJson; card: TreasureCardAsJson }) => {
+        console.log("card drawn received in game page", data);
         toast.info(TreasureCard3D, { data: data.card, style:{ minWidth: "fit-content" }, icon: false });
         console.log("card drawn received in game page", data);
         setGame((prev) => {
