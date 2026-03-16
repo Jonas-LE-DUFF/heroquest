@@ -26,6 +26,7 @@ class TreasureCard {
     name: string,
     imgPath: string,
     originalAmountInDeck: number,
+    isPutBack?: boolean | undefined,
     effectName?: string,
     effectInfo?: {
       amountOfDamage?: number;
@@ -35,9 +36,9 @@ class TreasureCard {
   ) {
     this.id = id;
     this.name = name;
-    this.isPutBack = false;
     this.imgPath = imgPath;
     this.originalAmountInDeck = originalAmountInDeck;
+    this.isPutBack = isPutBack ?? false;
     this.effectName = effectName;
     this.effectInfo = effectInfo;
   }

@@ -23,6 +23,7 @@ class TreasureCardDeck {
             card.name,
             card.img_path,
             card.copies,
+            card.is_put_back,
             card.effect.name,
             cardEffect,
           ),
@@ -38,6 +39,10 @@ class TreasureCardDeck {
     if (!result.success) {
       console.error(`Failed to apply card effect: ${result.error}`);
       throw new Error(`Failed to apply card effect: ${result.error}`);
+    }
+    if (card.isPutBack) {
+      this.cards.unshift(card);
+      this.cards = shuffle(this.cards);
     }
     return card;
   }
