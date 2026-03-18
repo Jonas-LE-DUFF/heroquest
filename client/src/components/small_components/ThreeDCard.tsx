@@ -104,6 +104,7 @@ function ThreeDCard({
     cursor: rotation.isDragging ? "grabbing" : "grab",
     userSelect: "none",
     height: "100%",
+    borderRadius: "1rem",
   };
 
   const faceWithImageStyle: CSSProperties = backgroundImage

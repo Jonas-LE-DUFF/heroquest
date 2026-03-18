@@ -20,8 +20,8 @@ export function getSpellEllementAsCard(element: SpellElement): CardAsJson {
   return {
     id: elementName,
     name: getElementName(element, "en"),
-    imgPath: getCardImagePath(elementName, "spell") || "",
-    backImgPath: getBackImagePath(elementName, "spell") || "",
+    imgPath: getBackImagePath("spell_element", elementName) || "",
+    backImgPath: getBackImagePath("spell_element", elementName) || "",
     type: CardType.Back,
   };
 }
@@ -36,7 +36,7 @@ export function getSpellAsCard(spellId: string): CardAsJson {
     id: spell.id,
     name: spell.name,
     imgPath: getCardImagePath(spell.id, "spell") || "",
-    backImgPath: getBackImagePath(spell.id, "spell") || "",
+    backImgPath: getBackImagePath("spell_element", spell.school) || "",
     type: CardType.Spell,
   };
 }
