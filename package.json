@@ -16,7 +16,8 @@
     "test:server:coverage": "cd server && npm run test:coverage"
   },
   "devDependencies": {
-    "concurrently": "^7.6.0"
+    "concurrently": "^7.6.0",
+    "vitest": "^4.1.0"
   },
   "repository": {
     "type": "git",

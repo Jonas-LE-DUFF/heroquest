@@ -8,6 +8,7 @@ import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Position } from "../Position/Position";
 import { Direction } from "../../enums/Direction";
+import { get } from "http";
 
 class Game {
   id: string;
@@ -51,12 +52,14 @@ class Game {
         }
       }
     }
-    if (
-      this.players.size === 4 &&
-      player.role !== PlayerRole.GAME_MASTER &&
-      this.getGameMaster() === null
-    ) {
-      throw new Error("Cannot add more than 4 hero players to the game.");
+
+    // at least one game master is required, checking for the last player added to the game
+    if (this.players.size === 4 && player.role !== PlayerRole.GAME_MASTER) {
+      try {
+        this.getGameMaster();
+      } catch {
+        throw new Error("Cannot add more than 4 hero players to the game.");
+      }
     }
 
     this.players.set(player.id, player);
