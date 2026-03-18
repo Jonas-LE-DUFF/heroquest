@@ -1,11 +1,11 @@
 {
-  "back_img_path": "\\assets\\images\\cards\\treasures\\back.png",
+  "backImg": "/assets/images/cards/treasures/back.png",
   "deck": [
     {
       "id": "wandering_monster",
       "name": "Monstre errant",
       "copies": 6,
-      "img_path": "\\assets\\images\\cards\\treasures\\wanderingMonster.png",
+      "image_path": "/assets/images/cards/treasures/wanderingMonster.png",
       "is_put_back": true,
       "effect": {
         "name": "spawns a monster that attacks"
@@ -15,7 +15,7 @@
       "id": "spike_trap",
       "name": "Piège à piques",
       "copies": 2,
-      "img_path": "\\assets\\images\\cards\\treasures\\spikeTrap.png",
+      "image_path": "/assets/images/cards/treasures/spikeTrap.png",
       "is_put_back": true,
       "effect": {
         "name": "deal damage and end turn",
@@ -26,7 +26,7 @@
       "id": "arrow_trap",
       "name": "Piège à flèche",
       "copies": 2,
-      "img_path": "\\assets\\images\\cards\\treasures\\arrowTrap.png",
+      "image_path": "/assets/images/cards/treasures/arrowTrap.png",
       "is_put_back": true,
       "effect": {
         "name": "deal damage and end turn",
@@ -37,7 +37,7 @@
       "id": "jewels",
       "name": "Des joyaux !",
       "copies": 2,
-      "img_path": "\\assets\\images\\cards\\treasures\\jewels.png",
+      "image_path": "/assets/images/cards/treasures/jewels.png",
       "is_put_back": false,
       "effect": {
         "name": "gain gold",
@@ -48,7 +48,7 @@
       "id": "precious_rock",
       "name": "Une pierre précieuse",
       "copies": 2,
-      "img_path": "\\assets\\images\\cards\\treasures\\preciousStone.png",
+      "image_path": "/assets/images/cards/treasures/preciousStone.png",
       "is_put_back": false,
       "effect": {
         "name": "gain gold",
@@ -59,7 +59,7 @@
       "id": "gold_25",
       "name": "De l'Or !",
       "copies": 2,
-      "img_path": "\\assets\\images\\cards\\treasures\\gold25.png",
+      "image_path": "/assets/images/cards/treasures/gold25.png",
       "is_put_back": false,
       "effect": {
         "name": "gain gold",
@@ -70,7 +70,7 @@
       "id": "gold_15",
       "name": "De l'Or !",
       "copies": 2,
-      "img_path": "\\assets\\images\\cards\\treasures\\gold15.png",
+      "image_path": "/assets/images/cards/treasures/gold15.png",
       "is_put_back": false,
       "effect": {
         "name": "gain gold",
@@ -81,7 +81,7 @@
       "id": "defense_potion",
       "name": "Potion de défense",
       "copies": 1,
-      "img_path": "\\assets\\images\\cards\\treasures\\defensePotion.png",
+      "image_path": "/assets/images/cards/treasures/defensePotion.png",
       "is_put_back": false,
       "effect": {
         "name": "gain potion",
@@ -92,7 +92,7 @@
       "id": "heal_potion",
       "name": "Potion de guérison",
       "copies": 3,
-      "img_path": "\\assets\\images\\cards\\treasures\\healthPotion.png",
+      "image_path": "/assets/images/cards/treasures/healthPotion.png",
       "is_put_back": false,
       "effect": {
         "name": "gain potion",
@@ -103,7 +103,7 @@
       "id": "heroisim_potion",
       "name": "Potion de d'héroïsme",
       "copies": 1,
-      "img_path": "\\assets\\images\\cards\\treasures\\heroismPotion.png",
+      "image_path": "/assets/images/cards/treasures/heroismPotion.png",
       "is_put_back": false,
       "effect": {
         "name": "gain potion",
@@ -114,7 +114,7 @@
       "id": "strengh_potion",
       "name": "Potion de force",
       "copies": 1,
-      "img_path": "\\assets\\images\\cards\\treasures\\strengthPotion.png",
+      "image_path": "/assets/images/cards/treasures/strengthPotion.png",
       "is_put_back": false,
       "effect": {
         "name": "gain potion",

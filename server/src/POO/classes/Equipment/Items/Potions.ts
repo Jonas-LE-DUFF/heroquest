@@ -194,7 +194,7 @@ class TreasurePotionFactory {
         id : treasureData.id,
         name : treasureData.name,
         cost : 0,
-        image_path: treasureData.img_path,
+        image_path: treasureData.image_path,
       }
     switch (reference) {
       case "strengh_potion":
@@ -213,7 +213,7 @@ class TreasurePotionFactory {
 
 class EquipmentPotionFactory {
   createPotionFromReference(reference: string): Potion {
-    const equipmentData = equipments.find(
+    const equipmentData = equipments.deck.find(
       (equipment) => equipment.id === reference,
     );
     if (!equipmentData)

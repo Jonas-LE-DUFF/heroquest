@@ -15,8 +15,8 @@ import {
 } from "../../../shared/equipments";
 import { getItemAsCard } from "../cardUtils";
 import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
-import { CardComponent } from "../CardComponent";
 import { toast } from "react-toastify";
+import RotatableCard3D from "../../small_components/RotatableCard3D";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -44,30 +44,45 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     setEquipments: (equipments: T[]) => void,
   ) => (
     <ul>
-      {equipments.map((equipment) => (
+      {equipments.map((equipment : ItemAsJson) => (
         <li key={equipment.id}>
-          {equipment.name}
-          {equipment.type === "Potion" &&
-            hero.controlledByPlayerId === socket.id && (
-              <button onClick={() => drinkPotion(equipment.id)}>boire</button>
-            )}
+          <div>
+            {equipment.name}
+            {equipment.type === "Potion" &&
+              hero.controlledByPlayerId === socket.id && (
+                <button onClick={() => drinkPotion(equipment.id)}>boire</button>
+              )}
+            <button onClick={() => openItemDetails(equipment)}>détails</button>
 
-          {editionState && role === PlayerRole.GAME_MASTER && (
-            <button
-              onClick={() => {
-                const updatedEquipments = equipments.filter(
-                  (e) => e.id !== equipment.id,
-                );
-                setEquipments(updatedEquipments);
-              }}
-            >
-              Supprimer
-            </button>
-          )}
+            {editionState && role === PlayerRole.GAME_MASTER && (
+              <button
+                onClick={() => {
+                  const updatedEquipments = equipments.filter(
+                    (e) => e.id !== equipment.id,
+                  );
+                  setEquipments(updatedEquipments);
+                }}
+              >
+                Supprimer
+              </button>
+            )}
+          </div>
         </li>
       ))}
     </ul>
   );
+  function openItemDetails(item: ItemAsJson): void {
+    const cardData = getItemAsCard(item.id);
+    toast.info(RotatableCard3D, {
+      data: cardData,
+      style: { minWidth: "fit-content" },
+      icon: false,
+    });
+    
+  }
+
+
+
   function saveEditions(): void {
     socket.emit(
       "updateEquipment",
@@ -78,7 +93,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       },
       (response: { success: boolean; error: string }) => {
         if (response.success) {
-          toast.error("Équipement mis à jour avec succès !");
+          toast.success("Équipement mis à jour avec succès !");
 
           setEditionState(false);
           // TODO : update local equipment state with the new one
@@ -102,13 +117,9 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         gameId,
       },
       (response: { success: boolean; error: string }) => {
-        if (response.success) {
-          toast.error("Potion utilisée avec succès !");
-        } else {
-          toast.error(
-            "Erreur lors de l'utilisation de la potion : " + response.error,
-          );
-        }
+        toast.error(
+          "Erreur lors de l'utilisation de la potion : " + response.error,
+        );
       },
     );
   }

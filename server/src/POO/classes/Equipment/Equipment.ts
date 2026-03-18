@@ -78,7 +78,7 @@ class Equipment {
   }
 
   addEquipmentById(equipmentId: string) {
-    const equipmentData = equipmentJson.find((e) => e.id === equipmentId);
+    const equipmentData = equipmentJson.deck.find((e) => e.id === equipmentId);
     if (!equipmentData) {
       throw new Error(`Equipment with id ${equipmentId} not found.`);
     }

@@ -1,8 +1,8 @@
-import { TreasureCardAsJson } from "../../POO/interfaces/ClassAsJson/Treasure/TreasureCardAsJson";
+import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 import ThreeDCard from "./ThreeDCard";
 import { ToastContentProps } from "react-toastify";
 
-const TreasureCard3D = ({data, toastProps}: ToastContentProps<TreasureCardAsJson>) => {
+const RotatableCard3D = ({data}: ToastContentProps<CardAsJson>) => {
   return (
     <ThreeDCard
       className="three-d-card"
@@ -28,4 +28,4 @@ const TreasureCard3D = ({data, toastProps}: ToastContentProps<TreasureCardAsJson
   );
 };
 
-export default TreasureCard3D;
+export default RotatableCard3D;

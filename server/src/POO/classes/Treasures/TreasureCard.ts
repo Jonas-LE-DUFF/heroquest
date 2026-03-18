@@ -1,7 +1,7 @@
 import { dealDamage } from "../../../services/CombatService";
 import { Hero } from "../Units/Hero";
 import { TreasurePotionFactory } from "../Equipment/Items/Potions";
-import { TreasureCardAsJson } from "../../interfaces/ClassAsJson/Treasure/TreasureCardAsJson";
+import { CardAsJson } from "../../interfaces/ClassAsJson/CardAsJson";
 import treasures from "../../../shared/game_cards/treasure.json";
 
 class TreasureCard {
@@ -19,7 +19,7 @@ class TreasureCard {
       }
     | undefined;
 
-  backImgPath = treasures.back_img_path;
+  backImgPath = treasures.backImg;
 
   constructor(
     id: string,
@@ -71,7 +71,7 @@ class TreasureCard {
     return { success: false, error: "no effect implemented" };
   }
 
-  toJson(): TreasureCardAsJson {
+  toJson(): CardAsJson {
     return {
       id: this.id,
       name: this.name,

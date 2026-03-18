@@ -1,10 +1,10 @@
 import { SimpleCarousel } from "./SimpleCarousel";
 import { CardComponent } from "./CardComponent";
-import { Card } from "./Card";
+import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface CardCarouselProps {
   socket: any;
-  cards: Card[];
+  cards: CardAsJson[];
   onCenterChange?: (id: string | undefined) => void;
 }
 

@@ -1,7 +1,7 @@
 import equipmentsData from "./game_cards/equipments.json";
-import { Card, CardType } from "../components/Card/Card";
 import { EquipmentAsJson } from "../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { ItemAsJson } from "../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
+import { CardAsJson, CardType } from "../POO/interfaces/ClassAsJson/CardAsJson";
 
 export interface EquipmentModifiers {
   nbAttackDice?: number;
@@ -23,7 +23,7 @@ export interface Equipment {
   equipments_preventing_use: string[];
 }
 
-const equipments: Equipment[] = equipmentsData as Equipment[];
+const equipments: Equipment[] = equipmentsData.deck as Equipment[];
 
 /**
  * Get an equipment by its id
@@ -32,13 +32,13 @@ export function getEquipmentById(id: string): Equipment | undefined {
   return equipments.find((eq) => eq.id === id);
 }
 
-export function getAllEquipmentsAsCards(): Card[] {
+export function getAllEquipmentsAsCards(): CardAsJson[] {
   return equipments.map((eq) => ({
     id: eq.id,
     name: eq.name,
     type: CardType.Item,
-    image_path: eq.image_path,
-    back_image_path: "path/to/back/image", // You can set this to the correct path if needed
+    imgPath: eq.image_path,
+    backImgPath: "path/to/back/image", // You can set this to the correct path if needed
   }));
 }
 
@@ -58,7 +58,7 @@ export function flattenEquipment(equipment: EquipmentAsJson): string[] {
   return equipmentIds;
 }
 
-export function getEquipmentAsCards(equipment: EquipmentAsJson): Card[] {
+export function getEquipmentAsCards(equipment: EquipmentAsJson): CardAsJson[] {
   const items: ItemAsJson[] = getEquipmentAsItems(equipment);
   return items.map((item) => {
     const eq = getEquipmentById(item.id);
@@ -66,8 +66,8 @@ export function getEquipmentAsCards(equipment: EquipmentAsJson): Card[] {
       id: item.id,
       name: item.name,
       type: CardType.Item,
-      image_path: eq?.image_path ?? "path/to/default/image", // You can set this to the correct path if needed
-      back_image_path: "path/to/back/image", // You can set this to the correct path if needed
+      imgPath: eq?.image_path ?? "path/to/default/image", // You can set this to the correct path if needed
+      backImgPath: equipmentsData.backImg ?? "path/to/back/image", // You can set this to the correct path if needed
     };
   });
 }

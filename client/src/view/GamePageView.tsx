@@ -34,9 +34,9 @@ import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerService } from "../POO/PlayerService";
-import { TreasureCardAsJson } from "../POO/interfaces/ClassAsJson/Treasure/TreasureCardAsJson";
+import { CardAsJson } from "../POO/interfaces/ClassAsJson/CardAsJson";
 import { toast } from "react-toastify";
-import TreasureCard3D from "../components/small_components/TreasureCard3D";
+import RotatableCard3D from "../components/small_components/RotatableCard3D";
 
 interface GamePageProps {
   socket: any;
@@ -208,9 +208,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
     socket.on(
       "card-drawn",
-      (data: { hero: HeroAsJson; card: TreasureCardAsJson }) => {
+      (data: { hero: HeroAsJson; card: CardAsJson }) => {
         console.log("card drawn received in game page", data);
-        toast.info(TreasureCard3D, { data: data.card, style:{ minWidth: "fit-content" }, icon: false });
+        toast.info(RotatableCard3D, {
+          data: data.card,
+          style: { minWidth: "fit-content" },
+          icon: false,
+        });
         console.log("card drawn received in game page", data);
         setGame((prev) => {
           if (!prev) return prev;
@@ -336,7 +340,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          toast.error(`Failed to place element: ${response.error}`  );
+          toast.error(`Failed to place element: ${response.error}`);
         }
       },
     );

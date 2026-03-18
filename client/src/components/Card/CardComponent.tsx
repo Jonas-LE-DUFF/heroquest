@@ -1,24 +1,24 @@
-import { Card } from "./Card";
+import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface CardProps {
-  card: Card;
+  card: CardAsJson;
 }
 
 const CardComponent = ({ card }: CardProps) => {
-  return <img src={card.image_path} alt={card.name} className="card" />;
+  return <img src={card.imgPath} alt={card.name} className="card" />;
 };
 
 const BackCardComponent = ({ card }: CardProps) => {
-  return <img src={card.back_image_path} alt={card.name} className="card" />;
+  return <img src={card.backImgPath} alt={card.name} className="card" />;
 };
 
 const GreyCardComponent = ({ card }: CardProps) => {
-  return <img src={card.image_path} alt={card.name} className="card greyish" />;
+  return <img src={card.imgPath} alt={card.name} className="card greyish" />;
 };
 
 const GreyBackCardComponent = ({ card }: CardProps) => {
   return (
-    <img src={card.back_image_path} alt={card.name} className="card greyish" />
+    <img src={card.backImgPath} alt={card.name} className="card greyish" />
   );
 };
 

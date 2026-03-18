@@ -26,9 +26,9 @@ import {
   getEquipmentById,
 } from "../shared/equipments";
 import { getSpellEllementAsCard } from "../components/Card/cardUtils";
-import { CardType } from "../components/Card/Card";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { toast } from "react-toastify";
+import { CardType } from "../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -281,9 +281,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           selectedCards={heroCreation.equipments.map((id) => ({
             id,
             name: id,
+            imgPath: getEquipmentById(id)?.image_path ?? "",
+            backImgPath: getEquipmentById(id)?.image_path ?? "",
             type: CardType.Item,
-            image_path: getEquipmentById(id)?.image_path ?? "",
-            back_image_path: getEquipmentById(id)?.image_path ?? "",
           }))}
           onCardsChange={(equipments) =>
             setHeroCreation((prev) => ({

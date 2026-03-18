@@ -21,7 +21,7 @@ class TreasureCardDeck {
           new TreasureCard(
             card.id,
             card.name,
-            card.img_path,
+            card.image_path,
             card.copies,
             card.is_put_back,
             card.effect.name,
