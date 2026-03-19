@@ -3,7 +3,7 @@ import { EquipmentAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/E
 import { HeroAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { useLocation } from "react-router-dom";
 import { PlayerRole } from "../../../POO/enums/PlayerRole";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArmorAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ArmorAsJson";
 import { WeaponAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/WeaponAsJson";
 import { PotionAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/PotionAsJson";
@@ -13,7 +13,7 @@ import {
   flattenEquipment,
   getAllEquipmentsAsCards,
 } from "../../../shared/equipments";
-import { getItemAsCard } from "../cardUtils";
+import { getAllTreasuresItems, getItemAsCard } from "../cardUtils";
 import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
 import { toast } from "react-toastify";
 import RotatableCard3D from "../../small_components/RotatableCard3D";
@@ -44,7 +44,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     setEquipments: (equipments: T[]) => void,
   ) => (
     <ul>
-      {equipments.map((equipment : ItemAsJson) => (
+      {equipments.map((equipment: ItemAsJson) => (
         <li key={equipment.id}>
           <div>
             {equipment.name}
@@ -78,10 +78,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       style: { minWidth: "fit-content" },
       icon: false,
     });
-    
   }
-
-
 
   function saveEditions(): void {
     socket.emit(
@@ -109,6 +106,25 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     setEditionState(false);
   }
 
+  useEffect(() => {
+    socket.on("game-state-update", (data: { game: any }) => {
+      const updatedHero = data.game.gameState.Units.find(
+        (unit: any) => unit.id === hero.id,
+      );
+      if (updatedHero) {
+        setArmors(updatedHero.equipment.armors);
+        setWeapons(updatedHero.equipment.weapons);
+        setPotions(updatedHero.equipment.potions);
+        setTools(updatedHero.equipment.tools);
+        setGold(updatedHero.equipment.gold);
+      }
+    });
+
+    return () => {
+      socket.off("game-state-update");
+    };
+  }, [socket, hero.id]);
+
   function drinkPotion(potionId: string): void {
     socket.emit(
       "drink-potion",
@@ -129,14 +145,24 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     return flattenEquipment(equipment).map((e) => getItemAsCard(e));
   });
 
-  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openAddEquipmentDialog, setOpenAddEquipmentDialog] = useState(false);
+  const [openAddTreasureDialog, setOpenAddTreasureDialog] = useState(false);
 
   const openAddEquipmentMenu = () => {
-    setOpenAddDialog(true);
+    setOpenAddEquipmentDialog(true);
   };
 
   const closeAddEquipmentMenu = () => {
-    setOpenAddDialog(false);
+    setOpenAddEquipmentDialog(false);
+    saveEditions();
+  };
+
+  const openAddTreasureMenu = () => {
+    setOpenAddTreasureDialog(true);
+  };
+
+  const closeAddTreasureMenu = () => {
+    setOpenAddTreasureDialog(false);
     saveEditions();
   };
 
@@ -170,16 +196,33 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         <button onClick={() => saveEditions()}>Terminer l'édition</button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
-        <button onClick={() => openAddEquipmentMenu()}>
-          ajouter un équipement
-        </button>
+        <>
+          <button onClick={() => openAddEquipmentMenu()}>
+            ajouter un équipement
+          </button>
+          <button onClick={() => openAddTreasureMenu()}>
+            ajouter un trésor
+          </button>
+        </>
       )}
-      <Dialog open={openAddDialog} onClose={closeAddEquipmentMenu}>
+      <Dialog open={openAddEquipmentDialog} onClose={closeAddEquipmentMenu}>
         <div className="equipments-dialog">
           <CardSelectionComponent
             socket={socket}
             selectedCards={equipmentAsCards}
             cards={getAllEquipmentsAsCards()}
+            onCardsChange={(newSelectedCards) => {
+              setEquipmentAsCards(newSelectedCards);
+            }}
+          />
+        </div>
+      </Dialog>
+      <Dialog open={openAddTreasureDialog} onClose={closeAddTreasureMenu}>
+        <div className="equipments-dialog">
+          <CardSelectionComponent
+            socket={socket}
+            selectedCards={equipmentAsCards}
+            cards={getAllTreasuresItems()}
             onCardsChange={(newSelectedCards) => {
               setEquipmentAsCards(newSelectedCards);
             }}

@@ -160,4 +160,14 @@ function getCardName(id: string, cardType: string): string | undefined {
   return eq ? eq.name : undefined;
 }
 
+export function getAllTreasuresItems(): CardAsJson[] {
+  return treasures.deck.filter((treasure) => !!treasure.effect.potion_gained).map((treasure) => ({
+    id: treasure.id,
+    name: treasure.name,
+    type: CardType.Item,
+    imgPath: treasure.image_path || "",
+    backImgPath: treasures.backImg || "",
+  }));
+}
+
 export { getSpellListForSchool, getCardImagePath, getCardName };

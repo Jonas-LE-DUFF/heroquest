@@ -1,8 +1,9 @@
 import { Armor } from "./Items/Armor";
-import { Potion, EquipmentPotionFactory } from "./Items/Potions";
+import { Potion, EquipmentPotionFactory, TreasurePotionFactory } from "./Items/Potions";
 import { Weapon } from "./Items/Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
+import treasuresJson from "../../../shared/game_cards/treasure.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { WeaponRange } from "../../enums/WeaponRange";
 import { ArmorType } from "../../enums/ArmorType";
@@ -79,6 +80,16 @@ class Equipment {
 
   addEquipmentById(equipmentId: string) {
     const equipmentData = equipmentJson.deck.find((e) => e.id === equipmentId);
+    const treasureData = treasuresJson.deck.find((t) => t.id === equipmentId);
+    if (treasureData) {
+      if (!treasureData.effect.potion_gained) {
+        throw new Error(`Treasure with id ${equipmentId} does not grant a potion.`);
+      }
+      const factory = new TreasurePotionFactory();
+      const potion: Potion = factory.createPotionFromReference(treasureData.effect.potion_gained);
+      this.addPotion(potion);
+      return potion;
+    }
     if (!equipmentData) {
       throw new Error(`Equipment with id ${equipmentId} not found.`);
     }
