@@ -231,6 +231,18 @@ describe("moveUnit (MovementService)", () => {
     expect(result.success).toBe(false);
     expect(result.error).toBe("tile is occupied");
   });
+
+  it("should fail when moving into a wall", () => {
+    const board = new Board();
+    const hero = createTestHero();
+    board.placeUnitAt(hero, new Position(5, 5));
+
+    board.getTileAtPosition(new Position(5, 5).afterMove(Direction.DOWN))!.type = TileType.WALL;
+
+    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Tile is impassable");
+  });
 });
 
 describe("handleDoorOpening (MovementService)", () => {
