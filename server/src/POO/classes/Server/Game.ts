@@ -257,12 +257,13 @@ class Game {
     }
   }
 
-  updateHeroEquipment(heroId: string, equipment: string[]) {
-    const hero = this.gameState.getHeroById(heroId);
+  updateHeroEquipment(heroId: string, equipment: string[], gold: number): void {
+    const hero: Hero | undefined= this.gameState.getHeroById(heroId);
     if (!hero) {
       throw new Error(`Hero with id ${heroId} not found.`);
     }
     hero.updateEquipment(equipment);
+    hero.updateGold(gold);
   }
 
   toJson(): GameAsJson {

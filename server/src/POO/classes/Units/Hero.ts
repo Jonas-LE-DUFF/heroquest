@@ -67,6 +67,10 @@ class Hero extends Unit<HeroCategory> {
     this.equipment = newEquipment;
   }
 
+  updateGold(gold: number) {
+    this.equipment.gold = gold;
+  }
+
   validateStatsImplementation(): { success: boolean; error?: string } {
     if (this.category === HeroCategory.Cleric) {
       if (this.spells.length !== 9) {

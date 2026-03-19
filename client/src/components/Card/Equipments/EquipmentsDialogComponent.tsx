@@ -90,6 +90,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         gameId,
         heroId: hero.id,
         equipment: equipmentAsCards.map((card) => card.id),
+        gold: gold,
       },
       (response: { success: boolean; error: string }) => {
         if (response.success) {

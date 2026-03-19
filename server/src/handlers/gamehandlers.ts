@@ -52,9 +52,9 @@ export function registerGameHandlers(socket: Socket) {
         return callback(errorResponse("Seul le maître du jeu peut faire cela"));
       }
 
-      const { equipment, heroId } = data;
+      const { equipment, heroId, gold } = data;
 
-      game!.updateHeroEquipment(heroId, equipment);
+      game!.updateHeroEquipment(heroId, equipment, gold);
       const io = ServerHeroQuest.getServerInstance().getIo();
       io.to(gameId).emit("game-state-update", {
         game: game!.toJson(),
