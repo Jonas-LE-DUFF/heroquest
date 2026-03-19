@@ -19,7 +19,6 @@ export function checkUnitDefeat(
     console.log(target.stats?.health, "HP remaining. Target not defeated.");
     return false;
   }
-  console.log(`Target ${target.id} defeated.`);
   const gameState: GameState | undefined =
     GameService.getGame(gameId)?.gameState;
   if (!gameState) {

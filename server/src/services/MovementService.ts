@@ -41,13 +41,6 @@ const canMove = (
     return { success: false, error: "wall in the way" };
   }
 
-  console.log("Destination tile type:", toTile.type);
-
-  console.log(
-    "Can phase through walls:",
-    toTile.isOccupied(),
-  );
-
   if(toTile.isImpassable() && !canPhaseThroughWalls) {
     console.error("Tile is impassable");
     return { success: false, error: "Tile is impassable" };

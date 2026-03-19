@@ -59,7 +59,6 @@ export function getItemAsCard(id: string): CardAsJson {
       getBackImagePath(item ? "equipment" : "treasure") || "",
     type: CardType.Item,
   };
-  console.log("Generated card:", card);
   return card;
 }
 
@@ -121,7 +120,6 @@ function getBackImagePath(
   }
 
   const backImgPath = (jsonFile as any).backImg;
-  console.log("Back image path:", backImgPath);
   return backImgPath;
 }
 

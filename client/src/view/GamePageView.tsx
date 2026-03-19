@@ -106,7 +106,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             return prev;
           }
           if (isDead) {
-            console.log(`Player ${data.entityId} has been defeated.`);
             prev.players = prev.players.filter((p) => p.id !== player.id);
           }
         }
@@ -215,7 +214,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           style: { minWidth: "fit-content" },
           icon: false,
         });
-        console.log("card drawn received in game page", data);
         setGame((prev) => {
           if (!prev) return prev;
           const heroIndex = prev.gameState.Units.findIndex(

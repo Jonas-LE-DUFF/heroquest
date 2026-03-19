@@ -77,10 +77,17 @@ const Navbar: React.FC<NavbarProps> = ({
   function searchTreasures() {
     console.debug("searchTreasures called for hero", hero?.name); // Debug log
     if (role === PlayerRole.HERO) {
-      console.log("Requesting treasure search for hero", hero?.name);
       toast.info(
-        <p>Pour recherdes trésors veuillez demander au maitre du jeu de le faire pour vous en cliquant sur le bouton de recherche de trésors dans la barre de navigation<br/><br/>(Le système de recherche de trésors est en cours de développement et nécessite une interaction du maitre du jeu pour le moment)</p>,
-       { style:{minWidth: "600px"} },
+        <p>
+          Pour recherdes trésors veuillez demander au maitre du jeu de le faire
+          pour vous en cliquant sur le bouton de recherche de trésors dans la
+          barre de navigation
+          <br />
+          <br />
+          (Le système de recherche de trésors est en cours de développement et
+          nécessite une interaction du maitre du jeu pour le moment)
+        </p>,
+        { style: { minWidth: "600px" } },
       );
       return;
     }
@@ -93,18 +100,13 @@ const Navbar: React.FC<NavbarProps> = ({
         error?: string;
       }) => {
         if (response.success) {
-          if (response.treasureCardId) {
-            // Handle the case where treasures are found
-            console.log("Trésor trouvé ! ID de la carte : " + response.treasureCardId);
-            toast.success("Trésor trouvé ! Vous avez gagné une carte : " + response.treasureCardId);
-            return;
-          }
-          toast.info("Aucun trésor trouvé à cet endroit.");
-          return;
+          console.error(
+            "Erreur lors de la recherche de trésors : " + response.error,
+          );
+          toast.error(
+            `Erreur lors de la recherche de trésors : ${response.error}`,
+          );
         }
-        console.error("Erreur lors de la recherche de trésors : " + response.error);
-        toast.error(`Erreur lors de la recherche de trésors : ${response.error}`,
-        );
       },
     );
   }

@@ -167,7 +167,6 @@ function handleDoorPlacement(
       error: newDoor.error || "Failed to place door",
     };
   }
-  console.log("new door placed :", newDoor);
   io.to(gameId).emit("door-placed", {
     position: newDoor.doorPlace?.position!,
     verticalOrHorizontal: newDoor.doorPlace?.verticalOrHorizontal!,

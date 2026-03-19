@@ -46,7 +46,6 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
   };
 
   socket.on("game-state-update", (data: { game: GameAsJson }) => {
-    console.log("game update in game preparation view : ", data.game);
     setGame(data.game);
     location.state.game = data.game;
   });

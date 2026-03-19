@@ -130,7 +130,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     return spellElementsCards.map((element: SpellElement) => {
       const card = getSpellEllementAsCard(element);
-      console.log("Rendering spell element card:", card);
       return (
         <div
           className="singleSpellCard"
