@@ -13,7 +13,7 @@ export async function rollFightDice(
   gameId: string,
   wishedNumberOfDices: number,
   playerRole: PlayerRole,
-) {
+) : Promise<{ success: boolean; results?: FightDiceFaces[]; error?: string }> {
   const io = ServerHeroQuest.getServerInstance().getIo();
 
   let results: FightDiceFaces[] = [];
@@ -45,7 +45,7 @@ export async function rollRedDice(
   gameId: string,
   numberOfDices: number,
   playerRole: PlayerRole,
-) {
+) : Promise<{ success: boolean; results?: number[]; error?: string }> {
 
   const io = ServerHeroQuest.getServerInstance().getIo();
 

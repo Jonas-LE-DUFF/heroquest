@@ -1,5 +1,5 @@
-import { TileType } from "../enums/TileType";
-import { TileAsJson } from "../interfaces/ClassAsJson/Board/TileAsJson";
+import { TileType } from "../../../enums/TileType";
+import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/TileAsJson";
 
 class Tile {
   unitId: string | null;

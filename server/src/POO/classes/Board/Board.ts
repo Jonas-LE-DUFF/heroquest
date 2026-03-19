@@ -4,7 +4,7 @@ import { Direction } from "../../enums/Direction";
 import { TileType } from "../../enums/TileType";
 import { BoardAsJson } from "../../interfaces/ClassAsJson/Board/BoardAsJson";
 import { Position } from "../Position/Position";
-import { Tile } from "../Tile";
+import { Tile } from "./Tile/Tile";
 import { Unit } from "../Units/Unit";
 import { BoardInitializer } from "./BoardInitializer";
 import { DoorGrid } from "./DoorGrid";

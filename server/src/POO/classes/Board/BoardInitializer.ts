@@ -1,5 +1,5 @@
 import { TileType } from "../../enums/TileType";
-import { Tile } from "../Tile";
+import { Tile } from "./Tile/Tile";
 import { WallGrid } from "./WallGrid";
 
 class BoardInitializer {

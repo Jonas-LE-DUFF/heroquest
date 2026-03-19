@@ -3,7 +3,7 @@ import { requireGameExists } from "../guards/requireGameExists";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { MonsterFactory } from "../POO/classes/Factories/MonsterFactory";
 import { Position } from "../POO/classes/Position/Position";
-import { Tile } from "../POO/classes/Tile";
+import { Tile } from "../POO/classes/Board/Tile/Tile";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerRole } from "../POO/enums/PlayerRole";
