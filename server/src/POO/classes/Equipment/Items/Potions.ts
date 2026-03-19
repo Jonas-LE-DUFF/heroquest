@@ -8,6 +8,7 @@ import { rollRedDice } from "../../../../services/DiceService";
 import { PlayerRole } from "../../../enums/PlayerRole";
 import treasures from "../../../../shared/game_cards/treasure.json";
 import equipments from "../../../../shared/game_cards/equipments.json"
+import { Hero } from "../../Units/Hero";
 
 abstract class Potion extends Item {
   effect: Effect | null;
@@ -27,7 +28,7 @@ abstract class Potion extends Item {
   abstract applyEffect(
     gameId: string,
     target: any,
-  ): { success: boolean; error?: string };
+  ): Promise<{ success: boolean; error?: string }>;
 
   toJson(): PotionAsJson {
     const baseJson = this.getBaseJson();
@@ -59,10 +60,10 @@ abstract class ClassicPotion extends Potion {
   applyEffect(
     gameId: string,
     target: any,
-  ): { success: boolean; error?: string } {
+  ): Promise<{ success: boolean; error?: string }> {
     // Logic to apply the effect to the target
     target.effects.push(this.effect);
-    return { success: true };
+    return Promise.resolve({ success: true });
   }
 }
 
@@ -95,12 +96,12 @@ class HolyWater extends Potion {
   applyEffect(
     gameId: string,
     target: any,
-  ): { success: boolean; error?: string } {
-    return {
+  ): Promise<{ success: boolean; error?: string }> {
+    return Promise.resolve({
       success: false,
       error:
         "Veuillez demander au game master d'appliquer cette potion manuellement",
-    };
+    });
   }
 }
 
@@ -115,20 +116,29 @@ class HealthPotion extends Potion {
     );
   }
 
-  applyEffect(
+  async applyEffect(
     gameId: string,
-    target: any,
-  ): { success: boolean; error?: string } {
+    target: Hero,
+  ): Promise<{ success: boolean; error?: string }> {
+    const diceResult = await rollRedDice(gameId, 1, PlayerRole.HERO);
+    if (!diceResult.success) {
+      console.error("Failed to roll dice for Health Potion:");
+      return { success: false, error: "Failed to roll dice for Health Potion" };
+    }
 
-    rollRedDice(gameId, 1, PlayerRole.HERO).then((diceResult) => {
-      if (!diceResult.success) {
-        console.error("Failed to roll dice for Health Potion:");
-        throw new Error("Failed to roll dice for Health Potion");
-      }
-      const heal = diceResult.results[0];
-      target.health = Math.min(target.maxHealth, target.health + heal);
-    });
+    const heal = diceResult.results[0];
+    if (
+      target.stats.health === undefined ||
+      target.stats.maxHealth === undefined ||
+      heal === undefined
+    ) {
+      return {
+        success: false,
+        error: "Failed to apply health potion effect, values were undefined",
+      };
+    }
 
+    target.stats.health = Math.min(target.stats.maxHealth, target.stats.health + heal);
     return { success: true };
   }
 }
@@ -177,12 +187,12 @@ class HeroismPotion extends Potion {
   applyEffect(
     gameId: string,
     target: any,
-  ): { success: boolean; error?: string } {
-    return {
+  ): Promise<{ success: boolean; error?: string }> {
+    return Promise.resolve({
       success: false,
       error:
         "Veuillez demander au game master d'appliquer cette potion manuellement",
-    };
+    });
   }
 }
 

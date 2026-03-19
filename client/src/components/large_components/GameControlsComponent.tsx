@@ -155,7 +155,7 @@ const GameControls = ({
       { gameId: gameId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          toast.error(`Erreur de déplacement du monstre: ${response.error}`);
+          toast.error(`Erreur lors de la fin du tour: ${response.error}`);
         }
       },
     );

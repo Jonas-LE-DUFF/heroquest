@@ -16,7 +16,6 @@ import {
 } from "../validation";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { requireGameMaster } from "../guards/requireGameMaster";
-import { tr } from "zod/v4/locales";
 
 export function registerGameActionsHandlers(socket: Socket) {
   ///** common player and game master actions **///
@@ -142,7 +141,7 @@ export function registerGameActionsHandlers(socket: Socket) {
           );
         }
         try {
-          hero.drinkPotion(gameId, potion);
+          await hero.drinkPotion(gameId, potion);
         } catch (error) {
           return callback(
             errorResponse(`the drinking encountered an error : ${error}`),

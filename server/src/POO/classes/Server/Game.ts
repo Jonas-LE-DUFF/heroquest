@@ -236,7 +236,6 @@ class Game {
       this.gameState.getMonsters().forEach((monster: Monster) => {
         monster.endTurnEffects();
       });
-      return;
     }
   }
 

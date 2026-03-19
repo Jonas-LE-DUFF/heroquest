@@ -99,7 +99,7 @@ const Navbar: React.FC<NavbarProps> = ({
         treasureCardId?: string;
         error?: string;
       }) => {
-        if (response.success) {
+        if (!response.success) {
           console.error(
             "Erreur lors de la recherche de trésors : " + response.error,
           );

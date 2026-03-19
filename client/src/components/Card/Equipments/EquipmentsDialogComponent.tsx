@@ -107,7 +107,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
   }
 
   useEffect(() => {
-    socket.on("game-state-update", (data: { game: any }) => {
+    const handleGameStateUpdate = (data: { game: any }) => {
       const updatedHero = data.game.gameState.Units.find(
         (unit: any) => unit.id === hero.id,
       );
@@ -118,10 +118,12 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         setTools(updatedHero.equipment.tools);
         setGold(updatedHero.equipment.gold);
       }
-    });
+    };
+
+    socket.on("game-state-update", handleGameStateUpdate);
 
     return () => {
-      socket.off("game-state-update");
+      socket.off("game-state-update", handleGameStateUpdate);
     };
   }, [socket, hero.id]);
 
@@ -129,14 +131,16 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     socket.emit(
       "drink-potion",
       {
-        potionId: potionId,
-        heroId: hero.id,
         gameId,
+        heroId: hero.id,
+        potionId: potionId,
       },
-      (response: { success: boolean; error: string }) => {
-        toast.error(
-          "Erreur lors de l'utilisation de la potion : " + response.error,
-        );
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          toast.error(
+            "Erreur lors de l'utilisation de la potion : " + response.error,
+          );
+        }
       },
     );
   }

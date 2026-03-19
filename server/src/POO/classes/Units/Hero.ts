@@ -118,8 +118,8 @@ class Hero extends Unit<HeroCategory> {
     return Array.from(elementsSet);
   }
 
-  drinkPotion(gameId: string, potion: Potion) {
-    const response = potion.applyEffect(gameId, this);
+  async drinkPotion(gameId: string, potion: Potion): Promise<void> {
+    const response = await potion.applyEffect(gameId, this);
     if (!response.success) {
       throw new Error(`Failed to apply potion effect: ${response.error}`);
     }

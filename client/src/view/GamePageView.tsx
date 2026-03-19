@@ -134,7 +134,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   );
 
   useEffect(() => {
-    socket.on("game-state-update", (data: { game: GameAsJson }) => {
+    const handleGameStateUpdate = (data: { game: GameAsJson }) => {
       console.log("c'est l'update du gamePage", data.game);
       const selectedId = selectedEntityId;
       if (selectedId) {
@@ -158,80 +158,74 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       // Also increment board key on full game state updates
       // TODO : try to remove this setTimeout
       setBoardKey((k) => k + 1);
-    });
+    };
 
+    const handleTilePlaced = (data: {
+      position: PositionAsJson;
+      TileType: TileType;
+    }) => {
+      console.log("tile placed received in game page", data);
+      setGame((prev) => {
+        if (!prev) return prev;
+
+        setTileTypeAtPosition(data.position, data.TileType, prev.gameState.board);
+
+        return { ...prev } as GameAsJson;
+      });
+
+      // TODO : try to remove this setTimeout
+      setBoardKey((k) => k + 1);
+    };
+
+    const handleDoorPlaced = (data: {
+      position: PositionAsJson;
+      verticalOrHorizontal: "vertical" | "horizontal";
+    }) => {
+      setGame((prev) => {
+        if (!prev) return prev;
+        game.gameState.board = setDoorAtPosition(
+          data.position,
+          data.verticalOrHorizontal,
+          prev.gameState.board,
+        );
+
+        return { ...prev } as GameAsJson;
+      });
+
+      //TODO : try to remove this setTimeout
+      setBoardKey((k) => k + 1);
+    };
+
+    const handleCardDrawn = (data: { hero: HeroAsJson; card: CardAsJson }) => {
+      console.log("card drawn received in game page", data);
+      toast.info(RotatableCard3D, {
+        data: data.card,
+        style: { minWidth: "fit-content" },
+        icon: false,
+      });
+      setGame((prev) => {
+        if (!prev) return prev;
+        const heroIndex = prev.gameState.Units.findIndex(
+          (u) => u.id === data.hero.id,
+        );
+        if (heroIndex === -1) return prev;
+        prev.gameState.Units[heroIndex] = data.hero;
+        return { ...prev } as GameAsJson;
+      });
+    };
+
+    socket.on("game-state-update", handleGameStateUpdate);
     socket.on("stats-updated", handleStatsUpdate);
-
-    socket.on(
-      "tile-placed",
-      (data: { position: PositionAsJson; TileType: TileType }) => {
-        console.log("tile placed received in game page", data);
-        setGame((prev) => {
-          if (!prev) return prev;
-
-          setTileTypeAtPosition(
-            data.position,
-            data.TileType,
-            prev.gameState.board,
-          );
-
-          return { ...prev } as GameAsJson;
-        });
-
-        // TODO : try to remove this setTimeout
-        setBoardKey((k) => k + 1);
-      },
-    );
-
-    socket.on(
-      "door-placed",
-      (data: {
-        position: PositionAsJson;
-        verticalOrHorizontal: "vertical" | "horizontal";
-      }) => {
-        setGame((prev) => {
-          if (!prev) return prev;
-          game.gameState.board = setDoorAtPosition(
-            data.position,
-            data.verticalOrHorizontal,
-            prev.gameState.board,
-          );
-
-          return { ...prev } as GameAsJson;
-        });
-
-        //TODO : try to remove this setTimeout
-        setBoardKey((k) => k + 1);
-      },
-    );
-
-    socket.on(
-      "card-drawn",
-      (data: { hero: HeroAsJson; card: CardAsJson }) => {
-        console.log("card drawn received in game page", data);
-        toast.info(RotatableCard3D, {
-          data: data.card,
-          style: { minWidth: "fit-content" },
-          icon: false,
-        });
-        setGame((prev) => {
-          if (!prev) return prev;
-          const heroIndex = prev.gameState.Units.findIndex(
-            (u) => u.id === data.hero.id,
-          );
-          if (heroIndex === -1) return prev;
-          prev.gameState.Units[heroIndex] = data.hero;
-          return { ...prev } as GameAsJson;
-        });
-      },
-    );
+    socket.on("tile-placed", handleTilePlaced);
+    socket.on("door-placed", handleDoorPlaced);
+    socket.on("card-drawn", handleCardDrawn);
 
     return () => {
-      socket.off("tile-placed");
-      socket.off("door-placed");
-      socket.off("stats-updated");
-      socket.off("game-state-update");
-      socket.off("card-drawn");
+      socket.off("tile-placed", handleTilePlaced);
+      socket.off("door-placed", handleDoorPlaced);
+      socket.off("stats-updated", handleStatsUpdate);
+      socket.off("game-state-update", handleGameStateUpdate);
+      socket.off("card-drawn", handleCardDrawn);
     };
   }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate]);
 
