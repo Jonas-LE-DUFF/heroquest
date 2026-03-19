@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import PlayerStatusComponent from "../components/PlayerStatusComponent";
+import PlayerStatusComponent from "../components/large_components/PlayerStatusComponent";
+import { toast, ToastContainer } from "react-toastify";
 
 interface LobbyPageProps {
   socket: any;
@@ -21,7 +22,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   useEffect(() => {
     if (!game || !playerName) {
-      console.log(
+      console.error(
         `Données manquantes : ${playerName}, ${game}, redirection...`,
       );
       navigate("/");
@@ -56,17 +57,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       { gameId },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success) {
-          console.log("Partie lancée avec succès ! partie :", response.data);
           const game = response.data;
           navigate("/game", {
             state: { playerName, gameId, role, game },
           });
         } else {
-          console.error(
-            "Erreur lors du lancement de la partie:",
-            response.error,
-          );
-          alert(`Erreur: ${response.error}`);
+          toast.error(`Erreur: ${response.error}`);
         }
       },
     );
@@ -78,11 +74,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       { gameId },
       (response: { success: boolean; error?: string }) => {
         if (response.success) {
-          console.log("Left lobby successfully");
           navigate("/");
         } else {
           console.error("Error leaving lobby:", response.error);
-          alert(`Error: ${response.error}`);
+          toast.error(`Error: ${response.error}`);
         }
       },
     );
@@ -90,7 +85,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const chooseCharacter = () => {
     if (!game) {
-      alert("Game state is missing. Cannot proceed to character selection.");
+      toast.error("Game state is missing. Cannot proceed to character selection.");
       return;
     }
 
@@ -106,18 +101,16 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const unselectCharacter = (heroId: string) => {
     if (!game) {
-      alert("Game state is missing. Cannot proceed to character unselection.");
+      toast.error("Game state is missing. Cannot proceed to character unselection.");
       return;
     }
     socket.emit(
       "unselect-character",
       { gameId, heroId },
       (response: { success: boolean; error?: string }) => {
-        if (response.success) {
-          console.log("Character unselected successfully");
-        } else {
+        if (!response.success) {
           console.error("Error unselecting character:", response.error);
-          alert(`Error: ${response.error}`);
+          toast.error(`Error: ${response.error}`);
         }
       },
     );

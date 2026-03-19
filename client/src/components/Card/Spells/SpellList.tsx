@@ -32,18 +32,10 @@ const SpellList: React.FC<SpellListProps> = ({
   if (!displayedSpells) {
     return <div className="spell-view">No spells available</div>;
   }
-  console.log("Rendering SpellList with spells: ", displayedSpells);
-  console.log("Used spells: ", usedSpellList);
-
   const onSpellClickInternal = (spellId: string) => {
-    console.log("Spell clicked: ", spellId);
     if (spellId === "Djinn") {
       const djinnSpells = getDjinnSpells();
       setDisplayedSpells(djinnSpells);
-      console.log(
-        "Djinn spell clicked, expanding to sub-spells: ",
-        djinnSpells,
-      );
       setOnReturnHandler(() => {
         setDisplayedSpells(spellList);
         setOnReturnHandler(() => onReturnHandler);

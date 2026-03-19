@@ -4,20 +4,19 @@ import {
   getFightDiceFaceNumber,
   getIconClassPath,
   getUnitClassName,
-  isHero,
-} from "../shared/utils";
+} from "../../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { getEquipmentName } from "../shared/equipments";
-import { Position } from "../POO/classes/Position/Position";
-import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
+import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
+import { toast } from "react-toastify";
 
 interface StatsComponentProps {
   socket: Socket;
   gameId: string;
-  position: Position;
+  position: PositionAsJson;
   unit: MonsterAsJson | HeroAsJson;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
@@ -38,7 +37,7 @@ const StatsComponent = ({
   }, [unit.stats]);
 
   if (!unit?.stats) {
-    console.log("no stats found on : ", unit);
+    console.error("no stats found on : ", unit);
     setStatsVisible(false);
     return null;
   }
@@ -251,9 +250,7 @@ const StatsComponent = ({
       { gameId, newStats, position },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert("Erreur lors de la mise à jour des stats : " + response.error);
-        } else {
-          console.log("Stats updated successfully");
+          toast.error("Erreur lors de la mise à jour des stats : " + response.error);
         }
       },
     );

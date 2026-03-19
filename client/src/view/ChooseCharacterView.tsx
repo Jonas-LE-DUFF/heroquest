@@ -26,8 +26,9 @@ import {
   getEquipmentById,
 } from "../shared/equipments";
 import { getSpellEllementAsCard } from "../components/Card/cardUtils";
-import { CardType } from "../components/Card/Card";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { toast } from "react-toastify";
+import { CardType } from "../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface ChooseCharacterProps {
   socket: any;
@@ -41,7 +42,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
   const { playerName, hero } = location.state || {};
   if (!game || !playerName) {
-    console.log(`Données manquantes : ${playerName}, ${game}, redirection...`);
+    console.error(`Données manquantes : ${playerName}, ${game}, redirection...`);
     return <div>Données manquantes... faites retour</div>;
   }
 
@@ -226,7 +227,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             state: { playerName: playerName, game: response.data },
           });
         } else {
-          alert(`Error: ${response.error}`);
+          toast.error(`Error: ${response.error}`);
         }
       },
     );
@@ -235,11 +236,6 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const goBackToLobby = () => {
     navigate("/lobby", { state: { playerName: playerName, game: game } });
   };
-
-  console.log(
-    "Rendering ChooseCharacterView with heroCreation state:",
-    heroCreation,
-  );
 
   return (
     <div className="character-page">
@@ -285,9 +281,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           selectedCards={heroCreation.equipments.map((id) => ({
             id,
             name: id,
+            imgPath: getEquipmentById(id)?.image_path ?? "",
+            backImgPath: getEquipmentById(id)?.image_path ?? "",
             type: CardType.Item,
-            image_path: getEquipmentById(id)?.image_path ?? "",
-            back_image_path: getEquipmentById(id)?.image_path ?? "",
           }))}
           onCardsChange={(equipments) =>
             setHeroCreation((prev) => ({

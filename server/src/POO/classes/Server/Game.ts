@@ -8,6 +8,7 @@ import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Position } from "../Position/Position";
 import { Direction } from "../../enums/Direction";
+import { get } from "http";
 
 class Game {
   id: string;
@@ -51,12 +52,14 @@ class Game {
         }
       }
     }
-    if (
-      this.players.size === 4 &&
-      player.role !== PlayerRole.GAME_MASTER &&
-      this.getGameMaster() === null
-    ) {
-      throw new Error("Cannot add more than 4 hero players to the game.");
+
+    // at least one game master is required, checking for the last player added to the game
+    if (this.players.size === 4 && player.role !== PlayerRole.GAME_MASTER) {
+      try {
+        this.getGameMaster();
+      } catch {
+        throw new Error("Cannot add more than 4 hero players to the game.");
+      }
     }
 
     this.players.set(player.id, player);
@@ -163,11 +166,11 @@ class Game {
     if (this.isMonsterTurn) {
       return this.getGameMaster()!.id;
     }
-    const currentPlayerId = this.playOrder[this.currentTurnIndex];
-    if (!currentPlayerId) {
+    const heroCategoryToPlay = this.playOrder[this.currentTurnIndex];
+    if (!heroCategoryToPlay) {
       throw new Error("No current player turn found.");
     }
-    return this.gameState.getHeroByCategory(currentPlayerId)
+    return this.gameState.getHeroByCategory(heroCategoryToPlay)
       .controlledByPlayerId;
   }
 
@@ -198,13 +201,13 @@ class Game {
     return this.gameState.getHeroByCategory(currentHeroCategory);
   }
 
-  getGameMaster(): Player | null {
+  getGameMaster(): Player {
     for (const player of this.players.values()) {
       if (player.role === PlayerRole.GAME_MASTER) {
         return player;
       }
     }
-    return null;
+    throw new Error("Game master not found.");
   }
 
   getHeroes(): Hero[] {
@@ -233,7 +236,6 @@ class Game {
       this.gameState.getMonsters().forEach((monster: Monster) => {
         monster.endTurnEffects();
       });
-      return;
     }
   }
 
@@ -254,12 +256,13 @@ class Game {
     }
   }
 
-  updateHeroEquipment(heroId: string, equipment: string[]) {
-    const hero = this.gameState.getHeroById(heroId);
+  updateHeroEquipment(heroId: string, equipment: string[], gold: number): void {
+    const hero: Hero | undefined= this.gameState.getHeroById(heroId);
     if (!hero) {
       throw new Error(`Hero with id ${heroId} not found.`);
     }
     hero.updateEquipment(equipment);
+    hero.updateGold(gold);
   }
 
   toJson(): GameAsJson {

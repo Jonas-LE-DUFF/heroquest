@@ -1,5 +1,5 @@
 import React from "react";
-import { GameControls } from "../GameControlsComponent";
+import { GameControls } from "../large_components/GameControlsComponent";
 import { Socket } from "socket.io-client";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { TileType } from "../../POO/enums/TileType";

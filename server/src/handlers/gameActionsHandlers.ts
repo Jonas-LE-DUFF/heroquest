@@ -12,7 +12,10 @@ import {
   castSpellSchema,
   attackSchema,
   drinkPotionSchema,
+  checkForTreasuresSchema,
 } from "../validation";
+import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
+import { requireGameMaster } from "../guards/requireGameMaster";
 
 export function registerGameActionsHandlers(socket: Socket) {
   ///** common player and game master actions **///
@@ -138,7 +141,7 @@ export function registerGameActionsHandlers(socket: Socket) {
           );
         }
         try {
-          hero.drinkPotion(gameId, potion);
+          await hero.drinkPotion(gameId, potion);
         } catch (error) {
           return callback(
             errorResponse(`the drinking encountered an error : ${error}`),
@@ -152,6 +155,65 @@ export function registerGameActionsHandlers(socket: Socket) {
         });
 
         return callback(successResponse());
+      },
+    ),
+  );
+
+  socket.on(
+    "check-for-treasures",
+    withValidation(
+      socket,
+      checkForTreasuresSchema,
+      async (socket, data, callback) => {
+        const { gameId, heroId } = data;
+
+        console.debug("checking for treasures for hero", heroId, "in game", gameId);
+
+        if (!requireGameExists(gameId)) {
+          return callback(
+            errorResponse("game couldn't be found in check-for-treasures"),
+          );
+        }
+        const game = GameService.getGame(gameId);
+
+        if (!requirePlayerTurn(socket, game!)) {
+          return callback(
+            errorResponse("it's not your turn to play in check-for-treasures"),
+          );
+        }
+
+        // player may find a special treasure if the room he is in has one
+        // for now the game does not handle this case, therefore the game master will have to make the change manually if there is somthing to find
+        // Therefore this signal will only work for the game master, who will give the hero looking for the treasure a card
+
+        if (!requireGameMaster(socket, game!)) {
+          return callback(
+            errorResponse(
+              "only game master the game master can do this action if you cant to search for treasures it has to be the game master that does this action for the hero",
+            ),
+          );
+        }
+
+        const hero = game!.getGameState().getHeroById(heroId);
+        if (!hero) {
+          return callback(
+            errorResponse("hero couldn't be found in check-for-treasures"),
+          );
+        }
+
+        const treasureCard =
+          TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
+
+        const io = ServerHeroQuest.getServerInstance().getIo();
+
+        io.to(gameId).emit("card-drawn", {
+          hero: hero.toJson(),
+          card: treasureCard.toJson(),
+        });
+
+        console.debug("treasure card drawn for hero", hero.name, "card", treasureCard.name);
+
+        return callback(successResponse({ treasureCardId: treasureCard.id }));
       },
     ),
   );

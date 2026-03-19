@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { CardCarouselComponent } from "./CardCarouselComponent";
-import { Card } from "./Card";
+import { toast } from "react-toastify";
+import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface CardSelectionComponentProps {
   socket: any;
-  selectedCards: Card[];
-  cards: Card[];
-  onCardsChange: (cards: Card[]) => void;
+  selectedCards: CardAsJson[];
+  cards: CardAsJson[];
+  onCardsChange: (cards: CardAsJson[]) => void;
 }
 
 export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
@@ -15,11 +16,11 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
   cards: cards,
   onCardsChange,
 }) => {
-  const [centerCard, setCenterCard] = useState<Card | undefined>(cards[0]);
+  const [centerCard, setCenterCard] = useState<CardAsJson | undefined>(cards[0]);
 
   const handleAddCard = () => {
     if (!centerCard) {
-      alert("Aucune carte sélectionnée");
+      toast.error("Aucune carte sélectionnée");
       return;
     }
     onCardsChange([...selectedCards, centerCard]);

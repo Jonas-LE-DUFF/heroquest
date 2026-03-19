@@ -6,6 +6,7 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerRole } from "../POO/enums/PlayerRole";
+import { TileType } from "../POO/enums/TileType";
 
 const canMove = (
   board: Board,
@@ -24,6 +25,12 @@ const canMove = (
     return { success: false, error: "move out of bounds" };
   }
 
+  const toTile = board.getTileAtPosition(to);
+  if (!toTile) {
+    console.error("destination tile not found");
+    return { success: false, error: "destination tile not found" };
+  }
+
   if (
     board.hasWallAt(from, direction) &&
     !board.hasDoorAt(from, direction) &&
@@ -32,6 +39,11 @@ const canMove = (
   ) {
     console.error("wall in the way");
     return { success: false, error: "wall in the way" };
+  }
+
+  if(toTile.isImpassable() && !canPhaseThroughWalls) {
+    console.error("Tile is impassable");
+    return { success: false, error: "Tile is impassable" };
   }
 
   const unit = board.getUnitAt(to);

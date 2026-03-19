@@ -1,6 +1,6 @@
 import { useState, useEffect, JSX } from "react";
 import { useLocation } from "react-router-dom";
-import Dices from "./dices/HeroQuestDicesComponent";
+import Dices from "../dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
 import {
   Accordion,
@@ -9,20 +9,21 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { getMonsterIconPath } from "../shared/utils";
-import RedDices from "./dices/RedDicesComponent";
-import { monsterClassFr } from "../shared/languages/frenchEnums";
+import { getMonsterIconPath } from "../../shared/utils";
+import RedDices from "../dices/RedDicesComponent";
+import { monsterClassFr } from "../../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { getEquipmentName } from "../shared/equipments";
-import { TileType } from "../POO/enums/TileType";
-import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
-import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { Direction } from "../POO/enums/Direction";
-import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import { getHeroesByPlayerId, getPlayerIdToPlay } from "../shared/serverUtils";
-import { PlayerRole } from "../POO/enums/PlayerRole";
+import { getEquipmentName } from "../../shared/equipments";
+import { TileType } from "../../POO/enums/TileType";
+import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { Direction } from "../../POO/enums/Direction";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { getPlayerIdToPlay } from "../../shared/serverUtils";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { toast } from "react-toastify";
 
 interface GameControlsProps {
   socket: any;
@@ -85,7 +86,7 @@ const GameControls = ({
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur de déplacement du joueur: ${response.error}`);
+          toast.error(`Erreur de déplacement du joueur: ${response.error}`);
         }
       },
     );
@@ -106,7 +107,7 @@ const GameControls = ({
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur de déplacement du monstre: ${response.error}`);
+          toast.error(`Erreur de déplacement du monstre: ${response.error}`);
         }
       },
     );
@@ -154,7 +155,7 @@ const GameControls = ({
       { gameId: gameId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          alert(`Erreur de déplacement du monstre: ${response.error}`);
+          toast.error(`Erreur lors de la fin du tour: ${response.error}`);
         }
       },
     );

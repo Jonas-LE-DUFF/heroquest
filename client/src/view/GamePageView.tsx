@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, use } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
@@ -34,6 +34,9 @@ import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerService } from "../POO/PlayerService";
+import { CardAsJson } from "../POO/interfaces/ClassAsJson/CardAsJson";
+import { toast } from "react-toastify";
+import RotatableCard3D from "../components/small_components/RotatableCard3D";
 
 interface GamePageProps {
   socket: any;
@@ -71,11 +74,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
   }, [hero]);
 
+  useEffect(() => {
+    if (!game) {
+      console.error("Game data is missing");
+      return;
+    }
+    const hero = getHeroesByPlayerId(socket.id, game)?.[0] || null;
+    if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
+      console.error("Couldn't find a hero for the current player");
+      return;
+    }
+    setHero(hero);
+  }, [game, socket.id, role]);
+
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
     (data: { entityId: string; newStats: StatsAsJson }) => {
-      console.log("stats updated received in game page", data);
-
       const isDead =
         data.newStats.health !== undefined && data.newStats.health <= 0;
 
@@ -92,7 +106,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             return prev;
           }
           if (isDead) {
-            console.log(`Player ${data.entityId} has been defeated.`);
             prev.players = prev.players.filter((p) => p.id !== player.id);
           }
         }
@@ -121,13 +134,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   );
 
   useEffect(() => {
-    socket.on("game-state-update", (data: { game: GameAsJson }) => {
+    const handleGameStateUpdate = (data: { game: GameAsJson }) => {
       console.log("c'est l'update du gamePage", data.game);
       const selectedId = selectedEntityId;
       if (selectedId) {
         const pos = getPositionByUnitId(selectedId, data.game.gameState.board);
-        console.log("position du selected id", pos);
-        console.log("selected id", selectedId);
         if (pos) {
           setSelectedPosition(pos);
           setSelectedEntityId(selectedId);
@@ -147,59 +158,74 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       // Also increment board key on full game state updates
       // TODO : try to remove this setTimeout
       setBoardKey((k) => k + 1);
-    });
+    };
 
+    const handleTilePlaced = (data: {
+      position: PositionAsJson;
+      TileType: TileType;
+    }) => {
+      console.log("tile placed received in game page", data);
+      setGame((prev) => {
+        if (!prev) return prev;
+
+        setTileTypeAtPosition(data.position, data.TileType, prev.gameState.board);
+
+        return { ...prev } as GameAsJson;
+      });
+
+      // TODO : try to remove this setTimeout
+      setBoardKey((k) => k + 1);
+    };
+
+    const handleDoorPlaced = (data: {
+      position: PositionAsJson;
+      verticalOrHorizontal: "vertical" | "horizontal";
+    }) => {
+      setGame((prev) => {
+        if (!prev) return prev;
+        game.gameState.board = setDoorAtPosition(
+          data.position,
+          data.verticalOrHorizontal,
+          prev.gameState.board,
+        );
+
+        return { ...prev } as GameAsJson;
+      });
+
+      //TODO : try to remove this setTimeout
+      setBoardKey((k) => k + 1);
+    };
+
+    const handleCardDrawn = (data: { hero: HeroAsJson; card: CardAsJson }) => {
+      console.log("card drawn received in game page", data);
+      toast.info(RotatableCard3D, {
+        data: data.card,
+        style: { minWidth: "fit-content" },
+        icon: false,
+      });
+      setGame((prev) => {
+        if (!prev) return prev;
+        const heroIndex = prev.gameState.Units.findIndex(
+          (u) => u.id === data.hero.id,
+        );
+        if (heroIndex === -1) return prev;
+        prev.gameState.Units[heroIndex] = data.hero;
+        return { ...prev } as GameAsJson;
+      });
+    };
+
+    socket.on("game-state-update", handleGameStateUpdate);
     socket.on("stats-updated", handleStatsUpdate);
-
-    socket.on(
-      "tile-placed",
-      (data: { position: PositionAsJson; TileType: TileType }) => {
-        console.log("tile placed received in game page", data);
-        setGame((prev) => {
-          if (!prev) return prev;
-
-          setTileTypeAtPosition(
-            data.position,
-            data.TileType,
-            prev.gameState.board,
-          );
-
-          return { ...prev } as GameAsJson;
-        });
-
-        // TODO : try to remove this setTimeout
-        setBoardKey((k) => k + 1);
-      },
-    );
-
-    socket.on(
-      "door-placed",
-      (data: {
-        position: PositionAsJson;
-        verticalOrHorizontal: "vertical" | "horizontal";
-      }) => {
-        console.log("door placed received in game page", data);
-        setGame((prev) => {
-          if (!prev) return prev;
-          game.gameState.board = setDoorAtPosition(
-            data.position,
-            data.verticalOrHorizontal,
-            prev.gameState.board,
-          );
-
-          return { ...prev } as GameAsJson;
-        });
-
-        //TODO : try to remove this setTimeout
-        setBoardKey((k) => k + 1);
-      },
-    );
+    socket.on("tile-placed", handleTilePlaced);
+    socket.on("door-placed", handleDoorPlaced);
+    socket.on("card-drawn", handleCardDrawn);
 
     return () => {
-      socket.off("tile-placed");
-      socket.off("door-placed");
-      socket.off("stats-updated");
-      socket.off("game-state-update");
+      socket.off("tile-placed", handleTilePlaced);
+      socket.off("door-placed", handleDoorPlaced);
+      socket.off("stats-updated", handleStatsUpdate);
+      socket.off("game-state-update", handleGameStateUpdate);
+      socket.off("card-drawn", handleCardDrawn);
     };
   }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate]);
 
@@ -227,7 +253,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     selectedType: TileType | Direction | MonsterCategory | null,
   ) => {
     if (selectedSpell !== null) {
-      console.log("Casting spell:", selectedSpell, "at position:", position);
       socket.emit(
         "cast-spell",
         {
@@ -236,11 +261,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           position: position,
         },
         (response: { success: boolean; error?: string }) => {
-          if (response.success) {
-            console.log("Spell cast successfully");
-          } else {
-            console.error("Failed to cast spell:", response.error);
-            alert("Failed to cast spell: " + response.error);
+          if (!response.success) {
+            toast.error("Failed to cast spell: " + response.error);
           }
         },
       );
@@ -250,14 +272,12 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }
 
     if (targetMode) {
-      console.log("In target mode, clicking on position:", position);
       const targetId = getTileByPosition(
         position,
         game.gameState.board,
       )?.unitId;
       const target = game.gameState.Units.find((u) => u.id === targetId);
       if (!target) {
-        console.log("No unit at selected position to target.");
         setTargetMode(false);
         return;
       }
@@ -274,25 +294,19 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           if (response.success) {
             console.log("Attack executed successfully");
           } else {
-            console.error("Failed to execute attack:", response.error);
+            toast.error("Failed to execute attack: " + response.error);
           }
         },
       );
       setTargetMode(false);
       return;
     }
-    console.log(
-      "Tile clicked at position:",
-      position,
-      "with selectedType:",
-      selectedType,
-    );
+
     if (
       selectedPosition !== null &&
       selectedPosition.x === position.x &&
       selectedPosition.y === position.y
     ) {
-      console.log("Deselecting position:", position);
       setSelectedPosition(null);
       setSelectedEntityId(null);
       setStatsVisible(false);
@@ -307,10 +321,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }
 
     if (!selectedType) {
-      console.log("No element selected to place.");
       return;
     }
-    console.log("Placing element:", selectedType, "at position:", position);
     socket.emit(
       "place-element",
       {
@@ -319,10 +331,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         selectedType,
       },
       (response: { success: boolean; error?: string }) => {
-        if (response.success) {
-          console.log("Element placed successfully");
-        } else {
-          console.error("Failed to place element:", response.error);
+        if (!response.success) {
+          toast.error(`Failed to place element: ${response.error}`);
         }
       },
     );

@@ -5,6 +5,7 @@ import { TileType } from "../POO/enums/TileType";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { toast } from "react-toastify";
 
 const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
   const location = useLocation();
@@ -14,7 +15,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
 
   useEffect(() => {
     if (!game || !playerName) {
-      console.log("Données manquantes, redirection...");
+      console.error("Données manquantes, redirection...");
       navigate("/");
       return;
     }
@@ -30,7 +31,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
       },
       (response: { success: boolean; error?: string; data: BoardAsJson }) => {
         if (response.success) {
-          console.log("Stairs placed successfully");
+          console.error("Stairs placed successfully");
           const newBoard: BoardAsJson = response.data;
           setGame({
             ...game,
@@ -38,14 +39,13 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
           });
         } else {
           console.error("Failed to place stairs:", response.error);
-          alert("Failed to place stairs: " + response.error);
+          toast.error("Failed to place stairs: " + response.error);
         }
       },
     );
   };
 
   socket.on("game-state-update", (data: { game: GameAsJson }) => {
-    console.log("game update !!!  : ", data.game);
     setGame(data.game);
     location.state.game = data.game;
   });

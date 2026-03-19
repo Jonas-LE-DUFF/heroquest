@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FormControlLabel, Radio, RadioGroup, Select } from "@mui/material";
-import { renderHeroClassOptions } from "../shared/selectHeroClass";
+import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 import "./MasterControlsComponent.css";
-import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 
 interface MasterControlsProps {
   socket: any;

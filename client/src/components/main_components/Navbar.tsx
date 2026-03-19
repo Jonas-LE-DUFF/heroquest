@@ -12,14 +12,16 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
-import { getHeroesByPlayerId } from "../../shared/serverUtils";
+import { getHeroesByPlayerId, getHeroToPlay } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
+import drawCardIcon from "/assets/images/icons/navbar/card-draw.png";
 import { useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 import { renderHeroClassOptions } from "../../shared/selectHeroClass";
+import { toast } from "react-toastify";
 
 interface NavbarProps {
   socket: Socket;
@@ -62,7 +64,6 @@ const Navbar: React.FC<NavbarProps> = ({
   let hero: HeroAsJson | null = null;
   if (role === PlayerRole.HERO) {
     hero = currentlyPlayedHero;
-    console.log("Current hero:", hero);
   } else {
     if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit as HeroAsJson;
   }
@@ -73,6 +74,43 @@ const Navbar: React.FC<NavbarProps> = ({
   function showSpells() {
     openSpellPage();
   }
+  function searchTreasures() {
+    console.debug("searchTreasures called for hero", hero?.name); // Debug log
+    if (role === PlayerRole.HERO) {
+      toast.info(
+        <p>
+          Pour recherdes trésors veuillez demander au maitre du jeu de le faire
+          pour vous en cliquant sur le bouton de recherche de trésors dans la
+          barre de navigation
+          <br />
+          <br />
+          (Le système de recherche de trésors est en cours de développement et
+          nécessite une interaction du maitre du jeu pour le moment)
+        </p>,
+        { style: { minWidth: "600px" } },
+      );
+      return;
+    }
+    socket.emit(
+      "check-for-treasures",
+      { gameId: game.id, heroId: hero?.id },
+      (response: {
+        success: boolean;
+        treasureCardId?: string;
+        error?: string;
+      }) => {
+        if (!response.success) {
+          console.error(
+            "Erreur lors de la recherche de trésors : " + response.error,
+          );
+          toast.error(
+            `Erreur lors de la recherche de trésors : ${response.error}`,
+          );
+        }
+      },
+    );
+  }
+
   return (
     <div className="Navbar">
       <div className="nav-elem">Navbar</div>
@@ -88,7 +126,6 @@ const Navbar: React.FC<NavbarProps> = ({
               alt={getHeroClassName(hero.category)}
               role="button"
               onClick={() => {
-                console.log("not yet implemented");
                 setSelectedUnit(hero);
                 setStatsOpen(!statsOpen);
               }}
@@ -134,6 +171,11 @@ const Navbar: React.FC<NavbarProps> = ({
             <EquipmentsDialogComponent socket={socket} hero={hero} />
           </Dialog>
         </>
+      )}
+      {hero && (
+        <div className="nav-elem" onClick={() => searchTreasures()}>
+          <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+        </div>
       )}
       {role === PlayerRole.HERO && (
         <div className="nav-elem">

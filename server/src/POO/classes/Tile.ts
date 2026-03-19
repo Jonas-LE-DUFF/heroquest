@@ -21,6 +21,14 @@ class Tile {
     return unitRemovedId;
   }
 
+  isImpassable(): boolean {
+    return (
+      this.type === TileType.WALL ||
+      this.type === TileType.FURNITURE ||
+      this.type === TileType.TREASURE
+    );
+  }
+
   isOccupied(): boolean {
     return (
       (this.type !== TileType.FLOOR &&

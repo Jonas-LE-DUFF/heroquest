@@ -9,7 +9,7 @@ import { Spell } from "../Spell/Spell";
 import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
-import { Potion } from "../Equipment/Items.ts/Potions";
+import { Potion } from "../Equipment/Items/Potions";
 
 class Hero extends Unit<HeroCategory> {
   DefenseDiceType = FightDiceFaces.WhiteShield;
@@ -67,6 +67,10 @@ class Hero extends Unit<HeroCategory> {
     this.equipment = newEquipment;
   }
 
+  updateGold(gold: number) {
+    this.equipment.gold = gold;
+  }
+
   validateStatsImplementation(): { success: boolean; error?: string } {
     if (this.category === HeroCategory.Cleric) {
       if (this.spells.length !== 9) {
@@ -114,8 +118,8 @@ class Hero extends Unit<HeroCategory> {
     return Array.from(elementsSet);
   }
 
-  drinkPotion(gameId: string, potion: Potion) {
-    const response = potion.applyEffect(gameId, this);
+  async drinkPotion(gameId: string, potion: Potion): Promise<void> {
+    const response = await potion.applyEffect(gameId, this);
     if (!response.success) {
       throw new Error(`Failed to apply potion effect: ${response.error}`);
     }
