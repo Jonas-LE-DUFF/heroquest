@@ -3,7 +3,7 @@ import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { SpellElement } from "../../enums/SpellElement";
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { PositionAsJson } from "../ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";

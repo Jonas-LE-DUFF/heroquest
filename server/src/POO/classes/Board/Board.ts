@@ -1,7 +1,7 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { BoardAsJson } from "../../interfaces/ClassAsJson/Board/BoardAsJson";
 import { Position } from "../Position/Position";
 import { Tile } from "./Tile/Tile";

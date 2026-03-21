@@ -1,5 +1,5 @@
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
 import { PositionAsJson } from "../ClassAsJson/PositionAsJson";

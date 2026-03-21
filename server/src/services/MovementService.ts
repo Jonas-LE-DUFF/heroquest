@@ -6,7 +6,7 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 
 const canMove = (
   board: Board,
@@ -69,11 +69,17 @@ export function moveUnit(
   const to = from.afterMove(direction);
   const tile = board.getTileAtPosition(from);
   const newTile = board.getTileAtPosition(to);
+
   if (!tile || !newTile) {
     throw new Error("Tiles not found on board");
   }
+
   tile.unitId = null;
   newTile.unitId = unitMoved.id;
+
+  if (newTile.trap) {
+    newTile.trap?.walkOnTrap(unitMoved);
+  }
   return { success: true };
 }
 

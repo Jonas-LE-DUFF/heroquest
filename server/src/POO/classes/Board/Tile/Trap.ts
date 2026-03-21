@@ -1,8 +1,12 @@
 import { dealDamage } from "../../../../services/CombatService";
 import { rollFightDice } from "../../../../services/DiceService";
+import { TrapType } from "../../../enums/Board/TrapType";
 import { FightDiceFaces } from "../../../enums/Dices/FightDiceFaces";
 import { PlayerRole } from "../../../enums/PlayerRole";
 import { Hero } from "../../Units/Hero";
+import { Unit } from "../../Units/Unit";
+import { HeroCategory } from "../../../enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
 
 abstract class Trap {
     protected readonly gameId: string;
@@ -15,13 +19,29 @@ abstract class Trap {
         this.hasBeenTriggered = false;
     }
 
-    private walkOnTrap(target: Hero): void {
+    public walkOnTrap(target: Unit<HeroCategory | MonsterCategory>): void {
+        if (this.hasBeenTriggered) {
+            return;
+        }
         this.hasBeenTriggered = true;
         this.isRevealed = true;
-        this.trigger(target);
+        if (target instanceof Hero) {
+            // monsters never trigger traps
+            this.trigger(target);
+        }
     }
     
     abstract trigger(target: Hero): Promise<void>;
+
+    abstract getTrapType(): TrapType;
+
+    toJson() {
+        return {
+            type: this.getTrapType(),
+            isRevealed: this.isRevealed,
+            hasBeenTriggered: this.hasBeenTriggered,
+        }
+    }
 
 }
 
@@ -31,8 +51,8 @@ class PitTrap extends Trap {
         dealDamage(this.gameId, target, 1);
     }
 
-    getTileType() {
-        return "PIT_TRAP";
+    getTrapType() {
+        return TrapType.PIT_TRAP;
     }
 }
 
@@ -45,6 +65,10 @@ class RockTrap extends Trap {
         }
         const numberOfHits = diceResult.results.filter(face => face === FightDiceFaces.Hit).length;            
         dealDamage(this.gameId, target, numberOfHits);
+    }
+
+    getTrapType() {
+        return TrapType.ROCK_TRAP;
     }
 }
 
@@ -60,6 +84,10 @@ class SpearTrap extends Trap {
         ).length;
         dealDamage(this.gameId, target, numberOfHits);
     }
+
+    getTrapType() {
+        return TrapType.SPEAR_TRAP;
+    }
 }
 
-export { PitTrap, RockTrap, SpearTrap };
+export { PitTrap, RockTrap, SpearTrap, Trap };

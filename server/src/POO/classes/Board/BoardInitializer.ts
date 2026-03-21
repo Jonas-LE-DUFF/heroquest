@@ -1,4 +1,4 @@
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { Tile } from "./Tile/Tile";
 import { WallGrid } from "./WallGrid";
 
