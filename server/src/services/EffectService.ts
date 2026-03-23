@@ -17,9 +17,9 @@ class EffectService {
     const activeEffects = unit.effects;
     const statWithEffects = activeEffects
       .filter(
-        (e) => e.effectType === EffectType.STAT_MULTIPLIER && e.stat === stat,
+        (e) => e.effectType === EffectType.STAT_MODIFIER && e.stat === stat,
       )
-      .reduce((sum, e) => sum + (e.value ?? 1), 1);
+      .reduce((sum, e) => sum + (e.value ?? 0), 0);
     unit.effects = unit.effects.filter(
       (e) =>
         !(
