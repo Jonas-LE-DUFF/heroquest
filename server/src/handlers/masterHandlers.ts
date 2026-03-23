@@ -7,7 +7,7 @@ import { Tile } from "../POO/classes/Board/Tile/Tile";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
 import {

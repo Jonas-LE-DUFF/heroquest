@@ -28,7 +28,7 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Stats } from "../POO/classes/Units/Stats";
 import { getSpellsForElements } from "../services/SpellService";
 import { SpellElement } from "../POO/enums/SpellElement";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 
 // ── Helper functions ──
 

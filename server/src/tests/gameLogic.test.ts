@@ -39,7 +39,7 @@ import { Stats } from "../POO/classes/Units/Stats";
 import { dealDamage } from "../services/CombatService";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
 import { MonsterType } from "../POO/enums/MonsterType";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 
 // ── Helper functions ──
 

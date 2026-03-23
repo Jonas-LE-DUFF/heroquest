@@ -1,13 +1,16 @@
-import { TileType } from "../../../enums/TileType";
+import { TileType } from "../../../enums/Board/TileType";
 import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/TileAsJson";
+import { Trap } from "./Trap";
 
 class Tile {
   unitId: string | null;
   type: TileType;
+  trap: Trap | null;
 
   constructor(type: TileType) {
     this.type = type;
     this.unitId = null;
+    this.trap = null;
   }
 
   /**
@@ -42,6 +45,8 @@ class Tile {
     return {
       type: this.type,
       unitId: this.unitId,
+      // should show trap details only if it's revealed or if its game master view
+      trap: this.trap?.isRevealed ? this.trap.toJson() : null,
     };
   }
 }
