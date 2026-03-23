@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";

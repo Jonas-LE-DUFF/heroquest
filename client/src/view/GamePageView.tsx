@@ -9,14 +9,12 @@ import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
-import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import {
   getPositionByUnitId,
   getTileByPosition,
-  getTileByUnitId,
   removeUnitFromBoardById,
   setTileTypeAtPosition,
 } from "../shared/boardUtils";
@@ -27,16 +25,16 @@ import {
   getPlayerBySocketId,
   getPlayerIdToPlay,
 } from "../shared/serverUtils";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import { Direction } from "../POO/enums/Direction";
 import { PlayerService } from "../POO/PlayerService";
 import { CardAsJson } from "../POO/interfaces/ClassAsJson/CardAsJson";
 import { toast } from "react-toastify";
 import RotatableCard3D from "../components/small_components/RotatableCard3D";
+import { SelectType } from "../POO/types/selectType";
 
 interface GamePageProps {
   socket: any;
@@ -47,7 +45,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const role = location.state.role;
 
   const [selectedType, setSelectedType] = useState<
-    TileType | Direction | MonsterCategory | null
+    SelectType
   >(null);
   const [selectedPosition, setSelectedPosition] =
     useState<PositionAsJson | null>(null);
@@ -250,7 +248,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   const handleTileClick = (
     position: PositionAsJson,
-    selectedType: TileType | Direction | MonsterCategory | null,
+    selectedType: SelectType,
   ) => {
     if (selectedSpell !== null) {
       socket.emit(

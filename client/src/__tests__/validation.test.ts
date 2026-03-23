@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { Direction } from "../POO/enums/Direction";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";

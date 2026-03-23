@@ -104,7 +104,7 @@ export const rollDiceSchema = z.object({
 export const placeElementSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   position: positionSchema,
-  selectedType: z.any(), // TileType | Direction | MonsterCategory - complexe à valider
+  selectedType: z.any(), // SelectType - complexe à valider
 });
 
 export const updateStatsUnitSchema = z.object({

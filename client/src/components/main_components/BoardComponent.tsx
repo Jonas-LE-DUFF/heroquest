@@ -7,26 +7,25 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { getIconClassPath, getUnitClassName } from "../../shared/utils";
+import { getIconClassPath, getUnitClassName, getTrapTypePath } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
 import { TileAsJson } from "../../POO/interfaces/ClassAsJson/Board/TileAsJson";
-import { Direction } from "../../POO/enums/Direction";
-import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
-import { TileType } from "../../POO/enums/TileType";
+import { TileType } from "../../POO/enums/Board/TileType";
 import StairsImage from "/assets/images/icons/Tiles/stairs.png";
 import { JSX } from "react/jsx-runtime";
+import { SelectType } from "../../POO/types/selectType";
 
 interface BoardProps {
   game: GameAsJson;
   onTileClick: (
     position: PositionAsJson,
-    selectedType: TileType | Direction | MonsterCategory | null,
+    selectedType: SelectType,
   ) => void;
   selectedPosition: PositionAsJson | null;
   selectedEntityId: string | null;
-  selectedType: TileType | Direction | MonsterCategory | null;
+  selectedType: SelectType;
 }
 
 const Board = ({
@@ -38,7 +37,7 @@ const Board = ({
 }: BoardProps) => {
   const handleTileClick = (
     position: PositionAsJson,
-    selectedType: TileType | Direction | MonsterCategory | null,
+    selectedType: SelectType,
   ) => {
     if (!game || !game.gameState.board.tiles[position.x]) {
       console.error("gameState is not defined");
@@ -86,9 +85,17 @@ const Board = ({
     }
     const unit = game.gameState.Units.find((u) => u.id === tile.unitId);
     const elements: JSX.Element[] = [];
-    if (!unit) {
-      if (tile.type === TileType.FLOOR) return `${x},${y}`;
+
+    if (tile.trap) {
+      elements.push(
+        <img
+          className="boardImg"
+          src={getTrapTypePath(tile.trap.type)}
+          alt={tile.trap.type}
+        />,
+      );
     }
+
     if (tile.type === TileType.SPAWN_POINT) {
       const upperTile = game.gameState.board.tiles[x - 1]?.[y];
       const leftTile = game.gameState.board.tiles[x]?.[y - 1];
@@ -113,7 +120,9 @@ const Board = ({
         />,
       );
     }
-
+    if (elements.length === 0) {
+      return `${x},${y}`;
+    }
     return <div>{elements}</div>;
   };
 

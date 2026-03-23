@@ -1,4 +1,4 @@
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/TileAsJson";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";

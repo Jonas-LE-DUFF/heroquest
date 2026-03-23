@@ -1,5 +1,5 @@
 import { Direction } from "../POO/enums/Direction";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
 import { getTileByPosition } from "./boardUtils";

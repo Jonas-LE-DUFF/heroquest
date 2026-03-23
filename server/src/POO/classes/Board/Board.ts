@@ -9,6 +9,7 @@ import { Unit } from "../Units/Unit";
 import { BoardInitializer } from "./BoardInitializer";
 import { DoorGrid } from "./DoorGrid";
 import { WallGrid } from "./WallGrid";
+import { TrapType } from "../../enums/Board/TrapType";
 
 class Board {
   BOARD_WIDTH = 19;
@@ -146,6 +147,13 @@ class Board {
     error?: string;
   } {
     return this.setDoorStateAt(position, direction, true);
+  }
+
+  placeTrap(position: Position, trapType: TrapType): void {
+    const tile = this.getTileAtPosition(position);
+    if (tile) {
+      tile.placeTrap(trapType);
+    }
   }
 
   removeUnitFromTile(

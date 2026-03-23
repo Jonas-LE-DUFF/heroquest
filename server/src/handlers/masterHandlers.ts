@@ -6,7 +6,6 @@ import { Position } from "../POO/classes/Position/Position";
 import { Tile } from "../POO/classes/Board/Tile/Tile";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
-import { PlayerRole } from "../POO/enums/PlayerRole";
 import { TileType } from "../POO/enums/Board/TileType";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
@@ -19,6 +18,7 @@ import {
   updateStatsUnitSchema,
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
+import { TrapType } from "../POO/enums/Board/TrapType";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -103,6 +103,15 @@ export function registerMasterHandlers(socket: Socket) {
       if (selectedType in MonsterCategory) {
         const monsterType = selectedType as MonsterCategory;
         const result = handleMonsterPlacement(gameId, position, monsterType);
+        return callback(
+          result.success ? successResponse() : errorResponse(result.error!),
+        );
+      }
+
+      if (selectedType in TrapType) {
+        console.debug("placing trap", selectedType, "at position", position);
+        const trapType = selectedType as TrapType;
+        const result = handleTrapPlacement(gameId, position, trapType);
         return callback(
           result.success ? successResponse() : errorResponse(result.error!),
         );
@@ -211,6 +220,29 @@ function handleMonsterPlacement(
   game!.gameState.addUnit(monster);
   game?.gameState.board.placeUnitAt(monster, position);
 
+  io.to(gameId).emit("game-state-update", {
+    game: game!.toJson(),
+  });
+  return { success: true };
+}
+
+function handleTrapPlacement(
+  gameId: string,
+  position: Position,
+  trapType: TrapType,
+): { success: boolean; error?: string } {
+  const game = GameService.getGame(gameId);
+  const io = ServerHeroQuest.getServerInstance().getIo();
+
+  try {
+    game?.gameState.board.placeTrap(position, trapType);
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to place trap",
+    };
+  }
+ console.debug("placed trap", trapType, "resulting game state:", game?.gameState.board.getTileAtPosition(position));
   io.to(gameId).emit("game-state-update", {
     game: game!.toJson(),
   });

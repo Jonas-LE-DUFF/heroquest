@@ -1,6 +1,7 @@
 import { TileType } from "../../../enums/Board/TileType";
+import { TrapType } from "../../../enums/Board/TrapType";
 import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/TileAsJson";
-import { Trap } from "./Trap";
+import { PitTrap, RockTrap, SpearTrap, Trap } from "./Trap";
 
 class Tile {
   unitId: string | null;
@@ -41,12 +42,28 @@ class Tile {
     );
   }
 
+  placeTrap(trap: TrapType): void {
+    switch (trap) {
+      case TrapType.PIT_TRAP:
+        this.trap = new PitTrap(trap);
+        break;
+      case TrapType.SPEAR_TRAP:
+        this.trap = new SpearTrap(trap);
+        break;
+      case TrapType.ROCK_TRAP:
+        this.trap = new RockTrap(trap);
+        break;
+      default:
+        throw new Error("Invalid trap type");
+    }
+  }
+
   toJson(): TileAsJson {
     return {
       type: this.type,
       unitId: this.unitId,
       // should show trap details only if it's revealed or if its game master view
-      trap: this.trap?.isRevealed ? this.trap.toJson() : null,
+      trap: this.trap ? this.trap.toJson() : null,
     };
   }
 }
