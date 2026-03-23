@@ -58,10 +58,25 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     modifiedHeroId: modifiedHero?.id,
   });
 
-  socket.on("game-state-update", (data: { game: GameAsJson }) => {
-    setGame(data.game);
-    location.state.game = data.game;
-  });
+  useEffect(() => {
+    if (!game || !playerName) {
+      console.error(
+        `Données manquantes : ${playerName}, ${game}, redirection...`,
+      );
+      navigate("/");
+      return;
+    }
+
+    socket.on("game-state-update", (data: { game: GameAsJson }) => {
+      setGame(data.game);
+      location.state.game = data.game;
+    });
+
+    return () => {
+      socket.off("game-state-update");
+    }
+  }, [navigate, playerName, game, socket]);
+  
 
   function getSelectedClasses() {
     const selectedClasses = new Set<HeroCategory>();

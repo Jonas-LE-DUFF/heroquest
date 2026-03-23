@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPageView.css";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
@@ -34,6 +34,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       },
     );
 
+    
+  };
+
+  useEffect(() => {
     socket.once(
       "join-success",
       (data: { playerId: string; game: GameAsJson }) => {
@@ -45,11 +49,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         });
       },
     );
-
-    socket.on("join-error", (error: string) => {
-      toast.error(`Erreur: ${error}`);
-    });
-  };
+    return () => {
+      socket.off("join-success");
+    };
+  }, [socket, navigate, playerName]);
 
   return (
     <div className="login-page">

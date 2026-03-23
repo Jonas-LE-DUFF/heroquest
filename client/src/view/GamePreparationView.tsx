@@ -19,6 +19,15 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
       navigate("/");
       return;
     }
+
+    socket.on("game-state-update", (data: { game: GameAsJson }) => {
+      setGame(data.game);
+      location.state.game = data.game;
+    });
+
+    return () => {
+      socket.off("game-state-update");
+    }
   });
 
   const placeStairs = (pos: PositionAsJson) => {
@@ -44,11 +53,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
       },
     );
   };
-
-  socket.on("game-state-update", (data: { game: GameAsJson }) => {
-    setGame(data.game);
-    location.state.game = data.game;
-  });
+  
 
   const goToLobby = () => {
     navigate("/lobby", {
