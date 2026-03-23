@@ -16,6 +16,7 @@ import {
   rollRedDiceSchema,
   rollDiceSchema,
 } from "../validation";
+import { TrapType } from "../POO/enums/Board/TrapType";
 
 export function registerDiceHandlers(socket: Socket) {
   handleSpecialRollAuthorization(socket);

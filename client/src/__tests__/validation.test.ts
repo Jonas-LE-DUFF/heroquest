@@ -94,7 +94,7 @@ function createEmptyBoard(
   for (let x = 0; x < width; x++) {
     const row: TileAsJson[] = [];
     for (let y = 0; y < height; y++) {
-      row.push({ type: TileType.FLOOR, unitId: null });
+      row.push({ type: TileType.FLOOR, unitId: null, trap: null });
     }
     tiles.push(row);
   }

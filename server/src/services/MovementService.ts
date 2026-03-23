@@ -55,12 +55,12 @@ const canMove = (
   return { success: true };
 };
 
-export function moveUnit(
+export async function moveUnit(
   board: Board,
   from: Position,
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
-): { success: boolean; error?: string } {
+): Promise<{ success: boolean; error?: string; }> {
   const moveCheck = canMove(board, from, direction, unitMoved);
   if (!moveCheck.success) {
     return moveCheck;
@@ -78,7 +78,7 @@ export function moveUnit(
   newTile.unitId = unitMoved.id;
 
   if (newTile.trap) {
-    newTile.trap?.walkOnTrap(unitMoved);
+    await newTile.trap?.walkOnTrap(unitMoved);
   }
   return { success: true };
 }

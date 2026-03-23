@@ -40,6 +40,7 @@ import { dealDamage } from "../services/CombatService";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
 import { MonsterType } from "../POO/enums/MonsterType";
 import { TileType } from "../POO/enums/Board/TileType";
+import { TrapType } from "../POO/enums/Board/TrapType";
 
 // ── Helper functions ──
 
@@ -196,29 +197,29 @@ describe("dealDamage - lethal damage (CombatService)", () => {
 });
 
 describe("moveUnit (MovementService)", () => {
-  it("should move a hero to a new tile", () => {
+  it("should move a hero to a new tile", async () => {
     const board = new Board();
     const hero = createTestHero();
     // Place hero at a safe interior position
     board.placeUnitAt(hero, new Position(5, 5));
 
-    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
+    const result = await moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
 
     expect(result.success).toBe(true);
     expect(board.getUnitAt(new Position(5, 5))).toBeUndefined();
     expect(board.getUnitAt(new Position(6, 5))).toBe(hero.id);
   });
 
-  it("should fail when moving out of bounds", () => {
+  it("should fail when moving out of bounds", async () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(0, 0));
 
-    const result = moveUnit(board, new Position(0, 0), Direction.UP, hero);
+    const result = await moveUnit(board, new Position(0, 0), Direction.UP, hero);
     expect(result.success).toBe(false);
   });
 
-  it("should fail when moving to an occupied tile", () => {
+  it("should fail when moving to an occupied tile", async () => {
     const board = new Board();
     const hero = createTestHero();
     const monster = createTestMonster();
@@ -227,19 +228,19 @@ describe("moveUnit (MovementService)", () => {
     board.placeUnitAt(hero, new Position(5, 5));
     board.placeUnitAt(monster, new Position(6, 5));
 
-    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
+    const result = await moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
     expect(result.success).toBe(false);
     expect(result.error).toBe("tile is occupied");
   });
 
-  it("should fail when moving into a wall", () => {
+  it("should fail when moving into a wall", async () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(5, 5));
 
     board.getTileAtPosition(new Position(5, 5).afterMove(Direction.DOWN))!.type = TileType.WALL;
 
-    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
+    const result = await moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
     expect(result.success).toBe(false);
     expect(result.error).toBe("Tile is impassable");
   });
@@ -533,5 +534,123 @@ describe("clearTileAtPosition (GameState)", () => {
     expect(() =>
       gameState.clearTileAtPosition(new Position(4, 4)),
     ).not.toThrow();
+  });
+
+  describe("traps", () => {
+    it("should trigger the trap effect when a hero steps on a trap tile", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+      // The pit trap should deal 1 damage to the hero
+      expect(hero.stats.health).toBe(4);
+      expect(
+        gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap
+          ?.hasBeenTriggered,
+      ).toBe(true);
+    });
+
+    it("should not trigger the trap effect when a monster steps on a trap tile", async () => {
+      const gameState = new GameState();
+      const monster = createTestMonster({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(monster);
+      gameState.board.placeUnitAt(monster, pos);
+      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+
+      await moveUnit(gameState.board, pos, Direction.DOWN, monster);
+
+      // The pit trap should not affect the monster
+      expect(monster.stats.health).toBe(5);
+      expect(gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap?.hasBeenTriggered).toBe(false);
+    });
+
+    it("should only trigger the spear trap once", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.SPEAR_TRAP);
+
+      // Step on the trap tile for the first time
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      const healthAfterFirstTrigger = hero.stats.health;
+
+      // Move back and step on the trap tile again
+      await moveUnit(gameState.board, pos.afterMove(Direction.DOWN), Direction.UP, hero);
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+      // The trap should not trigger again, so health should remain the same
+      expect(hero.stats.health).toBe(healthAfterFirstTrigger);
+    });
+
+    it("pit trap should reduce attack dice by one", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+      // The pit trap should deal 1 damage but not reduce attack dice
+      expect(hero.stats.health).toBe(4);
+      expect(hero.getAttackDiceCount()).toBe(1); // short sword base attack dice is 2
+    });
+    
+    it("pit trap should not reduce attack dice below 1", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+        weaponId: "dagger", // dagger has 1 attack dice
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+      // The pit trap should deal 1 damage but not reduce attack dice below 1
+      expect(hero.stats.health).toBe(4);
+      expect(hero.getAttackDiceCount()).toBe(1); // should not go below 1
+    });
+
+    it("rock trap should place a wall on the trap tile after triggering", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.ROCK_TRAP);
+
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+      // The rock trap should place a wall on the tile after the trap in the direction the hero came from
+      expect(gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.type).toBe(TileType.WALL);
+    });
   });
 });

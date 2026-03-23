@@ -37,7 +37,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.DEFENSE);
     const multiplier = EffectService.getStatMultiplier(this, StatType.DEFENSE);
 
-    return Math.floor((baseDefense + modifier) * multiplier);
+    return Math.max(Math.floor((baseDefense + modifier) * multiplier),1); // cannot be lower than 1 defense die
   }
 
   getAttackDiceCount(): number {
@@ -46,7 +46,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.ATTACK);
     const multiplier = EffectService.getStatMultiplier(this, StatType.ATTACK);
 
-    return Math.floor((weaponAttack + modifier) * multiplier);
+    return Math.max(Math.floor((weaponAttack + modifier) * multiplier),1); // cannot be lower than 1 attack dice
   }
 
   getMovementPoints(): number {
@@ -56,7 +56,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.MOVEMENT);
     const multiplier = EffectService.getStatMultiplier(this, StatType.MOVEMENT);
 
-    return Math.floor((baseMovement + modifier) * multiplier);
+    return Math.max(Math.floor((baseMovement + modifier) * multiplier),1); // cannot be lower than 1 movement point
   }
 
   updateEquipment(equipment: string[]) {
