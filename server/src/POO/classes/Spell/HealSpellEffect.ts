@@ -9,7 +9,7 @@ class HealSpellEffect extends SpellEffect {
         this.healAmount = healAmount;
     }
 
-    applyEffect(target: Unit<any>): void {
+    async applyEffect(target: Unit<any>): Promise<void> {
         if (target.stats.health !== undefined && target.stats.maxHealth !== undefined) {
             target.stats.health = Math.min(
                 target.stats.health + this.healAmount,

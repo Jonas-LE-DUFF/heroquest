@@ -23,8 +23,8 @@ class Spell {
         this.target_type = target_type;
     }
 
-    applyEffect(target: Unit<any>) {
-        this.effect.applyEffect(target);
+    async applyEffect(target: Unit<any>) {
+        await this.effect.applyEffect(target);
     }
 
     toJson(): any {

@@ -9,7 +9,7 @@ abstract class SpellEffect {
         this.type = type;
     }
 
-    abstract applyEffect(target: Unit<any>): void;
+    abstract applyEffect(target: Unit<any>): Promise<void>;
 }
 
 export { SpellEffect };

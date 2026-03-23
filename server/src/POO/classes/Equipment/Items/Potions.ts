@@ -126,7 +126,7 @@ class HealthPotion extends Potion {
       return { success: false, error: "Failed to roll dice for Health Potion" };
     }
 
-    const heal = diceResult.results[0];
+    const heal = diceResult.results?.[0];
     if (
       target.stats.health === undefined ||
       target.stats.maxHealth === undefined ||

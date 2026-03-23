@@ -10,7 +10,7 @@ class ApplyEffectSpellEffect extends SpellEffect {
         this.effect = effect;
     }
 
-    applyEffect(target: Unit<any>): void {
+    async applyEffect(target: Unit<any>): Promise<void> {
         target.addEffect(this.effect);
     }
 }
