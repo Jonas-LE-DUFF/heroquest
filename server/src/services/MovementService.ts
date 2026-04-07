@@ -7,6 +7,7 @@ import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { TileType } from "../POO/enums/Board/TileType";
+import { TrapType } from "../POO/enums/Board/TrapType";
 
 const canMove = (
   board: Board,
@@ -79,6 +80,13 @@ export async function moveUnit(
 
   if (newTile.trap) {
     await newTile.trap?.walkOnTrap(unitMoved);
+  }
+
+  if (
+    unitMoved.effects.some((effect) => effect.name === "Pit Trap") &&
+    newTile.trap?.getTrapType() !== TrapType.PIT_TRAP
+  ) {
+    unitMoved.removeEffectByName("Pit Trap");
   }
   return { success: true };
 }

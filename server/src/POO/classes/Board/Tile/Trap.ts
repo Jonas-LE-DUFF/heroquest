@@ -57,9 +57,12 @@ class PitTrap extends Trap {
 
   async trigger(target: Hero): Promise<void> {
     dealDamage(this.gameId, target, 1);
+    if(target.effects.some(effect => effect.name === "Pit Trap")) {
+      return; // if the hero already has the pit trap effect, we don't apply it again
+    }
     target.addEffect(
       new Effect(
-        "Pit Trap -1 Attack Dice",
+        "Pit Trap",
         EffectType.STAT_MODIFIER,
         EffectDuration.PERMANENT,
         true,
