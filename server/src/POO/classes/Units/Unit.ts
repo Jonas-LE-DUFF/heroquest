@@ -106,7 +106,7 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
         return EffectService.canPhaseThroughMonsters(this);
     }
 
-    abstract toJson(): HeroAsJson | MonsterAsJson;
+    abstract toJson(gameMaster: boolean): HeroAsJson | MonsterAsJson;
 
 }
 

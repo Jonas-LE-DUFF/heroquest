@@ -176,10 +176,10 @@ class GameState {
     }
   }
 
-  toJson(): GameStateAsJson {
+  toJson(gameMaster: boolean = false): GameStateAsJson {
     return {
-      Units: this.Units.map((unit) => unit.toJson()),
-      board: this.board.toJson(),
+      Units: this.Units.map((unit) => unit.toJson(gameMaster)),
+      board: this.board.toJson(gameMaster),
       status: this.status,
     };
   }

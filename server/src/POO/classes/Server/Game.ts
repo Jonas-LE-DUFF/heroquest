@@ -265,7 +265,7 @@ class Game {
     hero.updateGold(gold);
   }
 
-  toJson(): GameAsJson {
+  toJson(gameMaster: boolean = false): GameAsJson {
     const playersAsJson = Array.from(this.players.values()).map((player) =>
       player.toJson(),
     );
@@ -274,7 +274,7 @@ class Game {
       id: this.id,
       name: this.name,
       players: playersAsJson,
-      gameState: this.gameState.toJson(),
+      gameState: this.gameState.toJson(gameMaster),
       playOrder: this.playOrder,
       isMonsterTurn: this.isMonsterTurn,
       currentTurnIndex: this.currentTurnIndex,

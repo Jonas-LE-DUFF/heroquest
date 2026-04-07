@@ -11,6 +11,7 @@ import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEve
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "./GameService";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 
 async function fight(
   socket: Socket<ClientToServerEvents, ServerToClientEvents>,
@@ -69,7 +70,7 @@ function dealDamage(
     const io = ServerHeroQuest.getServerInstance().getIo();
     const game = GameService.getGame(gameId);
     if (game) {
-      io.emit("game-state-update", { game: game.toJson() });
+      emitGameStateUpdate(io, gameId, game);
     } else {
       console.error("Game not found for gameId:", gameId);
     }

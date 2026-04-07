@@ -13,6 +13,7 @@ import { Effect } from "../../Effects/Effects";
 import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { GameService } from "../../../../services/GameService";
 import { TileType } from "../../../enums/Board/TileType";
+import { TrapAsJson } from "../../../interfaces/ClassAsJson/Board/TrapAsJson";
 
 abstract class Trap {
   protected readonly gameId: string;
@@ -42,7 +43,7 @@ abstract class Trap {
 
   abstract getTrapType(): TrapType;
 
-  toJson() {
+  toJson(gameMaster: boolean = false): TrapAsJson {
     return {
       type: this.getTrapType(),
       isRevealed: this.isRevealed,
@@ -90,12 +91,14 @@ class RockTrap extends Trap {
     if (!game) {
       throw new Error("Game not found in rock trap trigger");
     }
+
     const position = game.gameState.board.getPositionOfUnit(target.id);
     const tile = game.gameState.board.getTileAtPosition(position!);
     if (!tile) {
       throw new Error("Tile not found on board in rock trap trigger");
     }
     tile.type = TileType.WALL;
+    tile.trap = null; // removing the trap from the tile since it's now a wall
   }
 
   getTrapType() {

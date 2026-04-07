@@ -9,6 +9,7 @@ import { Direction } from "../POO/enums/Direction";
 import { TileType } from "../POO/enums/Board/TileType";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   withValidation,
   successResponse,
@@ -59,9 +60,8 @@ export function registerMasterHandlers(socket: Socket) {
       if (selectedType === TileType.FLOOR) {
         game?.gameState.clearTileAtPosition(position);
 
-        io.to(gameId).emit("game-state-update", {
-          game: game!.toJson(),
-        });
+        const io = ServerHeroQuest.getServerInstance().getIo();
+        emitGameStateUpdate(io, gameId, game!);
         return callback(successResponse());
       }
 
@@ -91,12 +91,12 @@ export function registerMasterHandlers(socket: Socket) {
             }
             return callback(errorResponse(result.error!));
           }
-          return callback(successResponse(board.toJson()));
+          return callback(successResponse(board.toJson(true)));
         }
         const result = handleTilePlacement(gameId, position, tileType);
 
         return callback(
-          result.success ? successResponse() : errorResponse(result.error!),
+          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
         );
       }
 
@@ -104,7 +104,7 @@ export function registerMasterHandlers(socket: Socket) {
         const monsterType = selectedType as MonsterCategory;
         const result = handleMonsterPlacement(gameId, position, monsterType);
         return callback(
-          result.success ? successResponse() : errorResponse(result.error!),
+          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
         );
       }
 
@@ -113,7 +113,7 @@ export function registerMasterHandlers(socket: Socket) {
         const trapType = selectedType as TrapType;
         const result = handleTrapPlacement(gameId, position, trapType);
         return callback(
-          result.success ? successResponse() : errorResponse(result.error!),
+          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
         );
       }
 
@@ -220,9 +220,7 @@ function handleMonsterPlacement(
   game!.gameState.addUnit(monster);
   game?.gameState.board.placeUnitAt(monster, position);
 
-  io.to(gameId).emit("game-state-update", {
-    game: game!.toJson(),
-  });
+  emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }
 
@@ -235,7 +233,7 @@ function handleTrapPlacement(
   const io = ServerHeroQuest.getServerInstance().getIo();
 
   try {
-    game?.gameState.board.placeTrap(position, trapType);
+    game?.gameState.board.placeTrap(gameId, position, trapType);
   } catch (error) {
     return {
       success: false,
@@ -243,9 +241,7 @@ function handleTrapPlacement(
     };
   }
  console.debug("placed trap", trapType, "resulting game state:", game?.gameState.board.getTileAtPosition(position));
-  io.to(gameId).emit("game-state-update", {
-    game: game!.toJson(),
-  });
+  emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }
 

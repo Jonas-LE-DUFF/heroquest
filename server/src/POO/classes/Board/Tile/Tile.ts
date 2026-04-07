@@ -42,28 +42,28 @@ class Tile {
     );
   }
 
-  placeTrap(trap: TrapType): void {
+  placeTrap(gameId: string, trap: TrapType): void {
     switch (trap) {
       case TrapType.PIT_TRAP:
-        this.trap = new PitTrap(trap);
+        this.trap = new PitTrap(gameId);
         break;
       case TrapType.SPEAR_TRAP:
-        this.trap = new SpearTrap(trap);
+        this.trap = new SpearTrap(gameId);
         break;
       case TrapType.ROCK_TRAP:
-        this.trap = new RockTrap(trap);
+        this.trap = new RockTrap(gameId);
         break;
       default:
         throw new Error("Invalid trap type");
     }
   }
 
-  toJson(): TileAsJson {
+  toJson(gameMaster: boolean = false): TileAsJson {
     return {
       type: this.type,
       unitId: this.unitId,
       // should show trap details only if it's revealed or if its game master view
-      trap: this.trap ? this.trap.toJson() : null,
+      trap: this.trap && (this.trap.isRevealed || gameMaster) ? this.trap.toJson(gameMaster) : null,
     };
   }
 }

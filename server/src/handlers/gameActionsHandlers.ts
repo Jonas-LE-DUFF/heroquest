@@ -3,6 +3,7 @@ import { requireGameExists } from "../guards/requireGameExists";
 import { requirePlayerTurn } from "../guards/requirePlayerTurn";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { fight } from "../services/CombatService";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { GameService } from "../services/GameService";
 import {
   withValidation,
@@ -64,9 +65,7 @@ export function registerGameActionsHandlers(socket: Socket) {
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      io.to(gameId).emit("game-state-update", {
-        game: game!.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game!);
 
       callback(successResponse());
     }),
@@ -150,9 +149,7 @@ export function registerGameActionsHandlers(socket: Socket) {
 
         const io = ServerHeroQuest.getServerInstance().getIo();
 
-        io.to(gameId).emit("game-state-update", {
-          game: game!.toJson(),
-        });
+        emitGameStateUpdate(io, gameId, game!);
 
         return callback(successResponse());
       },

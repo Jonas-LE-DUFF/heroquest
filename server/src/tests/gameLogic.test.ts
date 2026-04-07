@@ -41,6 +41,7 @@ import { moveUnit, handleDoorOpening } from "../services/MovementService";
 import { MonsterType } from "../POO/enums/MonsterType";
 import { TileType } from "../POO/enums/Board/TileType";
 import { TrapType } from "../POO/enums/Board/TrapType";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
 
 // ── Helper functions ──
 
@@ -546,7 +547,7 @@ describe("clearTileAtPosition (GameState)", () => {
 
       gameState.addUnit(hero);
       gameState.board.placeUnitAt(hero, pos);
-      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
 
       await moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
@@ -567,7 +568,7 @@ describe("clearTileAtPosition (GameState)", () => {
 
       gameState.addUnit(monster);
       gameState.board.placeUnitAt(monster, pos);
-      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
 
       await moveUnit(gameState.board, pos, Direction.DOWN, monster);
 
@@ -585,7 +586,7 @@ describe("clearTileAtPosition (GameState)", () => {
 
       gameState.addUnit(hero);
       gameState.board.placeUnitAt(hero, pos);
-      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.SPEAR_TRAP);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.SPEAR_TRAP);
 
       // Step on the trap tile for the first time
       await moveUnit(gameState.board, pos, Direction.DOWN, hero);
@@ -608,7 +609,7 @@ describe("clearTileAtPosition (GameState)", () => {
 
       gameState.addUnit(hero);
       gameState.board.placeUnitAt(hero, pos);
-      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
 
       await moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
@@ -627,7 +628,7 @@ describe("clearTileAtPosition (GameState)", () => {
 
       gameState.addUnit(hero);
       gameState.board.placeUnitAt(hero, pos);
-      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
 
       await moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
@@ -643,9 +644,14 @@ describe("clearTileAtPosition (GameState)", () => {
       });
       const pos = new Position(4, 4);
 
+      const server = ServerHeroQuest.getServerInstance() as unknown as {
+        getGame: jest.Mock;
+      };
+      server.getGame.mockReturnValue({ gameState });
+
       gameState.addUnit(hero);
       gameState.board.placeUnitAt(hero, pos);
-      gameState.board.placeTrap(pos.afterMove(Direction.DOWN), TrapType.ROCK_TRAP);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.ROCK_TRAP);
 
       await moveUnit(gameState.board, pos, Direction.DOWN, hero);
 

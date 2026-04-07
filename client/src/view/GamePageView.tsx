@@ -328,10 +328,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         position,
         selectedType,
       },
-      (response: { success: boolean; error?: string }) => {
+      (response: { success: boolean; error?: string; data: BoardAsJson }) => {
         if (!response.success) {
           toast.error(`Failed to place element: ${response.error}`);
         }
+        setGame((prev) => {
+          if (!prev) return prev;
+          return { ...prev, gameState: { ...prev.gameState, board: response.data } } as GameAsJson;
+        });
       },
     );
   };

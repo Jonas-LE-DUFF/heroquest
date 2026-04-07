@@ -149,10 +149,10 @@ class Board {
     return this.setDoorStateAt(position, direction, true);
   }
 
-  placeTrap(position: Position, trapType: TrapType): void {
+  placeTrap(gameId: string, position: Position, trapType: TrapType): void {
     const tile = this.getTileAtPosition(position);
     if (tile) {
-      tile.placeTrap(trapType);
+      tile.placeTrap(gameId, trapType);
     }
   }
 
@@ -187,11 +187,11 @@ class Board {
     return null;
   }
 
-  toJson(): BoardAsJson {
+  toJson(gameMaster: boolean): BoardAsJson {
     return {
       width: this.BOARD_WIDTH,
       height: this.BOARD_HEIGHT,
-      tiles: this.Map.map((row) => row.map((tile) => tile.toJson())),
+      tiles: this.Map.map((row) => row.map((tile) => tile.toJson(gameMaster))),
       doors: {
         horizontalDoors: this.Doors.horizontal,
         verticalDoors: this.Doors.vertical,

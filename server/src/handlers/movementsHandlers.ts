@@ -13,6 +13,7 @@ import {
 import { Board } from "../POO/classes/Board/Board";
 import { Position } from "../POO/classes/Position/Position";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   withValidation,
   successResponse,
@@ -72,9 +73,7 @@ function registerMovementHandlers(socket: Socket) {
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      io.to(gameId).emit("game-state-update", {
-        game: game!.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game!);
 
       callback(successResponse());
     }),

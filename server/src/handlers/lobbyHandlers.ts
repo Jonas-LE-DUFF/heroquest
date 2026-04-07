@@ -5,6 +5,7 @@ import { Game } from "../POO/classes/Server/Game";
 import { requireGameExists } from "../guards/requireGameExists";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   withValidation,
   successResponse,
@@ -51,15 +52,12 @@ export function registerLobbyHandlers(socket: Socket) {
       socket.join(game.id);
 
       const io = ServerHeroQuest.getServerInstance().getIo();
-      const gameAsJson = game.toJson();
       socket.emit("join-success", {
         playerId: newPlayer.id,
-        game: gameAsJson,
+        game: game.toJson(),
       });
 
-      io.to(game.id).emit("game-state-update", {
-        game: gameAsJson,
-      });
+      emitGameStateUpdate(io, game.id, game);
 
       console.log(`${playerName} a rejoint la partie ${game.id}`);
 
@@ -95,10 +93,7 @@ export function registerLobbyHandlers(socket: Socket) {
         GameService.removeGame(game.id);
       }
       const io = ServerHeroQuest.getServerInstance().getIo();
-      const gameAsJson = game.toJson();
-      io.to(gameId).emit("game-state-update", {
-        game: gameAsJson,
-      });
+      emitGameStateUpdate(io, gameId, game);
       callback(successResponse());
     }),
   );
@@ -224,9 +219,7 @@ export function registerLobbyHandlers(socket: Socket) {
       player.isReady = true;
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      io.to(gameId).emit("game-state-update", {
-        game: game.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game);
       callback(successResponse(game.toJson()));
     }),
   );
@@ -265,9 +258,7 @@ export function registerLobbyHandlers(socket: Socket) {
         if (heroesLeft.length === 0) player.isReady = false;
         const io = ServerHeroQuest.getServerInstance().getIo();
 
-        io.to(gameId).emit("game-state-update", {
-          game: game.toJson(),
-        });
+        emitGameStateUpdate(io, gameId, game);
         callback(successResponse());
       },
     ),

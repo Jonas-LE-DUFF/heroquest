@@ -126,7 +126,7 @@ class Hero extends Unit<HeroCategory> {
     this.equipment.removePotion(potion.id);
   }
 
-  toJson(): HeroAsJson {
+  toJson(gameMaster: boolean = false): HeroAsJson {
     return {
       id: this.id,
       controlledByPlayerId: this.controlledByPlayerId,

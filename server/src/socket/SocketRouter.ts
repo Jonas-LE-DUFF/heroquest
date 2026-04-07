@@ -9,6 +9,7 @@ import { registerDiceHandlers } from "../handlers/diceHandler";
 import { registerGameHandlers } from "../handlers/gamehandlers";
 import { registerMasterHandlers } from "../handlers/masterHandlers";
 import { Socket } from "socket.io";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
   const io = server.getIo();
@@ -31,7 +32,7 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
     socket.on("disconnect", () => {
       const modifiedGames = GameService.removePlayerFromAllGames(socket.id);
       modifiedGames.forEach((game) => {
-        io.emit("game-state-update", { game: game.toJson() });
+        emitGameStateUpdate(io, game.id, game);
       });
       console.log(
         `Disconnected player: ${socket.id} from games ${modifiedGames.map((g) => g.name).join(", ")}`,
