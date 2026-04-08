@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, use } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
@@ -35,6 +35,9 @@ import { CardAsJson } from "../POO/interfaces/ClassAsJson/CardAsJson";
 import { toast } from "react-toastify";
 import RotatableCard3D from "../components/small_components/RotatableCard3D";
 import { SelectType } from "../POO/types/selectType";
+import useBoardTileClickHandlers, {
+  InteractionState,
+} from "./hooks/useBoardTileClickHandlers";
 
 interface GamePageProps {
   socket: any;
@@ -44,12 +47,27 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const location = useLocation();
   const role = location.state.role;
 
-  const [selectedType, setSelectedType] = useState<
-    SelectType
-  >(null);
-  const [selectedPosition, setSelectedPosition] =
-    useState<PositionAsJson | null>(null);
-  const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+  const [interaction, setInteraction] = useState<InteractionState>({
+    selectedType: null,
+    selectedPosition: null,
+    selectedEntityId: null,
+    targeting: { mode: "none" },
+  });
+  const selectedType = interaction.selectedType;
+  const selectedPosition = interaction.selectedPosition;
+  const selectedEntityId = interaction.selectedEntityId;
+  const targetMode = interaction.targeting.mode !== "none";
+
+  const setSelectedType = (type: SelectType) => {
+    setInteraction((prev) => ({ ...prev, selectedType: type }));
+  };
+
+  const setTargetMode = (value: boolean) => {
+    setInteraction((prev) => ({
+      ...prev,
+      targeting: value ? { mode: "attack" } : { mode: "none" },
+    }));
+  };
 
   const [game, setGame] = useState<GameAsJson>(location.state.game);
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
@@ -62,15 +80,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   }
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
-  const [selectedSpell, setSelectedSpell] = useState<string | null>(null);
-
-  const [targetMode, setTargetMode] = useState<boolean>(false);
-
-  let selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
-
-  useEffect(() => {
-    selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
-  }, [hero]);
+  const selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
 
   useEffect(() => {
     if (!game) {
@@ -136,20 +146,29 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       console.log("c'est l'update du gamePage", data.game);
       const selectedId = selectedEntityId;
       if (selectedId) {
+        //if the selected entity moved, the selection follows
         const pos = getPositionByUnitId(selectedId, data.game.gameState.board);
         if (pos) {
-          setSelectedPosition(pos);
-          setSelectedEntityId(selectedId);
+          setInteraction((prev) => ({
+            ...prev,
+            selectedPosition: pos,
+            selectedEntityId: selectedId,
+          }));
         } else {
-          setSelectedPosition(null);
-          setSelectedEntityId(null);
+          setInteraction((prev) => ({
+            ...prev,
+            selectedPosition: null,
+            selectedEntityId: null,
+          }));
         }
       } else if (selectedPosition) {
         const unitId = getTileByPosition(
           selectedPosition,
           data.game.gameState.board,
         )?.unitId;
-        if (unitId) setSelectedEntityId(unitId);
+        if (unitId) {
+          setInteraction((prev) => ({ ...prev, selectedEntityId: unitId }));
+        }
       }
 
       setGame(data.game);
@@ -231,8 +250,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     if (!unit) return;
     const position = getPositionByUnitId(unit.id, game.gameState.board);
     if (!position) return;
-    setSelectedPosition(position);
-    setSelectedEntityId(unit.id);
+    setInteraction((prev) => ({
+      ...prev,
+      selectedPosition: position,
+      selectedEntityId: unit.id,
+    }));
   };
   const getSelectedUnit = (
     position: PositionAsJson | null,
@@ -246,99 +268,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       | MonsterAsJson;
   };
 
-  const handleTileClick = (
-    position: PositionAsJson,
-    selectedType: SelectType,
-  ) => {
-    if (selectedSpell !== null) {
-      socket.emit(
-        "cast-spell",
-        {
-          gameId: game.id,
-          spellId: selectedSpell,
-          position: position,
-        },
-        (response: { success: boolean; error?: string }) => {
-          if (!response.success) {
-            toast.error("Failed to cast spell: " + response.error);
-          }
-        },
-      );
-      setTargetMode(false);
-      setSelectedSpell(null);
-      return;
-    }
-
-    if (targetMode) {
-      const targetId = getTileByPosition(
-        position,
-        game.gameState.board,
-      )?.unitId;
-      const target = game.gameState.Units.find((u) => u.id === targetId);
-      if (!target) {
-        setTargetMode(false);
-        return;
-      }
-
-      socket.emit(
-        "attack",
-        {
-          gameId: game.id,
-          attackerId: socket.id,
-          targetId: target.id,
-          weaponId: PlayerService.getHeroSelectedWeapon(hero) ?? undefined,
-        },
-        (response: { success: boolean; error?: string }) => {
-          if (response.success) {
-            console.log("Attack executed successfully");
-          } else {
-            toast.error("Failed to execute attack: " + response.error);
-          }
-        },
-      );
-      setTargetMode(false);
-      return;
-    }
-
-    if (
-      selectedPosition !== null &&
-      selectedPosition.x === position.x &&
-      selectedPosition.y === position.y
-    ) {
-      setSelectedPosition(null);
-      setSelectedEntityId(null);
-      setStatsVisible(false);
-    } else {
-      setSelectedPosition(position);
-      // set selected entity id based on current game state mapping
-      const idAtPos = getTileByPosition(position, game.gameState.board)?.unitId;
-      if (!idAtPos) {
-        setStatsVisible(false);
-      }
-      setSelectedEntityId(idAtPos ?? null);
-    }
-
-    if (!selectedType) {
-      return;
-    }
-    socket.emit(
-      "place-element",
-      {
-        gameId: game.id,
-        position,
-        selectedType,
-      },
-      (response: { success: boolean; error?: string; data: BoardAsJson }) => {
-        if (!response.success) {
-          toast.error(`Failed to place element: ${response.error}`);
-        }
-        setGame((prev) => {
-          if (!prev) return prev;
-          return { ...prev, gameState: { ...prev.gameState, board: response.data } } as GameAsJson;
-        });
-      },
-    );
-  };
+  const { handleTileClick } = useBoardTileClickHandlers({
+    interaction,
+    setInteraction,
+    game,
+    socket,
+    hero,
+    setStatsVisible,
+    setGame,
+  });
 
   return (
     <>
@@ -348,8 +286,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           spellSchools={hero?.spellElements}
           spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
           onSpellClick={(selectedSpell: string) => {
-            setSelectedSpell(selectedSpell);
-            setTargetMode(true);
+            setInteraction((prev) => ({
+              ...prev,
+              targeting: { mode: "spell", spellId: selectedSpell },
+            }));
           }}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
