@@ -16,6 +16,7 @@ import { getHeroesByPlayerId, getHeroToPlay } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/card-draw.png";
+import trapSearch from "/assets/images/icons/navbar/search-traps.png";
 import { useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
@@ -111,6 +112,10 @@ const Navbar: React.FC<NavbarProps> = ({
     );
   }
 
+  function searchTraps(): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="Navbar">
       <div className="nav-elem">Navbar</div>
@@ -155,14 +160,16 @@ const Navbar: React.FC<NavbarProps> = ({
       {hero && (
         <>
           <div className="nav-elem">
-            <img
-              src={backpackIcon}
-              alt="Backpack"
-              className="imgNav"
-              onClick={() => {
-                setShowEquipments(!showEquipments);
-              }}
-            />
+            <Tooltip title="Voir mon équipement" arrow>
+              <img
+                src={backpackIcon}
+                alt="Backpack"
+                className="imgNav"
+                onClick={() => {
+                  setShowEquipments(!showEquipments);
+                }}
+              />
+            </Tooltip>
           </div>
           <Dialog
             open={showEquipments}
@@ -174,7 +181,16 @@ const Navbar: React.FC<NavbarProps> = ({
       )}
       {hero && (
         <div className="nav-elem" onClick={() => searchTreasures()}>
-          <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+          <Tooltip title="Rechercher des trésors" arrow>
+            <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+          </Tooltip>
+        </div>
+      )}
+      {hero && (
+        <div className="nav-elem" onClick={() => searchTraps()}>
+          <Tooltip title="Rechercher des pièges" arrow>
+            <img src={trapSearch} alt="Trap search" className="imgNav" />
+          </Tooltip>
         </div>
       )}
       {role === PlayerRole.HERO && (
