@@ -12,18 +12,19 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
-import { getHeroesByPlayerId, getHeroToPlay } from "../../shared/serverUtils";
+import { getHeroesByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/card-draw.png";
 import trapSearch from "/assets/images/icons/navbar/search-traps.png";
 import lockpicks from "/assets/images/icons/navbar/lockpicks.png";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 import { toast } from "react-toastify";
+import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 
 interface NavbarProps {
   socket: Socket;
@@ -38,6 +39,7 @@ interface NavbarProps {
   setStatsOpen: (arg0: boolean) => void;
   setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
+  setInteraction: Dispatch<SetStateAction<InteractionState>>;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -53,6 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({
   openSpellPage,
   currentlyPlayedHero,
   setCurrentlyPlayedHero,
+  setInteraction,
 }) => {
   const location = useLocation();
   const role = location.state.role;
@@ -114,11 +117,23 @@ const Navbar: React.FC<NavbarProps> = ({
   }
 
   function searchTraps(): void {
-    throw new Error("Function not implemented.");
+    socket.emit(
+      "check-for-traps",
+      { gameId: game.id, heroId: hero?.id },
+      (response: { success: boolean; trapCardId?: string; error?: string }) => {
+        if (!response.success) {
+          console.error("Erreur lors de la recherche de pièges : " + response.error);
+          toast.error(`Erreur lors de la recherche de pièges : ${response.error}`);
+        }
+      },
+    );
   }
 
   function disarmTrap(): void {
-    throw new Error("Function not implemented.");
+    setInteraction((prev: InteractionState) => ({
+      ...prev,
+      targeting: { mode: "disarmTrap" },
+    }));
   }
 
   return (

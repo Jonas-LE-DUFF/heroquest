@@ -11,7 +11,8 @@ import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 export type TargetingState =
   | { mode: "none" }
   | { mode: "attack" }
-  | { mode: "spell"; spellId: string };
+  | { mode: "spell"; spellId: string }
+  | { mode: "disarmTrap" };
 
 export interface InteractionState {
   selectedType: SelectType;
@@ -148,12 +149,33 @@ const useBoardTileClickHandlers = ({
     [interaction.selectedPosition, game, socket, setInteraction, setStatsVisible, setGame],
   );
 
+  const handleDisarmTrapTileClick = useCallback(
+    (position: PositionAsJson) => {
+      socket.emit(
+        "disarm-trap",
+        {
+          gameId: game.id,
+          heroId: hero?.id,
+          position,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (!response.success) {
+            toast.error("Failed to disarm trap: " + response.error);
+          }
+        },
+      );
+      setInteraction((prev) => ({ ...prev, targeting: { mode: "none" } }));
+    },
+    [game.id, hero, socket, setInteraction],
+  );
+
   const handleTileClick = useCallback(
     (position: PositionAsJson, selectedType: SelectType) => {
       const handlersByMode: Record<TargetingState["mode"], () => void> = {
         none: () => handleDefaultTileClick(position, selectedType),
         attack: () => handleAttackTileClick(position),
         spell: () => handleSpellTileClick(position),
+        disarmTrap: () => handleDisarmTrapTileClick(position),
       };
 
       handlersByMode[interaction.targeting.mode]();

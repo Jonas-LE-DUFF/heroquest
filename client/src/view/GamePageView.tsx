@@ -314,6 +314,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             openSpellPage={() => setSpellPageVisible(true)}
             setCurrentlyPlayedHero={setHero}
             currentlyPlayedHero={hero}
+            setInteraction={setInteraction}
           />
         </Grid>
         <Grid className="LeftMenu">
