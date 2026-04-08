@@ -17,6 +17,7 @@ import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/card-draw.png";
 import trapSearch from "/assets/images/icons/navbar/search-traps.png";
+import lockpicks from "/assets/images/icons/navbar/lockpicks.png";
 import { useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
@@ -116,6 +117,10 @@ const Navbar: React.FC<NavbarProps> = ({
     throw new Error("Function not implemented.");
   }
 
+  function disarmTrap(): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <div className="Navbar">
       <div className="nav-elem">Navbar</div>
@@ -190,6 +195,13 @@ const Navbar: React.FC<NavbarProps> = ({
         <div className="nav-elem" onClick={() => searchTraps()}>
           <Tooltip title="Rechercher des pièges" arrow>
             <img src={trapSearch} alt="Trap search" className="imgNav" />
+          </Tooltip>
+        </div>
+      )}
+      {hero && (
+        <div className="nav-elem" onClick={() => disarmTrap()}>
+          <Tooltip title="Désarmer un piège" arrow>
+            <img src={lockpicks} alt="Lockpicks" className="imgNav" />
           </Tooltip>
         </div>
       )}
