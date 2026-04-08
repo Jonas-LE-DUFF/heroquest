@@ -71,6 +71,19 @@ export const checkForTreasuresSchema = z.object({
   heroId: z.string().min(1, "L'ID du héros est requis"),
 });
 
+// --- Trap Events ---
+
+export const checkForTrapsSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+});
+
+export const disarmTrapSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+  position: positionSchema,
+});
+
 // --- Dice Events ---
 
 export const authorizeSpecialThrowSchema = z.object({

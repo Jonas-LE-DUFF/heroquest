@@ -6,7 +6,6 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/Board/TileType";
 import { TrapType } from "../POO/enums/Board/TrapType";
 
 const canMove = (
@@ -16,7 +15,7 @@ const canMove = (
   unitMoved: Unit<HeroCategory | MonsterCategory>,
 ): { success: boolean; error?: string } => {
   const isHero =
-    unitMoved instanceof Unit && unitMoved.getCategory() === PlayerRole.HERO;
+    unitMoved instanceof Unit && unitMoved.getRole() === PlayerRole.HERO;
   const canPhaseThroughWalls = unitMoved.canPhaseThroughWalls();
   const canPhaseThroughMonsters = unitMoved.canPhaseThroughMonsters();
   const to = from.afterMove(direction);

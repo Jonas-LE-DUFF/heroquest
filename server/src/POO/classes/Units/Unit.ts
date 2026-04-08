@@ -70,8 +70,8 @@ abstract class Unit<T extends HeroCategory | MonsterCategory> {
         return this.validateStatsImplementation();
     }
 
-    getCategory(): string {
-        return typeof this.category;
+    getCategory(): T {
+        return this.category;
     }
 
     abstract getRole(): PlayerRole;
