@@ -14,7 +14,7 @@
     "test:server:watch": "cd server && npm run test:watch",
     "test:client:watch": "cd client && npm run test:watch",
     "test:server:coverage": "cd server && npm run test:coverage",
-    "lint": "cd server && eslint src --ext .ts,.tsx && cd ../client && eslint src --ext .ts,.tsx"
+    "lint": "cd server && npm run lint && cd ../client && npm run lint"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -8,12 +8,13 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.2",
+    "jest": "^30.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1",
     "react-toastify": "^11.0.5",
     "socket.io-client": "^4.8.1",
-    "web-vitals": "^5.2.0"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "dev": "vite",
@@ -21,7 +22,8 @@
     "preview": "vite preview",
     "start": "vite",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts,.tsx"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

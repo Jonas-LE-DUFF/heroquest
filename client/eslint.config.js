@@ -65,7 +65,7 @@ export default [
     settings: {
       react: { version: "detect" },
     },
-    
+
   },
 
   // test files
@@ -73,6 +73,11 @@ export default [
     files: ["src/**/*.test.{ts,tsx}", "src/**/*.spec.{ts,tsx}"],
     plugins: { jest: jestPlugin },
     ...jestPlugin.configs["flat/recommended"],
+    settings: {
+      jest: {
+        version: 29, // mets ici ta version de Jest (vérifie avec: npm list jest)
+      },
+    }
   },
 
   // Prettier en dernier — désactive les règles qui conflictent avec le formatage
