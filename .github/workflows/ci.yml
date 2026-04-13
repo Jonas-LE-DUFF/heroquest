@@ -40,7 +40,7 @@ jobs:
 
       - name: Run tests
         id: test
-        run: npm test -- --coverage --passWithNoTests
+        run: npm test
         continue-on-error: true
 
       - name: Check lint & typecheck results
@@ -84,7 +84,7 @@ jobs:
 
       - name: Tests
         id: test
-        run: npm test -- --coverage
+        run: npm test
         continue-on-error: true
 
       - name: Check lint & typecheck results
