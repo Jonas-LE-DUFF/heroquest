@@ -29,15 +29,27 @@ jobs:
         run: npm ci
 
       - name: TypeScript typecheck
+        id: typecheck
         run: npx tsc --noEmit
         continue-on-error: true
 
       - name: Lint
+        id: lint
         run: npm run lint
         continue-on-error: true
 
       - name: Run tests
+        id: test
         run: npm test -- --coverage --passWithNoTests
+        continue-on-error: true
+
+      - name: Check lint & typecheck results
+        if: steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
+        run: |
+          echo "❌ Typecheck status: ${{ steps.typecheck.outcome }}"
+          echo "❌ Lint status: ${{ steps.lint.outcome }}"
+          echo "❌ Test status: ${{ steps.test.outcome }}"
+          exit 1
 
   ci-server:
     name: Server — Lint & Typecheck
@@ -61,13 +73,26 @@ jobs:
         run: npm ci
 
       - name: TypeScript typecheck
+        id: typecheck
         run: npx tsc --noEmit
         continue-on-error: true
 
       - name: Lint
+        id: lint
         run: npm run lint
         continue-on-error: true
-      
+
       - name: Tests
+        id: test
         run: npm test -- --coverage
         continue-on-error: true
+
+      - name: Check lint & typecheck results
+        if: steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
+        run: |
+          echo "❌ Typecheck status: ${{ steps.typecheck.outcome }}"
+          echo "❌ Lint status: ${{ steps.lint.outcome }}"
+          echo "❌ Test status: ${{ steps.test.outcome }}"
+          exit 1
+      
+      
