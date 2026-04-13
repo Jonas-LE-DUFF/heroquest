@@ -37,7 +37,7 @@ jobs:
         continue-on-error: true
 
       - name: Run tests
-        run: npm test -- --coverage --watchAll=false --passWithNoTests
+        run: npm test -- --coverage --passWithNoTests
 
   ci-server:
     name: Server — Lint & Typecheck
@@ -66,4 +66,8 @@ jobs:
 
       - name: Lint
         run: npm run lint
+        continue-on-error: true
+      
+      - name: Tests
+        run: npm test -- --coverage
         continue-on-error: true
