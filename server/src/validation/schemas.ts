@@ -84,6 +84,11 @@ export const disarmTrapSchema = z.object({
   position: positionSchema,
 });
 
+export const revealTrapSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  position: positionSchema,
+});
+
 // --- Dice Events ---
 
 export const authorizeSpecialThrowSchema = z.object({

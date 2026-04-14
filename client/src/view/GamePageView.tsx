@@ -37,6 +37,7 @@ import RotatableCard3D from "../components/small_components/RotatableCard3D";
 import { SelectType } from "../POO/types/selectType";
 import useBoardTileClickHandlers, {
   InteractionState,
+  TargetingState,
 } from "./hooks/useBoardTileClickHandlers";
 
 interface GamePageProps {
@@ -58,14 +59,23 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const selectedEntityId = interaction.selectedEntityId;
   const targetMode = interaction.targeting.mode !== "none";
 
+  const getPlacementTargetingState = (type: SelectType): TargetingState =>
+    type ? { mode: "placingSelectedType" } : { mode: "none" };
+
   const setSelectedType = (type: SelectType) => {
-    setInteraction((prev) => ({ ...prev, selectedType: type }));
+    setInteraction((prev) => ({
+      ...prev,
+      selectedType: type,
+      targeting: getPlacementTargetingState(type),
+    }));
   };
 
   const setTargetMode = (value: boolean) => {
     setInteraction((prev) => ({
       ...prev,
-      targeting: value ? { mode: "attack" } : { mode: "none" },
+      targeting: value
+        ? { mode: "attack" }
+        : getPlacementTargetingState(prev.selectedType),
     }));
   };
 
@@ -368,6 +378,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             }}
             selectedWeapon={selectedWeapon}
             hero={hero}
+            setInteraction={setInteraction}
           />
         </Grid>
         <Grid className="Footer">

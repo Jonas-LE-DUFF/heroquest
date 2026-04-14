@@ -1,4 +1,4 @@
-import { useState, useEffect, JSX } from "react";
+import { Dispatch, SetStateAction, useState, useEffect, JSX } from "react";
 import { useLocation } from "react-router-dom";
 import Dices from "../dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
@@ -26,24 +26,25 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { TrapType } from "../../POO/enums/Board/TrapType";
 import { SelectType } from "../../POO/types/selectType";
+import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 
 interface GameControlsProps {
   socket: any;
   game: GameAsJson;
-  setSelectedType: (
-    type: SelectType,
-  ) => void; //Direction -> door placement
+  setSelectedType: (type: SelectType) => void; //Direction -> door placement
   selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
   hero: HeroAsJson | null;
+  setInteraction: Dispatch<SetStateAction<InteractionState>>;
 }
 
 const GameControls = ({
   socket,
   game,
+  setInteraction,
   setSelectedType,
   selectedType,
   selectedUnit,
@@ -137,11 +138,11 @@ const GameControls = ({
 
   const putDoor = (direction: Direction) => {
     setSelectedType(direction);
-  }
+  };
 
   const putTrap = (trapType: TrapType) => {
     setSelectedType(trapType);
-  }
+  };
 
   const endTurn = () => {
     socket.emit(
@@ -342,16 +343,24 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.UP)}>Porte Haut</button>
+                  <button onClick={() => putDoor(Direction.UP)}>
+                    Porte Haut
+                  </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.DOWN)}>Porte Bas</button>
+                  <button onClick={() => putDoor(Direction.DOWN)}>
+                    Porte Bas
+                  </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.LEFT)}>Porte Gauche</button>
+                  <button onClick={() => putDoor(Direction.LEFT)}>
+                    Porte Gauche
+                  </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.RIGHT)}>Porte Droite</button>
+                  <button onClick={() => putDoor(Direction.RIGHT)}>
+                    Porte Droite
+                  </button>
                 </Grid>
               </Grid>
             </Accordion>
@@ -365,13 +374,46 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={4}>
-                  <button onClick={() => putTrap(TrapType.PIT_TRAP)}>Oubliettes</button>
+                  <button onClick={() => putTrap(TrapType.PIT_TRAP)}>
+                    Oubliettes
+                  </button>
                 </Grid>
                 <Grid size={4}>
-                  <button onClick={() => putTrap(TrapType.ROCK_TRAP)}>Éboulement</button>
+                  <button onClick={() => putTrap(TrapType.ROCK_TRAP)}>
+                    Éboulement
+                  </button>
                 </Grid>
                 <Grid size={4}>
-                  <button onClick={() => putTrap(TrapType.SPEAR_TRAP)}>Piège à lance</button>
+                  <button onClick={() => putTrap(TrapType.SPEAR_TRAP)}>
+                    Piège à lance
+                  </button>
+                </Grid>
+                <Grid size={6}>
+                  <button
+                    onClick={() => {
+                      setInteraction((prev) => ({
+                        ...prev,
+                        selectedType: null,
+                        targeting: { mode: "revealTrap" },
+                      }));
+                    }}
+                  >
+                    révéler piège
+                  </button>
+                </Grid>
+                <Grid size={6}>
+                  <button
+                    onClick={() => {
+                      console.log("Entering disarm trap targeting mode");
+                      setInteraction((prev) => ({
+                        ...prev,
+                        selectedType: null,
+                        targeting: { mode: "disarmTrap" },
+                      }));
+                    }}
+                  >
+                    désarmer piège
+                  </button>
                 </Grid>
               </Grid>
             </Accordion>

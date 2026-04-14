@@ -10,6 +10,7 @@ import { registerGameHandlers } from "../handlers/gamehandlers";
 import { registerMasterHandlers } from "../handlers/masterHandlers";
 import { Socket } from "socket.io";
 import { emitGameStateUpdate } from "../utils/gameStateEmitter";
+import { registerTrapsActionsHandlers } from "../handlers/trapsActionsHandlers";
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
   const io = server.getIo();
@@ -28,6 +29,7 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
     registerDiceHandlers(socket);
     registerGameHandlers(socket);
     registerMasterHandlers(socket);
+    registerTrapsActionsHandlers(socket);
 
     socket.on("disconnect", () => {
       const modifiedGames = GameService.removePlayerFromAllGames(socket.id);

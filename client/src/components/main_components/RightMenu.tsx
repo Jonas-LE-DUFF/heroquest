@@ -1,10 +1,11 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { GameControls } from "../large_components/GameControlsComponent";
 import { Socket } from "socket.io-client";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { SelectType } from "../../POO/types/selectType";
+import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 
 interface RightMenuProps {
   socket: Socket;
@@ -16,6 +17,7 @@ interface RightMenuProps {
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
   hero: HeroAsJson | null;
+  setInteraction: Dispatch<SetStateAction<InteractionState>>;
 }
 
 const RightMenu: React.FC<RightMenuProps> = ({
@@ -28,6 +30,7 @@ const RightMenu: React.FC<RightMenuProps> = ({
   setSelectedWeapon,
   selectedWeapon,
   hero,
+  setInteraction,
 }) => {
   return (
     <div>
@@ -41,6 +44,7 @@ const RightMenu: React.FC<RightMenuProps> = ({
         setSelectedWeapon={setSelectedWeapon}
         selectedWeapon={selectedWeapon}
         hero={hero}
+        setInteraction={setInteraction}
       />
     </div>
   );

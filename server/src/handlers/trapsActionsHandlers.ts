@@ -3,13 +3,17 @@ import {
   checkForTrapsSchema,
   disarmTrapSchema,
   errorResponse,
+  revealTrapSchema,
   successResponse,
   withValidation,
 } from "../validation";
 import { requireGameExists } from "../guards/requireGameExists";
 import { GameService } from "../services/GameService";
 import { requirePlayerTurn } from "../guards/requirePlayerTurn";
-import { emitGameStateUpdate, getGameMasterSocket } from "../utils/gameStateEmitter";
+import {
+  emitGameStateUpdate,
+  getGameMasterSocket,
+} from "../utils/gameStateEmitter";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { success } from "zod";
@@ -18,10 +22,12 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { dealDamage } from "../services/CombatService";
 import { Position } from "../POO/classes/Position/Position";
+import { requireGameMaster } from "../guards/requireGameMaster";
 
 function registerTrapsActionsHandlers(socket: Socket) {
   checkForTraps(socket);
   disarmTrap(socket);
+  revealTrap(socket);
 }
 
 function checkForTraps(socket: Socket) {
@@ -134,6 +140,49 @@ function disarmTrap(socket: Socket) {
 
       emitGameStateUpdate(io, gameId, game!);
 
+      return callback(successResponse());
+    }),
+  );
+}
+
+function revealTrap(socket: Socket) {
+  socket.on(
+    "reveal-trap",
+    withValidation(socket, revealTrapSchema, async (socket, data, callback) => {
+      console.log("Received reveal trap request with data:", data);
+      const { gameId, position } = data;
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("La partie n'existe plus."));
+      }
+      const game = GameService.getGame(gameId);
+      if (!requireGameMaster(socket, game!)) {
+        return callback(
+          errorResponse("Seul le maître du jeu peut faire cela."),
+        );
+      }
+      const pos = new Position(position.x, position.y);
+      if (
+        !pos.isValid(
+          game!.gameState.board.BOARD_WIDTH,
+          game!.gameState.board.BOARD_HEIGHT,
+        )
+      ) {
+        return callback(errorResponse("Position invalide."));
+      }
+      const tile = game!.gameState.board.getTileAtPosition(pos);
+      if (!tile) {
+        return callback(errorResponse("Aucune tuile trouvée à cette position."));
+      }
+      
+      if (!tile.trap) {
+        return callback(errorResponse("Aucun piège trouvé à cette position."));
+      }
+
+      tile.trap.isRevealed = true;
+      console.log(`Trap at position (${position.x}, ${position.y}) revealed by game master.`);
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game!);
       return callback(successResponse());
     }),
   );
