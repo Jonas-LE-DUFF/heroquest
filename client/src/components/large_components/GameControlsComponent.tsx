@@ -388,7 +388,7 @@ const GameControls = ({
                     Piège à lance
                   </button>
                 </Grid>
-                <Grid size={6}>
+                <Grid size={12}>
                   <button
                     onClick={() => {
                       setInteraction((prev) => ({
@@ -399,20 +399,6 @@ const GameControls = ({
                     }}
                   >
                     révéler piège
-                  </button>
-                </Grid>
-                <Grid size={6}>
-                  <button
-                    onClick={() => {
-                      console.log("Entering disarm trap targeting mode");
-                      setInteraction((prev) => ({
-                        ...prev,
-                        selectedType: null,
-                        targeting: { mode: "disarmTrap" },
-                      }));
-                    }}
-                  >
-                    désarmer piège
                   </button>
                 </Grid>
               </Grid>
