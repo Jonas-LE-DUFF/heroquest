@@ -637,6 +637,28 @@ describe("clearTileAtPosition (GameState)", () => {
       expect(hero.getAttackDiceCount()).toBe(1); // should not go below 1
     });
 
+    it("leaving pit trap should remove the pit trap effect", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeTrap("test-game", pos.afterMove(Direction.DOWN), TrapType.PIT_TRAP);
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+      // test may failed after making traps end the player's turn
+
+      // Move back up to leave the trap tile
+      await moveUnit(gameState.board, pos.afterMove(Direction.DOWN), Direction.UP, hero);
+
+      expect(hero.stats.health).toBe(4); // health should remain the same
+      expect(hero.getAttackDiceCount()).toBe(2); // attack dice should be restored after leaving the trap
+    });
+
+
     it("rock trap should place a wall on the trap tile after triggering", async () => {
       const gameState = new GameState();
       const hero = createTestHero({
