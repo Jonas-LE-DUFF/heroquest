@@ -17,6 +17,10 @@ class HeroFactory {
     const stats: Stats = getHeroBaseStats(heroCategory);
 
     const equipment: Equipment = getHeroStartingEquipment(heroCategory);
+    
+    for (const equipmentId of heroCreationWish.equipments) {
+      equipment.addEquipmentById(equipmentId);
+    }
 
     const spells = getSpellsForElements(gameId, heroCreationWish.spellElements);
 
