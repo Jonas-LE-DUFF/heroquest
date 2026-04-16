@@ -111,7 +111,7 @@ function disarmTrap(socket: Socket) {
         hero.getCategory() !== HeroCategory.Dwarf
       ) {
         return callback(
-          errorResponse("Le héros ne peut pas désarmer le piège."),
+          errorResponse("Le héros ne peut pas désarmer le piège car il ne possède pas d'outils appropriés et qu'il n'est pas nain."),
         );
       }
 
@@ -135,6 +135,8 @@ function disarmTrap(socket: Socket) {
           tile.trap = null;
         }
       }
+
+      console.log(`Hero ${hero.name} attempted to disarm trap at position (${position.x}, ${position.y}) with roll result: ${result}`);
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
