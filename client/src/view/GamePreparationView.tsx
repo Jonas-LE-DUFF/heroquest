@@ -40,7 +40,6 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
       },
       (response: { success: boolean; error?: string; data: BoardAsJson }) => {
         if (response.success) {
-          console.error("Stairs placed successfully");
           const newBoard: BoardAsJson = response.data;
           setGame({
             ...game,

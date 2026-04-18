@@ -40,7 +40,6 @@ export function registerMasterHandlers(socket: Socket) {
 
       console.debug("placing element", data);
       const game = GameService.getGame(gameId);
-      const io = ServerHeroQuest.getServerInstance().getIo();
 
       const board = game?.gameState.board;
       if (!board) {

@@ -158,7 +158,7 @@ const useBoardTileClickHandlers = ({
             if (!prev) return prev;
             return {
               ...prev,
-              gameState: { ...prev.gameState, board: response.data },
+              gameState: { ...prev.gameState, board: response.data ?? prev.gameState.board },
             } as GameAsJson;
           });
         },
