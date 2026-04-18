@@ -234,7 +234,7 @@ describe("moveUnit (MovementService)", () => {
     expect(result.error).toBe("tile is occupied");
   });
 
-  it("should fail when moving into a wall", async () => {
+  it("should fail when moving into a wall (tile)", async () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(5, 5));
@@ -245,6 +245,33 @@ describe("moveUnit (MovementService)", () => {
     expect(result.success).toBe(false);
     expect(result.error).toBe("Tile is impassable");
   });
+
+  it("should fail when moving into wall from board.walls", async () => {
+    const board = new Board();
+    const hero = createTestHero();
+    board.placeUnitAt(hero, new Position(5, 5));
+    board.placeThinWall(new Position(5,5) , Direction.DOWN)
+
+    const result = await moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("wall in the way");
+  })
+
+  it("should success when moving through a wall with apropriate effect", async () => {
+    const board = new Board();
+    const hero = createTestHero();
+    board.placeUnitAt(hero, new Position(5, 5));
+    board.placeThinWall(new Position(5, 5), Direction.DOWN);
+
+    const result = await moveUnit(
+      board,
+      new Position(5, 5),
+      Direction.DOWN,
+      hero,
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("wall in the way");
+  })
 });
 
 describe("handleDoorOpening (MovementService)", () => {
