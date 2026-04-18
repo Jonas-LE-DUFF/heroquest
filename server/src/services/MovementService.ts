@@ -5,7 +5,6 @@ import { Unit } from "../POO/classes/Units/Unit";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
-import { PlayerRole } from "../POO/enums/PlayerRole";
 import { TrapType } from "../POO/enums/Board/TrapType";
 
 const canMove = (
@@ -14,8 +13,6 @@ const canMove = (
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
 ): { success: boolean; error?: string } => {
-  const isHero =
-    unitMoved instanceof Unit && unitMoved.getRole() === PlayerRole.HERO;
   const canPhaseThroughWalls = unitMoved.canPhaseThroughWalls();
   const canPhaseThroughMonsters = unitMoved.canPhaseThroughMonsters();
   const to = from.afterMove(direction);
@@ -34,7 +31,6 @@ const canMove = (
   if (
     board.hasWallAt(from, direction) &&
     !board.hasDoorAt(from, direction) &&
-    !isHero &&
     !canPhaseThroughWalls // A monster can't open doors
   ) {
     console.error("wall in the way");
