@@ -7,7 +7,6 @@ interface LeftMenuProps {
   statsVisible: boolean;
   socket: any;
   currentGameState: any;
-  selectedPosition: any;
   selectedUnit: any;
   setStatsVisible: (arg0: boolean) => void;
   role: string;
@@ -17,7 +16,6 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
   statsVisible,
   socket,
   currentGameState,
-  selectedPosition,
   selectedUnit,
   setStatsVisible,
   role,
@@ -29,7 +27,6 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
           <StatsComponent
             socket={socket}
             gameId={currentGameState.id}
-            position={selectedPosition ?? { x: 0, y: 0 }}
             unit={selectedUnit}
             setStatsVisible={setStatsVisible}
             isGameMaster={role === PlayerRole.GAME_MASTER}

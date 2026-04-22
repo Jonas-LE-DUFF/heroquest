@@ -332,7 +332,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             statsVisible={statsVisible}
             socket={socket}
             currentGameState={game}
-            selectedPosition={selectedPosition}
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }

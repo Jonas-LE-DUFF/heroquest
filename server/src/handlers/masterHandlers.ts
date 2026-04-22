@@ -123,8 +123,7 @@ export function registerMasterHandlers(socket: Socket) {
   socket.on(
     "update-stats-unit",
     withValidation(socket, updateStatsUnitSchema, (socket, data, callback) => {
-      const { newStats, position: posData, gameId } = data;
-      const position = toPosition(posData);
+      const { newStats, unitId, gameId } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Game not found"));
@@ -136,18 +135,13 @@ export function registerMasterHandlers(socket: Socket) {
 
       const game = GameService.getGame(gameId);
 
-      try {
-        game?.gameState.updateUnitStats(newStats, position);
-      } catch (error) {
-        return callback(errorResponse((error as Error).message));
+      const unit = game?.gameState.getUnitById(unitId);
+      if (!unit) {
+        console.error("Unit not found with id:", unitId);
+        return callback(errorResponse("Unit not found"));
       }
-
-      const unitId = game?.gameState.getUnitByPosition(position)?.id;
-      if (!unitId) {
-        return callback(
-          errorResponse("Unit not found at the specified position"),
-        );
-      }
+      
+      unit.stats = newStats;
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 

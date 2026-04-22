@@ -16,7 +16,6 @@ import { toast } from "react-toastify";
 interface StatsComponentProps {
   socket: Socket;
   gameId: string;
-  position: PositionAsJson;
   unit: MonsterAsJson | HeroAsJson;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
@@ -25,7 +24,6 @@ interface StatsComponentProps {
 const StatsComponent = ({
   socket,
   gameId,
-  position,
   unit,
   setStatsVisible,
   isGameMaster,
@@ -247,7 +245,7 @@ const StatsComponent = ({
     // Send the new stats to the server or update the state
     socket.emit(
       "update-stats-unit",
-      { gameId, newStats, position },
+      { gameId, newStats, unitId: unit.id },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           toast.error("Erreur lors de la mise à jour des stats : " + response.error);

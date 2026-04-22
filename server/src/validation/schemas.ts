@@ -128,7 +128,7 @@ export const placeElementSchema = z.object({
 export const updateStatsUnitSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   newStats: z.any(), // StatsAsJson - objet complexe
-  position: positionSchema,
+  unitId: z.string().min(1, "L'ID de l'unité est requis"),
 });
 
 export const updateEquipmentSchema = z.object({
