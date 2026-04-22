@@ -11,6 +11,23 @@
     z-index: 2;
 }
 
+.inPitTrap{
+    filter: grayscale(30%) brightness(80%);
+    transform: translate(-50%, -50%) scale(0.8);
+}
+
+.onTopImage{
+    filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.8));
+    transform: translate(-50%, -50%);
+    max-width: 56px;
+    max-height: 56px;
+}
+
+.onTopImage:hover{
+    transform: translate(-50%, -100%);
+    transition: 0.2s ease-in-out;
+}
+
 .stairsImage{
     width: 78px;
     height: 78px;

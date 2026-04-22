@@ -7,7 +7,7 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { getIconClassPath, getUnitClassName, getTrapTypePath } from "../../shared/utils";
+import { getIconClassPath, getUnitClassName, getTrapTypePath, isHero } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
@@ -16,6 +16,8 @@ import { TileType } from "../../POO/enums/Board/TileType";
 import StairsImage from "/assets/images/icons/Tiles/stairs.png";
 import { JSX } from "react/jsx-runtime";
 import { SelectType } from "../../POO/types/selectType";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
 interface BoardProps {
   game: GameAsJson;
@@ -112,9 +114,18 @@ const Board = ({
     }
 
     if (unit) {
+      let className = "boardImg";
+      if (tile.type !== TileType.FLOOR) {
+        className += " onTopImage";
+      }
+      console.log(isInPitTrap(unit));
+      if (isInPitTrap(unit)) {
+        className += " inPitTrap";
+      }
+
       elements.push(
         <img
-          className="boardImg"
+          className={className}
           src={getIconClassPath(unit)}
           alt={getUnitClassName(unit)}
         />,
@@ -134,5 +145,10 @@ const Board = ({
     </TableContainer>
   );
 };
+
+function isInPitTrap(unit: MonsterAsJson | HeroAsJson): boolean {
+  if (!isHero(unit)) return false;
+  return unit.stats.effects.some((effect) => effect === "Pit Trap");
+}
 
 export default Board;
