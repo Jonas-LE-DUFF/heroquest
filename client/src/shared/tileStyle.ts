@@ -11,25 +11,12 @@ export const getTileStyle = (
   x: number,
   y: number,
   gameState: GameStateAsJson | null,
-  selection: string | PositionAsJson | null,
+  selection: PositionAsJson | null,
 ) => {
   const tile = getTileByPosition({ x, y }, gameState?.board!);
-  const entityIdAtPos = tile?.unitId ?? null;
-  const entityAtPos =
-    gameState?.Units.find((u) => u.id === entityIdAtPos) ?? null;
-  let isSelected = false;
-  if (typeof selection === "string") {
-    isSelected = entityAtPos?.id === selection;
-  } else if (selection && "x" in selection && "y" in selection) {
-    isSelected = x === selection.x && y === selection.y;
-  }
 
-  let isHeroUnit: boolean = false;
-  let isMonster: boolean = false;
-  if (entityAtPos) {
-    isHeroUnit = isHero(entityAtPos);
-    isMonster = !isHeroUnit;
-  }
+  const isSelected = x === selection?.x && y === selection?.y;
+
   const isFurniture = tile?.type === TileType.FURNITURE;
   const isWall = tile?.type === TileType.WALL;
 
