@@ -7,13 +7,23 @@ import { Direction } from "../POO/enums/Direction";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
 import { moveUnit } from "../services/MovementService";
-import { createTestHero, createTestMonster, createTestStats } from "./testUtils";
+import {
+  createTestHero,
+  createTestMonster,
+  createTestStats,
+} from "./testUtils";
 
 // Mock ServerHeroQuest singleton FIRST (before any imports that use it)
 jest.mock("../server/ServerHeroQuest", () => {
   const mockIo = {
     to: jest.fn().mockReturnThis(),
     emit: jest.fn(),
+    sockets: {
+      adapter: {
+        rooms: new Map(),
+      },
+      get: jest.fn(),
+    },
   };
   return {
     ServerHeroQuest: {
@@ -85,38 +95,6 @@ describe("traps", () => {
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap
         ?.hasBeenTriggered,
     ).toBe(false);
-  });
-
-  it("should only trigger the spear trap once", async () => {
-    const gameState = new GameState();
-    const hero = createTestHero({
-      stats: createTestStats({ health: 5 }),
-    });
-    const pos = new Position(4, 4);
-
-    gameState.addUnit(hero);
-    gameState.board.placeUnitAt(hero, pos);
-    gameState.board.placeTrap(
-      "test-game",
-      pos.afterMove(Direction.DOWN),
-      TrapType.SPEAR_TRAP,
-    );
-
-    // Step on the trap tile for the first time
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
-    const healthAfterFirstTrigger = hero.stats.health;
-
-    // Move back and step on the trap tile again
-    await moveUnit(
-      gameState.board,
-      pos.afterMove(Direction.DOWN),
-      Direction.UP,
-      hero,
-    );
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
-
-    // The trap should not trigger again, so health should remain the same
-    expect(hero.stats.health).toBe(healthAfterFirstTrigger);
   });
 
   describe("pit trap", () => {
@@ -198,7 +176,52 @@ describe("traps", () => {
       expect(hero.getDefenseDiceCount()).toBe(2); // defense dice should be restored after leaving the trap
     });
   });
+});
 
+describe("jump above traps", () => {
+  it("should allow jumping over a trap tile and not trigger the trap", async () => {
+    const gameState = new GameState();
+    const hero = createTestHero({
+      stats: createTestStats({ health: 5 }),
+    });
+    const pos = new Position(4, 4);
+
+    gameState.addUnit(hero);
+    gameState.board.placeUnitAt(hero, pos);
+    gameState.board.placeTrap(
+      "test-game",
+      pos.afterMove(Direction.DOWN),
+      TrapType.SPEAR_TRAP,
+    );
+    gameState.board.getTileAtPosition(
+      pos.afterMove(Direction.DOWN),
+    )!.trap!.isRevealed = true;
+
+    DiceServiceRegistry.override({
+      rollFightDice: jest.fn().mockResolvedValue({
+        success: true,
+        results: [FightDiceFaces.WhiteShield],
+      }),
+      rollRedDice: jest.fn().mockResolvedValue({ success: true, results: [1] }),
+    }); // Force the jump to succeed
+
+    // Attempt to jump over the trap tile
+    const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+    expect(result.success).toBe(true);
+    expect(
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap
+        ?.isRevealed,
+    ).toBe(true); // trap should still be revealed
+    expect(
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap
+        ?.hasBeenTriggered,
+    ).toBe(false); // trap should not be triggered
+    expect(hero.stats.health).toBe(5); // health should remain the same
+  });
+});
+
+describe("rock trap", () => {
   it("rock trap should place a wall on the trap tile after triggering", async () => {
     const gameState = new GameState();
     const hero = createTestHero({
@@ -241,14 +264,63 @@ describe("traps", () => {
     ).toBe(TileType.WALL);
     expect(hero.stats.health).toBe(3); // health should be reduced by 2 from the rock trap
   });
+
+  it("rock trap killing player should not throw an error", async () => {
+    const gameState = new GameState();
+    const hero = createTestHero({
+      stats: createTestStats({ health: 3 }),
+    });
+    const pos = new Position(4, 4);
+
+    const server = ServerHeroQuest.getServerInstance() as unknown as {
+      getGame: jest.Mock;
+    };
+    server.getGame.mockReturnValue({ gameState });
+
+    gameState.addUnit(hero);
+    gameState.board.placeUnitAt(hero, pos);
+    gameState.board.placeTrap(
+      "test-game",
+      pos.afterMove(Direction.DOWN),
+      TrapType.ROCK_TRAP,
+    );
+
+    DiceServiceRegistry.override({
+      rollFightDice: jest.fn().mockResolvedValueOnce({
+        success: true,
+        results: [
+          FightDiceFaces.Hit,
+          FightDiceFaces.Hit,
+          FightDiceFaces.Hit,
+        ],
+      }),
+      rollRedDice: jest
+        .fn()
+        .mockResolvedValueOnce({ success: true, results: [1] }),
+    }); // Force the rock trap to deal 2 damage
+
+    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+
+    // The rock trap should place a wall on the tile after the trap in the direction the hero came from
+    expect(
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.type,
+    ).toBe(TileType.WALL);
+    expect(gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap).toBeNull(); // trap should be removed after triggering
+  });
 });
 
-describe("jump above traps", () => {
-  it("should allow jumping over a trap tile and not trigger the trap", async () => {
+
+describe("spear trap", () => {
+  it("spear trap should disapear after triggering", async () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
     });
+
+    const server = ServerHeroQuest.getServerInstance() as unknown as {
+      getGame: jest.Mock;
+    };
+    server.getGame.mockReturnValue({ gameState });
     const pos = new Position(4, 4);
 
     gameState.addUnit(hero);
@@ -258,32 +330,11 @@ describe("jump above traps", () => {
       pos.afterMove(Direction.DOWN),
       TrapType.SPEAR_TRAP,
     );
-    gameState.board.getTileAtPosition(
-      pos.afterMove(Direction.DOWN),
-    )!.trap!.isRevealed = true;
 
-    DiceServiceRegistry.override({
-      rollFightDice: jest
-        .fn()
-        .mockResolvedValue({
-          success: true,
-          results: [FightDiceFaces.WhiteShield],
-        }),
-      rollRedDice: jest.fn().mockResolvedValue({ success: true, results: [1] }),
-    }); // Force the jump to succeed
+    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
-    // Attempt to jump over the trap tile
-    const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
-
-    expect(result.success).toBe(true);
     expect(
-      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap
-        ?.isRevealed,
-    ).toBe(true); // trap should still be revealed
-    expect(
-      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap
-        ?.hasBeenTriggered,
-    ).toBe(false); // trap should not be triggered
-    expect(hero.stats.health).toBe(5); // health should remain the same
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,
+    ).toBeNull(); // trap should be removed after triggering
   });
 });
