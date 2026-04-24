@@ -30,18 +30,37 @@ abstract class Trap {
   public async walkOnTrap(
     target: Unit<HeroCategory | MonsterCategory>,
   ): Promise<void> {
-    if (!this.canBeTriggeredMultipleTimes && this.hasBeenTriggered) return;
     if (this.isRevealed){
       if(await this.jumpAboveTrap()){
         return;
       }
     }
-    if (target instanceof Hero) {
-      // monsters never trigger traps
-      await this.trigger(target);
-      this.hasBeenTriggered = true;
-      this.isRevealed = true;
+    if (!(target instanceof Hero)) { //monster don't trigger traps, only heroes do
+      return;
     }
+
+    //doing this before triggering the trap to make sure that if the trap kills the hero, we still remove the trap from the tile if it can't be triggered multiple times
+    if (!this.canBeTriggeredMultipleTimes) {
+      const game = GameService.getGame(this.gameId);
+      if (!game) {
+        throw new Error("Game not found in trap walkOnTrap");
+      }
+      const position = game.gameState.board.getPositionOfUnit(target.id);
+      if (!position) {
+        throw new Error("Position not found for unit in trap walkOnTrap");
+      }
+      const tile = game.gameState.board.getTileAtPosition(position);
+      if (!tile) {
+        throw new Error("Tile not found on board in trap walkOnTrap");
+      }
+      tile.trap = null; // removing the trap from the tile after it's been triggered if it can't be triggered multiple times
+    }
+    
+    await this.trigger(target);
+    this.hasBeenTriggered = true;
+    this.isRevealed = true;
+    
+    
   }
 
   private async jumpAboveTrap(): Promise<boolean> {
@@ -107,27 +126,31 @@ class RockTrap extends Trap {
   async trigger(target: Hero): Promise<void> {
     const dice = DiceServiceRegistry.get();
     const diceResult = await dice.rollFightDice(this.gameId, 3, PlayerRole.HERO);
+    
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }
     const numberOfHits = diceResult.results.filter(
       (face) => face === FightDiceFaces.Hit,
     ).length;
-    dealDamage(this.gameId, target, numberOfHits);
 
-    // placing a wall on the tile of the trap after triggering it
+    // placing a wall on the tile of the trap before dealing damage triggering it
     const game = GameService.getGame(this.gameId);
     if (!game) {
       throw new Error("Game not found in rock trap trigger");
     }
-
     const position = game.gameState.board.getPositionOfUnit(target.id);
-    const tile = game.gameState.board.getTileAtPosition(position!);
+    if (!position) {
+      throw new Error("Position not found for unit in rock trap trigger");
+    }
+    const tile = game.gameState.board.getTileAtPosition(position);
     if (!tile) {
       throw new Error("Tile not found on board in rock trap trigger");
     }
     tile.type = TileType.WALL;
-    tile.trap = null; // removing the trap from the tile since it's now a wall
+
+    // dealing damage after placing the wall to make sure that if the trap kills the hero, we still place the wall on the tile
+    dealDamage(this.gameId, target, numberOfHits);
   }
 
   getTrapType() {
@@ -140,7 +163,11 @@ class SpearTrap extends Trap {
 
   async trigger(target: Hero): Promise<void> {
     const dice = DiceServiceRegistry.get();
-    const diceResult = await dice.rollFightDice(this.gameId, 1, PlayerRole.HERO);
+    const diceResult = await dice.rollFightDice(
+      this.gameId,
+      1,
+      PlayerRole.HERO,
+    );
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }
