@@ -118,6 +118,9 @@ const Board = ({
       if (tile.type !== TileType.FLOOR) {
         className += " onTopImage";
       }
+      if (tile.trap && !isInPitTrap(unit)) {
+        className += " onTopImage";
+      }
       console.log(isInPitTrap(unit));
       if (isInPitTrap(unit)) {
         className += " inPitTrap";
