@@ -1,9 +1,4 @@
 import { Socket } from "socket.io";
-import {
-  grantSpecialRollAuthorization,
-  rollFightDice,
-  rollRedDice,
-} from "../services/DiceService";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { requireGameExists } from "../guards/requireGameExists";
 import { GameService } from "../services/GameService";
@@ -16,7 +11,8 @@ import {
   rollRedDiceSchema,
   rollDiceSchema,
 } from "../validation";
-import { TrapType } from "../POO/enums/Board/TrapType";
+import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
+import { grantSpecialRollAuthorization } from "../services/DiceService";
 
 export function registerDiceHandlers(socket: Socket) {
   handleSpecialRollAuthorization(socket);
@@ -88,7 +84,12 @@ function handleRollRedDice(socket: Socket) {
         const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
         if (player.role === PlayerRole.GAME_MASTER) {
           amountOfDice = numberOfDice;
-          const result = await rollRedDice(gameId, amountOfDice, player.role);
+          const dice = DiceServiceRegistry.get();
+          const result = await dice.rollRedDice(
+            gameId,
+            amountOfDice,
+            player.role,
+          );
           return callback(result);
         }
         const authorizedHero = game?.gameState.getHeroById(
@@ -113,7 +114,8 @@ function handleRollRedDice(socket: Socket) {
           amountOfDice = numberOfDice;
         }
 
-        const result = await rollRedDice(gameId, amountOfDice, player.role);
+        const dice = DiceServiceRegistry.get();
+        const result = await dice.rollRedDice(gameId, amountOfDice, player.role);
         callback(result);
       },
     ),
@@ -150,7 +152,8 @@ function handleRollFightDice(socket: Socket) {
       const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
       if (player.role === PlayerRole.GAME_MASTER) {
         amountOfDice = numberOfDice;
-        const result = await rollFightDice(gameId, amountOfDice, player.role);
+        const dice = DiceServiceRegistry.get();
+        const result = await dice.rollFightDice(gameId, amountOfDice, player.role);
         return callback(result);
       }
 
@@ -176,7 +179,8 @@ function handleRollFightDice(socket: Socket) {
         amountOfDice = numberOfDice;
       }
 
-      const result = await rollFightDice(gameId, amountOfDice, player.role);
+      const dice = DiceServiceRegistry.get();
+      const result = await dice.rollFightDice(gameId, amountOfDice, player.role);
       callback(result);
     }),
   );

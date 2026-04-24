@@ -1,5 +1,4 @@
 import { dealDamage } from "../../../../services/CombatService";
-import { rollFightDice } from "../../../../services/DiceService";
 import { TrapType } from "../../../enums/Board/TrapType";
 import { FightDiceFaces } from "../../../enums/Dices/FightDiceFaces";
 import { PlayerRole } from "../../../enums/PlayerRole";
@@ -14,6 +13,7 @@ import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { GameService } from "../../../../services/GameService";
 import { TileType } from "../../../enums/Board/TileType";
 import { TrapAsJson } from "../../../interfaces/ClassAsJson/Board/TrapAsJson";
+import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
 
 abstract class Trap {
   protected readonly gameId: string;
@@ -31,6 +31,11 @@ abstract class Trap {
     target: Unit<HeroCategory | MonsterCategory>,
   ): Promise<void> {
     if (!this.canBeTriggeredMultipleTimes && this.hasBeenTriggered) return;
+    if (this.isRevealed){
+      if(await this.jumpAboveTrap()){
+        return;
+      }
+    }
     if (target instanceof Hero) {
       // monsters never trigger traps
       await this.trigger(target);
@@ -39,6 +44,17 @@ abstract class Trap {
     }
   }
 
+  private async jumpAboveTrap(): Promise<boolean> {
+    const dice = DiceServiceRegistry.get();
+    const result = await dice.rollFightDice(this.gameId, 1, PlayerRole.HERO);
+    if (!result.success || !result.results) {
+      throw new Error(result.error || "Failed to roll fight dice");
+    }
+    if (result.results[0] === FightDiceFaces.Hit) {
+      return false;
+    }
+    return true;
+  }
   abstract trigger(target: Hero): Promise<void>;
 
   abstract getTrapType(): TrapType;
@@ -89,7 +105,8 @@ class RockTrap extends Trap {
   canBeTriggeredMultipleTimes = false;
 
   async trigger(target: Hero): Promise<void> {
-    const diceResult = await rollFightDice(this.gameId, 3, PlayerRole.HERO);
+    const dice = DiceServiceRegistry.get();
+    const diceResult = await dice.rollFightDice(this.gameId, 3, PlayerRole.HERO);
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }
@@ -122,7 +139,8 @@ class SpearTrap extends Trap {
   canBeTriggeredMultipleTimes = false;
 
   async trigger(target: Hero): Promise<void> {
-    const diceResult = await rollFightDice(this.gameId, 1, PlayerRole.HERO);
+    const dice = DiceServiceRegistry.get();
+    const diceResult = await dice.rollFightDice(this.gameId, 1, PlayerRole.HERO);
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }

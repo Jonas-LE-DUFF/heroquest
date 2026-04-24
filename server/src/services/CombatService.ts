@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import { rollFightDice } from "./DiceService";
 import { Unit } from "../POO/classes/Units/Unit";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
@@ -12,6 +11,7 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "./GameService";
 import { emitGameStateUpdate } from "../utils/gameStateEmitter";
+import { DiceServiceRegistry } from "./DiceServiceRegistry";
 
 async function fight(
   socket: Socket<ClientToServerEvents, ServerToClientEvents>,
@@ -29,7 +29,8 @@ async function fight(
     ? wishedNumberOfDices
     : attacker.getAttackDiceCount();
 
-  const attackerRoll = await rollFightDice(
+  const dice = DiceServiceRegistry.get();
+  const attackerRoll = await dice.rollFightDice(
     game.id,
     attackDiceAmount,
     attackerRole,
@@ -37,7 +38,8 @@ async function fight(
   if (!attackerRoll.success || !attackerRoll.results) {
     throw new Error("Failed to roll fight dice for Djinn DIE spell.");
   }
-  const defenderRoll = await rollFightDice(
+
+  const defenderRoll = await dice.rollFightDice(
     game.id,
     defenderDiceAmount,
     defenderRole,

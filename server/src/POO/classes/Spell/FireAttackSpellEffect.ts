@@ -1,5 +1,5 @@
 import { dealDamage } from "../../../services/CombatService";
-import { rollRedDice } from "../../../services/DiceService";
+import { DiceServiceRegistry } from "../../../services/DiceServiceRegistry";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
@@ -15,7 +15,8 @@ class FireAttackSpellEffect extends SpellEffect {
   }
 
   async applyEffect(target: Unit<any>): Promise<void> {
-    const result = await rollRedDice(
+    const dice = DiceServiceRegistry.get();
+    const result = await dice.rollRedDice(
       this.gameId,
       this.damageAmount,
       PlayerRole.GAME_MASTER,
