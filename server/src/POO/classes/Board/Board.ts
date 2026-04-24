@@ -59,7 +59,7 @@ class Board {
   ): void {
     const tile = this.getTileAtPosition(position);
     if (tile) {
-      tile.unitId = unit.id;
+      tile.placeUnit(unit.id);
     }
   }
 
@@ -164,7 +164,12 @@ class Board {
       console.error("Unit not found on board:", unit.id);
       return null;
     }
-    return this.clearTileAtPosition(position);
+    const tile = this.getTileAtPosition(position);
+    if (!tile) {
+      console.error("Tile not found at position:", position);
+      return null;
+    }
+    return tile.removeUnit();
   }
 
   clearTileAtPosition(position: Position): string | null {

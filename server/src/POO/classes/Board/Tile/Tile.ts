@@ -5,6 +5,7 @@ import { PitTrap, RockTrap, SpearTrap, Trap } from "./Trap";
 
 class Tile {
   unitId: string | null;
+  transientUnitId: string | null = null; // used to temporarily store a unit's id when it moves through another unit
   type: TileType;
   trap: Trap | null;
 
@@ -56,6 +57,36 @@ class Tile {
       default:
         throw new Error("Invalid trap type");
     }
+  }
+
+  placeUnit(unitId: string): void {
+    if(!this.unitId) {
+      this.unitId = unitId;
+      return;
+    }
+    if(!this.transientUnitId) {
+      this.transientUnitId = unitId;
+      console.warn("A unit is already present on the tile, placing the new unit in transient state");
+      return;
+    }
+    // this should never happen, a player cannot stop on a tile occupied by another unit and only one unit can be moving at a time, but we throw an error just in case
+    throw new Error("Tile is already occupied by two units, cannot place another one");
+  }
+
+  /***
+   * removes one and only one unit from the tile, if there is a transient unit it removes it first, otherwise it removes the main unit
+   * @returns the id of the unit removed or null if there were no unit on the tile
+   */
+  removeUnit(): string | null {
+    let removedUnitId: string | null = null;
+    if(this.transientUnitId) {
+      removedUnitId = this.transientUnitId;
+      this.transientUnitId = null;
+      return removedUnitId;
+    }
+    removedUnitId = this.unitId;
+    this.unitId = null;
+    return removedUnitId;
   }
 
   toJson(gameMaster: boolean = false): TileAsJson {

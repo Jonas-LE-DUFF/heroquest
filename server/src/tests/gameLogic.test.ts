@@ -708,4 +708,71 @@ describe("clearTileAtPosition (GameState)", () => {
       expect(gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.type).toBe(TileType.WALL);
     });
   });
+
+  describe("effects", () => {
+    it("phase-through-walls effect should allow moving through walls", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+      const moveThroughWallsEffect = EffectFactory.createPhaseThroughWalls();
+
+      gameState.addUnit(hero);
+      gameState.board.placeUnitAt(hero, pos);
+      hero.effects.push(moveThroughWallsEffect);
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))!.type = TileType.WALL;
+
+      const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      expect(result.success).toBe(true);
+      expect(gameState.board.getUnitAt(new Position(5, 4))).toBe(hero.id);
+    });
+
+    it("phase-through-monsters effect should allow moving through monsters", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const monster = createTestMonster({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+      const moveThroughMonstersEffect = EffectFactory.createPhaseThroughMonsters();
+
+      gameState.addUnit(hero);
+      gameState.addUnit(monster);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeUnitAt(monster, pos.afterMove(Direction.DOWN));
+      hero.effects.push(moveThroughMonstersEffect);
+
+      const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      expect(result.success).toBe(true);
+      expect(
+        gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.transientUnitId,
+      ).toBe(hero.id);
+    });
+
+    it("phase-through-monsters effects should not desctroy not the monster nor the hero", async () => {
+      const gameState = new GameState();
+      const hero = createTestHero({
+        stats: createTestStats({ health: 5 }),
+      });
+      const monster = createTestMonster({
+        stats: createTestStats({ health: 5 }),
+      });
+      const pos = new Position(4, 4);
+      const moveThroughMonstersEffect = EffectFactory.createPhaseThroughMonsters();
+
+      gameState.addUnit(hero);
+      gameState.addUnit(monster);
+      gameState.board.placeUnitAt(hero, pos);
+      gameState.board.placeUnitAt(monster, pos.afterMove(Direction.DOWN));
+      hero.effects.push(moveThroughMonstersEffect);
+
+      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      await moveUnit(gameState.board, pos.afterMove(Direction.DOWN), Direction.UP, hero);
+      expect(gameState.board.getUnitAt(pos)).toBe(hero.id);
+      expect(gameState.board.getUnitAt(pos.afterMove(Direction.DOWN))).toBe(monster.id);
+    });
+  });
 });

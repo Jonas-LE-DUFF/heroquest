@@ -63,15 +63,13 @@ export async function moveUnit(
   }
 
   const to = from.afterMove(direction);
-  const tile = board.getTileAtPosition(from);
   const newTile = board.getTileAtPosition(to);
 
-  if (!tile || !newTile) {
+  if (!newTile) {
     throw new Error("Tiles not found on board");
   }
-
-  tile.unitId = null;
-  newTile.unitId = unitMoved.id;
+  board.removeUnitFromTile(unitMoved);
+  board.placeUnitAt(unitMoved, to);
 
   if (newTile.trap) {
     await newTile.trap?.walkOnTrap(unitMoved);
