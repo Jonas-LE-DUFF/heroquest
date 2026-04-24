@@ -69,6 +69,15 @@ class PitTrap extends Trap {
         { stat: StatType.ATTACK, value: -1 },
       ),
     );
+    target.addEffect(
+      new Effect(
+        "Pit Trap",
+        EffectType.STAT_MODIFIER,
+        EffectDuration.PERMANENT,
+        true,
+        { stat: StatType.DEFENSE, value: -1 },
+      ),
+    );
   }
 
   getTrapType() {

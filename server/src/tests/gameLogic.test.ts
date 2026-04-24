@@ -627,7 +627,7 @@ describe("clearTileAtPosition (GameState)", () => {
       expect(hero.stats.health).toBe(healthAfterFirstTrigger);
     });
 
-    it("pit trap should reduce attack dice by one", async () => {
+    it("pit trap should reduce attack and defense dice by one", async () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -643,12 +643,13 @@ describe("clearTileAtPosition (GameState)", () => {
       // The pit trap should deal 1 damage but not reduce attack dice
       expect(hero.stats.health).toBe(4);
       expect(hero.getAttackDiceCount()).toBe(1); // short sword base attack dice is 2
+      expect(hero.getDefenseDiceCount()).toBe(1); // base defense dice is 2
     });
     
-    it("pit trap should not reduce attack dice below 1", async () => {
+    it("pit trap should not reduce attack or defense dice below 1", async () => {
       const gameState = new GameState();
       const hero = createTestHero({
-        stats: createTestStats({ health: 5 }),
+        stats: createTestStats({ health: 5, nbDefenseDice: 1 }),
         weaponId: "dagger", // dagger has 1 attack dice
       });
       const pos = new Position(4, 4);
@@ -662,6 +663,7 @@ describe("clearTileAtPosition (GameState)", () => {
       // The pit trap should deal 1 damage but not reduce attack dice below 1
       expect(hero.stats.health).toBe(4);
       expect(hero.getAttackDiceCount()).toBe(1); // should not go below 1
+      expect(hero.getDefenseDiceCount()).toBe(1); // should not go below 1
     });
 
     it("leaving pit trap should remove the pit trap effect", async () => {
@@ -683,6 +685,7 @@ describe("clearTileAtPosition (GameState)", () => {
 
       expect(hero.stats.health).toBe(4); // health should remain the same
       expect(hero.getAttackDiceCount()).toBe(2); // attack dice should be restored after leaving the trap
+      expect(hero.getDefenseDiceCount()).toBe(2); // defense dice should be restored after leaving the trap
     });
 
 
