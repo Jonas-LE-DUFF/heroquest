@@ -20,6 +20,7 @@ import {
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
+import { Stats } from "../POO/classes/Units/Stats";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -36,6 +37,10 @@ export function registerMasterHandlers(socket: Socket) {
 
       if (!requireGameMaster(socket, GameService.getGame(gameId)!)) {
         return callback(errorResponse("You are not the game master"));
+      }
+
+      if (!selectedType) {
+        return callback(errorResponse("Selected type is required"));
       }
 
       console.debug("placing element", data);
@@ -60,7 +65,7 @@ export function registerMasterHandlers(socket: Socket) {
         game?.gameState.clearTileAtPosition(position);
 
         const io = ServerHeroQuest.getServerInstance().getIo();
-        emitGameStateUpdate(io, gameId, game!);
+        emitGameStateUpdate(io, gameId, game);
         return callback(successResponse());
       }
 
@@ -81,12 +86,12 @@ export function registerMasterHandlers(socket: Socket) {
         if (tileType === TileType.SPAWN_POINT) {
           const existingSpawnPoint = board.getSpawnPointPosition();
           if (existingSpawnPoint) {
-            removeSpawnPoint(existingSpawnPoint, game!);
+            removeSpawnPoint(existingSpawnPoint, game);
           }
-          const result = placeSpawnPoint(position, game!);
+          const result = placeSpawnPoint(position, game);
           if (!result.success) {
             if (existingSpawnPoint){
-              placeSpawnPoint(existingSpawnPoint!, game!); // placing back the spawn point that was removed
+              placeSpawnPoint(existingSpawnPoint, game); // placing back the spawn point that was removed
             }
             return callback(errorResponse(result.error!));
           }
@@ -140,8 +145,21 @@ export function registerMasterHandlers(socket: Socket) {
         console.error("Unit not found with id:", unitId);
         return callback(errorResponse("Unit not found"));
       }
-      
-      unit.stats = newStats;
+
+      const adaptedStats : Stats = {
+        health: newStats.health,
+        maxHealth: newStats.maxHealth,
+        nbDefenseDice: newStats.defense,
+        movements: newStats.movements,
+        spirit: newStats.spirit,
+      };
+      unit.stats = adaptedStats;
+
+      if (unit.stats.health <= 0) {
+        game?.gameState.removeUnit(unit);
+      }
+
+      //TODO : handle effects
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
@@ -163,15 +181,15 @@ function handleDoorPlacement(
   const game = GameService.getGame(gameId);
   const io = ServerHeroQuest.getServerInstance().getIo();
   const newDoor = game!.gameState.board.placeDoor(position, direction);
-  if (!newDoor.success) {
+  if (!newDoor.success || !newDoor.doorPlace?.position || !newDoor.doorPlace?.verticalOrHorizontal) {
     return {
       success: false,
       error: newDoor.error || "Failed to place door",
     };
   }
   io.to(gameId).emit("door-placed", {
-    position: newDoor.doorPlace?.position!,
-    verticalOrHorizontal: newDoor.doorPlace?.verticalOrHorizontal!,
+    position: newDoor.doorPlace.position,
+    verticalOrHorizontal: newDoor.doorPlace.verticalOrHorizontal,
   });
   return { success: true };
 }

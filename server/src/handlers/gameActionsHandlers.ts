@@ -24,7 +24,7 @@ export function registerGameActionsHandlers(socket: Socket) {
   // cast-spell
   socket.on(
     "cast-spell",
-    withValidation(socket, castSpellSchema, async (socket, data, callback) => {
+    withValidation(socket, castSpellSchema, (socket, data, callback) => {
       console.debug("casting spell", data);
       const { gameId, spellId, position } = data;
       const game = GameService.getGame(gameId);
@@ -91,7 +91,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         );
       }
 
-      fight(socket, game!, attacker, defender, wishedNumberOfDices);
+      await fight(socket, game!, attacker, defender, wishedNumberOfDices);
       callback(successResponse());
     }),
   );
@@ -142,8 +142,13 @@ export function registerGameActionsHandlers(socket: Socket) {
         try {
           await hero.drinkPotion(gameId, potion);
         } catch (error) {
+          if (error instanceof Error) {
+            return callback(
+              errorResponse(`the drinking encountered an error : ${error.message}`),
+            );
+          }
           return callback(
-            errorResponse(`the drinking encountered an error : ${error}`),
+            errorResponse(`the drinking encountered an unexpected error`),
           );
         }
 
@@ -161,7 +166,7 @@ export function registerGameActionsHandlers(socket: Socket) {
     withValidation(
       socket,
       heroActionSchema,
-      async (socket, data, callback) => {
+      (socket, data, callback) => {
         const { gameId, heroId } = data;
 
         console.debug("checking for treasures for hero", heroId, "in game", gameId);
@@ -224,7 +229,7 @@ export function registerGameActionsHandlers(socket: Socket) {
   socket.on("check-secret-doors", withValidation(
     socket,
     heroActionSchema,
-    async (socket, data, callback) => {
+    (socket, data, callback) => {
       const { gameId, heroId } = data;
 
       console.debug("checking for secret doors for hero", heroId, "in game", gameId);

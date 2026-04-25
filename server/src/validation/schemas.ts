@@ -3,6 +3,7 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Direction } from "../POO/enums/Direction";
 import { SpellElement } from "../POO/enums/SpellElement";
+import type { SelectType } from "../POO/types/selectType";
 
 // ============================================
 // Schémas de validation pour les événements Socket.IO
@@ -23,6 +24,16 @@ export const gameIdSchema = z.object({
 export const heroActionSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
+});
+
+export const StatSchema = z.object({
+  health: z.number().int().min(0),
+  maxHealth: z.number().int().min(0),
+  attack: z.number().int().min(0),
+  defense: z.number().int().min(0),
+  movements: z.number().int().min(0),
+  spirit: z.number().int().min(0),
+  effects: z.array(z.string()),
 });
 
 // --- Lobby Events ---
@@ -117,12 +128,12 @@ export const rollDiceSchema = z.object({
 export const placeElementSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   position: positionSchema,
-  selectedType: z.any(), // SelectType - complexe à valider
+  selectedType: z.custom<SelectType>(), // SelectType - complexe à valider
 });
 
 export const updateStatsUnitSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
-  newStats: z.any(), // StatsAsJson - objet complexe
+  newStats: StatSchema, // StatsAsJson - objet complexe
   unitId: z.string().min(1, "L'ID de l'unité est requis"),
 });
 

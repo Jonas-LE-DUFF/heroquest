@@ -67,7 +67,7 @@ export class DiceService implements IDiceService {
   }
 }
 
-export async function grantSpecialRollAuthorization(
+export function grantSpecialRollAuthorization(
   game: Game,
   numberOfDices: number,
   typeOfDices: "fight" | "red",

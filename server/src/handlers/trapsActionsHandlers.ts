@@ -35,7 +35,7 @@ function checkForTraps(socket: Socket) {
     withValidation(
       socket,
       heroActionSchema,
-      async (socket, data, callback) => {
+      (socket, data, callback) => {
         const { gameId, heroId } = data;
         console.log(`Checking for traps in game ${gameId} for hero ${heroId}`);
         if (!requireGameExists(gameId)) {
@@ -151,7 +151,7 @@ function disarmTrap(socket: Socket) {
 function revealTrap(socket: Socket) {
   socket.on(
     "reveal-trap",
-    withValidation(socket, revealTrapSchema, async (socket, data, callback) => {
+    withValidation(socket, revealTrapSchema, (socket, data, callback) => {
       console.log("Received reveal trap request with data:", data);
       const { gameId, position } = data;
       if (!requireGameExists(gameId)) {

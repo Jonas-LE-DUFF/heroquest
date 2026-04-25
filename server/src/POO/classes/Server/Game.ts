@@ -102,7 +102,7 @@ class Game {
     }
     const callback = this.gameState.isLaunchable();
     if (!callback.success) {
-      throw new Error(`Game State is not launchable: ${callback.error}`);
+      throw new Error(`${callback.error}`);
     }
 
     const allSpells = this.gameState.Units.filter(

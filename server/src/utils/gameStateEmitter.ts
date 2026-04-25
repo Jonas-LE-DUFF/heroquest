@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import { Game } from "../POO/classes/Server/Game";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";

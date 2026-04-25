@@ -72,7 +72,7 @@ class Monster extends Unit<MonsterCategory> {
     return PlayerRole.GAME_MASTER;
   }
 
-  toJson(gameMaster : boolean = false): MonsterAsJson {
+  toJson(): MonsterAsJson {
     return {
       id: this.id,
       name: this.name,

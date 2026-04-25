@@ -106,9 +106,15 @@ function handleRollRedDice(socket: Socket) {
           try {
             const hero = game!.getCurrentHeroTurn();
             amountOfDice = hero.getMovementPoints();
-          } catch (error: any) {
-            console.error("error while getting current hero turn:", error);
-            return callback(errorResponse(error.message || "erreur interne"));
+          } catch (error) {
+            if (error instanceof Error) {
+              console.error("error while getting current hero turn:", error);
+              return callback(errorResponse(error.message || "erreur interne"));
+            }
+            console.error("unexpected error while getting current hero turn");
+            return callback(
+              errorResponse("unexpected error while getting current hero turn"),
+            );
           }
         } else {
           amountOfDice = numberOfDice;
@@ -171,9 +177,15 @@ function handleRollFightDice(socket: Socket) {
         try {
           const hero = game!.getCurrentHeroTurn();
           amountOfDice = hero.getAttackDiceCount();
-        } catch (error: any) {
-          console.error("error while getting current hero turn:", error);
-          return callback(errorResponse(error.message || "erreur interne"));
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("error while getting current hero turn:", error);
+            return callback(errorResponse(error.message || "erreur interne"));
+          }
+          console.error("unexpected error while getting current hero turn");
+          return callback(
+            errorResponse("unexpected error while getting current hero turn"),
+          );
         }
       } else {
         amountOfDice = numberOfDice;

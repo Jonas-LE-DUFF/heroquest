@@ -261,7 +261,6 @@ describe("testChooseCharacter", () => {
       controlledById: player.id,
       category: HeroCategory.Barbarian,
     });
-    const pos = new Position(1, 1);
     game.gameState.addUnit(hero);
 
     expect(game.gameState.Units).toContain(hero);
