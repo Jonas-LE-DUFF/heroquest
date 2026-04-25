@@ -20,6 +20,11 @@ export const gameIdSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
 });
 
+export const heroActionSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+});
+
 // --- Lobby Events ---
 
 export const joinGameSchema = z.object({
@@ -66,17 +71,7 @@ export const drinkPotionSchema = z.object({
   potionId: z.string().min(1, "L'ID de la potion est requis"),
 });
 
-export const checkForTreasuresSchema = z.object({
-  gameId: z.string().min(1, "L'ID de la partie est requis"),
-  heroId: z.string().min(1, "L'ID du héros est requis"),
-});
-
 // --- Trap Events ---
-
-export const checkForTrapsSchema = z.object({
-  gameId: z.string().min(1, "L'ID de la partie est requis"),
-  heroId: z.string().min(1, "L'ID du héros est requis"),
-});
 
 export const disarmTrapSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
-import { isHero } from "../shared/utils";
+import { getHeroClassName, isHero } from "../shared/utils";
 import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
@@ -39,6 +39,7 @@ import useBoardTileClickHandlers, {
   InteractionState,
   TargetingState,
 } from "./hooks/useBoardTileClickHandlers";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 
 interface GamePageProps {
   socket: any;
@@ -241,6 +242,15 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       });
     };
 
+    const handlePlayerSearching = (data: { playerId : string, heroId: string, elementSearched: string }) => {
+      const hero = game.gameState.Units.find((u) => u.id === data.heroId) as HeroAsJson;
+      const player = getPlayerBySocketId(data.playerId, game);
+      toast.info(
+        `Le joueur ${player?.name || data.playerId} cherche des ${data.elementSearched} avec le/la ${getHeroClassName(hero.category)} `,
+      );
+    }
+
+    socket.on("player-search", handlePlayerSearching);
     socket.on("game-state-update", handleGameStateUpdate);
     socket.on("stats-updated", handleStatsUpdate);
     socket.on("tile-placed", handleTilePlaced);
@@ -248,6 +258,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     socket.on("card-drawn", handleCardDrawn);
 
     return () => {
+      socket.off("player-search", handlePlayerSearching);
       socket.off("tile-placed", handleTilePlaced);
       socket.off("door-placed", handleDoorPlaced);
       socket.off("stats-updated", handleStatsUpdate);

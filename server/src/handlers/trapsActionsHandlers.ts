@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
 import {
-  checkForTrapsSchema,
   disarmTrapSchema,
   errorResponse,
+  heroActionSchema,
   revealTrapSchema,
   successResponse,
   withValidation,
@@ -34,7 +34,7 @@ function checkForTraps(socket: Socket) {
     "check-for-traps",
     withValidation(
       socket,
-      checkForTrapsSchema,
+      heroActionSchema,
       async (socket, data, callback) => {
         const { gameId, heroId } = data;
         console.log(`Checking for traps in game ${gameId} for hero ${heroId}`);
@@ -52,11 +52,12 @@ function checkForTraps(socket: Socket) {
 
         const gameMasterSocket = getGameMasterSocket(io, game!);
 
-        gameMasterSocket?.emit("player-searching-for-traps", {
+        gameMasterSocket?.emit("player-search", {
           heroId,
           playerId: socket.id,
+          elementSearched: "traps",
         });
-        return callback({ success: true });
+        return callback(successResponse({ message: `request sent to game master` }));
       },
     ),
   );

@@ -81,27 +81,13 @@ const Navbar: React.FC<NavbarProps> = ({
   }
   function searchTreasures() {
     console.debug("searchTreasures called for hero", hero?.name); // Debug log
-    if (role === PlayerRole.HERO) {
-      toast.info(
-        <p>
-          Pour recherdes trésors veuillez demander au maitre du jeu de le faire
-          pour vous en cliquant sur le bouton de recherche de trésors dans la
-          barre de navigation
-          <br />
-          <br />
-          (Le système de recherche de trésors est en cours de développement et
-          nécessite une interaction du maitre du jeu pour le moment)
-        </p>,
-        { style: { minWidth: "600px" } },
-      );
-      return;
-    }
     socket.emit(
       "check-for-treasures",
       { gameId: game.id, heroId: hero?.id },
       (response: {
         success: boolean;
         treasureCardId?: string;
+        data?: { message: string };
         error?: string;
       }) => {
         if (!response.success) {
@@ -111,6 +97,10 @@ const Navbar: React.FC<NavbarProps> = ({
           toast.error(
             `Erreur lors de la recherche de trésors : ${response.error}`,
           );
+        } else {
+          if (response?.data?.message){
+            toast.info(response.data?.message);
+          }
         }
       },
     );
@@ -120,10 +110,14 @@ const Navbar: React.FC<NavbarProps> = ({
     socket.emit(
       "check-for-traps",
       { gameId: game.id, heroId: hero?.id },
-      (response: { success: boolean; trapCardId?: string; error?: string }) => {
+      (response: { success: boolean; trapCardId?: string; error?: string; data?: { message: string } }) => {
         if (!response.success) {
           console.error("Erreur lors de la recherche de pièges : " + response.error);
           toast.error(`Erreur lors de la recherche de pièges : ${response.error}`);
+        } else {
+          if (response?.data?.message) {
+            toast.info(response.data.message);
+          }
         }
       },
     );

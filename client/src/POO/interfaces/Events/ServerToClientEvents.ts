@@ -53,6 +53,11 @@ interface ServerToClientEvents {
     position: PositionAsJson;
     TileType: TileType;
   }) => void;
+  "player-search": (data: {
+    playerId: string;
+    heroId: string;
+    elementSearched: string;
+  }) => void;
 
   "stats-updated": (data: { entityId: string; newStats: StatsAsJson }) => void;
 
