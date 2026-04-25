@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  ci-client:
+    name: Client — Lint, Typecheck & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript typecheck
+        id: typecheck
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: Lint
+        id: lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Run tests
+        id: test
+        run: npm test
+        continue-on-error: true
+
+      - name: Check lint & typecheck results
+        if: steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
+        run: |
+          echo "❌ Typecheck status: ${{ steps.typecheck.outcome }}"
+          echo "❌ Lint status: ${{ steps.lint.outcome }}"
+          echo "❌ Test status: ${{ steps.test.outcome }}"
+          exit 1
+
+  ci-server:
+    name: Server — Lint & Typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript typecheck
+        id: typecheck
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: Lint
+        id: lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Tests
+        id: test
+        run: npm test
+        continue-on-error: true
+
+      - name: Check lint & typecheck results
+        if: steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.test.outcome == 'failure'
+        run: |
+          echo "❌ Typecheck status: ${{ steps.typecheck.outcome }}"
+          echo "❌ Lint status: ${{ steps.lint.outcome }}"
+          echo "❌ Test status: ${{ steps.test.outcome }}"
+          exit 1
+      
+      
