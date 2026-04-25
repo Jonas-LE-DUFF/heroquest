@@ -221,7 +221,7 @@ export function registerGameActionsHandlers(socket: Socket) {
     ),
   );
 
-  socket.on("check-for-secretDoors", withValidation(
+  socket.on("check-secret-doors", withValidation(
     socket,
     heroActionSchema,
     async (socket, data, callback) => {
@@ -231,14 +231,14 @@ export function registerGameActionsHandlers(socket: Socket) {
 
       if (!requireGameExists(gameId)) {
         return callback(
-          errorResponse("game couldn't be found in check-for-secretDoors"),
+          errorResponse("game couldn't be found in check-secret-doors"),
         );
       }
       const game = GameService.getGame(gameId);
 
       if (!requirePlayerTurn(socket, game!)) {
         return callback(
-          errorResponse("it's not your turn to play in check-for-secretDoors"),
+          errorResponse("it's not your turn to play in check-secret-doors"),
         );
       }
 
@@ -261,7 +261,7 @@ export function registerGameActionsHandlers(socket: Socket) {
       const hero = game!.getGameState().getHeroById(heroId);
       if (!hero) {
         return callback(
-          errorResponse("hero couldn't be found in check-for-secretDoors"),
+          errorResponse("hero couldn't be found in check-secret-doors"),
         );
       }
 
