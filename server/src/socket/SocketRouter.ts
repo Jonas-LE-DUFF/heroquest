@@ -1,4 +1,3 @@
-import { authMiddleware } from "../middlewares/authMiddleware";
 import { loggerMiddleware } from "../middlewares/loggerMiddleware";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
@@ -16,7 +15,6 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
   const io = server.getIo();
 
   // Apply middlewares
-  io.use(authMiddleware);
   io.use(loggerMiddleware);
 
   io.on("connection", (socket: Socket) => {
