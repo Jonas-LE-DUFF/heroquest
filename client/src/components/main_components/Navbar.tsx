@@ -5,7 +5,7 @@ import {
   getHeroClassName,
   isHero,
 } from "../../shared/utils";
-import { Dialog, Select, Tooltip } from "@mui/material";
+import { Dialog, Menu, MenuItem, Select, Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -14,10 +14,9 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
 import { getHeroesByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import backpackIcon from "/assets/images/icons/navbar/backpack.png";
-import drawCardIcon from "/assets/images/icons/navbar/card-draw.png";
-import trapSearch from "/assets/images/icons/navbar/search-traps.png";
-import lockpicks from "/assets/images/icons/navbar/lockpicks.png";
+import backpackIcon from "/assets/images/icons/navbar/pixelArt/backpack.png";
+import drawCardIcon from "/assets/images/icons/navbar/pixelArt/search-treasure.png";
+import lockpicks from "/assets/images/icons/navbar/pixelArt/disarm-trap.png";
 import { Dispatch, SetStateAction, useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
@@ -25,6 +24,7 @@ import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 import { toast } from "react-toastify";
 import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
+import SearchMenu from "../small_components/SearchMenu";
 
 interface NavbarProps {
   socket: Socket;
@@ -106,23 +106,6 @@ const Navbar: React.FC<NavbarProps> = ({
     );
   }
 
-  function searchTraps(): void {
-    socket.emit(
-      "check-for-traps",
-      { gameId: game.id, heroId: hero?.id },
-      (response: { success: boolean; trapCardId?: string; error?: string; data?: { message: string } }) => {
-        if (!response.success) {
-          console.error("Erreur lors de la recherche de pièges : " + response.error);
-          toast.error(`Erreur lors de la recherche de pièges : ${response.error}`);
-        } else {
-          if (response?.data?.message) {
-            toast.info(response.data.message);
-          }
-        }
-      },
-    );
-  }
-
   function disarmTrap(): void {
     setInteraction((prev: InteractionState) => ({
       ...prev,
@@ -193,21 +176,15 @@ const Navbar: React.FC<NavbarProps> = ({
           </Dialog>
         </>
       )}
-      {hero && (
+      {hero && role !== PlayerRole.HERO && (
         <div className="nav-elem" onClick={() => searchTreasures()}>
           <Tooltip title="Rechercher des trésors" arrow>
             <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
           </Tooltip>
         </div>
       )}
-      {hero && (
-        <div className="nav-elem" onClick={() => searchTraps()}>
-          <Tooltip title="Rechercher des pièges" arrow>
-            <img src={trapSearch} alt="Trap search" className="imgNav" />
-          </Tooltip>
-        </div>
-      )}
-      {hero && (
+      {role === PlayerRole.HERO && SearchMenu(socket, game, hero)}
+      {role === PlayerRole.HERO && (
         <div className="nav-elem" onClick={() => disarmTrap()}>
           <Tooltip title="Désarmer un piège" arrow>
             <img src={lockpicks} alt="Lockpicks" className="imgNav" />
