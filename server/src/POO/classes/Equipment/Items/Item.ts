@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { ItemAsJson } from "../../../interfaces/ClassAsJson/Equipment/ItemAsJson";
 
 abstract class Item {
   id: string;
@@ -16,7 +17,7 @@ abstract class Item {
     this.image = image;
   }
 
-  abstract toJson(): any;
+  abstract toJson(): ItemAsJson;
 
   protected getBaseJson() {
     return {

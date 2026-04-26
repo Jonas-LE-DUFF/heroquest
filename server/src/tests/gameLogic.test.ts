@@ -273,7 +273,7 @@ describe("updateUnitStats (GameState)", () => {
 });
 
 describe("castSpell (Hero)", () => {
-  it("should heal a hero with HealSpellEffect", () => {
+  it("should heal a hero with HealSpellEffect", async () => {
     const hero = createTestHero({
       stats: createTestStats({ health: 3, maxHealth: 10 }),
     });
@@ -283,13 +283,13 @@ describe("castSpell (Hero)", () => {
     ]);
     hero.setSpells([spell]);
 
-    hero.castSpell(spell, hero);
+    await hero.castSpell(spell, hero);
 
     expect(hero.stats.health).toBe(7);
     expect(hero.usedSpells).toContain(spell);
   });
 
-  it("should not heal above maxHealth", () => {
+  it("should not heal above maxHealth", async () => {
     const hero = createTestHero({
       stats: createTestStats({ health: 8, maxHealth: 10 }),
     });
@@ -303,12 +303,12 @@ describe("castSpell (Hero)", () => {
     );
     hero.setSpells([spell]);
 
-    hero.castSpell(spell, hero);
+    await hero.castSpell(spell, hero);
 
     expect(hero.stats.health).toBe(10);
   });
 
-  it("should apply an effect with ApplyEffectSpellEffect", () => {
+  it("should apply an effect with ApplyEffectSpellEffect", async () => {
     const hero = createTestHero();
     const rockSkin = EffectFactory.createRockSkin();
     const applyEffect = new ApplyEffectSpellEffect(rockSkin);
@@ -321,7 +321,7 @@ describe("castSpell (Hero)", () => {
     );
     hero.setSpells([spell]);
 
-    hero.castSpell(spell, hero);
+    await hero.castSpell(spell, hero);
 
     expect(hero.effects).toContain(rockSkin);
     expect(hero.usedSpells).toContain(spell);

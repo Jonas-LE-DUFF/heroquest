@@ -10,6 +10,7 @@ import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
 import { Potion } from "../Equipment/Items/Potions";
+import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 
 class Hero extends Unit<HeroCategory> {
   DefenseDiceType = FightDiceFaces.WhiteShield;
@@ -91,8 +92,8 @@ class Hero extends Unit<HeroCategory> {
     this.spells = spells;
   }
 
-  castSpell(spell: Spell, target: Unit<any>): void {
-    spell.applyEffect(target);
+  async castSpell(spell: Spell, target: Unit<MonsterCategory | HeroCategory>): Promise<void> {
+    await spell.applyEffect(target);
     this.usedSpells.push(spell);
   }
 
@@ -126,7 +127,7 @@ class Hero extends Unit<HeroCategory> {
     this.equipment.removePotion(potion.id);
   }
 
-  toJson(gameMaster: boolean = false): HeroAsJson {
+  toJson(): HeroAsJson {
     return {
       id: this.id,
       controlledByPlayerId: this.controlledByPlayerId,

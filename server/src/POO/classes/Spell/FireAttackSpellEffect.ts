@@ -1,5 +1,7 @@
 import { dealDamage } from "../../../services/CombatService";
 import { DiceServiceRegistry } from "../../../services/DiceServiceRegistry";
+import { HeroCategory } from "../../enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
@@ -14,7 +16,7 @@ class FireAttackSpellEffect extends SpellEffect {
     this.damageAmount = damageAmount;
   }
 
-  async applyEffect(target: Unit<any>): Promise<void> {
+  async applyEffect(target: Unit<HeroCategory | MonsterCategory>): Promise<void> {
     const dice = DiceServiceRegistry.get();
     const result = await dice.rollRedDice(
       this.gameId,

@@ -121,7 +121,7 @@ class GameState {
   }
 
   getSpellsTaken(spells: Spell[]): Spell[] {
-    const heroes = this.Units.filter((u) => u instanceof Hero) as Hero[];
+    const heroes = this.Units.filter((u) => u instanceof Hero);
     const spellsTaken = [];
     for (const spell of spells) {
       for (const hero of heroes) {
@@ -155,7 +155,7 @@ class GameState {
   }
 
   getMonsters(): Monster[] {
-    return this.Units.filter((u) => u instanceof Monster) as Monster[];
+    return this.Units.filter((u) => u instanceof Monster);
   }
 
   updateUnitStats(newStats: StatsAsJson, position: Position): void {

@@ -24,7 +24,7 @@ export function registerGameActionsHandlers(socket: Socket) {
   // cast-spell
   socket.on(
     "cast-spell",
-    withValidation(socket, castSpellSchema, (socket, data, callback) => {
+    withValidation(socket, castSpellSchema, async (socket, data, callback) => {
       console.debug("casting spell", data);
       const { gameId, spellId, position } = data;
       const game = GameService.getGame(gameId);
@@ -61,7 +61,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         return callback(errorResponse("spell or target unit not found"));
       }
 
-      heroCaster.castSpell(spellToCast, targetUnit);
+      await heroCaster.castSpell(spellToCast, targetUnit);
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 

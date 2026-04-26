@@ -196,9 +196,9 @@ class Board {
     const positionAfterMove = position.doorPosition(direction);
     const isCrossingHorizontal = this.isCrossingHorizontal(direction);
     if (isCrossingHorizontal) {
-      this.Walls.horizontal[positionAfterMove.x]![positionAfterMove.y]! = true;
+      this.Walls.horizontal[positionAfterMove.x]![positionAfterMove.y] = true;
     } else {
-      this.Walls.vertical[positionAfterMove.x]![positionAfterMove.y]! = true;
+      this.Walls.vertical[positionAfterMove.x]![positionAfterMove.y] = true;
     }
   }
 

@@ -8,7 +8,6 @@ import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Position } from "../Position/Position";
 import { Direction } from "../../enums/Direction";
-import { get } from "http";
 
 class Game {
   id: string;
@@ -107,7 +106,7 @@ class Game {
 
     const allSpells = this.gameState.Units.filter(
       (unit) => unit instanceof Hero,
-    ).flatMap((hero) => (hero as Hero).getSpellElements());
+    ).flatMap((hero) => (hero).getSpellElements());
     const uniqueSpells = new Set(allSpells);
     if (allSpells.length !== uniqueSpells.size) {
       throw new Error(
@@ -164,7 +163,7 @@ class Game {
    */
   getCurrentPlayerTurnId(): string {
     if (this.isMonsterTurn) {
-      return this.getGameMaster()!.id;
+      return this.getGameMaster().id;
     }
     const heroCategoryToPlay = this.playOrder[this.currentTurnIndex];
     if (!heroCategoryToPlay) {
@@ -213,7 +212,7 @@ class Game {
   getHeroes(): Hero[] {
     return this.gameState.Units.filter(
       (unit) => unit instanceof Hero,
-    ) as Hero[];
+    );
   }
 
   getGameState(): GameState {

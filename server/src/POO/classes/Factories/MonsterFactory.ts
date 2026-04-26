@@ -15,7 +15,7 @@ class MonsterFactory {
 
   createMonster(monsterType: MonsterCategory): Monster {
     const game: Game = GameService.getGame(this.gameId)!;
-    const gameMasterId = game.getGameMaster()!.id;
+    const gameMasterId = game.getGameMaster().id;
 
     const monster = generateMonster(gameMasterId, monsterType);
     return monster;
@@ -46,7 +46,7 @@ function getMonsterStats(monsterType: MonsterCategory): {
   monsterType: MonsterType;
 } {
   const monster = monsterStats.find((monster) => {
-    return monster.id === monsterType;
+    return monster.id === monsterType as number;
   });
   if (!monster) {
     console.error(

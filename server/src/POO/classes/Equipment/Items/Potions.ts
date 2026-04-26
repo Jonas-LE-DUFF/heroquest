@@ -6,9 +6,12 @@ import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { StatType } from "../../../enums/Effects/StatType";
 import { PlayerRole } from "../../../enums/PlayerRole";
 import treasures from "../../../../shared/game_cards/treasure.json";
-import equipments from "../../../../shared/game_cards/equipments.json"
+import equipments from "../../../../shared/game_cards/equipments.json";
 import { Hero } from "../../Units/Hero";
 import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
+import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
+import { HeroCategory } from "../../../enums/Categories/HeroCategory";
+import { Unit } from "../../Units/Unit";
 
 abstract class Potion extends Item {
   effect: Effect | null;
@@ -27,7 +30,7 @@ abstract class Potion extends Item {
 
   abstract applyEffect(
     gameId: string,
-    target: any,
+    target: Unit<MonsterCategory | HeroCategory>,
   ): Promise<{ success: boolean; error?: string }>;
 
   toJson(): PotionAsJson {
@@ -59,9 +62,10 @@ abstract class ClassicPotion extends Potion {
 
   applyEffect(
     gameId: string,
-    target: any,
+    target: Unit<MonsterCategory | HeroCategory>,
   ): Promise<{ success: boolean; error?: string }> {
     // Logic to apply the effect to the target
+    if(!this.effect) return Promise.resolve({ success: false });
     target.effects.push(this.effect);
     return Promise.resolve({ success: true });
   }
@@ -93,10 +97,7 @@ class HolyWater extends Potion {
     );
   }
 
-  applyEffect(
-    gameId: string,
-    target: any,
-  ): Promise<{ success: boolean; error?: string }> {
+  applyEffect(): Promise<{ success: boolean; error?: string }> {
     return Promise.resolve({
       success: false,
       error:
@@ -139,7 +140,10 @@ class HealthPotion extends Potion {
       };
     }
 
-    target.stats.health = Math.min(target.stats.maxHealth, target.stats.health + heal);
+    target.stats.health = Math.min(
+      target.stats.maxHealth,
+      target.stats.health + heal,
+    );
     return { success: true };
   }
 }
@@ -160,7 +164,7 @@ class DefensePotion extends ClassicPotion {
 }
 
 class StrenghPotion extends ClassicPotion {
-  constructor(equipmentData : equipmentData) {
+  constructor(equipmentData: equipmentData) {
     super(
       equipmentData,
       new Effect(
@@ -185,10 +189,7 @@ class HeroismPotion extends Potion {
     );
   }
 
-  applyEffect(
-    gameId: string,
-    target: any,
-  ): Promise<{ success: boolean; error?: string }> {
+  applyEffect(): Promise<{ success: boolean; error?: string }> {
     return Promise.resolve({
       success: false,
       error:
@@ -199,23 +200,26 @@ class HeroismPotion extends Potion {
 
 class TreasurePotionFactory {
   createPotionFromReference(reference: string): Potion {
-    const treasureData = treasures.deck.find((treasure) => treasure.id === reference)
-    if(!treasureData) throw Error("unknown reference for potion : " + reference)
-      const cleanTreasureData : equipmentData = {
-        id : treasureData.id,
-        name : treasureData.name,
-        cost : 0,
-        image_path: treasureData.image_path,
-      }
+    const treasureData = treasures.deck.find(
+      (treasure) => treasure.id === reference,
+    );
+    if (!treasureData)
+      throw Error("unknown reference for potion : " + reference);
+    const cleanTreasureData: equipmentData = {
+      id: treasureData.id,
+      name: treasureData.name,
+      cost: 0,
+      image_path: treasureData.image_path,
+    };
     switch (reference) {
       case "strengh_potion":
         return new StrenghPotion(cleanTreasureData);
       case "heroisim_potion":
         return new HeroismPotion(cleanTreasureData);
       case "heal_potion":
-        return new HealthPotion(cleanTreasureData)
+        return new HealthPotion(cleanTreasureData);
       case "defense_potion":
-        return new DefensePotion(cleanTreasureData)
+        return new DefensePotion(cleanTreasureData);
       default:
         throw Error("unknown potion reference");
     }

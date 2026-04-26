@@ -5,6 +5,7 @@ import { SpecialAuthorizedHero } from "../POO/interfaces/SpecialAuthorizedHero";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { IDiceService } from "../POO/interfaces/IClass/IDiceService";
+import { setTimeout } from "timers";
 
 const sleep = (ms: number) => {
   return new Promise((r) => setTimeout(r, ms));

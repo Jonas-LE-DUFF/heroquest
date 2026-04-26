@@ -78,7 +78,7 @@ abstract class Trap {
 
   abstract getTrapType(): TrapType;
 
-  toJson(gameMaster: boolean = false): TrapAsJson {
+  toJson(): TrapAsJson {
     return {
       type: this.getTrapType(),
       isRevealed: this.isRevealed,
@@ -90,10 +90,10 @@ abstract class Trap {
 class PitTrap extends Trap {
   canBeTriggeredMultipleTimes = true;
 
-  async trigger(target: Hero): Promise<void> {
+  trigger(target: Hero): Promise<void> {
     dealDamage(this.gameId, target, 1);
     if(target.effects.some(effect => effect.name === "Pit Trap")) {
-      return; // if the hero already has the pit trap effect, we don't apply it again
+      return  Promise.resolve(); // if the hero already has the pit trap effect, we don't apply it again
     }
     target.addEffect(
       new Effect(
@@ -113,6 +113,7 @@ class PitTrap extends Trap {
         { stat: StatType.DEFENSE, value: -1 },
       ),
     );
+    return Promise.resolve()
   }
 
   getTrapType() {
