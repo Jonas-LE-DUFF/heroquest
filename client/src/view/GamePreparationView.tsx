@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import { TileType } from "../POO/enums/Board/TileType";
@@ -6,23 +6,31 @@ import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
 
-const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
-  const location = useLocation();
+interface GamePreparationProps {
+  socket: Socket;
+}
+
+const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
+  const state = useLocation().state as {
+    playerName: string;
+    game: GameAsJson;
+  };
   const navigate = useNavigate();
-  const playerName = location.state.playerName;
-  const [game, setGame] = useState<GameAsJson>(location.state.game);
+  const playerName = state.playerName;
+  const [game, setGame] = useState<GameAsJson>(state.game);
 
   useEffect(() => {
     if (!game || !playerName) {
       console.error("Données manquantes, redirection...");
-      navigate("/");
+      void navigate("/");
       return;
     }
 
     socket.on("game-state-update", (data: { game: GameAsJson }) => {
       setGame(data.game);
-      location.state.game = data.game;
+      state.game = data.game;
     });
 
     return () => {
@@ -55,7 +63,7 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
   
 
   const goToLobby = () => {
-    navigate("/lobby", {
+    void navigate("/lobby", {
       state: { playerName: playerName, game: game },
     });
   };
@@ -65,14 +73,15 @@ const GamePreparation: React.FC<{ socket: any }> = ({ socket }) => {
       <h1>Préparation de la partie...</h1>
       <Board
         game={game}
-        onTileClick={(position, selectedType) => {
+        onTileClick={(position) => {
           placeStairs(position);
         }}
         selectedPosition={null}
-        selectedEntityId={null}
         selectedType={null}
       />
-      <button onClick={goToLobby}>Retour au lobby</button>
+      <button onClick={goToLobby}>
+        Retour au lobby
+      </button>
     </div>
   );
 };

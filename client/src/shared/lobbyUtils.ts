@@ -9,7 +9,7 @@ function getPlayerHeroMap(game: GameAsJson): Map<PlayerAsJson, HeroAsJson[]> {
     if (!isHero(unit)) {
       return;
     }
-    const hero = unit as HeroAsJson;
+    const hero = unit;
     const player = game.players.find((p) => p.id === hero.controlledByPlayerId);
     if (!player) {
       console.warn(

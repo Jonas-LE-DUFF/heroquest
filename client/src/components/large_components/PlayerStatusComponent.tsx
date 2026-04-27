@@ -9,6 +9,7 @@ import { getPlayerHeroMap } from "../../shared/lobbyUtils";
 import { getHeroClassIconPath } from "../../shared/utils";
 import { CardComponent } from "../Card/CardComponent";
 import { getSpellEllementAsCard } from "../Card/cardUtils";
+import React from "react";
 
 import GameMasterIcon from "/assets/images/icons/playerRole/IconGameMaster.jpeg";
 import HeroIcon from "/assets/images/icons/playerRole/iconHero.jpeg";
@@ -25,7 +26,7 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
   const navigate = useNavigate();
 
   function modifyHero(hero: HeroAsJson) {
-    navigate("/characterChoice", {
+    void navigate("/characterChoice", {
       state: {
         game,
         playerName: game.players.find((p) => p.id === hero.controlledByPlayerId)

@@ -29,24 +29,25 @@ import { getSpellEllementAsCard } from "../components/Card/cardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { toast } from "react-toastify";
 import { CardType } from "../POO/interfaces/ClassAsJson/CardAsJson";
+import { Socket } from "socket.io-client";
 
 interface ChooseCharacterProps {
-  socket: any;
+  socket: Socket;
 }
 
 const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const state = useLocation().state as {
+    playerName: string;
+    game: GameAsJson;
+    hero?: HeroAsJson;
+  };
 
-  const [game, setGame] = useState<GameAsJson>(location.state?.game || null);
+  const [game, setGame] = useState<GameAsJson>(state.game);
 
-  const { playerName, hero } = location.state || {};
-  if (!game || !playerName) {
-    console.error(`Données manquantes : ${playerName}, ${game}, redirection...`);
-    return <div>Données manquantes... faites retour</div>;
-  }
+  const { playerName, hero } = state;
 
-  const modifiedHero = hero as HeroAsJson | undefined;
+  const modifiedHero = hero;
 
   const [heroCreation, setHeroCreation] = useState<HeroCreationWish>({
     gameId: game.id,
@@ -61,21 +62,21 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   useEffect(() => {
     if (!game || !playerName) {
       console.error(
-        `Données manquantes : ${playerName}, ${game}, redirection...`,
+        `Données manquantes : ${playerName}, ${game.name}, redirection...`,
       );
-      navigate("/");
+      void navigate("/");
       return;
     }
 
     socket.on("game-state-update", (data: { game: GameAsJson }) => {
       setGame(data.game);
-      location.state.game = data.game;
+      state.game = data.game;
     });
 
     return () => {
       socket.off("game-state-update");
     }
-  }, [navigate, playerName, game, socket]);
+  }, [navigate, playerName, game, socket, state]);
   
 
   function getSelectedClasses() {
@@ -146,9 +147,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     return spellElementsCards.map((element: SpellElement) => {
       const card = getSpellEllementAsCard(element);
       return (
-        <div
+        <button
+          key={element}
           className="singleSpellCard"
-          role="button"
           onClick={() => {
             if (!isSpellElementDisabled(hero?.id ?? "", game, element))
               handleSpellElementChange(element);
@@ -170,7 +171,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           ) : (
             <GreyCardComponent card={card} />
           )}
-        </div>
+        </button>
       );
     });
   };
@@ -226,7 +227,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         spellElements: [],
       }));
     }
-  }, [socket, game, heroCreation.heroCategory]);
+  }, [socket, game, heroCreation.heroCategory, hero?.id, heroCreation.spellElements.length]);
 
   const handleSubmit = () => {
     if (!game) return;
@@ -238,7 +239,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       { heroCreationWish: heroCreation, gameId: game.id },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success && response.data) {
-          navigate("/lobby", {
+          void navigate("/lobby", {
             state: { playerName: playerName, game: response.data },
           });
         } else {
@@ -249,7 +250,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   };
 
   const goBackToLobby = () => {
-    navigate("/lobby", { state: { playerName: playerName, game: game } });
+    void navigate("/lobby", { state: { playerName: playerName, game: game } });
   };
 
   return (
@@ -257,7 +258,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       <h1>Choisissez votre personnage {playerName}</h1>
       <div className="form">
         <div className="formElement">
-          <label id="label-hero-class">classe : </label>
+          <p id="label-hero-class">classe : </p>
           <Select
             labelId="label-hero-class"
             id="select-hero-class"
@@ -269,7 +270,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           </Select>
         </div>
         <div className="formElement">
-          <label id="label-coins">pièces d'or</label>
+          <p id="label-coins">pièces d&apos;or</p>
           <TextField
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setHeroCreation((prev) => ({
@@ -285,13 +286,12 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           heroCreation.heroCategory,
         ) && (
           <div className="spellList">
-            <label id="label-spell-elements">éléments de sort</label>
+            <p id="label-spell-elements">éléments de sort</p>
             <div className="spellCards">{renderSpellElements()}</div>
           </div>
         )}
 
         <CardSelectionComponent
-          socket={socket}
           cards={getAllEquipmentsAsCards()}
           selectedCards={heroCreation.equipments.map((id) => ({
             id,

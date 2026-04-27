@@ -26,7 +26,6 @@ interface BoardProps {
     selectedType: SelectType,
   ) => void;
   selectedPosition: PositionAsJson | null;
-  selectedEntityId: string | null;
   selectedType: SelectType;
 }
 
@@ -34,7 +33,6 @@ const Board = ({
   game,
   onTileClick,
   selectedPosition,
-  selectedEntityId,
   selectedType,
 }: BoardProps) => {
   const handleTileClick = (
@@ -121,7 +119,6 @@ const Board = ({
       if (tile.trap && !isInPitTrap(unit)) {
         className += " onTopImage";
       }
-      console.log(isInPitTrap(unit));
       if (isInPitTrap(unit)) {
         className += " inPitTrap";
       }

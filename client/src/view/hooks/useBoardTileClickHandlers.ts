@@ -7,6 +7,7 @@ import { BoardAsJson } from "../../POO/interfaces/ClassAsJson/Board/BoardAsJson"
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerService } from "../../POO/PlayerService";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { Socket } from "socket.io-client";
 
 export type TargetingState =
   | { mode: "none" }
@@ -27,7 +28,7 @@ interface UseBoardTileClickHandlersProps {
   interaction: InteractionState;
   setInteraction: Dispatch<SetStateAction<InteractionState>>;
   game: GameAsJson;
-  socket: any;
+  socket: Socket;
   hero: HeroAsJson | null;
   setStatsVisible: Dispatch<SetStateAction<boolean>>;
   setGame: Dispatch<SetStateAction<GameAsJson>>;
@@ -130,7 +131,7 @@ const useBoardTileClickHandlers = ({
         }));
       }
     },
-    [interaction.selectedPosition, setInteraction, setStatsVisible],
+    [interaction.selectedPosition, setInteraction, setStatsVisible, game.gameState.board],
   );
 
   const handlePlaceSelectedTypeTileClick = useCallback(
@@ -206,7 +207,7 @@ const useBoardTileClickHandlers = ({
       );
       setInteraction((prev) => ({ ...prev, targeting: getDefaultTargetingState() }));
     },
-    [game.id, hero, socket, setInteraction, getDefaultTargetingState],
+    [game.id, socket, setInteraction, getDefaultTargetingState],
   );
 
   const handleTileClick = useCallback(

@@ -9,8 +9,11 @@ import trapSearch from "/assets/images/icons/navbar/pixelArt/search-traps.png";
 import secretDoorIcon from "/assets/images/icons/navbar/pixelArt/search-secret-doors.png";
 import { Tooltip } from "@mui/material";
 import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
-export default function SearchMenu(socket: any, game: any, hero: any) {
+export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroAsJson) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {

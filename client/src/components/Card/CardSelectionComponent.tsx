@@ -1,17 +1,15 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { CardCarouselComponent } from "./CardCarouselComponent";
 import { toast } from "react-toastify";
 import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface CardSelectionComponentProps {
-  socket: any;
   selectedCards: CardAsJson[];
   cards: CardAsJson[];
   onCardsChange: (cards: CardAsJson[]) => void;
 }
 
 export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
-  socket,
   selectedCards = [],
   cards: cards,
   onCardsChange,
@@ -36,7 +34,6 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
         équipements : {selectedCards.map((card) => card.name).join(", ")}
       </div>
       <CardCarouselComponent
-        socket={socket}
         cards={cards}
         onCenterChange={(id) =>
           setCenterCard(cards.find((card) => card.id === id))

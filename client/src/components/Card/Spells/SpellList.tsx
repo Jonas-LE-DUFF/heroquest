@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CardComponent } from "../CardComponent";
 import { getDjinnSpells, getSpellAsCard } from "../cardUtils";
 import "./SpellsPopUp.css";
 
 interface SpellListProps {
-  socket: any;
   spellList: string[];
   usedSpellList: string[];
   onSpellClick: (spell: string) => void;
@@ -13,7 +12,6 @@ interface SpellListProps {
 }
 
 const SpellList: React.FC<SpellListProps> = ({
-  socket,
   spellList,
   usedSpellList,
   onSpellClick,
@@ -49,14 +47,13 @@ const SpellList: React.FC<SpellListProps> = ({
     return spellIds.map((spellId) => {
       const isUsed: boolean = usedSpellList.includes(spellId);
       return (
-        <div
+        <button
           key={spellId}
           className={"spell-card " + (isUsed ? "used-spell" : "")}
-          role="button"
           onClick={isUsed ? undefined : () => onSpellClickInternal(spellId)}
         >
           <CardComponent card={getSpellAsCard(spellId)} />
-        </div>
+        </button>
       );
     });
   };

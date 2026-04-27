@@ -4,7 +4,6 @@ import { ToastContentProps } from "react-toastify";
 
 const TreasureCard3D = ({
   data,
-  toastProps,
 }: ToastContentProps<CardAsJson>) => {
   return (
     <ThreeDCard

@@ -1,20 +1,19 @@
 import { SimpleCarousel } from "./SimpleCarousel";
 import { CardComponent } from "./CardComponent";
 import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
+import React from "react";
 
 interface CardCarouselProps {
-  socket: any;
   cards: CardAsJson[];
   onCenterChange?: (id: string | undefined) => void;
 }
 
 const CardCarouselComponent = ({
-  socket,
   cards,
   onCenterChange,
 }: CardCarouselProps) => {
-  function getImages(): any[] {
-    const images: any[] = [];
+  function getImages(): React.JSX.Element[] {
+    const images: React.JSX.Element[] = [];
     for (let i = 0; i < cards.length; i++) {
       images.push(
         <div className="singleSpellCard">

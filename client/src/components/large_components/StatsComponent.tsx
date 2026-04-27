@@ -7,7 +7,6 @@ import {
 } from "../../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
@@ -90,7 +89,7 @@ const StatsComponent = ({
             {statsEdit.defense && getDices(statsEdit.defense)}
           </div>
           <div className="statElem">
-            <p>Points d'esprit : </p>
+            <p>Points d`&apos`esprit : </p>
             {isGameMaster && (
               <input
                 value={statsEdit.spirit}
@@ -130,7 +129,7 @@ const StatsComponent = ({
           )}
           {isGameMaster && (
             <div className="statElem">
-              <label>HP : </label>
+              <p>HP : </p>
               <input
                 value={statsEdit.health}
                 onChange={(e) =>
@@ -145,7 +144,7 @@ const StatsComponent = ({
           )}
           {isGameMaster && (
             <div className="statElem">
-              <label>Max HP : </label>
+              <p>Max HP : </p>
               <input
                 className="statElem"
                 value={statsEdit.maxHealth}

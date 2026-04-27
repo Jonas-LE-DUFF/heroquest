@@ -5,7 +5,7 @@ import {
   getHeroClassName,
   isHero,
 } from "../../shared/utils";
-import { Dialog, Menu, MenuItem, Select, Tooltip } from "@mui/material";
+import { Dialog, Select, Tooltip } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -17,7 +17,7 @@ import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import backpackIcon from "/assets/images/icons/navbar/pixelArt/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/pixelArt/search-treasure.png";
 import lockpicks from "/assets/images/icons/navbar/pixelArt/disarm-trap.png";
-import { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
@@ -57,9 +57,12 @@ const Navbar: React.FC<NavbarProps> = ({
   setCurrentlyPlayedHero,
   setInteraction,
 }) => {
-  const location = useLocation();
-  const role = location.state.role;
-  const playerName = location.state.playerName;
+  const state = useLocation().state as {
+    role: PlayerRole;
+    playerName: string;
+  };
+  const role = state.role;
+  const playerName = state.playerName;
 
   const [showEquipments, setShowEquipments] = useState(false);
 
@@ -70,7 +73,7 @@ const Navbar: React.FC<NavbarProps> = ({
   if (role === PlayerRole.HERO) {
     hero = currentlyPlayedHero;
   } else {
-    if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit as HeroAsJson;
+    if (selectedUnit && isHero(selectedUnit)) hero = selectedUnit;
   }
   if (!hero && role === PlayerRole.HERO) {
     return <div>Loading...</div>;
@@ -98,7 +101,7 @@ const Navbar: React.FC<NavbarProps> = ({
             `Erreur lors de la recherche de trésors : ${response.error}`,
           );
         } else {
-          if (response?.data?.message){
+          if (response?.data?.message) {
             toast.info(response.data?.message);
           }
         }
@@ -122,16 +125,17 @@ const Navbar: React.FC<NavbarProps> = ({
             title={statsOpen ? "Cacher statistiques" : "Voir statistiques"}
             arrow
           >
-            <img
-              className="imgNav"
-              src={getHeroClassIconPath(hero.category)}
-              alt={getHeroClassName(hero.category)}
-              role="button"
+            <button
               onClick={() => {
                 setSelectedUnit(hero);
                 setStatsOpen(!statsOpen);
-              }}
-            />
+              }}>
+              <img
+                className="imgNav"
+                src={getHeroClassIconPath(hero.category)}
+                alt={getHeroClassName(hero.category)}
+              />
+            </button>
           </Tooltip>
         </div>
       )}
@@ -158,14 +162,17 @@ const Navbar: React.FC<NavbarProps> = ({
         <>
           <div className="nav-elem">
             <Tooltip title="Voir mon équipement" arrow>
-              <img
-                src={backpackIcon}
-                alt="Backpack"
-                className="imgNav"
+              <button
                 onClick={() => {
                   setShowEquipments(!showEquipments);
-                }}
-              />
+                }}>
+                <img
+                  src={backpackIcon}
+                  alt="Backpack"
+                  className="imgNav"
+
+                />
+              </button>
             </Tooltip>
           </div>
           <Dialog
@@ -177,19 +184,19 @@ const Navbar: React.FC<NavbarProps> = ({
         </>
       )}
       {hero && role !== PlayerRole.HERO && (
-        <div className="nav-elem" onClick={() => searchTreasures()}>
+        <button className="nav-elem" onClick={() => searchTreasures()} >
           <Tooltip title="Rechercher des trésors" arrow>
             <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
           </Tooltip>
-        </div>
+        </button>
       )}
-      {role === PlayerRole.HERO && SearchMenu(socket, game, hero)}
+      {role === PlayerRole.HERO && hero && SearchMenu(socket, game, hero)}
       {role === PlayerRole.HERO && (
-        <div className="nav-elem" onClick={() => disarmTrap()}>
+        <button className="nav-elem" onClick={() => disarmTrap()}>
           <Tooltip title="Désarmer un piège" arrow>
             <img src={lockpicks} alt="Lockpicks" className="imgNav" />
           </Tooltip>
-        </div>
+        </button>
       )}
       {role === PlayerRole.HERO && (
         <div className="nav-elem">
@@ -216,7 +223,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     );
                     return isNaN(Number(key)) && !hero;
                   })
-                  .map(([key, value]) => value as HeroCategory),
+                  .map(([, value]) => value as HeroCategory),
               ),
             )}
           </Select>

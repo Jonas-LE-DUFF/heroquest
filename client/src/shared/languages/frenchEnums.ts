@@ -17,8 +17,8 @@ export enum heroClassFr {
 }
 
 export enum spellElementFr {
-  "Feu" = 400,
-  "Eau",
-  "Terre",
-  "Air",
+  Fire = "Feu",
+  Water = "Eau",
+  Earth = "Terre",
+  Air = "Air",
 }

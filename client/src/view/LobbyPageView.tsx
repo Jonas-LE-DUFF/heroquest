@@ -3,18 +3,22 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import PlayerStatusComponent from "../components/large_components/PlayerStatusComponent";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
 
 interface LobbyPageProps {
-  socket: any;
+  socket: Socket;
 }
 
 const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
-  const location = useLocation();
+  const state = useLocation().state as {
+    playerName: string;
+    game: GameAsJson;
+  };
   const navigate = useNavigate();
 
-  const playerName = location.state.playerName;
-  const [game, setgame] = useState<GameAsJson | null>(location.state.game);
+  const playerName : string = state.playerName;
+  const [game, setgame] = useState<GameAsJson | null>(state.game);
   const gameId = game?.id;
   const role: PlayerRole | undefined = game?.players?.find(
     (p) => p.id === socket.id,
@@ -23,16 +27,16 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   useEffect(() => {
     if (!game || !playerName) {
       console.error(
-        `Données manquantes : ${playerName}, ${game}, redirection...`,
+        `Données manquantes : nom du joueur : ${playerName}, nom de la partie : ${game?.name}, redirection...`,
       );
-      navigate("/");
+      void navigate("/");
       return;
     }
 
     const handleGameStart = (data: { game: GameAsJson }) => {
       const game = data.game;
       console.log("Game is starting...", game);
-      navigate("/game", {
+      void navigate("/game", {
         state: { playerName, gameId, role, game: game },
       });
     };
@@ -58,7 +62,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success) {
           const game = response.data;
-          navigate("/game", {
+          void navigate("/game", {
             state: { playerName, gameId, role, game },
           });
         } else {
@@ -74,7 +78,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       { gameId },
       (response: { success: boolean; error?: string }) => {
         if (response.success) {
-          navigate("/");
+          void navigate("/");
         } else {
           console.error("Error leaving lobby:", response.error);
           toast.error(`Error: ${response.error}`);
@@ -89,7 +93,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       return;
     }
 
-    navigate("/characterChoice", {
+    void navigate("/characterChoice", {
       state: {
         game,
         playerName,
@@ -117,7 +121,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   };
 
   const prepareGame = () => {
-    navigate("/gamePreparation", {
+    void navigate("/gamePreparation", {
       state: {
         game,
         playerName,
@@ -157,11 +161,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
                 lancer la partie
               </button>
             )}
-            <button
-              onClick={() => {
-                prepareGame();
-              }}
-            >
+            <button onClick={prepareGame}>
               Préparer la partie
             </button>
           </>

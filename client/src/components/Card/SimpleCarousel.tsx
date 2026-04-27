@@ -70,7 +70,7 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
             alignItems: "center",
           }}
         >
-          {orderedIndices.map((origIndex, i) => {
+          {orderedIndices.map((origIndex) => {
             const child = items[origIndex];
             const isCenter = origIndex === index;
             const isSide = origIndex === leftIndex || origIndex === rightIndex;
@@ -107,15 +107,15 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
             };
 
             return (
-              <div
+              <button
                 key={origIndex}
                 style={style}
                 onClick={onActivate}
-                role={isCenter || isSide ? "button" : undefined}
+                disabled={isCenter || isSide ? false : true}
                 aria-pressed={isCenter}
               >
                 {child}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -151,5 +151,7 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
     );
   },
 );
+
+SimpleCarousel.displayName = "SimpleCarousel";
 
 export { SimpleCarousel };

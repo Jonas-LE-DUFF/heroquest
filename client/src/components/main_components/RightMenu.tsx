@@ -10,7 +10,7 @@ import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 interface RightMenuProps {
   socket: Socket;
   currentGameState: GameAsJson;
-  setSelectedType: (type: any) => void;
+  setSelectedType: (type: SelectType) => void;
   selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   setTargetMode: (value: boolean) => void;

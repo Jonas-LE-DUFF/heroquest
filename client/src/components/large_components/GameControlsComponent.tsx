@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState, useEffect, JSX } from "react";
+import { Dispatch, SetStateAction, JSX } from "react";
 import { useLocation } from "react-router-dom";
 import Dices from "../dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
@@ -27,9 +27,10 @@ import { toast } from "react-toastify";
 import { TrapType } from "../../POO/enums/Board/TrapType";
 import { SelectType } from "../../POO/types/selectType";
 import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
+import { Socket } from "socket.io-client";
 
 interface GameControlsProps {
-  socket: any;
+  socket: Socket;
   game: GameAsJson;
   setSelectedType: (type: SelectType) => void; //Direction -> door placement
   selectedType: SelectType;
@@ -53,11 +54,12 @@ const GameControls = ({
   selectedWeapon,
   hero,
 }: GameControlsProps) => {
-  const location = useLocation();
-  const gameId = location.state.gameId;
-  const role = location.state.role;
-
-  const [message, setMessage] = useState("");
+  const state = useLocation().state as {
+    gameId: string;
+    role: PlayerRole;
+  };
+  const gameId = state.gameId;
+  const role = state.role;
 
   const isElementsShown: Map<string, boolean> = new Map();
   isElementsShown.set("monsterSelector", false);
@@ -68,16 +70,6 @@ const GameControls = ({
   isElementsShown.set("masterControls", false);
 
   const isPlayerTurn = getPlayerIdToPlay(game) === socket.id;
-
-  useEffect(() => {
-    socket.on("player-moved", (data: any) => {
-      setMessage(`${data.playerName} s'est déplacé`);
-    });
-
-    return () => {
-      socket.off("player-moved");
-    };
-  }, [socket, game]);
 
   const movePlayer = (direction: Direction) => {
     socket.emit(
@@ -268,7 +260,6 @@ const GameControls = ({
               <button onClick={() => goInTargetMode()}>Attaquer</button>
             </div>
           )}
-          {message && <div className="game-message">{message}</div>}
           {isPlayerTurn && (
             <div>
               <button onClick={endTurn}>END TURN</button>

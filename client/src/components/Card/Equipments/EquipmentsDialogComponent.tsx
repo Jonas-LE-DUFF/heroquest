@@ -1,5 +1,4 @@
 import { Socket } from "socket.io-client";
-import { EquipmentAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { HeroAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { useLocation } from "react-router-dom";
 import { PlayerRole } from "../../../POO/enums/PlayerRole";
@@ -17,6 +16,9 @@ import { getAllTreasuresItems, getItemAsCard } from "../cardUtils";
 import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
 import { toast } from "react-toastify";
 import RotatableCard3D from "../../small_components/RotatableCard3D";
+import { GameAsJson } from "../../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { MonsterAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { isHero } from "../../../shared/utils";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -24,9 +26,9 @@ interface EquipmentsDialogComponentProps {
 }
 
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
-  const location = useLocation();
-  const gameId = location.state?.gameId;
-  const role = location.state?.role;
+  const state = useLocation().state as { gameId: string; role: PlayerRole };
+  const gameId = state.gameId;
+  const role = state.role;
 
   const { socket, hero } = props;
   const equipment = hero.equipment;
@@ -107,17 +109,19 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
   }
 
   useEffect(() => {
-    const handleGameStateUpdate = (data: { game: any }) => {
+    const handleGameStateUpdate = (data: { game: GameAsJson }) => {
       const updatedHero = data.game.gameState.Units.find(
-        (unit: any) => unit.id === hero.id,
+        (unit: HeroAsJson | MonsterAsJson) => unit.id === hero.id,
       );
-      if (updatedHero) {
-        setArmors(updatedHero.equipment.armors);
-        setWeapons(updatedHero.equipment.weapons);
-        setPotions(updatedHero.equipment.potions);
-        setTools(updatedHero.equipment.tools);
-        setGold(updatedHero.equipment.gold);
+      if (!updatedHero || !isHero(updatedHero)) {
+        return;
       }
+      setArmors(updatedHero.equipment.armors);
+      setWeapons(updatedHero.equipment.weapons);
+      setPotions(updatedHero.equipment.potions);
+      setTools(updatedHero.equipment.tools);
+      setGold(updatedHero.equipment.gold);
+
     };
 
     socket.on("game-state-update", handleGameStateUpdate);
@@ -197,7 +201,9 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         <button onClick={() => setEditionState(true)}>Édition</button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
-        <button onClick={() => saveEditions()}>Terminer l'édition</button>
+        <button onClick={() => saveEditions()}>
+          Terminer l&apos;édition
+        </button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
         <>
@@ -212,7 +218,6 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       <Dialog open={openAddEquipmentDialog} onClose={closeAddEquipmentMenu}>
         <div className="equipments-dialog">
           <CardSelectionComponent
-            socket={socket}
             selectedCards={equipmentAsCards}
             cards={getAllEquipmentsAsCards()}
             onCardsChange={(newSelectedCards) => {
@@ -224,7 +229,6 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       <Dialog open={openAddTreasureDialog} onClose={closeAddTreasureMenu}>
         <div className="equipments-dialog">
           <CardSelectionComponent
-            socket={socket}
             selectedCards={equipmentAsCards}
             cards={getAllTreasuresItems()}
             onCardsChange={(newSelectedCards) => {

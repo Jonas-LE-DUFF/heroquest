@@ -5,9 +5,10 @@ import { getFightDiceFace } from "../../shared/utils";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
 
 interface DicesProps {
-  socket: any;
+  socket: Socket;
   gameId: string;
   role: PlayerRole; //the role to whom this dices belong
   viewerRole: PlayerRole; //who is watching the dices

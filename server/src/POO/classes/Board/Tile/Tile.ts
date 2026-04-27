@@ -94,7 +94,7 @@ class Tile {
       type: this.type,
       unitId: this.unitId,
       // should show trap details only if it's revealed or if its game master view
-      trap: this.trap && (this.trap.isRevealed || gameMaster) ? this.trap.toJson(gameMaster) : null,
+      trap: this.trap && (this.trap.isRevealed || gameMaster) ? this.trap.toJson() : null,
     };
   }
 }

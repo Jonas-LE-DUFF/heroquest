@@ -4,9 +4,10 @@ import "./LoginPageView.css";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
 
 interface LoginPageProps {
-  socket: any;
+  socket: Socket;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
@@ -40,8 +41,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   useEffect(() => {
     socket.once(
       "join-success",
-      (data: { playerId: string; game: GameAsJson }) => {
-        navigate("/lobby", {
+      async (data: { playerId: string; game: GameAsJson }) => {
+        await navigate("/lobby", {
           state: {
             playerName: playerName,
             game: data.game,
@@ -59,7 +60,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       <h1>HeroQuest Online</h1>
       <form onSubmit={handleJoinGame} className="login-form">
         <div className="form-group">
-          <label>Votre nom :</label>
+          <p>Votre nom :</p>
           <input
             type="text"
             value={playerName}
@@ -70,7 +71,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         </div>
 
         <div className="form-group">
-          <label>Nom de la partie :</label>
+          <p>Nom de la partie :</p>
           <input
             type="text"
             value={gameName}
@@ -81,7 +82,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         </div>
 
         <div className="form-group">
-          <label>Rôle :</label>
+          <p>Rôle :</p>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as PlayerRole)}
@@ -99,7 +100,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       <div className="game-info">
         <h3>Comment jouer ?</h3>
         <p>• Créez une partie avec un ID unique</p>
-        <p>• Partagez l'ID avec vos amis</p>
+        <p>• Partagez l&apos;ID avec vos amis</p>
         <p>• Un joueur doit être le Maître du Jeu</p>
       </div>
     </div>

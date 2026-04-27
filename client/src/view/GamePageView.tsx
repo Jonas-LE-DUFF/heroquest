@@ -39,15 +39,19 @@ import useBoardTileClickHandlers, {
   InteractionState,
   TargetingState,
 } from "./hooks/useBoardTileClickHandlers";
-import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
+import { Socket } from "socket.io-client";
 
 interface GamePageProps {
-  socket: any;
+  socket: Socket;
 }
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
-  const location = useLocation();
-  const role = location.state.role;
+  const state = useLocation().state as {
+    playerName: string;
+    role: PlayerRole;
+    game: GameAsJson;
+  };
+  const role = state.role;
 
   const [interaction, setInteraction] = useState<InteractionState>({
     selectedType: null,
@@ -80,15 +84,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }));
   };
 
-  const [game, setGame] = useState<GameAsJson>(location.state.game);
+  const [game, setGame] = useState<GameAsJson>(state.game);
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
   const user = game.players.find((p) => p.id === socket.id);
   const [hero, setHero] = useState<HeroAsJson | null>(
-    getHeroesByPlayerId(socket.id, game)?.[0] || null,
+    getHeroesByPlayerId(socket.id!, game)?.[0] || null,
   );
-  if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
-    return <div>Couldn't find a hero you control</div>;
-  }
+  
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
@@ -98,7 +100,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       console.error("Game data is missing");
       return;
     }
-    const hero = getHeroesByPlayerId(socket.id, game)?.[0] || null;
+    const hero = getHeroesByPlayerId(socket.id!, game)?.[0] || null;
     if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
       console.error("Couldn't find a hero for the current player");
       return;
@@ -119,7 +121,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         unit.stats = data.newStats;
 
         if (isHero(unit)) {
-          const player = getPlayerByHero(unit as HeroAsJson, prev.players);
+          const player = getPlayerByHero(unit, prev.players);
           if (!player) {
             console.error("Player not found for hero with id:", data.entityId);
             return prev;
@@ -140,14 +142,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
         return { ...prev } as GameAsJson;
       });
-
-      // TODO : try to remove this setTimeout
-      // Force board re-render OUTSIDE the setCurrentGameState callback
-      if (isDead) {
-        setTimeout(() => {
-          setBoardKey((k) => k + 1);
-        }, 0);
-      }
     },
     [],
   );
@@ -265,7 +259,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       socket.off("game-state-update", handleGameStateUpdate);
       socket.off("card-drawn", handleCardDrawn);
     };
-  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate]);
+  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate, game]);
 
   const setSelectedUnit = (unit: HeroAsJson | MonsterAsJson | null) => {
     if (!unit) return;
@@ -299,11 +293,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     setGame,
   });
 
+  if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
+    return <div>Le Héros que vous jouez est introuvable</div>;
+  }
+
   return (
     <>
       {spellPageVisible && (
         <SpellsPopUp
-          socket={socket}
           spellSchools={hero?.spellElements}
           spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
           onSpellClick={(selectedSpell: string) => {
@@ -357,7 +354,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             game={game}
             onTileClick={handleTileClick}
             selectedPosition={selectedPosition}
-            selectedEntityId={selectedEntityId}
             selectedType={selectedType}
           />
         </Grid>
