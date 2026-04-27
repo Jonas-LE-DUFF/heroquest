@@ -96,15 +96,15 @@ button {
 }
 
 .positive-button {
-  background-color: #4caf50;
+  background-color: #307432;
 }
 
 .warning-button {
-  background-color: rgba(201, 42, 42, 0.897);
+  background-color: rgba(136, 32, 32, 0.897);
 }
 
 .classic-button {
-  background-color: #4083ff;
+  background-color: #2953a0;
 }
 
 form {
