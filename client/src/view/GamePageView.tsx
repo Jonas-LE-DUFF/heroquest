@@ -366,7 +366,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }
-            setTargetMode={setTargetMode}
             setSelectedWeapon={(weapon) => {
               setHero((prev) => {
                 return {

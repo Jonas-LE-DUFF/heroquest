@@ -35,7 +35,6 @@ interface GameControlsProps {
   setSelectedType: (type: SelectType) => void; //Direction -> door placement
   selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
-  setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
   hero: HeroAsJson | null;
@@ -49,7 +48,6 @@ const GameControls = ({
   setSelectedType,
   selectedType,
   selectedUnit,
-  setTargetMode,
   setSelectedWeapon,
   selectedWeapon,
   hero,
