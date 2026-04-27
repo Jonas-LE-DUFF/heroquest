@@ -157,20 +157,20 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         {isGameMaster && (
           <>
             {canStartGame && (
-              <button onClick={startGame} className="start-button">
+              <button className="positive-button" onClick={startGame}>
                 lancer la partie
               </button>
             )}
-            <button onClick={prepareGame}>
+            <button className="classic-button" onClick={prepareGame}>
               Préparer la partie
             </button>
           </>
         )}
-        <button onClick={leaveLobby} className="leave-button">
+        <button className="warning-button" onClick={leaveLobby}>
           Sortir du Lobby
         </button>
         {!isGameMaster && (
-          <button onClick={chooseCharacter} className="chooseCharacter">
+          <button className="classic-button" onClick={chooseCharacter}>
             Choisir son personnage
           </button>
         )}

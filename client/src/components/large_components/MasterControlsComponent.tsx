@@ -66,6 +66,7 @@ const MasterControls = ({ socket, gameId }: MasterControlsProps) => {
         />
       </RadioGroup>
       <button
+        className="classic-button"
         onClick={() => {
           authorizeNumberOfFightDices();
         }}

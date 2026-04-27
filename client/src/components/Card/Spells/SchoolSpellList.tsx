@@ -39,7 +39,7 @@ const SchoolSpellList: React.FC<SchoolSpellListProps> = ({
   return (
     <div className="spell-view">
       <div className="closeButton">
-        <button onClick={onClose}>X</button>
+        <button className="warning-button" onClick={onClose}>X</button>
       </div>
       {renderSpellSchools(spellSchools)}
     </div>

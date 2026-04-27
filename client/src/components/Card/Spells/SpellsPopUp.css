@@ -26,13 +26,6 @@
   cursor: pointer;
 }
 
-.returnButton {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  cursor: pointer;
-}
-
 .used-spell {
   opacity: 0.5;
   filter: grayscale(100%);

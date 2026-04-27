@@ -124,8 +124,10 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
                 flexDirection: "column",
               }}
             >
-              <button onClick={() => modifyHero(hero)}>modifier</button>
-              <button onClick={() => unselectCharacter(hero.id)}>
+              <button className="classic-button" onClick={() => modifyHero(hero)}>
+                modifier
+              </button>
+              <button className="warning-button" onClick={() => unselectCharacter(hero.id)}>
                 déselectionner
               </button>
             </div>

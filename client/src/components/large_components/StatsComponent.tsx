@@ -41,7 +41,7 @@ const StatsComponent = ({
   return (
     <Paper sx={{ height: "fit-content" }}>
       <div className="content">
-        <button onClick={() => setStatsVisible(false)} className="closeButton">
+        <button className="closeButton" onClick={() => setStatsVisible(false)}>
           X
         </button>
         <div className="stats">
@@ -184,6 +184,7 @@ const StatsComponent = ({
                     {effect}
                     {isGameMaster && (
                       <button
+                        className="warning-button"
                         onClick={() => {
                           const newEffects = statsEdit.effects?.filter(
                             (statusEffect) => statusEffect !== effect,
@@ -208,6 +209,7 @@ const StatsComponent = ({
             <div className="statElem">
               <input type="text" placeholder="Nom de l'effet" id="effectName" />
               <button
+                className="classic-button"
                 onClick={() => {
                   const effectNameInput = document.getElementById(
                     "effectName",
@@ -234,7 +236,12 @@ const StatsComponent = ({
             </div>
           )}
           {isGameMaster && (
-            <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
+            <button
+              className="positive-button"
+              onClick={() => sendNewStats(statsEdit)}
+            >
+              Save Stats
+            </button>
           )}
         </div>
       </div>
@@ -247,7 +254,9 @@ const StatsComponent = ({
       { gameId, newStats, unitId: unit.id },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          toast.error("Erreur lors de la mise à jour des stats : " + response.error);
+          toast.error(
+            "Erreur lors de la mise à jour des stats : " + response.error,
+          );
         }
       },
     );

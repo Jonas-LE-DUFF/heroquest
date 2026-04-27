@@ -120,7 +120,9 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
       </Paper>
       {playerRole === role && (
         <div className="container">
-          <button onClick={rollDice}>lancer les dés</button>
+          <button className="classic-button" onClick={rollDice}>
+            lancer les dés
+          </button>
           {playerRole === PlayerRole.GAME_MASTER && (
             <input
               className="inputDice"

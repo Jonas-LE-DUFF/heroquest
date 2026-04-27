@@ -79,7 +79,7 @@ const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
         selectedPosition={null}
         selectedType={null}
       />
-      <button onClick={goToLobby}>
+      <button className="classic-button" onClick={goToLobby}>
         Retour au lobby
       </button>
     </div>

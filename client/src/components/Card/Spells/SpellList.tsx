@@ -59,13 +59,13 @@ const SpellList: React.FC<SpellListProps> = ({
   };
   return (
     <div className="spell-view">
-      <div className="closeButton">
-        <button onClick={onClose}>X</button>
-      </div>
+      <button className="closeButton" onClick={onClose}>
+        X
+      </button>
       {onReturnHandler !== undefined && (
-        <div className="returnButton">
-          <button onClick={onReturnHandler}>Retour</button>
-        </div>
+        <button className="return-button" onClick={onReturnHandler}>
+          Retour
+        </button>
       )}
       {renderSpellSchools(displayedSpells)}
     </div>

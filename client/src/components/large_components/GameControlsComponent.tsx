@@ -185,29 +185,25 @@ const GameControls = ({
       return (
         <div className="movement-controls">
           <div></div>
-          <button onClick={() => movePlayer(Direction.UP)}>⬆️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.UP)}>⬆️</button>
           <div></div>
-          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️</button>
-          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️</button>
-          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.LEFT)}>⬅️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.DOWN)}>⬇️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.RIGHT)}>➡️</button>
         </div>
       );
     if (role === PlayerRole.GAME_MASTER)
       return (
         <div className="movement-controls">
           <div></div>
-          <button onClick={() => moveMonster(Direction.UP)}>⬆️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.UP)}>⬆️</button>
           <div></div>
-          <button onClick={() => moveMonster(Direction.LEFT)}>⬅️</button>
-          <button onClick={() => moveMonster(Direction.DOWN)}>⬇️</button>
-          <button onClick={() => moveMonster(Direction.RIGHT)}>➡️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.LEFT)}>⬅️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.DOWN)}>⬇️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.RIGHT)}>➡️</button>
         </div>
       );
   };
-
-  function goInTargetMode(): void {
-    setTargetMode(true);
-  }
 
   return (
     <div>
@@ -257,12 +253,13 @@ const GameControls = ({
                   );
                 })}
               </select>
-              <button onClick={() => goInTargetMode()}>Attaquer</button>
             </div>
           )}
           {isPlayerTurn && (
             <div>
-              <button onClick={endTurn}>END TURN</button>
+              <button className="warning-button" onClick={endTurn}>
+                END TURN
+              </button>
             </div>
           )}
         </Accordion>
@@ -316,12 +313,20 @@ const GameControls = ({
                 <Typography component="span">Murs et Meubles</Typography>
               </AccordionSummary>
               <div className="two-button-container">
-                <button onClick={putWall}>Mur</button>
-                <button onClick={putFurniture}>Meuble</button>
+                <button className="classic-button" onClick={putWall}>
+                  Mur
+                </button>
+                <button className="classic-button" onClick={putFurniture}>
+                  Meuble
+                </button>
               </div>
               <div className="two-button-container">
-                <button onClick={unSelect}>Annuler</button>
-                <button onClick={erase}>Effacer</button>
+                <button className="classic-button" onClick={unSelect}>
+                  Annuler
+                </button>
+                <button className="classic-button" onClick={erase}>
+                  Effacer
+                </button>
               </div>
             </Accordion>
             <Accordion sx={{ color: "white", background: "inherit" }}>
@@ -334,22 +339,22 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.UP)}>
+                  <button className="classic-button" onClick={() => putDoor(Direction.UP)}>
                     Porte Haut
                   </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.DOWN)}>
+                  <button className="classic-button" onClick={() => putDoor(Direction.DOWN)}>
                     Porte Bas
                   </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.LEFT)}>
+                  <button className="classic-button" onClick={() => putDoor(Direction.LEFT)}>
                     Porte Gauche
                   </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={() => putDoor(Direction.RIGHT)}>
+                  <button className="classic-button" onClick={() => putDoor(Direction.RIGHT)}>
                     Porte Droite
                   </button>
                 </Grid>
@@ -365,22 +370,22 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={4}>
-                  <button onClick={() => putTrap(TrapType.PIT_TRAP)}>
+                  <button className="classic-button" onClick={() => putTrap(TrapType.PIT_TRAP)}>
                     Oubliettes
                   </button>
                 </Grid>
                 <Grid size={4}>
-                  <button onClick={() => putTrap(TrapType.ROCK_TRAP)}>
+                  <button className="classic-button" onClick={() => putTrap(TrapType.ROCK_TRAP)}>
                     Éboulement
                   </button>
                 </Grid>
                 <Grid size={4}>
-                  <button onClick={() => putTrap(TrapType.SPEAR_TRAP)}>
+                  <button className="classic-button" onClick={() => putTrap(TrapType.SPEAR_TRAP)}>
                     Piège à lance
                   </button>
                 </Grid>
                 <Grid size={12}>
-                  <button
+                  <button className="classic-button"
                     onClick={() => {
                       setInteraction((prev) => ({
                         ...prev,

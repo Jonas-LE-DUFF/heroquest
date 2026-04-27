@@ -124,7 +124,9 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
         {renderDices(currentDiceFaces)}
       </Paper>
       {playerRole === role && (
-        <button onClick={rollDice}>lancer les dés rouges</button>
+        <button className="classic-button" onClick={rollDice}>
+          lancer les dés rouges
+        </button>
       )}
       {playerRole === PlayerRole.GAME_MASTER &&
         role === PlayerRole.GAME_MASTER && (

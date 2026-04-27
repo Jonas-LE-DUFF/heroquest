@@ -41,6 +41,7 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
       <div>
         {selectedUnit !== null && (
           <button
+            className="classic-button"
             onClick={() =>
               selectedUnit !== null && setStatsVisible(!statsVisible)
             }

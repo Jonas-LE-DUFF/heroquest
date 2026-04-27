@@ -308,10 +308,12 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           }
         />
         <div>
-          <button className="button" onClick={() => handleSubmit()}>
+          <button className="classic-button" onClick={() => handleSubmit()}>
             sauvegarder les modifications
           </button>
-          <button onClick={() => goBackToLobby()}>Annuler</button>
+          <button className="warning-button" onClick={() => goBackToLobby()}>
+            Annuler
+          </button>
         </div>
       </div>
     </div>

@@ -52,12 +52,17 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
             {equipment.name}
             {equipment.type === "Potion" &&
               hero.controlledByPlayerId === socket.id && (
-                <button onClick={() => drinkPotion(equipment.id)}>boire</button>
+                <button className="positive-button" onClick={() => drinkPotion(equipment.id)}>
+                  boire
+                </button>
               )}
-            <button onClick={() => openItemDetails(equipment)}>détails</button>
+            <button className="classic-button" onClick={() => openItemDetails(equipment)}>
+              détails
+            </button>
 
             {editionState && role === PlayerRole.GAME_MASTER && (
               <button
+                className="warning-button"
                 onClick={() => {
                   const updatedEquipments = equipments.filter(
                     (e) => e.id !== equipment.id,
@@ -198,19 +203,21 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         )}
       </p>
       {role === PlayerRole.GAME_MASTER && !editionState && (
-        <button onClick={() => setEditionState(true)}>Édition</button>
+        <button className="classic-button" onClick={() => setEditionState(true)}>
+          Édition
+        </button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
-        <button onClick={() => saveEditions()}>
+        <button className="classic-button" onClick={() => saveEditions()}>
           Terminer l&apos;édition
         </button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
         <>
-          <button onClick={() => openAddEquipmentMenu()}>
+          <button className="classic-button" onClick={() => openAddEquipmentMenu()}>
             ajouter un équipement
           </button>
-          <button onClick={() => openAddTreasureMenu()}>
+          <button className="classic-button" onClick={() => openAddTreasureMenu()}>
             ajouter un trésor
           </button>
         </>

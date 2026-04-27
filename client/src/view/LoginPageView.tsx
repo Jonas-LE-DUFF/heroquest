@@ -92,7 +92,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
           </select>
         </div>
 
-        <button type="submit" className="join-button">
+        <button type="submit" className="positive-button">
           Rejoindre la partie
         </button>
       </form>
