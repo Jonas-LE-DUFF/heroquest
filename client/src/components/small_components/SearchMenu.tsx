@@ -3,10 +3,10 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
-import searchIcon from "/assets/images/icons/navbar/pixelArt/search.png";
-import drawCardIcon from "/assets/images/icons/navbar/pixelArt/search-treasure.png";
-import trapSearch from "/assets/images/icons/navbar/pixelArt/search-traps.png";
-import secretDoorIcon from "/assets/images/icons/navbar/pixelArt/search-secret-doors.png";
+import searchIcon from "/assets/images/icons/navbar/search.svg";
+import drawCardIcon from "/assets/images/icons/navbar/search-treasure.svg";
+import trapSearch from "/assets/images/icons/navbar/search-traps.svg";
+import secretDoorIcon from "/assets/images/icons/navbar/search-secret-doors.svg";
 import { Tooltip } from "@mui/material";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
@@ -115,7 +115,18 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
           <img src={searchIcon} alt="Search" className="imgNav" />
         </Tooltip>
       </Button>
-      <Menu className="nav-elem" anchorEl={anchorEl} open={open} onClose={handleClose}>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          paper: {
+            sx: {
+              backgroundColor: '#cfb898',
+            },
+          },
+        }}
+      >
         <MenuItem onClick={() => searchTreasures()}>
           <Tooltip title="Rechercher des trésors" arrow>
             <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
