@@ -75,9 +75,8 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     return () => {
       socket.off("game-state-update");
-    }
+    };
   }, [navigate, playerName, game, socket, state]);
-  
 
   function getSelectedClasses() {
     const selectedClasses = new Set<HeroCategory>();
@@ -110,20 +109,18 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           ...prev,
           spellElements: [],
         }));
-        return false;
+        return;
       }
       // Allow only one selection for Elf
       setHeroCreation((prev) => ({
         ...prev,
         spellElements: [element],
       }));
-    } else if (heroCreation.heroCategory === HeroCategory.Cleric) {
+    } else if (heroCreation.heroCategory === HeroCategory.Cleric && !heroCreation.spellElements.includes(element)) {
       // Toggle selection for Cleric
       setHeroCreation((prev) => ({
         ...prev,
-        spellElements: prev.spellElements.includes(element)
-          ? prev.spellElements.filter((el) => el !== element)
-          : [...prev.spellElements, element],
+        spellElements: [...prev.spellElements, element],
       }));
     }
   };
@@ -136,7 +133,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       return null;
     }
     const spellElementsCards = Object.values(SpellElement).filter(
-      (value) => typeof value === "number",
+      (value) => typeof value === "string",
     ) as SpellElement[];
 
     if (spellElementsCards.length === 0) {
@@ -181,11 +178,18 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       if (heroCreation.spellElements.length === 3) {
         return;
       }
+      if (heroCreation.spellElements.length > 3) {
+        setHeroCreation((prev) => ({
+          ...prev,
+          spellElements: prev.spellElements.slice(1, 4), // keeping the last one added
+        }));
+        return;
+      }
       // selects the first 3 available elements if the cleric doesn't have all of them already
       const selectedSpells: SpellElement[] = [];
       for (const e in SpellElement) {
         if (
-          isNaN(Number(e)) &&
+          typeof e === "string" &&
           !isSpellElementDisabled(
             hero?.id ?? "",
             game,
@@ -206,7 +210,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       }
       for (const e in SpellElement) {
         if (
-          isNaN(Number(e)) &&
+          typeof e === "string" &&
           !isSpellElementDisabled(
             hero?.id ?? "",
             game,
@@ -227,7 +231,13 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         spellElements: [],
       }));
     }
-  }, [socket, game, heroCreation.heroCategory, hero?.id, heroCreation.spellElements.length]);
+  }, [
+    socket,
+    game,
+    heroCreation.heroCategory,
+    hero?.id,
+    heroCreation.spellElements.length,
+  ]);
 
   const handleSubmit = () => {
     if (!game) return;
@@ -257,9 +267,10 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     <div className="character-page">
       <h1>Choisissez votre personnage {playerName}</h1>
       <div className="form">
-        <div className="formElement">
+        <div className="form-grid">
           <p id="label-hero-class">classe : </p>
           <Select
+            className="select"
             labelId="label-hero-class"
             id="select-hero-class"
             value={heroCreation.heroCategory}
@@ -268,10 +279,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           >
             {renderHeroClassOptions(getSelectedClasses())}
           </Select>
-        </div>
-        <div className="formElement">
-          <p id="label-coins">pièces d&apos;or</p>
+          <p id="label-coins">pièces d&apos;or : </p>
           <TextField
+            className="input"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setHeroCreation((prev) => ({
                 ...prev,
