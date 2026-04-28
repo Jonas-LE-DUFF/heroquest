@@ -69,3 +69,11 @@ label {
   max-height: 100%;
   max-width: 100%;
 }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-items: start;
+  gap: 10px;
+}

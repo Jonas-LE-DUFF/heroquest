@@ -4,6 +4,11 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(circle at center, rgba(255, 251, 240, 0.2) 0%, rgba(255, 251, 240, 0) 55%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(84, 58, 20, 0.06) 100%);
+  box-shadow: inset 0 0 140px rgba(92, 63, 22, 0.22);
+  padding-bottom: 10%;
 }
 
 html, body, #root {
@@ -50,12 +55,23 @@ menu {
   }
 }
 
+.select {
+  padding: 0;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #eee;
+  width: 100%;
+}
+
+.input,
 input {
   margin: 0.5em;
   padding: 0.5em;
   font-size: 1em;
   border: 1px solid #ccc;
   border-radius: 10px;
+  background-color: #eee;
 }
 
 button {
@@ -74,8 +90,8 @@ button {
   background-color: #979797;
   padding: 12px 24px;
   color: white;
-  border: none;
-  border-radius: 4px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
   cursor: pointer;
   margin: 5px;
 }
@@ -100,15 +116,16 @@ button {
 }
 
 .warning-button {
+  border-color: brown;
   background-color: rgba(136, 32, 32, 0.897);
 }
 
 .classic-button {
-  background-color: #2953a0;
+  border-color: #0e234b;
+  background-color: #2d58a8;
 }
 
 form {
-  margin-bottom: 1em;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -121,8 +138,11 @@ form {
 .lobby-page {
   padding: 20px;
   max-width: 800px;
-  margin: 0 auto;
+  margin-top: 5%;
+  margin-left: auto;
+  margin-right: auto;
   min-width: 30%;
+  background : transparent !important;
 }
 
 .form-group {
@@ -235,4 +255,14 @@ h2{
   align-items: center;
   gap: 10px;
   background-color: #282c34;
+}
+
+/* Reusable card background using the same gradient as the page */
+.card-background {
+  background: var(--hero-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: inset 0 0 60px rgba(92, 63, 22, 0.12);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }

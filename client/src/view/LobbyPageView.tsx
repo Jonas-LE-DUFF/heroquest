@@ -5,6 +5,7 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import PlayerStatusComponent from "../components/large_components/PlayerStatusComponent";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
+import Card from "@mui/material/Card";
 
 interface LobbyPageProps {
   socket: Socket;
@@ -137,7 +138,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const players = game.players;
 
   return (
-    <div className="lobby-page">
+    <Card className="lobby-page">
       <h1>Lobby - {gameId}</h1>
       <p>
         Bienvenue, <strong>{playerName}</strong> (
@@ -175,7 +176,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
           </button>
         )}
       </div>
-    </div>
+    </Card>
   );
 };
 

@@ -5,6 +5,7 @@ import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
+import { Paper } from "@mui/material";
 
 interface LoginPageProps {
   socket: Socket;
@@ -34,8 +35,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         }
       },
     );
-
-    
   };
 
   useEffect(() => {
@@ -56,7 +55,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   }, [socket, navigate, playerName]);
 
   return (
-    <div className="login-page">
+    <Paper elevation={5} className="login-page">
       <h1>HeroQuest Online</h1>
       <form onSubmit={handleJoinGame} className="login-form">
         <div className="form-group">
@@ -103,7 +102,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
         <p>• Partagez l&apos;ID avec vos amis</p>
         <p>• Un joueur doit être le Maître du Jeu</p>
       </div>
-    </div>
+    </Paper>
   );
 };
 
