@@ -41,6 +41,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     playerName: string;
     game: GameAsJson;
     hero?: HeroAsJson;
+    playerId: string;
   };
 
   const [game, setGame] = useState<GameAsJson>(state.game);
@@ -116,7 +117,10 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         ...prev,
         spellElements: [element],
       }));
-    } else if (heroCreation.heroCategory === HeroCategory.Cleric && !heroCreation.spellElements.includes(element)) {
+    } else if (
+      heroCreation.heroCategory === HeroCategory.Cleric &&
+      !heroCreation.spellElements.includes(element)
+    ) {
       // Toggle selection for Cleric
       setHeroCreation((prev) => ({
         ...prev,
@@ -240,7 +244,11 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   ]);
 
   const handleSubmit = () => {
-    if (!game) return;
+    if (!game) {
+      toast.error("Game state is missing. Cannot submit character creation.");
+      void navigate("/");
+      return;
+    }
 
     console.debug("Submitting hero creation:", heroCreation);
 
@@ -250,7 +258,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success && response.data) {
           void navigate("/lobby", {
-            state: { playerName: playerName, game: response.data },
+            state: { playerName: playerName, game: response.data, playerId: state.playerId },
           });
         } else {
           toast.error(`Error: ${response.error}`);
@@ -260,7 +268,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   };
 
   const goBackToLobby = () => {
-    void navigate("/lobby", { state: { playerName: playerName, game: game } });
+    void navigate("/lobby", { state: { playerName: playerName, game: game, playerId: state.playerId } });
   };
 
   return (
@@ -268,18 +276,17 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
       <h1>Choisissez votre personnage {playerName}</h1>
       <div className="form">
         <div className="form-grid">
-          <p id="label-hero-class">classe : </p>
+          <p id="label-hero-class">Classe : </p>
           <Select
             className="select"
             labelId="label-hero-class"
             id="select-hero-class"
             value={heroCreation.heroCategory}
             onChange={handleChangeHeroClass}
-            autoWidth
           >
             {renderHeroClassOptions(getSelectedClasses())}
           </Select>
-          <p id="label-coins">pièces d&apos;or : </p>
+          <p id="label-coins">Pièces d&apos;or : </p>
           <TextField
             className="input"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -296,7 +303,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           heroCreation.heroCategory,
         ) && (
           <div className="spellList">
-            <p id="label-spell-elements">éléments de sort</p>
+            <p id="label-spell-elements">Éléments de sort</p>
             <div className="spellCards">{renderSpellElements()}</div>
           </div>
         )}
@@ -319,7 +326,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
         />
         <div>
           <button className="classic-button" onClick={() => handleSubmit()}>
-            sauvegarder les modifications
+            Sauvegarder les modifications
           </button>
           <button className="warning-button" onClick={() => goBackToLobby()}>
             Annuler

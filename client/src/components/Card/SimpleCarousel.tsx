@@ -4,6 +4,7 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from "react";
+import "./SimpleCarousel.css";
 
 interface SimpleCarouselProps {
   children: React.ReactNode[] | React.ReactNode;
@@ -51,25 +52,8 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
     }
 
     return (
-      <div
-        ref={outerRef}
-        style={{
-          width: "fit-content",
-          position: "relative",
-          overflow: "hidden",
-          maxWidth: 720,
-          margin: "0 auto",
-        }}
-        className={className}
-      >
-        <div
-          style={{
-            display: "flex",
-            width: "fit-content",
-            transition: "transform 300ms ease",
-            alignItems: "center",
-          }}
-        >
+      <div ref={outerRef} className={"simple-carousel " + (className || "")}>
+        <div className={"cards"}>
           {orderedIndices.map((origIndex) => {
             const child = items[origIndex];
             const isCenter = origIndex === index;
@@ -120,31 +104,11 @@ const SimpleCarousel = forwardRef<SimpleCarouselHandle, SimpleCarouselProps>(
           })}
         </div>
 
-        <button
-          aria-label="previous"
-          onClick={prev}
-          style={{
-            position: "absolute",
-            left: 8,
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-          }}
-        >
+        <button aria-label="previous" onClick={prev} className="side-button">
           ‹
         </button>
 
-        <button
-          aria-label="next"
-          onClick={next}
-          style={{
-            position: "absolute",
-            right: 8,
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-          }}
-        >
+        <button aria-label="next" onClick={next} className="side-button">
           ›
         </button>
       </div>

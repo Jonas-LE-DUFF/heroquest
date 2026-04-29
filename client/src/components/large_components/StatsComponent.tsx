@@ -89,7 +89,7 @@ const StatsComponent = ({
             {statsEdit.defense && getDices(statsEdit.defense)}
           </div>
           <div className="statElem">
-            <p>Points d`&apos`esprit : </p>
+            <p>Points d&apos;esprit : </p>
             {isGameMaster && (
               <input
                 value={statsEdit.spirit}

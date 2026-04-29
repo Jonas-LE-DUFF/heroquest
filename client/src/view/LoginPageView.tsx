@@ -45,6 +45,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
           state: {
             playerName: playerName,
             game: data.game,
+            playerId: data.playerId,
           },
         });
       },

@@ -30,8 +30,8 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
 
   return (
     <div style={{ width: "100%" }}>
-      <div>
-        équipements : {selectedCards.map((card) => card.name).join(", ")}
+      <div style={{ fontWeight:"bold", marginBottom: "8px" }}>
+        Équipements : {selectedCards.map((card) => card.name).join(", ")}
       </div>
       <CardCarouselComponent
         cards={cards}

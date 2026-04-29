@@ -6,6 +6,7 @@ import PlayerStatusComponent from "../components/large_components/PlayerStatusCo
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
 import Card from "@mui/material/Card";
+import "./LobbyPageView.css";
 
 interface LobbyPageProps {
   socket: Socket;
@@ -15,6 +16,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const state = useLocation().state as {
     playerName: string;
     game: GameAsJson;
+    playerId: string;
   };
   const navigate = useNavigate();
 
@@ -38,7 +40,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       const game = data.game;
       console.log("Game is starting...", game);
       void navigate("/game", {
-        state: { playerName, gameId, role, game: game },
+        state: { playerName, gameId, role, game: game, playerId: state.playerId },
       });
     };
 
@@ -54,7 +56,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       socket.off("game-start", handleGameStart);
       socket.off("game-state-update", handlegameUpdate);
     };
-  }, [navigate, playerName, socket, game, gameId, role]);
+  }, [navigate, playerName, socket, game, gameId, role, state.playerId]);
 
   const startGame = () => {
     socket.emit(
@@ -64,7 +66,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         if (response.success) {
           const game = response.data;
           void navigate("/game", {
-            state: { playerName, gameId, role, game },
+            state: { playerName, gameId, role, game, playerId: state.playerId },
           });
         } else {
           toast.error(`Erreur: ${response.error}`);
@@ -77,13 +79,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     socket.emit(
       "leave-lobby",
       { gameId },
-      (response: { success: boolean; error?: string }) => {
-        if (response.success) {
-          void navigate("/");
-        } else {
-          console.error("Error leaving lobby:", response.error);
-          toast.error(`Error: ${response.error}`);
-        }
+      () => {
+        void navigate("/");
       },
     );
   };
@@ -91,6 +88,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const chooseCharacter = () => {
     if (!game) {
       toast.error("Game state is missing. Cannot proceed to character selection.");
+      void navigate("/");
       return;
     }
 
@@ -100,6 +98,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         playerName,
         gameId,
         role,
+        playerId: state.playerId,
       },
     });
   };
@@ -107,6 +106,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const unselectCharacter = (heroId: string) => {
     if (!game) {
       toast.error("Game state is missing. Cannot proceed to character unselection.");
+      void navigate("/");
       return;
     }
     socket.emit(
@@ -128,18 +128,22 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
         playerName,
         gameId,
         role,
+        playerId: state.playerId,
       },
     });
   };
 
-  if (!game) return <div>le game existe pu...</div>;
+  if (!game) {
+    void navigate("/");
+    return null;
+  }
   const canStartGame = game.isLaunchable.success;
   const isGameMaster = role === PlayerRole.GAME_MASTER;
   const players = game.players;
 
   return (
     <Card className="lobby-page">
-      <h1>Lobby - {gameId}</h1>
+      <h1>Lobby - {game.name}</h1>
       <p>
         Bienvenue, <strong>{playerName}</strong> (
         {role === PlayerRole.GAME_MASTER ? "Maître du Jeu" : "Héros"})

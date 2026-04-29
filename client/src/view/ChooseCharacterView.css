@@ -1,26 +1,30 @@
-.heroFaceimage {
-  width: auto;
-  height: 40px;
-  margin-right: 5px;
+.character-page {
+  width: 50%;
 }
 
-label {
-  width: fit-content;
-  font-weight: bold;
+.heroFaceimage {
+  width: 56px;
+  height: 40px;
+  object-fit: contain;
+  margin: 0;
+}
+
+.MuiSelect-root {
+  padding: 0;
+  width: 100%;
+}
+
+.MuiInputBase-root {
+  border: 1px solid #3b3b3b;
+  border-radius: 10px;
 }
 
 .selectHeroClass {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 56px 1fr;
   align-items: center;
-}
-
-.form {
+  column-gap: 8px;
   width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
 }
 
 .formElement {
@@ -30,11 +34,6 @@ label {
   flex-direction: row;
   margin-bottom: 10px;
   justify-content: space-between;
-}
-
-.formElement label {
-  width: 30%;
-  text-align: start;
 }
 
 .formElement div {

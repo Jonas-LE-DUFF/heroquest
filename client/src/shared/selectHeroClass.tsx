@@ -18,7 +18,7 @@ export function renderHeroClassOptions(
             className="heroFaceimage"
             src={getHeroClassIconPath(value as HeroCategory)}
             alt={"icon" + value}
-          ></img>
+          />
           {getHeroClassName(Number(value))}
         </div>
       </MenuItem>
