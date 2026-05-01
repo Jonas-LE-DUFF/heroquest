@@ -8,7 +8,6 @@ import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Position } from "../Position/Position";
 import { Direction } from "../../enums/Direction";
-import { get } from "http";
 
 class Game {
   id: string;
@@ -102,12 +101,12 @@ class Game {
     }
     const callback = this.gameState.isLaunchable();
     if (!callback.success) {
-      throw new Error(`Game State is not launchable: ${callback.error}`);
+      throw new Error(`${callback.error}`);
     }
 
     const allSpells = this.gameState.Units.filter(
       (unit) => unit instanceof Hero,
-    ).flatMap((hero) => (hero as Hero).getSpellElements());
+    ).flatMap((hero) => (hero).getSpellElements());
     const uniqueSpells = new Set(allSpells);
     if (allSpells.length !== uniqueSpells.size) {
       throw new Error(
@@ -164,7 +163,7 @@ class Game {
    */
   getCurrentPlayerTurnId(): string {
     if (this.isMonsterTurn) {
-      return this.getGameMaster()!.id;
+      return this.getGameMaster().id;
     }
     const heroCategoryToPlay = this.playOrder[this.currentTurnIndex];
     if (!heroCategoryToPlay) {
@@ -213,7 +212,7 @@ class Game {
   getHeroes(): Hero[] {
     return this.gameState.Units.filter(
       (unit) => unit instanceof Hero,
-    ) as Hero[];
+    );
   }
 
   getGameState(): GameState {
@@ -265,7 +264,7 @@ class Game {
     hero.updateGold(gold);
   }
 
-  toJson(): GameAsJson {
+  toJson(gameMaster: boolean = false): GameAsJson {
     const playersAsJson = Array.from(this.players.values()).map((player) =>
       player.toJson(),
     );
@@ -274,7 +273,7 @@ class Game {
       id: this.id,
       name: this.name,
       players: playersAsJson,
-      gameState: this.gameState.toJson(),
+      gameState: this.gameState.toJson(gameMaster),
       playOrder: this.playOrder,
       isMonsterTurn: this.isMonsterTurn,
       currentTurnIndex: this.currentTurnIndex,

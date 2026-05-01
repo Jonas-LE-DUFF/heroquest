@@ -7,7 +7,6 @@ import {
 } from "../../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
-import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
@@ -16,7 +15,6 @@ import { toast } from "react-toastify";
 interface StatsComponentProps {
   socket: Socket;
   gameId: string;
-  position: PositionAsJson;
   unit: MonsterAsJson | HeroAsJson;
   setStatsVisible: (arg0: boolean) => void;
   isGameMaster: boolean;
@@ -25,7 +23,6 @@ interface StatsComponentProps {
 const StatsComponent = ({
   socket,
   gameId,
-  position,
   unit,
   setStatsVisible,
   isGameMaster,
@@ -44,7 +41,7 @@ const StatsComponent = ({
   return (
     <Paper sx={{ height: "fit-content" }}>
       <div className="content">
-        <button onClick={() => setStatsVisible(false)} className="closeButton">
+        <button className="closeButton" onClick={() => setStatsVisible(false)}>
           X
         </button>
         <div className="stats">
@@ -92,7 +89,7 @@ const StatsComponent = ({
             {statsEdit.defense && getDices(statsEdit.defense)}
           </div>
           <div className="statElem">
-            <p>Points d'esprit : </p>
+            <p>Points d&apos;esprit : </p>
             {isGameMaster && (
               <input
                 value={statsEdit.spirit}
@@ -132,7 +129,7 @@ const StatsComponent = ({
           )}
           {isGameMaster && (
             <div className="statElem">
-              <label>HP : </label>
+              <p>HP : </p>
               <input
                 value={statsEdit.health}
                 onChange={(e) =>
@@ -147,7 +144,7 @@ const StatsComponent = ({
           )}
           {isGameMaster && (
             <div className="statElem">
-              <label>Max HP : </label>
+              <p>Max HP : </p>
               <input
                 className="statElem"
                 value={statsEdit.maxHealth}
@@ -187,6 +184,7 @@ const StatsComponent = ({
                     {effect}
                     {isGameMaster && (
                       <button
+                        className="warning-button"
                         onClick={() => {
                           const newEffects = statsEdit.effects?.filter(
                             (statusEffect) => statusEffect !== effect,
@@ -211,6 +209,7 @@ const StatsComponent = ({
             <div className="statElem">
               <input type="text" placeholder="Nom de l'effet" id="effectName" />
               <button
+                className="classic-button"
                 onClick={() => {
                   const effectNameInput = document.getElementById(
                     "effectName",
@@ -237,7 +236,12 @@ const StatsComponent = ({
             </div>
           )}
           {isGameMaster && (
-            <button onClick={() => sendNewStats(statsEdit)}>Save Stats</button>
+            <button
+              className="positive-button"
+              onClick={() => sendNewStats(statsEdit)}
+            >
+              Save Stats
+            </button>
           )}
         </div>
       </div>
@@ -247,10 +251,12 @@ const StatsComponent = ({
     // Send the new stats to the server or update the state
     socket.emit(
       "update-stats-unit",
-      { gameId, newStats, position },
+      { gameId, newStats, unitId: unit.id },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          toast.error("Erreur lors de la mise à jour des stats : " + response.error);
+          toast.error(
+            "Erreur lors de la mise à jour des stats : " + response.error,
+          );
         }
       },
     );

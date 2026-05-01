@@ -1,5 +1,5 @@
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
 import { PositionAsJson } from "../ClassAsJson/PositionAsJson";
@@ -52,6 +52,11 @@ interface ServerToClientEvents {
   "tile-placed": (data: {
     position: PositionAsJson;
     TileType: TileType;
+  }) => void;
+  "player-search": (data: {
+    playerId: string;
+    heroId: string;
+    elementSearched: string;
   }) => void;
 
   "stats-updated": (data: { entityId: string; newStats: StatsAsJson }) => void;

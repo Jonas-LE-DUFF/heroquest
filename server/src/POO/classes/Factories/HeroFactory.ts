@@ -17,6 +17,10 @@ class HeroFactory {
     const stats: Stats = getHeroBaseStats(heroCategory);
 
     const equipment: Equipment = getHeroStartingEquipment(heroCategory);
+    
+    for (const equipmentId of heroCreationWish.equipments) {
+      equipment.addEquipmentById(equipmentId);
+    }
 
     const spells = getSpellsForElements(gameId, heroCreationWish.spellElements);
 
@@ -33,7 +37,7 @@ class HeroFactory {
 }
 
 function getHeroBaseStats(heroType: HeroCategory): Stats {
-  const heroData = heroStats.find((hero) => hero.id === heroType);
+  const heroData = heroStats.find((hero) => hero.id === heroType as number);
   if (!heroData) {
     throw new Error(`Hero data not found for heroType: ${heroType}`);
   }
@@ -47,7 +51,7 @@ function getHeroBaseStats(heroType: HeroCategory): Stats {
 }
 
 function getHeroStartingEquipment(heroType: HeroCategory): Equipment {
-  const heroData = heroStats.find((hero) => hero.id === heroType);
+  const heroData = heroStats.find((hero) => hero.id === heroType as number);
   if (!heroData) {
     throw new Error(`Hero data not found for heroType: ${heroType}`);
   }

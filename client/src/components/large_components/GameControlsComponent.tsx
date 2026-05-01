@@ -1,4 +1,4 @@
-import { useState, useEffect, JSX } from "react";
+import { Dispatch, SetStateAction, JSX } from "react";
 import { useLocation } from "react-router-dom";
 import Dices from "../dices/HeroQuestDicesComponent";
 import "./GameControlsComponent.css";
@@ -15,7 +15,7 @@ import { monsterClassFr } from "../../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { getEquipmentName } from "../../shared/equipments";
-import { TileType } from "../../POO/enums/TileType";
+import { TileType } from "../../POO/enums/Board/TileType";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { Direction } from "../../POO/enums/Direction";
@@ -24,37 +24,40 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { getPlayerIdToPlay } from "../../shared/serverUtils";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
+import { TrapType } from "../../POO/enums/Board/TrapType";
+import { SelectType } from "../../POO/types/selectType";
+import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
+import { Socket } from "socket.io-client";
 
 interface GameControlsProps {
-  socket: any;
+  socket: Socket;
   game: GameAsJson;
-  setSelectedType: (
-    type: TileType | Direction | MonsterCategory | null,
-  ) => void; //Direction -> door placement
-  selectedType: TileType | Direction | MonsterCategory | null;
+  setSelectedType: (type: SelectType) => void; //Direction -> door placement
+  selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
-  setTargetMode: (value: boolean) => void;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
   hero: HeroAsJson | null;
+  setInteraction: Dispatch<SetStateAction<InteractionState>>;
 }
 
 const GameControls = ({
   socket,
   game,
+  setInteraction,
   setSelectedType,
   selectedType,
   selectedUnit,
-  setTargetMode,
   setSelectedWeapon,
   selectedWeapon,
   hero,
 }: GameControlsProps) => {
-  const location = useLocation();
-  const gameId = location.state.gameId;
-  const role = location.state.role;
-
-  const [message, setMessage] = useState("");
+  const state = useLocation().state as {
+    gameId: string;
+    role: PlayerRole;
+  };
+  const gameId = state.gameId;
+  const role = state.role;
 
   const isElementsShown: Map<string, boolean> = new Map();
   isElementsShown.set("monsterSelector", false);
@@ -65,16 +68,6 @@ const GameControls = ({
   isElementsShown.set("masterControls", false);
 
   const isPlayerTurn = getPlayerIdToPlay(game) === socket.id;
-
-  useEffect(() => {
-    socket.on("player-moved", (data: any) => {
-      setMessage(`${data.playerName} s'est déplacé`);
-    });
-
-    return () => {
-      socket.off("player-moved");
-    };
-  }, [socket, game]);
 
   const movePlayer = (direction: Direction) => {
     socket.emit(
@@ -133,20 +126,12 @@ const GameControls = ({
     setSelectedType(TileType.FLOOR);
   };
 
-  const putTopDoor = () => {
-    setSelectedType(Direction.UP);
+  const putDoor = (direction: Direction) => {
+    setSelectedType(direction);
   };
 
-  const putBottomDoor = () => {
-    setSelectedType(Direction.DOWN);
-  };
-
-  const putLeftDoor = () => {
-    setSelectedType(Direction.LEFT);
-  };
-
-  const putRightDoor = () => {
-    setSelectedType(Direction.RIGHT);
+  const putTrap = (trapType: TrapType) => {
+    setSelectedType(trapType);
   };
 
   const endTurn = () => {
@@ -198,29 +183,25 @@ const GameControls = ({
       return (
         <div className="movement-controls">
           <div></div>
-          <button onClick={() => movePlayer(Direction.UP)}>⬆️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.UP)}>⬆️</button>
           <div></div>
-          <button onClick={() => movePlayer(Direction.LEFT)}>⬅️</button>
-          <button onClick={() => movePlayer(Direction.DOWN)}>⬇️</button>
-          <button onClick={() => movePlayer(Direction.RIGHT)}>➡️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.LEFT)}>⬅️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.DOWN)}>⬇️</button>
+          <button className="classic-button" onClick={() => movePlayer(Direction.RIGHT)}>➡️</button>
         </div>
       );
     if (role === PlayerRole.GAME_MASTER)
       return (
         <div className="movement-controls">
           <div></div>
-          <button onClick={() => moveMonster(Direction.UP)}>⬆️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.UP)}>⬆️</button>
           <div></div>
-          <button onClick={() => moveMonster(Direction.LEFT)}>⬅️</button>
-          <button onClick={() => moveMonster(Direction.DOWN)}>⬇️</button>
-          <button onClick={() => moveMonster(Direction.RIGHT)}>➡️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.LEFT)}>⬅️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.DOWN)}>⬇️</button>
+          <button className="classic-button" onClick={() => moveMonster(Direction.RIGHT)}>➡️</button>
         </div>
       );
   };
-
-  function goInTargetMode(): void {
-    setTargetMode(true);
-  }
 
   return (
     <div>
@@ -270,18 +251,41 @@ const GameControls = ({
                   );
                 })}
               </select>
-              <button onClick={() => goInTargetMode()}>Attaquer</button>
             </div>
           )}
-          {message && <div className="game-message">{message}</div>}
           {isPlayerTurn && (
             <div>
-              <button onClick={endTurn}>END TURN</button>
+              <button className="warning-button" onClick={endTurn}>
+                END TURN
+              </button>
             </div>
           )}
         </Accordion>
       </div>
       <div className="game-controls game-master">
+        <Accordion sx={{ color: "white", background: "inherit" }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel4-content"
+            id="panel4-header"
+          >
+            <Typography component="span">Lancers de Dés</Typography>
+          </AccordionSummary>
+          <div className="dices-section">
+            <RedDices
+              socket={socket}
+              gameId={gameId}
+              role={PlayerRole.GAME_MASTER}
+              viewerRole={role}
+            />
+            <Dices
+              socket={socket}
+              gameId={gameId}
+              role={PlayerRole.GAME_MASTER}
+              viewerRole={role}
+            />
+          </div>
+        </Accordion>
         {role === PlayerRole.GAME_MASTER && (
           <div>
             <Accordion sx={{ color: "white", background: "inherit" }}>
@@ -307,12 +311,20 @@ const GameControls = ({
                 <Typography component="span">Murs et Meubles</Typography>
               </AccordionSummary>
               <div className="two-button-container">
-                <button onClick={putWall}>Mur</button>
-                <button onClick={putFurniture}>Meuble</button>
+                <button className="classic-button" onClick={putWall}>
+                  Mur
+                </button>
+                <button className="classic-button" onClick={putFurniture}>
+                  Meuble
+                </button>
               </div>
               <div className="two-button-container">
-                <button onClick={unSelect}>Annuler</button>
-                <button onClick={erase}>Effacer</button>
+                <button className="classic-button" onClick={unSelect}>
+                  Annuler
+                </button>
+                <button className="classic-button" onClick={erase}>
+                  Effacer
+                </button>
               </div>
             </Accordion>
             <Accordion sx={{ color: "white", background: "inherit" }}>
@@ -325,44 +337,68 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={6}>
-                  <button onClick={putTopDoor}>Porte Haut</button>
+                  <button className="classic-button" onClick={() => putDoor(Direction.UP)}>
+                    Porte Haut
+                  </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={putBottomDoor}>Porte Bas</button>
+                  <button className="classic-button" onClick={() => putDoor(Direction.DOWN)}>
+                    Porte Bas
+                  </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={putLeftDoor}>Porte Gauche</button>
+                  <button className="classic-button" onClick={() => putDoor(Direction.LEFT)}>
+                    Porte Gauche
+                  </button>
                 </Grid>
                 <Grid size={6}>
-                  <button onClick={putRightDoor}>Porte Droite</button>
+                  <button className="classic-button" onClick={() => putDoor(Direction.RIGHT)}>
+                    Porte Droite
+                  </button>
+                </Grid>
+              </Grid>
+            </Accordion>
+            <Accordion sx={{ color: "white", background: "inherit" }}>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel3-content"
+                id="panel3-header"
+              >
+                <Typography component="span">Pièges</Typography>
+              </AccordionSummary>
+              <Grid container sx={{ width: "fit-content" }}>
+                <Grid size={4}>
+                  <button className="classic-button" onClick={() => putTrap(TrapType.PIT_TRAP)}>
+                    Oubliettes
+                  </button>
+                </Grid>
+                <Grid size={4}>
+                  <button className="classic-button" onClick={() => putTrap(TrapType.ROCK_TRAP)}>
+                    Éboulement
+                  </button>
+                </Grid>
+                <Grid size={4}>
+                  <button className="classic-button" onClick={() => putTrap(TrapType.SPEAR_TRAP)}>
+                    Piège à lance
+                  </button>
+                </Grid>
+                <Grid size={12}>
+                  <button className="classic-button"
+                    onClick={() => {
+                      setInteraction((prev) => ({
+                        ...prev,
+                        selectedType: null,
+                        targeting: { mode: "revealTrap" },
+                      }));
+                    }}
+                  >
+                    révéler piège
+                  </button>
                 </Grid>
               </Grid>
             </Accordion>
           </div>
         )}
-        <Accordion sx={{ color: "white", background: "inherit" }}>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel4-content"
-            id="panel4-header"
-          >
-            <Typography component="span">Lancers de Dés</Typography>
-          </AccordionSummary>
-          <div className="dices-section">
-            <RedDices
-              socket={socket}
-              gameId={gameId}
-              role={PlayerRole.GAME_MASTER}
-              viewerRole={role}
-            />
-            <Dices
-              socket={socket}
-              gameId={gameId}
-              role={PlayerRole.GAME_MASTER}
-              viewerRole={role}
-            />
-          </div>
-        </Accordion>
         {role === PlayerRole.GAME_MASTER &&
           selectedUnit !== null &&
           renderMovementControls(role)}

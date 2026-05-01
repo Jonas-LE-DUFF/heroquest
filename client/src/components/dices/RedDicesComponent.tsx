@@ -9,9 +9,10 @@ import face5 from "./../images/redDice5.png";
 import face6 from "./../images/redDice6.png";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
 
 interface RedDicesProps {
-  socket: any;
+  socket: Socket;
   gameId: string;
   role: PlayerRole;
   viewerRole: PlayerRole;
@@ -25,7 +26,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   const playerRole = viewerRole;
 
   useEffect(() => {
-    setCurrentDiceFaces(Array.of(...Array(currentNumberOfDices).fill(1)));
+    setCurrentDiceFaces(Array.of(...Array(currentNumberOfDices).fill(1) as number[]));
   }, [currentNumberOfDices]);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
         data.typeOfDices === "red" &&
         role === PlayerRole.HERO
       ) {
-        setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1)));
+        setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1) as number[]));
       }
     };
 
@@ -123,7 +124,9 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
         {renderDices(currentDiceFaces)}
       </Paper>
       {playerRole === role && (
-        <button onClick={rollDice}>lancer les dés rouges</button>
+        <button className="classic-button" onClick={rollDice}>
+          lancer les dés rouges
+        </button>
       )}
       {playerRole === PlayerRole.GAME_MASTER &&
         role === PlayerRole.GAME_MASTER && (

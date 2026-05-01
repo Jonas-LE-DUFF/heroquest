@@ -6,8 +6,8 @@ export function renderHeroClassOptions(
   disabledClasses: Set<HeroCategory | undefined> = new Set()
 ) {
   return Object.entries(HeroCategory)
-    .filter(([key, value]) => isNaN(Number(key)))
-    .map(([key, value]) => (
+    .filter(([key]) => isNaN(Number(key)))
+    .map(([, value]) => (
       <MenuItem
         key={value}
         value={value}
@@ -18,7 +18,7 @@ export function renderHeroClassOptions(
             className="heroFaceimage"
             src={getHeroClassIconPath(value as HeroCategory)}
             alt={"icon" + value}
-          ></img>
+          />
           {getHeroClassName(Number(value))}
         </div>
       </MenuItem>

@@ -3,9 +3,10 @@ import { FormControlLabel, Radio, RadioGroup, Select } from "@mui/material";
 import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 import "./MasterControlsComponent.css";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
+import { Socket } from "socket.io-client";
 
 interface MasterControlsProps {
-  socket: any;
+  socket: Socket;
   gameId: string;
 }
 
@@ -65,6 +66,7 @@ const MasterControls = ({ socket, gameId }: MasterControlsProps) => {
         />
       </RadioGroup>
       <button
+        className="classic-button"
         onClick={() => {
           authorizeNumberOfFightDices();
         }}

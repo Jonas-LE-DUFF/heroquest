@@ -3,6 +3,7 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Direction } from "../POO/enums/Direction";
 import { SpellElement } from "../POO/enums/SpellElement";
+import type { SelectType } from "../POO/types/selectType";
 
 // ============================================
 // Schémas de validation pour les événements Socket.IO
@@ -18,6 +19,21 @@ export const positionSchema = z.object({
 
 export const gameIdSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+});
+
+export const heroActionSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+});
+
+export const StatSchema = z.object({
+  health: z.number().int().min(0),
+  maxHealth: z.number().int().min(0),
+  attack: z.number().int().min(0),
+  defense: z.number().int().min(0),
+  movements: z.number().int().min(0),
+  spirit: z.number().int().min(0),
+  effects: z.array(z.string()),
 });
 
 // --- Lobby Events ---
@@ -66,9 +82,17 @@ export const drinkPotionSchema = z.object({
   potionId: z.string().min(1, "L'ID de la potion est requis"),
 });
 
-export const checkForTreasuresSchema = z.object({
+// --- Trap Events ---
+
+export const disarmTrapSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
+  position: positionSchema,
+});
+
+export const revealTrapSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  position: positionSchema,
 });
 
 // --- Dice Events ---
@@ -104,13 +128,13 @@ export const rollDiceSchema = z.object({
 export const placeElementSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   position: positionSchema,
-  selectedType: z.any(), // TileType | Direction | MonsterCategory - complexe à valider
+  selectedType: z.custom<SelectType>(), // SelectType - complexe à valider
 });
 
 export const updateStatsUnitSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
-  newStats: z.any(), // StatsAsJson - objet complexe
-  position: positionSchema,
+  newStats: StatSchema, // StatsAsJson - objet complexe
+  unitId: z.string().min(1, "L'ID de l'unité est requis"),
 });
 
 export const updateEquipmentSchema = z.object({

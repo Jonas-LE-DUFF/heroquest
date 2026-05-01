@@ -2,34 +2,35 @@ import React from "react";
 import StatsComponent from "../large_components/StatsComponent";
 import "./LeftMenu.css";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { Socket } from "socket.io-client";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 
 interface LeftMenuProps {
   statsVisible: boolean;
-  socket: any;
-  currentGameState: any;
-  selectedPosition: any;
-  selectedUnit: any;
+  socket: Socket;
+  currentGameState: GameAsJson;
+  selectedUnit: HeroAsJson | MonsterAsJson | null;
   setStatsVisible: (arg0: boolean) => void;
-  role: string;
+  role: PlayerRole;
 }
 
 const LeftMenu: React.FC<LeftMenuProps> = ({
   statsVisible,
   socket,
   currentGameState,
-  selectedPosition,
   selectedUnit,
   setStatsVisible,
   role,
 }) => {
   return (
     <>
-      {statsVisible && (
+      {statsVisible && selectedUnit && (
         <div className="game-controls">
           <StatsComponent
             socket={socket}
             gameId={currentGameState.id}
-            position={selectedPosition ?? { x: 0, y: 0 }}
             unit={selectedUnit}
             setStatsVisible={setStatsVisible}
             isGameMaster={role === PlayerRole.GAME_MASTER}
@@ -40,6 +41,7 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
       <div>
         {selectedUnit !== null && (
           <button
+            className="classic-button"
             onClick={() =>
               selectedUnit !== null && setStatsVisible(!statsVisible)
             }

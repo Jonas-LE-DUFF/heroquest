@@ -9,10 +9,29 @@ import {
   CardType,
 } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 
+type JsonFile = {
+  deck: Card[];
+  backImg?: string;
+}
+
 type Card = {
   id: string;
-  image_path?: string;
-  [k: string]: any;
+  name: string;
+  image_path: string;
+};
+
+type SpellCard = Card & {
+  school?: string | undefined;
+  range: string;
+  target_type: string;
+  effect: {
+    type: string;
+    stat: string;
+    value: null | string;
+    comment: string;
+    status_type?: string | undefined;
+  };
+  sub_spells?: { id: string }[] | undefined;
 };
 
 export function getSpellEllementAsCard(element: SpellElement): CardAsJson {
@@ -27,7 +46,7 @@ export function getSpellEllementAsCard(element: SpellElement): CardAsJson {
 }
 
 export function getSpellAsCard(spellId: string): CardAsJson {
-  const spell = spells.deck.find((s) => s.id === spellId);
+  const spell : SpellCard | undefined = spells.deck.find((s) => s.id === spellId);
   if (!spell) {
     console.error(`Spell with id ${spellId} not found`);
     throw new Error(`Spell with id ${spellId} not found`);
@@ -79,10 +98,10 @@ function getSpellListForSchool(spellSchool: SpellElement): string[] {
 
 export function getDjinnSpells(): string[] {
   const djinnSpells: string[] = [];
-  const jsonFile = spells.deck as Card[];
+  const jsonFile = spells.deck as SpellCard[];
   const djinnSpell = jsonFile.find((e) => e.id === "Djinn");
   if (djinnSpell) {
-    for (const spell of djinnSpell.sub_spells) {
+    for (const spell of djinnSpell.sub_spells || []) {
       djinnSpells.push(spell.id);
     }
     return djinnSpells;
@@ -93,7 +112,7 @@ export function getDjinnSpells(): string[] {
 
 function getBackImagePath(
   cardType: string,
-  elementName?: string | undefined,
+  elementName?: string,
 ): string | undefined {
   let jsonFile;
 
@@ -119,7 +138,7 @@ function getBackImagePath(
       return undefined;
   }
 
-  const backImgPath = (jsonFile as any).backImg;
+  const backImgPath : string = (jsonFile as JsonFile).backImg || "";
   return backImgPath;
 }
 

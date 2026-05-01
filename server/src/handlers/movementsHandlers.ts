@@ -13,6 +13,7 @@ import {
 import { Board } from "../POO/classes/Board/Board";
 import { Position } from "../POO/classes/Position/Position";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   withValidation,
   successResponse,
@@ -23,7 +24,7 @@ import {
 function registerMovementHandlers(socket: Socket) {
   socket.on(
     "move-unit-one-step",
-    withValidation(socket, moveUnitOneStepSchema, (socket, data, callback) => {
+    withValidation(socket, moveUnitOneStepSchema, async (socket, data, callback) => {
       const { gameId, unitId, direction } = data;
 
       if (!requireGameExists(gameId)) {
@@ -59,7 +60,7 @@ function registerMovementHandlers(socket: Socket) {
 
       const board: Board = game!.gameState.board;
 
-      const movementMessage = moveUnit(board, position, direction, unitMoved);
+      const movementMessage = await moveUnit(board, position, direction, unitMoved);
       if (!movementMessage.success) {
         return callback(
           errorResponse(
@@ -72,9 +73,7 @@ function registerMovementHandlers(socket: Socket) {
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      io.to(gameId).emit("game-state-update", {
-        game: game!.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game!);
 
       callback(successResponse());
     }),

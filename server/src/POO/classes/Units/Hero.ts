@@ -10,6 +10,7 @@ import { SpellElement } from "../../enums/SpellElement";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { HeroAsJson } from "../../interfaces/ClassAsJson/Unit/HeroAsJson";
 import { Potion } from "../Equipment/Items/Potions";
+import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 
 class Hero extends Unit<HeroCategory> {
   DefenseDiceType = FightDiceFaces.WhiteShield;
@@ -37,7 +38,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.DEFENSE);
     const multiplier = EffectService.getStatMultiplier(this, StatType.DEFENSE);
 
-    return Math.floor((baseDefense + modifier) * multiplier);
+    return Math.max(Math.floor((baseDefense + modifier) * multiplier),1); // cannot be lower than 1 defense die
   }
 
   getAttackDiceCount(): number {
@@ -46,7 +47,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.ATTACK);
     const multiplier = EffectService.getStatMultiplier(this, StatType.ATTACK);
 
-    return Math.floor((weaponAttack + modifier) * multiplier);
+    return Math.max(Math.floor((weaponAttack + modifier) * multiplier),1); // cannot be lower than 1 attack dice
   }
 
   getMovementPoints(): number {
@@ -56,7 +57,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.MOVEMENT);
     const multiplier = EffectService.getStatMultiplier(this, StatType.MOVEMENT);
 
-    return Math.floor((baseMovement + modifier) * multiplier);
+    return Math.max(Math.floor((baseMovement + modifier) * multiplier),1); // cannot be lower than 1 movement point
   }
 
   updateEquipment(equipment: string[]) {
@@ -91,8 +92,8 @@ class Hero extends Unit<HeroCategory> {
     this.spells = spells;
   }
 
-  castSpell(spell: Spell, target: Unit<any>): void {
-    spell.applyEffect(target);
+  async castSpell(spell: Spell, target: Unit<MonsterCategory | HeroCategory>): Promise<void> {
+    await spell.applyEffect(target);
     this.usedSpells.push(spell);
   }
 

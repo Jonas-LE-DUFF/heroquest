@@ -1,8 +1,8 @@
 enum SpellElement {
-  Fire = 400,
-  Water,
-  Earth,
-  Air,
+  Fire = "Fire",
+  Water = "Water",
+  Earth = "Earth",
+  Air = "Air",
 }
 
 export { SpellElement };

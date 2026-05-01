@@ -1,14 +1,24 @@
 .App {
   text-align: center;
   width: 100%;
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background:
+    radial-gradient(circle at center, rgba(255, 251, 240, 0.2) 0%, rgba(255, 251, 240, 0) 55%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(84, 58, 20, 0.06) 100%);
+  box-shadow: inset 0 0 140px rgba(92, 63, 22, 0.22);
+  justify-content: center;
+  overflow-y: auto;
 }
 
 html, body, #root {
   height: 100%;
   margin: 0;
+}
+
+menu {
+  padding : 0;
 }
 
 .App-logo {
@@ -46,24 +56,88 @@ html, body, #root {
   }
 }
 
+.input,
+.select,
+select,
 input {
-  margin: 0.5em;
+  width: auto;
   padding: 0.5em;
   font-size: 1em;
-  border: 1px solid #ccc;
+  border: 2px solid #3a3a3a;
   border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.input:hover, input:hover, select:hover, .select:hover
+{
+  background-color: rgba(0, 0, 0, 0.12);
 }
 
 button {
-  margin: 0.5em;
-  padding: 0.5em 1em;
-  font-size: 1em;
-  border-radius: 10px;
+  border: none;
+  background-color: transparent;
+  padding: 0;
   cursor: pointer;
 }
 
-form {
-  margin-bottom: 1em;
+.warning-button,
+.classic-button,
+.positive-button,
+.closeButton,
+.return-button,
+.monster-button {
+  padding: 12px 24px;
+  margin: 5px;
+  border-radius: 6px;
+  border: 2px solid #ccc;
+  background-color: #979797;
+  color: white;
+  cursor: pointer;
+}
+
+.return-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  cursor: pointer;
+}
+
+.closeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(201, 42, 42, 0.897);
+  z-index: 2;
+}
+
+.positive-button {
+  border-color: #174719;
+  background-color: #307432;
+}
+
+.positive-button:hover {
+  background-color: #174719;
+}
+
+.warning-button {
+  border-color: brown;
+  background-color: rgba(136, 32, 32, 0.897);
+}
+
+.warning-button:hover {
+  background-color: brown;
+}
+
+.classic-button {
+  border-color: #0e234b;
+  background-color: #2d58a8;
+}
+
+.classic-button:hover {
+  background-color: #0e234b;
+}
+
+form, .form {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -73,87 +147,16 @@ form {
 }
 
 .login-page,
-.lobby-page {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  min-width: 30%;
-}
-
-.form-group {
-  margin: 15px 0;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.join-button,
-.ready-button,
-.start-button,
-.leave-button,
-.choose-character,
-.button {
-  padding: 12px 24px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin: 5px;
-}
-
-.leave-button {
-  background-color: rgba(201, 42, 42, 0.897);
-}
-
-.players-list {
-  margin: 20px 0;
-}
-
-.player-item {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.player-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.lobby-row {
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-  margin: 5px 0;
-  width: 100%;
-}
-
-.lobby-row > * {
-  margin-right: 25px;
-}
-
-.status.ready {
-  color: green;
-}
-
-.status.not-ready {
-  color: red;
+.lobby-page,
+.character-page {
+  padding: 0 5% 2% 5%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 4vh;
+  margin-bottom: 4vh;
+  background : rgba(0, 0, 0, 0.06) !important; /* override Paper default background*/
+  border-radius: 16px !important;
+  width: fit-content;
 }
 
 .equipments-dialog {
@@ -171,6 +174,7 @@ h2{
   max-width: inherit;
   display: block;
   object-fit: scale-down;
+  border-radius: 12px;
 }
 
 .buttons{
@@ -201,4 +205,22 @@ h2{
   width: 300px;
   height: 422px;
   margin: 20px;
+}
+
+.search-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background-color: #282c34;
+}
+
+/* Reusable card background using the same gradient as the page */
+.card-background {
+  background: var(--hero-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: inset 0 0 60px rgba(92, 63, 22, 0.12);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }

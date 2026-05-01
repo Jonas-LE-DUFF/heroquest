@@ -4,6 +4,7 @@ import { requirePlayerTurn } from "../guards/requirePlayerTurn";
 import { GameService } from "../services/GameService";
 import { requireGameExists } from "../guards/requireGameExists";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   successResponse,
   errorResponse,
@@ -31,9 +32,7 @@ export function registerGameHandlers(socket: Socket) {
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      io.to(gameId).emit("game-state-update", {
-        game: game!.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game!);
 
       callback(successResponse());
     }),
@@ -56,9 +55,7 @@ export function registerGameHandlers(socket: Socket) {
 
       game!.updateHeroEquipment(heroId, equipment, gold);
       const io = ServerHeroQuest.getServerInstance().getIo();
-      io.to(gameId).emit("game-state-update", {
-        game: game!.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game!);
       callback(successResponse());
     }),
   );

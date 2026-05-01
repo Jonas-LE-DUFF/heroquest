@@ -1,17 +1,15 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { CardCarouselComponent } from "./CardCarouselComponent";
 import { toast } from "react-toastify";
 import { CardAsJson } from "../../POO/interfaces/ClassAsJson/CardAsJson";
 
 interface CardSelectionComponentProps {
-  socket: any;
   selectedCards: CardAsJson[];
   cards: CardAsJson[];
   onCardsChange: (cards: CardAsJson[]) => void;
 }
 
 export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
-  socket,
   selectedCards = [],
   cards: cards,
   onCardsChange,
@@ -32,21 +30,22 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
 
   return (
     <div style={{ width: "100%" }}>
-      <div>
-        équipements : {selectedCards.map((card) => card.name).join(", ")}
+      <div style={{ fontWeight:"bold", marginBottom: "8px" }}>
+        Équipements : {selectedCards.map((card) => card.name).join(", ")}
       </div>
       <CardCarouselComponent
-        socket={socket}
         cards={cards}
         onCenterChange={(id) =>
           setCenterCard(cards.find((card) => card.id === id))
         }
       />
-      <div className="buttons">
-        <button onClick={handleAddCard}>
+      <div>
+        <button className="positive-button" onClick={handleAddCard}>
           ajouter equipement : {centerCard?.name || "Aucune carte sélectionnée"}
         </button>
-        <button onClick={handleClearCards}>retirer tout les équipements</button>
+        <button className="warning-button" onClick={handleClearCards}>
+          retirer tout les équipements
+        </button>
       </div>
     </div>
   );

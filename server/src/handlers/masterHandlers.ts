@@ -3,13 +3,13 @@ import { requireGameExists } from "../guards/requireGameExists";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { MonsterFactory } from "../POO/classes/Factories/MonsterFactory";
 import { Position } from "../POO/classes/Position/Position";
-import { Tile } from "../POO/classes/Tile";
+import { Tile } from "../POO/classes/Board/Tile/Tile";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
-import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   withValidation,
   successResponse,
@@ -19,6 +19,8 @@ import {
   updateStatsUnitSchema,
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
+import { TrapType } from "../POO/enums/Board/TrapType";
+import { Stats } from "../POO/classes/Units/Stats";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -37,9 +39,12 @@ export function registerMasterHandlers(socket: Socket) {
         return callback(errorResponse("You are not the game master"));
       }
 
+      if (!selectedType) {
+        return callback(errorResponse("Selected type is required"));
+      }
+
       console.debug("placing element", data);
       const game = GameService.getGame(gameId);
-      const io = ServerHeroQuest.getServerInstance().getIo();
 
       const board = game?.gameState.board;
       if (!board) {
@@ -59,9 +64,8 @@ export function registerMasterHandlers(socket: Socket) {
       if (selectedType === TileType.FLOOR) {
         game?.gameState.clearTileAtPosition(position);
 
-        io.to(gameId).emit("game-state-update", {
-          game: game!.toJson(),
-        });
+        const io = ServerHeroQuest.getServerInstance().getIo();
+        emitGameStateUpdate(io, gameId, game);
         return callback(successResponse());
       }
 
@@ -82,21 +86,21 @@ export function registerMasterHandlers(socket: Socket) {
         if (tileType === TileType.SPAWN_POINT) {
           const existingSpawnPoint = board.getSpawnPointPosition();
           if (existingSpawnPoint) {
-            removeSpawnPoint(existingSpawnPoint, game!);
+            removeSpawnPoint(existingSpawnPoint, game);
           }
-          const result = placeSpawnPoint(position, game!);
+          const result = placeSpawnPoint(position, game);
           if (!result.success) {
             if (existingSpawnPoint){
-              placeSpawnPoint(existingSpawnPoint!, game!); // placing back the spawn point that was removed
+              placeSpawnPoint(existingSpawnPoint, game); // placing back the spawn point that was removed
             }
             return callback(errorResponse(result.error!));
           }
-          return callback(successResponse(board.toJson()));
+          return callback(successResponse(board.toJson(true)));
         }
         const result = handleTilePlacement(gameId, position, tileType);
 
         return callback(
-          result.success ? successResponse() : errorResponse(result.error!),
+          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
         );
       }
 
@@ -104,7 +108,16 @@ export function registerMasterHandlers(socket: Socket) {
         const monsterType = selectedType as MonsterCategory;
         const result = handleMonsterPlacement(gameId, position, monsterType);
         return callback(
-          result.success ? successResponse() : errorResponse(result.error!),
+          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
+        );
+      }
+
+      if (selectedType in TrapType) {
+        console.debug("placing trap", selectedType, "at position", position);
+        const trapType = selectedType as TrapType;
+        const result = handleTrapPlacement(gameId, position, trapType);
+        return callback(
+          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
         );
       }
 
@@ -115,8 +128,7 @@ export function registerMasterHandlers(socket: Socket) {
   socket.on(
     "update-stats-unit",
     withValidation(socket, updateStatsUnitSchema, (socket, data, callback) => {
-      const { newStats, position: posData, gameId } = data;
-      const position = toPosition(posData);
+      const { newStats, unitId, gameId } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Game not found"));
@@ -128,18 +140,26 @@ export function registerMasterHandlers(socket: Socket) {
 
       const game = GameService.getGame(gameId);
 
-      try {
-        game?.gameState.updateUnitStats(newStats, position);
-      } catch (error) {
-        return callback(errorResponse((error as Error).message));
+      const unit = game?.gameState.getUnitById(unitId);
+      if (!unit) {
+        console.error("Unit not found with id:", unitId);
+        return callback(errorResponse("Unit not found"));
       }
 
-      const unitId = game?.gameState.getUnitByPosition(position)?.id;
-      if (!unitId) {
-        return callback(
-          errorResponse("Unit not found at the specified position"),
-        );
+      const adaptedStats : Stats = {
+        health: newStats.health,
+        maxHealth: newStats.maxHealth,
+        nbDefenseDice: newStats.defense,
+        movements: newStats.movements,
+        spirit: newStats.spirit,
+      };
+      unit.stats = adaptedStats;
+
+      if (unit.stats.health <= 0) {
+        game?.gameState.removeUnit(unit);
       }
+
+      //TODO : handle effects
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
@@ -161,15 +181,15 @@ function handleDoorPlacement(
   const game = GameService.getGame(gameId);
   const io = ServerHeroQuest.getServerInstance().getIo();
   const newDoor = game!.gameState.board.placeDoor(position, direction);
-  if (!newDoor.success) {
+  if (!newDoor.success || !newDoor.doorPlace?.position || !newDoor.doorPlace?.verticalOrHorizontal) {
     return {
       success: false,
       error: newDoor.error || "Failed to place door",
     };
   }
   io.to(gameId).emit("door-placed", {
-    position: newDoor.doorPlace?.position!,
-    verticalOrHorizontal: newDoor.doorPlace?.verticalOrHorizontal!,
+    position: newDoor.doorPlace.position,
+    verticalOrHorizontal: newDoor.doorPlace.verticalOrHorizontal,
   });
   return { success: true };
 }
@@ -211,9 +231,28 @@ function handleMonsterPlacement(
   game!.gameState.addUnit(monster);
   game?.gameState.board.placeUnitAt(monster, position);
 
-  io.to(gameId).emit("game-state-update", {
-    game: game!.toJson(),
-  });
+  emitGameStateUpdate(io, gameId, game!);
+  return { success: true };
+}
+
+function handleTrapPlacement(
+  gameId: string,
+  position: Position,
+  trapType: TrapType,
+): { success: boolean; error?: string } {
+  const game = GameService.getGame(gameId);
+  const io = ServerHeroQuest.getServerInstance().getIo();
+
+  try {
+    game?.gameState.board.placeTrap(gameId, position, trapType);
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || "Failed to place trap",
+    };
+  }
+ console.debug("placed trap", trapType, "resulting game state:", game?.gameState.board.getTileAtPosition(position));
+  emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }
 

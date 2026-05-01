@@ -1,14 +1,15 @@
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { BoardAsJson } from "../../interfaces/ClassAsJson/Board/BoardAsJson";
 import { Position } from "../Position/Position";
-import { Tile } from "../Tile";
+import { Tile } from "./Tile/Tile";
 import { Unit } from "../Units/Unit";
 import { BoardInitializer } from "./BoardInitializer";
 import { DoorGrid } from "./DoorGrid";
 import { WallGrid } from "./WallGrid";
+import { TrapType } from "../../enums/Board/TrapType";
 
 class Board {
   BOARD_WIDTH = 19;
@@ -58,7 +59,7 @@ class Board {
   ): void {
     const tile = this.getTileAtPosition(position);
     if (tile) {
-      tile.unitId = unit.id;
+      tile.placeUnit(unit.id);
     }
   }
 
@@ -148,6 +149,13 @@ class Board {
     return this.setDoorStateAt(position, direction, true);
   }
 
+  placeTrap(gameId: string, position: Position, trapType: TrapType): void {
+    const tile = this.getTileAtPosition(position);
+    if (tile) {
+      tile.placeTrap(gameId, trapType);
+    }
+  }
+
   removeUnitFromTile(
     unit: Unit<HeroCategory | MonsterCategory>,
   ): string | null {
@@ -156,7 +164,12 @@ class Board {
       console.error("Unit not found on board:", unit.id);
       return null;
     }
-    return this.clearTileAtPosition(position);
+    const tile = this.getTileAtPosition(position);
+    if (!tile) {
+      console.error("Tile not found at position:", position);
+      return null;
+    }
+    return tile.removeUnit();
   }
 
   clearTileAtPosition(position: Position): string | null {
@@ -179,11 +192,21 @@ class Board {
     return null;
   }
 
-  toJson(): BoardAsJson {
+  placeThinWall(position : Position, direction : Direction) {
+    const positionAfterMove = position.doorPosition(direction);
+    const isCrossingHorizontal = this.isCrossingHorizontal(direction);
+    if (isCrossingHorizontal) {
+      this.Walls.horizontal[positionAfterMove.x]![positionAfterMove.y] = true;
+    } else {
+      this.Walls.vertical[positionAfterMove.x]![positionAfterMove.y] = true;
+    }
+  }
+
+  toJson(gameMaster: boolean): BoardAsJson {
     return {
       width: this.BOARD_WIDTH,
       height: this.BOARD_HEIGHT,
-      tiles: this.Map.map((row) => row.map((tile) => tile.toJson())),
+      tiles: this.Map.map((row) => row.map((tile) => tile.toJson(gameMaster))),
       doors: {
         horizontalDoors: this.Doors.horizontal,
         verticalDoors: this.Doors.vertical,

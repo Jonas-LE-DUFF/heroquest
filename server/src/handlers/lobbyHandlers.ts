@@ -5,6 +5,7 @@ import { Game } from "../POO/classes/Server/Game";
 import { requireGameExists } from "../guards/requireGameExists";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import {
   withValidation,
   successResponse,
@@ -20,7 +21,7 @@ import { Hero } from "../POO/classes/Units/Hero";
 export function registerLobbyHandlers(socket: Socket) {
   socket.on(
     "join-game",
-    withValidation(socket, joinGameSchema, (socket, data, callback) => {
+    withValidation(socket, joinGameSchema, async (socket, data, callback) => {
       const { gameName, playerName, role } = data;
       console.log(
         playerName,
@@ -42,24 +43,25 @@ export function registerLobbyHandlers(socket: Socket) {
         game = GameService.getGameByName(gameName)!;
         try {
           game.addPlayer(newPlayer);
-        } catch (error: any) {
-          console.error("Error adding player to game:", error);
-          return callback(errorResponse(`Erreur : ${error}`));
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("Error adding player to game:", error);
+            return callback(errorResponse(`Erreur : ${error}`));
+          }
+          console.error("Unexpected error adding player to game.");
+          return callback(errorResponse(`Erreur inattendue.`));
         }
       }
 
-      socket.join(game.id);
+      await socket.join(game.id);
 
       const io = ServerHeroQuest.getServerInstance().getIo();
-      const gameAsJson = game.toJson();
       socket.emit("join-success", {
         playerId: newPlayer.id,
-        game: gameAsJson,
+        game: game.toJson(),
       });
 
-      io.to(game.id).emit("game-state-update", {
-        game: gameAsJson,
-      });
+      emitGameStateUpdate(io, game.id, game);
 
       console.log(`${playerName} a rejoint la partie ${game.id}`);
 
@@ -69,7 +71,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
   socket.on(
     "leave-lobby",
-    withValidation(socket, gameIdSchema, (socket, data, callback) => {
+    withValidation(socket, gameIdSchema, async (socket, data, callback) => {
       const { gameId } = data;
       console.log(
         "Demande de sortie de la partie :",
@@ -83,7 +85,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
       const game = GameService.getGame(gameId);
 
-      socket.leave(gameId);
+      await socket.leave(gameId);
 
       if (!game) {
         return callback(errorResponse("Partie non trouvée"));
@@ -95,10 +97,7 @@ export function registerLobbyHandlers(socket: Socket) {
         GameService.removeGame(game.id);
       }
       const io = ServerHeroQuest.getServerInstance().getIo();
-      const gameAsJson = game.toJson();
-      io.to(gameId).emit("game-state-update", {
-        game: gameAsJson,
-      });
+      emitGameStateUpdate(io, gameId, game);
       callback(successResponse());
     }),
   );
@@ -121,9 +120,13 @@ export function registerLobbyHandlers(socket: Socket) {
 
       try {
         game!.launchGame();
-      } catch (error: any) {
-        console.error("Erreur lors du lancement de la partie :", error.message);
-        return callback(errorResponse(error.message));
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("Error launching game:", error.message);
+          return callback(errorResponse(`Erreur : ${error.message}`));
+        }
+        console.error("Erreur inattendue.");
+        return callback(errorResponse(`Erreur inattendue.`));
       }
 
       console.log("Conditions remplies, lancement de la partie...");
@@ -180,7 +183,7 @@ export function registerLobbyHandlers(socket: Socket) {
       }
 
       const modifiedHero = heroCreationWish.modifiedHeroId
-        ? game.gameState.getHeroById(heroCreationWish.modifiedHeroId!)
+        ? game.gameState.getHeroById(heroCreationWish.modifiedHeroId)
         : null;
 
       // Check if the hero class is already selected
@@ -224,9 +227,7 @@ export function registerLobbyHandlers(socket: Socket) {
       player.isReady = true;
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      io.to(gameId).emit("game-state-update", {
-        game: game.toJson(),
-      });
+      emitGameStateUpdate(io, gameId, game);
       callback(successResponse(game.toJson()));
     }),
   );
@@ -265,9 +266,7 @@ export function registerLobbyHandlers(socket: Socket) {
         if (heroesLeft.length === 0) player.isReady = false;
         const io = ServerHeroQuest.getServerInstance().getIo();
 
-        io.to(gameId).emit("game-state-update", {
-          game: game.toJson(),
-        });
+        emitGameStateUpdate(io, gameId, game);
         callback(successResponse());
       },
     ),

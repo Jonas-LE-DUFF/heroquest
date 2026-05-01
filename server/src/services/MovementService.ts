@@ -5,8 +5,7 @@ import { Unit } from "../POO/classes/Units/Unit";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
-import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/TileType";
+import { TrapType } from "../POO/enums/Board/TrapType";
 
 const canMove = (
   board: Board,
@@ -14,8 +13,6 @@ const canMove = (
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
 ): { success: boolean; error?: string } => {
-  const isHero =
-    unitMoved instanceof Unit && unitMoved.getCategory() === PlayerRole.HERO;
   const canPhaseThroughWalls = unitMoved.canPhaseThroughWalls();
   const canPhaseThroughMonsters = unitMoved.canPhaseThroughMonsters();
   const to = from.afterMove(direction);
@@ -34,7 +31,6 @@ const canMove = (
   if (
     board.hasWallAt(from, direction) &&
     !board.hasDoorAt(from, direction) &&
-    !isHero &&
     !canPhaseThroughWalls // A monster can't open doors
   ) {
     console.error("wall in the way");
@@ -55,25 +51,36 @@ const canMove = (
   return { success: true };
 };
 
-export function moveUnit(
+export async function moveUnit(
   board: Board,
   from: Position,
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
-): { success: boolean; error?: string } {
+): Promise<{ success: boolean; error?: string; }> {
   const moveCheck = canMove(board, from, direction, unitMoved);
   if (!moveCheck.success) {
     return moveCheck;
   }
 
   const to = from.afterMove(direction);
-  const tile = board.getTileAtPosition(from);
   const newTile = board.getTileAtPosition(to);
-  if (!tile || !newTile) {
+
+  if (!newTile) {
     throw new Error("Tiles not found on board");
   }
-  tile.unitId = null;
-  newTile.unitId = unitMoved.id;
+  board.removeUnitFromTile(unitMoved);
+  board.placeUnitAt(unitMoved, to);
+
+  if (newTile.trap) {
+    await newTile.trap?.walkOnTrap(unitMoved);
+  }
+
+  if (
+    unitMoved.effects.some((effect) => effect.name === "Pit Trap") &&
+    newTile.trap?.getTrapType() !== TrapType.PIT_TRAP
+  ) {
+    unitMoved.removeEffectByName("Pit Trap");
+  }
   return { success: true };
 }
 

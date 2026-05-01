@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
@@ -9,6 +9,7 @@ import { getPlayerHeroMap } from "../../shared/lobbyUtils";
 import { getHeroClassIconPath } from "../../shared/utils";
 import { CardComponent } from "../Card/CardComponent";
 import { getSpellEllementAsCard } from "../Card/cardUtils";
+import React from "react";
 
 import GameMasterIcon from "/assets/images/icons/playerRole/IconGameMaster.jpeg";
 import HeroIcon from "/assets/images/icons/playerRole/iconHero.jpeg";
@@ -22,15 +23,22 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
   game,
   unselectCharacter,
 }) => {
+  const state = useLocation().state as {
+    playerId: string;
+  };
+  console.log("Rendering PlayerStatusComponent with game:", game);
+  console.log("Player ID from state:", state.playerId);
+  const player = game.players.find((p) => p.id === state.playerId);
+  console.log("Player found in game:", player);
   const navigate = useNavigate();
 
   function modifyHero(hero: HeroAsJson) {
-    navigate("/characterChoice", {
+    void navigate("/characterChoice", {
       state: {
         game,
-        playerName: game.players.find((p) => p.id === hero.controlledByPlayerId)
-          ?.name,
+        playerName: player?.name,
         hero,
+        playerId: state.playerId,
       },
     });
   }
@@ -123,10 +131,23 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
                 flexDirection: "column",
               }}
             >
-              <button onClick={() => modifyHero(hero)}>modifier</button>
-              <button onClick={() => unselectCharacter(hero.id)}>
-                déselectionner
-              </button>
+              {(player?.role === PlayerRole.GAME_MASTER ||
+                player?.id === hero.controlledByPlayerId) && (
+                  <>
+                    <button
+                      className="classic-button"
+                      onClick={() => modifyHero(hero)}
+                    >
+                      modifier
+                    </button>
+                    <button
+                      className="warning-button"
+                      onClick={() => unselectCharacter(hero.id)}
+                    >
+                      déselectionner
+                    </button>
+                  </>
+                )}
             </div>
           </span>,
         );

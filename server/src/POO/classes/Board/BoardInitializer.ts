@@ -1,5 +1,5 @@
-import { TileType } from "../../enums/TileType";
-import { Tile } from "../Tile";
+import { TileType } from "../../enums/Board/TileType";
+import { Tile } from "./Tile/Tile";
 import { WallGrid } from "./WallGrid";
 
 class BoardInitializer {
@@ -96,10 +96,10 @@ class BoardInitializer {
     return {
       horizontal: Array(20)
         .fill(null)
-        .map(() => Array(26).fill(undefined)),
+        .map(() => Array(26).fill(undefined) as boolean[]),
       vertical: Array(19)
         .fill(null)
-        .map(() => Array(27).fill(undefined)),
+        .map(() => Array(27).fill(undefined) as boolean[]),
     };
   }
 }

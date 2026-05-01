@@ -1,4 +1,3 @@
-import { authMiddleware } from "../middlewares/authMiddleware";
 import { loggerMiddleware } from "../middlewares/loggerMiddleware";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "../services/GameService";
@@ -9,12 +8,13 @@ import { registerDiceHandlers } from "../handlers/diceHandler";
 import { registerGameHandlers } from "../handlers/gamehandlers";
 import { registerMasterHandlers } from "../handlers/masterHandlers";
 import { Socket } from "socket.io";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
+import { registerTrapsActionsHandlers } from "../handlers/trapsActionsHandlers";
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
   const io = server.getIo();
 
   // Apply middlewares
-  io.use(authMiddleware);
   io.use(loggerMiddleware);
 
   io.on("connection", (socket: Socket) => {
@@ -27,11 +27,12 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
     registerDiceHandlers(socket);
     registerGameHandlers(socket);
     registerMasterHandlers(socket);
+    registerTrapsActionsHandlers(socket);
 
     socket.on("disconnect", () => {
       const modifiedGames = GameService.removePlayerFromAllGames(socket.id);
       modifiedGames.forEach((game) => {
-        io.emit("game-state-update", { game: game.toJson() });
+        emitGameStateUpdate(io, game.id, game);
       });
       console.log(
         `Disconnected player: ${socket.id} from games ${modifiedGames.map((g) => g.name).join(", ")}`,

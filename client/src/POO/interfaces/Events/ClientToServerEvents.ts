@@ -3,7 +3,7 @@ import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { Direction } from "../../enums/Direction";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { SpellElement } from "../../enums/SpellElement";
-import { TileType } from "../../enums/TileType";
+import { TileType } from "../../enums/Board/TileType";
 import { PositionAsJson } from "../ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
@@ -66,11 +66,8 @@ interface ClientToServerEvents {
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
   "check-for-treasures": (data: { gameId: string; heroId: string }) => void;
-  "check-traps": (data: { gameId: string; postion: PositionAsJson }) => void;
-  "check-secret-doors": (data: {
-    gameId: string;
-    postion: PositionAsJson;
-  }) => void;
+  "check-traps": (data: { gameId: string; heroId: string }) => void;
+  "check-secret-doors": (data: { gameId: string; heroId: string }) => void;
   "disarm-trap": (data: {
     gameId: string;
     trapTargeted: PositionAsJson;

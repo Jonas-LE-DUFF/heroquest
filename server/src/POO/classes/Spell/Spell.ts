@@ -1,4 +1,7 @@
+import { HeroCategory } from "../../enums/Categories/HeroCategory";
+import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 import { SpellElement } from "../../enums/SpellElement";
+import { SpellAsJson } from "../../interfaces/ClassAsJson/SpellAsJson";
 import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
 
@@ -23,11 +26,11 @@ class Spell {
         this.target_type = target_type;
     }
 
-    applyEffect(target: Unit<any>) {
-        this.effect.applyEffect(target);
+    async applyEffect(target: Unit<MonsterCategory | HeroCategory>) {
+        await this.effect.applyEffect(target);
     }
 
-    toJson(): any {
+    toJson(): SpellAsJson {
         return {
             id: this.id,
             name: this.name,

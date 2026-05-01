@@ -26,6 +26,7 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { SpellElement } from "../POO/enums/SpellElement";
+import { TrapType } from "../POO/enums/Board/TrapType";
 
 function isHero(entity: HeroAsJson | MonsterAsJson): entity is HeroAsJson {
   return (entity as HeroAsJson).controlledByPlayerId !== undefined;
@@ -47,6 +48,19 @@ function getIconClassPath(entityType: HeroAsJson | MonsterAsJson): string {
     return getHeroClassIconPath(entityType.category);
   } else {
     return getMonsterIconPath(entityType.category);
+  }
+}
+
+function getTrapTypePath(trapType: TrapType): string {
+  switch (trapType) {
+    case TrapType.PIT_TRAP:
+      return "/assets/images/icons/Tiles/traps/pit_trap.png";
+    case TrapType.ROCK_TRAP:
+      return "/assets/images/icons/Tiles/traps/rock_trap.png";
+    case TrapType.SPEAR_TRAP:
+      return "/assets/images/icons/Tiles/traps/spear_trap.png";
+    default:
+      return "unknown trap type";
   }
 }
 
@@ -155,6 +169,7 @@ export {
   isHero,
   everyOneReady,
   getIconClassPath,
+  getTrapTypePath,
   getHeroClassIconPath,
   getMonsterIconPath,
   getFightDiceFace,

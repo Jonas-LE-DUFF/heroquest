@@ -1,0 +1,33 @@
+.side-button {
+  position: absolute;
+  left: 3%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 1px solid #3b3b3b;
+  border-radius: 8px;
+  font-size: large;
+  font-weight: bolder;
+  padding: 5px 10px 5px 10px;
+}
+
+.side-button:last-child {
+  left: auto;
+  right: 3%;
+}
+
+.simple-carousel {
+  width: fit-content;
+  position: relative;
+  overflow: hidden;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.cards {
+  display: flex;
+  width: fit-content;
+  transition: transform 300ms ease;
+  align-items: center;
+}

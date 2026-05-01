@@ -26,7 +26,7 @@ class TreasureCard {
     name: string,
     imgPath: string,
     originalAmountInDeck: number,
-    isPutBack?: boolean | undefined,
+    isPutBack?: boolean,
     effectName?: string,
     effectInfo?: {
       amountOfDamage?: number;

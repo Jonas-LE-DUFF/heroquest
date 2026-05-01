@@ -1,0 +1,61 @@
+.players-status {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border: 2px solid #3b3b3b;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.12);
+  padding: 16px;
+}
+
+.players-list {
+  margin: 20px 0;
+}
+
+.player-item {
+  border-bottom: #3b3b3b 1px solid;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+}
+
+.player-item:last-child {
+  border-bottom: none;
+}
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.lobby-row {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  margin: 5px 0;
+  width: 100%;
+}
+
+.lobby-row > * {
+  margin-right: 25px;
+}
+
+.status.ready {
+  color: green;
+}
+
+.status.not-ready {
+  color: red;
+}
+
+.role {
+  display: flex;
+}

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { PlayerRole } from "../POO/enums/PlayerRole";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { Direction } from "../POO/enums/Direction";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
@@ -94,7 +94,7 @@ function createEmptyBoard(
   for (let x = 0; x < width; x++) {
     const row: TileAsJson[] = [];
     for (let y = 0; y < height; y++) {
-      row.push({ type: TileType.FLOOR, unitId: null });
+      row.push({ type: TileType.FLOOR, unitId: null, trap: null });
     }
     tiles.push(row);
   }
@@ -104,28 +104,28 @@ function createEmptyBoard(
     tiles,
     doors: {
       horizontalDoors: Array.from({ length: width + 1 }, () =>
-        Array(height).fill(false),
+        Array(height).fill(false) as boolean[],
       ),
       verticalDoors: Array.from({ length: width }, () =>
-        Array(height + 1).fill(false),
+        Array(height + 1).fill(false) as boolean[],
       ),
     },
     walls: {
       horizontalWalls: Array.from({ length: width + 1 }, () =>
-        Array(height).fill(false),
+        Array(height).fill(false) as boolean[],
       ),
       verticalWalls: Array.from({ length: width }, () =>
-        Array(height + 1).fill(false),
+        Array(height + 1).fill(false) as boolean[],
       ),
     },
   };
 }
 
 function addSpawnPoint(board: BoardAsJson): BoardAsJson {
-  board.tiles[0]![0]!.type = TileType.SPAWN_POINT;
-  board.tiles[0]![1]!.type = TileType.SPAWN_POINT;
-  board.tiles[1]![0]!.type = TileType.SPAWN_POINT;
-  board.tiles[1]![1]!.type = TileType.SPAWN_POINT;
+  board.tiles[0][0].type = TileType.SPAWN_POINT;
+  board.tiles[0][1].type = TileType.SPAWN_POINT;
+  board.tiles[1][0].type = TileType.SPAWN_POINT;
+  board.tiles[1][1].type = TileType.SPAWN_POINT;
   return board;
 }
 
@@ -216,10 +216,10 @@ function createFullPartyGame(): GameAsJson {
 
   const board = createEmptyBoard();
   // Place heroes on the board
-  board.tiles[0]![0]!.unitId = hero1.id;
-  board.tiles[1]![0]!.unitId = hero2.id;
-  board.tiles[2]![0]!.unitId = hero3.id;
-  board.tiles[3]![0]!.unitId = hero4.id;
+  board.tiles[0][0].unitId = hero1.id;
+  board.tiles[1][0].unitId = hero2.id;
+  board.tiles[2][0].unitId = hero3.id;
+  board.tiles[3][0].unitId = hero4.id;
 
   return createGame({
     id: "full-party-game",
@@ -358,7 +358,7 @@ describe("combatValidationTest", () => {
       stats: createStats({ health: 3, maxHealth: 3 }),
     });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[5]![5]!.unitId = monster.id;
+    game.gameState.board.tiles[5][5].unitId = monster.id;
 
     // Verify both attacker and target are on the board
     const heroTile = getTileByUnitId("hero-barbarian", game.gameState.board);
@@ -568,17 +568,17 @@ describe("moveValidationTest", () => {
   it("moving a unit should update the board tiles", () => {
     const game = createFullPartyGame();
     const board = game.gameState.board;
-    const heroId = board.tiles[0]![0]!.unitId!;
+    const heroId = board.tiles[0][0].unitId!;
 
     // Simulate moving hero from (0,0) to (0,1) — move RIGHT
-    board.tiles[0]![1]!.unitId = heroId;
-    board.tiles[0]![0]!.unitId = null;
+    board.tiles[0][1].unitId = heroId;
+    board.tiles[0][0].unitId = null;
 
     const newPos = getPositionByUnitId(heroId, board);
     expect(newPos).toEqual({ x: 0, y: 1 });
 
     // Old position should be empty
-    expect(board.tiles[0]![0]!.unitId).toBeNull();
+    expect(board.tiles[0][0].unitId).toBeNull();
   });
 
   it("should not move to a tile with a unit already on it", () => {
@@ -621,7 +621,7 @@ describe("unitDefeatValidationTest", () => {
       stats: createStats({ health: 0, maxHealth: 3 }),
     });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[5]![5]!.unitId = monster.id;
+    game.gameState.board.tiles[5][5].unitId = monster.id;
 
     // Verify monster is on the board
     expect(
@@ -664,7 +664,7 @@ describe("unitDefeatValidationTest", () => {
       stats: createStats({ health: 1, maxHealth: 3 }),
     });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[7]![7]!.unitId = monster.id;
+    game.gameState.board.tiles[7][7].unitId = monster.id;
 
     // Simulate lethal damage
     monster.stats.health = 0;
@@ -676,7 +676,7 @@ describe("unitDefeatValidationTest", () => {
     );
 
     // Tile should be empty
-    expect(game.gameState.board.tiles[7]![7]!.unitId).toBeNull();
+    expect(game.gameState.board.tiles[7][7].unitId).toBeNull();
 
     // Unit should not be in Units array
     expect(game.gameState.Units.find((u) => u.id === "target")).toBeUndefined();
@@ -688,7 +688,7 @@ describe("unitDefeatValidationTest", () => {
 
     const monster = createMonster({ id: "temp-monster" });
     game.gameState.Units.push(monster);
-    game.gameState.board.tiles[8]![8]!.unitId = monster.id;
+    game.gameState.board.tiles[8][8].unitId = monster.id;
 
     // Remove monster
     removeUnitFromBoardById("temp-monster", game.gameState.board);
@@ -706,16 +706,16 @@ describe("unitDefeatValidationTest", () => {
     const board = game.gameState.board;
 
     // Set a tile to TRAP and place a monster
-    board.tiles[6]![6]!.type = TileType.TRAP;
+    board.tiles[6][6].type = TileType.TRAP;
     const monster = createMonster({ id: "trap-monster" });
-    board.tiles[6]![6]!.unitId = monster.id;
+    board.tiles[6][6].unitId = monster.id;
 
     // Remove monster
     removeUnitFromBoardById("trap-monster", board);
 
     // Tile should still be TRAP type
-    expect(board.tiles[6]![6]!.type).toBe(TileType.TRAP);
-    expect(board.tiles[6]![6]!.unitId).toBeNull();
+    expect(board.tiles[6][6].type).toBe(TileType.TRAP);
+    expect(board.tiles[6][6].unitId).toBeNull();
   });
 });
 
@@ -729,14 +729,14 @@ describe("serverUtils validation", () => {
 
     const heroes = getHeroes(units);
     expect(heroes.length).toBe(1);
-    expect(heroes[0]!.id).toBe(hero.id);
+    expect(heroes[0].id).toBe(hero.id);
   });
 
   it("getHeroesByPlayerId should find the correct hero", () => {
     const game = createFullPartyGame();
     const heroes = getHeroesByPlayerId("p1", game);
     expect(heroes).toHaveLength(1);
-    expect(heroes![0]!.controlledByPlayerId).toBe("p1");
+    expect(heroes![0].controlledByPlayerId).toBe("p1");
   });
 
   it("getHeroesByPlayerId should return null for unknown player", () => {
@@ -775,7 +775,7 @@ describe("serverUtils validation", () => {
 describe("boardUtils validation", () => {
   it("getTileByPosition should return the correct tile", () => {
     const board = createEmptyBoard();
-    board.tiles[3]![4]!.type = TileType.TRAP;
+    board.tiles[3][4].type = TileType.TRAP;
 
     const tile = getTileByPosition({ x: 3, y: 4 }, board);
     expect(tile).not.toBeNull();
@@ -801,7 +801,7 @@ describe("boardUtils validation", () => {
   it("getPositionByUnitId should find unit position", () => {
     const board = createEmptyBoard();
     const hero = createHero({ id: "find-me" });
-    board.tiles[3]![7]!.unitId = hero.id;
+    board.tiles[3][7].unitId = hero.id;
 
     const pos = getPositionByUnitId("find-me", board);
     expect(pos).toEqual({ x: 3, y: 7 });

@@ -1,11 +1,3 @@
-.closeButton{
-    color: red;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 2;
-}
-
 p, label{
     color: black;
 }

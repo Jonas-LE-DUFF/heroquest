@@ -1,35 +1,39 @@
 import { Direction } from "../POO/enums/Direction";
-import { TileType } from "../POO/enums/TileType";
+import { TileType } from "../POO/enums/Board/TileType";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
 import { getTileByPosition } from "./boardUtils";
-import { isHero } from "./utils";
 
 const TILESIZE = "40px";
+
+interface TileStyle {
+  alignItems: string;
+  width: string;
+  height: string;
+  border: string;
+  textAlign: "center";
+  verticalAlign: "middle";
+  boxSizing: "border-box";
+  padding: string;
+  backgroundColor: string;
+  backgroundImage?: string;
+  backgroundSize?: string;
+  backgroundPosition?: string;
+  backgroundRepeat?: string;
+  position: "relative";
+  overflow: "visible";
+}
 
 export const getTileStyle = (
   x: number,
   y: number,
-  gameState: GameStateAsJson | null,
-  selection: string | PositionAsJson | null,
+  gameState: GameStateAsJson,
+  selection: PositionAsJson | null,
 ) => {
-  const tile = getTileByPosition({ x, y }, gameState?.board!);
-  const entityIdAtPos = tile?.unitId ?? null;
-  const entityAtPos =
-    gameState?.Units.find((u) => u.id === entityIdAtPos) ?? null;
-  let isSelected = false;
-  if (typeof selection === "string") {
-    isSelected = entityAtPos?.id === selection;
-  } else if (selection && "x" in selection && "y" in selection) {
-    isSelected = x === selection.x && y === selection.y;
-  }
+  const tile = getTileByPosition({ x, y }, gameState.board);
 
-  let isHeroUnit: boolean = false;
-  let isMonster: boolean = false;
-  if (entityAtPos) {
-    isHeroUnit = isHero(entityAtPos);
-    isMonster = !isHeroUnit;
-  }
+  const isSelected = x === selection?.x && y === selection?.y;
+
   const isFurniture = tile?.type === TileType.FURNITURE;
   const isWall = tile?.type === TileType.WALL;
 
@@ -44,7 +48,7 @@ export const getTileStyle = (
   const sizes: string[] = [];
   const positions: string[] = [];
 
-  let style: any = {
+  let style: TileStyle = {
     alignItems: "center",
     width: TILESIZE,
     height: TILESIZE,
@@ -59,7 +63,7 @@ export const getTileStyle = (
     overflow: "visible",
   };
 
-  const doors = gameState?.board.doors;
+  const doors = gameState.board.doors;
   // top door -> horizontal[x][y]
   if (doors?.horizontalDoors?.[x]?.[y]) {
     setBorderTop(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
@@ -96,7 +100,7 @@ export const getTileStyle = (
     setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
   }
-  const walls = gameState?.board.walls;
+  const walls = gameState.board.walls;
   // top wall -> horizontal[x][y]
   if (walls?.horizontalWalls?.[x]?.[y]) {
     setBorderTop();

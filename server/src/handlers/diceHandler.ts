@@ -1,9 +1,4 @@
 import { Socket } from "socket.io";
-import {
-  grantSpecialRollAuthorization,
-  rollFightDice,
-  rollRedDice,
-} from "../services/DiceService";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { requireGameExists } from "../guards/requireGameExists";
 import { GameService } from "../services/GameService";
@@ -16,6 +11,8 @@ import {
   rollRedDiceSchema,
   rollDiceSchema,
 } from "../validation";
+import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
+import { grantSpecialRollAuthorization } from "../services/DiceService";
 
 export function registerDiceHandlers(socket: Socket) {
   handleSpecialRollAuthorization(socket);
@@ -87,7 +84,12 @@ function handleRollRedDice(socket: Socket) {
         const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
         if (player.role === PlayerRole.GAME_MASTER) {
           amountOfDice = numberOfDice;
-          const result = await rollRedDice(gameId, amountOfDice, player.role);
+          const dice = DiceServiceRegistry.get();
+          const result = await dice.rollRedDice(
+            gameId,
+            amountOfDice,
+            player.role,
+          );
           return callback(result);
         }
         const authorizedHero = game?.gameState.getHeroById(
@@ -104,15 +106,22 @@ function handleRollRedDice(socket: Socket) {
           try {
             const hero = game!.getCurrentHeroTurn();
             amountOfDice = hero.getMovementPoints();
-          } catch (error: any) {
-            console.error("error while getting current hero turn:", error);
-            return callback(errorResponse(error.message || "erreur interne"));
+          } catch (error) {
+            if (error instanceof Error) {
+              console.error("error while getting current hero turn:", error);
+              return callback(errorResponse(error.message || "erreur interne"));
+            }
+            console.error("unexpected error while getting current hero turn");
+            return callback(
+              errorResponse("unexpected error while getting current hero turn"),
+            );
           }
         } else {
           amountOfDice = numberOfDice;
         }
 
-        const result = await rollRedDice(gameId, amountOfDice, player.role);
+        const dice = DiceServiceRegistry.get();
+        const result = await dice.rollRedDice(gameId, amountOfDice, player.role);
         callback(result);
       },
     ),
@@ -149,7 +158,8 @@ function handleRollFightDice(socket: Socket) {
       const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
       if (player.role === PlayerRole.GAME_MASTER) {
         amountOfDice = numberOfDice;
-        const result = await rollFightDice(gameId, amountOfDice, player.role);
+        const dice = DiceServiceRegistry.get();
+        const result = await dice.rollFightDice(gameId, amountOfDice, player.role);
         return callback(result);
       }
 
@@ -167,15 +177,22 @@ function handleRollFightDice(socket: Socket) {
         try {
           const hero = game!.getCurrentHeroTurn();
           amountOfDice = hero.getAttackDiceCount();
-        } catch (error: any) {
-          console.error("error while getting current hero turn:", error);
-          return callback(errorResponse(error.message || "erreur interne"));
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("error while getting current hero turn:", error);
+            return callback(errorResponse(error.message || "erreur interne"));
+          }
+          console.error("unexpected error while getting current hero turn");
+          return callback(
+            errorResponse("unexpected error while getting current hero turn"),
+          );
         }
       } else {
         amountOfDice = numberOfDice;
       }
 
-      const result = await rollFightDice(gameId, amountOfDice, player.role);
+      const dice = DiceServiceRegistry.get();
+      const result = await dice.rollFightDice(gameId, amountOfDice, player.role);
       callback(result);
     }),
   );

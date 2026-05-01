@@ -1,11 +1,11 @@
-import js from "@eslint/js";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
-import importPlugin from "eslint-plugin-import";
-import prettierConfig from "eslint-config-prettier";
-import jestPlugin from "eslint-plugin-jest";
+const js = require("@eslint/js");
+const tsPlugin = require("@typescript-eslint/eslint-plugin");
+const tsParser = require("@typescript-eslint/parser");
+const importPlugin = require("eslint-plugin-import");
+const prettierConfig = require("eslint-config-prettier");
+const jestPlugin = require("eslint-plugin-jest");
 
-export default [
+module.exports = [
   // Fichiers ignorés
   {
     ignores: ["dist/**", "coverage/**", "*.config.js"],

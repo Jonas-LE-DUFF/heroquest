@@ -7,38 +7,37 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { getIconClassPath, getUnitClassName } from "../../shared/utils";
+import { getIconClassPath, getUnitClassName, getTrapTypePath, isHero } from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
 import { TileAsJson } from "../../POO/interfaces/ClassAsJson/Board/TileAsJson";
-import { Direction } from "../../POO/enums/Direction";
-import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
-import { TileType } from "../../POO/enums/TileType";
+import { TileType } from "../../POO/enums/Board/TileType";
 import StairsImage from "/assets/images/icons/Tiles/stairs.png";
 import { JSX } from "react/jsx-runtime";
+import { SelectType } from "../../POO/types/selectType";
+import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
 interface BoardProps {
   game: GameAsJson;
   onTileClick: (
     position: PositionAsJson,
-    selectedType: TileType | Direction | MonsterCategory | null,
+    selectedType: SelectType,
   ) => void;
   selectedPosition: PositionAsJson | null;
-  selectedEntityId: string | null;
-  selectedType: TileType | Direction | MonsterCategory | null;
+  selectedType: SelectType;
 }
 
 const Board = ({
   game,
   onTileClick,
   selectedPosition,
-  selectedEntityId,
   selectedType,
 }: BoardProps) => {
   const handleTileClick = (
     position: PositionAsJson,
-    selectedType: TileType | Direction | MonsterCategory | null,
+    selectedType: SelectType,
   ) => {
     if (!game || !game.gameState.board.tiles[position.x]) {
       console.error("gameState is not defined");
@@ -64,7 +63,7 @@ const Board = ({
               row,
               col,
               game.gameState,
-              selectedPosition ?? selectedEntityId,
+              selectedPosition,
             )}
             onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
           >
@@ -86,9 +85,17 @@ const Board = ({
     }
     const unit = game.gameState.Units.find((u) => u.id === tile.unitId);
     const elements: JSX.Element[] = [];
-    if (!unit) {
-      if (tile.type === TileType.FLOOR) return `${x},${y}`;
+
+    if (tile.trap) {
+      elements.push(
+        <img
+          className="boardImg"
+          src={getTrapTypePath(tile.trap.type)}
+          alt={tile.trap.type}
+        />,
+      );
     }
+
     if (tile.type === TileType.SPAWN_POINT) {
       const upperTile = game.gameState.board.tiles[x - 1]?.[y];
       const leftTile = game.gameState.board.tiles[x]?.[y - 1];
@@ -105,15 +112,28 @@ const Board = ({
     }
 
     if (unit) {
+      let className = "boardImg";
+      if (tile.type !== TileType.FLOOR) {
+        className += " onTopImage";
+      }
+      if (tile.trap && !isInPitTrap(unit)) {
+        className += " onTopImage";
+      }
+      if (isInPitTrap(unit)) {
+        className += " inPitTrap";
+      }
+
       elements.push(
         <img
-          className="boardImg"
+          className={className}
           src={getIconClassPath(unit)}
           alt={getUnitClassName(unit)}
         />,
       );
     }
-
+    if (elements.length === 0) {
+      return `${x},${y}`;
+    }
     return <div>{elements}</div>;
   };
 
@@ -125,5 +145,10 @@ const Board = ({
     </TableContainer>
   );
 };
+
+function isInPitTrap(unit: MonsterAsJson | HeroAsJson): boolean {
+  if (!isHero(unit)) return false;
+  return unit.stats.effects.some((effect) => effect === "Pit Trap");
+}
 
 export default Board;

@@ -1,5 +1,9 @@
 import { Armor } from "./Items/Armor";
-import { Potion, EquipmentPotionFactory, TreasurePotionFactory } from "./Items/Potions";
+import {
+  Potion,
+  EquipmentPotionFactory,
+  TreasurePotionFactory,
+} from "./Items/Potions";
 import { Weapon } from "./Items/Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
@@ -83,10 +87,14 @@ class Equipment {
     const treasureData = treasuresJson.deck.find((t) => t.id === equipmentId);
     if (treasureData) {
       if (!treasureData.effect.potion_gained) {
-        throw new Error(`Treasure with id ${equipmentId} does not grant a potion.`);
+        throw new Error(
+          `Treasure with id ${equipmentId} does not grant a potion.`,
+        );
       }
       const factory = new TreasurePotionFactory();
-      const potion: Potion = factory.createPotionFromReference(treasureData.effect.potion_gained);
+      const potion: Potion = factory.createPotionFromReference(
+        treasureData.effect.potion_gained,
+      );
       this.addPotion(potion);
       return potion;
     }
@@ -95,7 +103,7 @@ class Equipment {
     }
 
     switch (equipmentData.type) {
-      case "Weapon":
+      case "Weapon": {
         const weapon = new Weapon(
           equipmentData.id,
           equipmentData.name,
@@ -106,7 +114,8 @@ class Equipment {
         );
         this.addWeapon(weapon);
         return weapon;
-      case "Armor":
+      }
+      case "Armor": {
         const armor = new Armor(
           equipmentData.id,
           equipmentData.name,
@@ -118,12 +127,16 @@ class Equipment {
         );
         this.addArmor(armor);
         return armor;
-      case "Potion":
-        const factory = new EquipmentPotionFactory()
-        const potion: Potion = factory.createPotionFromReference(equipmentData.id);
+      }
+      case "Potion": {
+        const factory = new EquipmentPotionFactory();
+        const potion: Potion = factory.createPotionFromReference(
+          equipmentData.id,
+        );
         this.addPotion(potion);
         return potion;
-      case "Tool":
+      }
+      case "Tool": {
         const tool = new Tool(
           equipmentData.id,
           equipmentData.name,
@@ -132,6 +145,7 @@ class Equipment {
         );
         this.addTool(tool);
         return tool;
+      }
     }
   }
 

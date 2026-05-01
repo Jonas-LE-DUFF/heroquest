@@ -25,6 +25,7 @@
   {
     "id": "Djinn DIE",
     "name": "MEURT",
+    "image_path": "/assets/images/cards/spells/air/djinnSubSpells/DjinnAttack.png",
     "range": "visible",
     "target_type": "monster",
     "effect": {
@@ -32,12 +33,12 @@
       "stat": "health",
       "value": "5 attackDice",
       "comment": "deal 5 attack dice damage to a monster in sight"
-    },
-    "image_path": "/assets/images/cards/spells/air/djinnSubSpells/DjinnAttack.png"
+    }
   },
   {
     "id": "Djinn Open door",
     "name": "ouvrir une porte",
+    "image_path": "/assets/images/cards/spells/air/djinnSubSpells/DjinnOpenDoor.png",
     "range": "any",
     "target_type": "door",
     "effect": {
@@ -45,8 +46,7 @@
       "stat": "no stat",
       "value": null,
       "comment": "reveal and open a door"
-    },
-    "image_path": "/assets/images/cards/spells/air/djinnSubSpells/DjinnOpenDoor.png"
+    }
   },
   {
     "id": "Quick_as_the_wind",
