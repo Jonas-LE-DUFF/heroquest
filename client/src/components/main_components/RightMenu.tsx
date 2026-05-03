@@ -31,19 +31,17 @@ const RightMenu: React.FC<RightMenuProps> = ({
   setInteraction,
 }) => {
   return (
-    <div>
-      <GameControls
-        socket={socket}
-        game={currentGameState}
-        setSelectedType={setSelectedType}
-        selectedType={selectedType}
-        selectedUnit={selectedUnit}
-        setSelectedWeapon={setSelectedWeapon}
-        selectedWeapon={selectedWeapon}
-        hero={hero}
-        setInteraction={setInteraction}
-      />
-    </div>
+    <GameControls
+      socket={socket}
+      game={currentGameState}
+      setSelectedType={setSelectedType}
+      selectedType={selectedType}
+      selectedUnit={selectedUnit}
+      setSelectedWeapon={setSelectedWeapon}
+      selectedWeapon={selectedWeapon}
+      hero={hero}
+      setInteraction={setInteraction}
+    />
   );
 };
 

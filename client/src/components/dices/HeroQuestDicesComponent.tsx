@@ -108,7 +108,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
   }
 
   return (
-    <div className={"container " + role}>
+    <div className={"container"}>
       <Paper
         className="dice-container"
         sx={{

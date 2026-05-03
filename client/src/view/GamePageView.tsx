@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
 import { getHeroClassName, isHero } from "../shared/utils";
-import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
 import { Grid } from "@mui/material";
@@ -16,7 +15,6 @@ import {
   getPositionByUnitId,
   getTileByPosition,
   removeUnitFromBoardById,
-  setTileTypeAtPosition,
 } from "../shared/boardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import {
@@ -25,7 +23,6 @@ import {
   getPlayerBySocketId,
   getPlayerIdToPlay,
 } from "../shared/serverUtils";
-import { TileType } from "../POO/enums/Board/TileType";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
@@ -182,23 +179,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setBoardKey((k) => k + 1);
     };
 
-    const handleTilePlaced = (data: {
-      position: PositionAsJson;
-      TileType: TileType;
-    }) => {
-      console.log("tile placed received in game page", data);
-      setGame((prev) => {
-        if (!prev) return prev;
-
-        setTileTypeAtPosition(data.position, data.TileType, prev.gameState.board);
-
-        return { ...prev } as GameAsJson;
-      });
-
-      // TODO : try to remove this setTimeout
-      setBoardKey((k) => k + 1);
-    };
-
     const handleDoorPlaced = (data: {
       position: PositionAsJson;
       verticalOrHorizontal: "vertical" | "horizontal";
@@ -247,13 +227,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     socket.on("player-search", handlePlayerSearching);
     socket.on("game-state-update", handleGameStateUpdate);
     socket.on("stats-updated", handleStatsUpdate);
-    socket.on("tile-placed", handleTilePlaced);
     socket.on("door-placed", handleDoorPlaced);
     socket.on("card-drawn", handleCardDrawn);
 
     return () => {
       socket.off("player-search", handlePlayerSearching);
-      socket.off("tile-placed", handleTilePlaced);
       socket.off("door-placed", handleDoorPlaced);
       socket.off("stats-updated", handleStatsUpdate);
       socket.off("game-state-update", handleGameStateUpdate);
@@ -385,9 +363,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             hero={hero}
             setInteraction={setInteraction}
           />
-        </Grid>
-        <Grid className="Footer">
-          <Footer />
         </Grid>
       </Grid>
     </>

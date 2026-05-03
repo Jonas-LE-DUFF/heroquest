@@ -1,8 +1,6 @@
 .game-controls {
-  border: solid 2px black;
   margin: 3%;
   border-radius: 10px;
-  box-shadow: 2px 2px 2px gray;
 }
 
 .gridElem {
@@ -12,11 +10,12 @@
   width: fit-content;
 }
 
-.monster-button {
+.monster-item {
   display: flex;
   flex-direction: row;
-  height: 64.8px;
-  justify-content: center;
+  height: fit-content;
+  padding: 2px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -27,29 +26,17 @@
   align-items: center;
 }
 
-select {
-  padding: 10px;
-  border-radius: 10px;
-  height: fit-content;
-  width: fit-content;
-}
-
 .monster-img {
   width: 40px;
   height: auto;
 }
 
-.selected {
-  background-color: darkgray;
-  border-color: black;
-}
-
 .hero {
-  background-color: #cfb898;
+  background-color: #A4AC86
 }
 
 .game-master {
-  background-color: #5a141b;
+  background-color: #414833;
 }
 
 .hidden {

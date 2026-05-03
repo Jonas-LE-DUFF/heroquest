@@ -1,8 +1,11 @@
-.Navbar{
+.navbar{
     width: 100%;
     display: flex;
-    justify-content: flex-start;
+    flex-direction: row;
+    justify-content: start;
     padding: 5px;
+    background-color: #a68a6494;
+    border-bottom: 2px solid #582F0E;
 }
 
 .nav-elem{

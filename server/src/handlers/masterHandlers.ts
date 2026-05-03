@@ -211,10 +211,7 @@ function handleTilePlacement(
     };
   }
   tile.type = TileType;
-  io.to(gameId).emit("tile-placed", {
-    position: position,
-    TileType: TileType,
-  });
+  emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }
 

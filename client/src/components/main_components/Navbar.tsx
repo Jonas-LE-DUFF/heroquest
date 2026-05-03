@@ -117,7 +117,7 @@ const Navbar: React.FC<NavbarProps> = ({
   }
 
   return (
-    <div className="Navbar">
+    <div className="navbar">
       <div className="nav-elem">Navbar</div>
       {player.role === PlayerRole.HERO && hero?.category && (
         <div className="nav-elem">
@@ -141,7 +141,6 @@ const Navbar: React.FC<NavbarProps> = ({
       )}
       <div className="nav-elem">Nom de la partie: {game.name}</div>
       <div className="nav-elem">Votre nom: {playerName}</div>
-      <div className="nav-elem">Votre Rôle: {role}</div>
       {hero?.spells && hero.spells.length > 0 && (
         <div className="nav-elem">
           <Tooltip title="Voir mes sorts" arrow>

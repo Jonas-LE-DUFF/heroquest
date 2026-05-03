@@ -29,14 +29,6 @@
   object-fit: contain;
 }
 
-.hero {
-  background-color: #e0f7fa;
-}
-
-.game-master {
-  background-color: #6b3f3c;
-}
-
 .inputDice {
   width: 60px;
   font-size: 16px;

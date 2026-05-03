@@ -1,12 +1,33 @@
 :root {
-  --hero-bg: radial-gradient(ellipse at center, rgba(255, 248, 230, 0.98) 0%, rgba(242, 228, 196, 0.98) 58%, rgba(214, 191, 149, 1) 100%);
+  --hero-bg: radial-gradient(
+    ellipse at center,
+    rgba(255, 248, 230, 0.98) 0%,
+    var(--light-apricot) 50%,
+    var(--camel) 85%,
+    var(--dark-coffee) 100%
+  );
+
+
+  /* CSS HEX */
+  --dark-wine: #6f1d1bff;
+  --camel: #bb9457ff;
+  --dark-coffee: #432818ff;
+  --chocolate-brown: #99582aff;
+  --light-apricot: #ffe6a7ff;
+
+  /* CSS HSL */
+  --dark-wine: hsla(1, 61%, 27%, 1);
+  --camel: hsla(37, 42%, 54%, 1);
+  --dark-coffee: hsla(22, 47%, 18%, 1);
+  --chocolate-brown: hsla(25, 57%, 38%, 1);
+  --light-apricot: hsla(43, 100%, 83%, 1);
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--hero-bg);
@@ -17,6 +38,6 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }

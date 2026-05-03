@@ -6,7 +6,8 @@ import {
   Accordion,
   AccordionSummary,
   Grid,
-  Tooltip,
+  MenuItem,
+  Select,
   Typography,
 } from "@mui/material";
 import { getMonsterIconPath } from "../../shared/utils";
@@ -161,18 +162,13 @@ const GameControls = ({
       const img = getMonsterIconPath(mType);
       const name = monsterClassFr[mType];
       buttons.push(
-        <Grid key={mType} size={3}>
-          <Tooltip title={name} arrow>
-            <button
-              className={`monster-button ${
-                selectedType === mType ? "selected" : ""
-              }`}
-              onClick={() => selectMonster(mType)}
-            >
-              <img src={img} alt={name} className="monster-img" />
-            </button>
-          </Tooltip>
-        </Grid>,
+        <MenuItem
+          value={mType}
+          className={`monster-item ${selectedType === mType ? "selected" : ""}`}
+        >
+          <img src={img} alt={name} className="monster-img" />
+          {name}
+        </MenuItem>,
       );
     }
     return buttons;
@@ -183,22 +179,62 @@ const GameControls = ({
       return (
         <div className="movement-controls">
           <div></div>
-          <button className="classic-button" onClick={() => movePlayer(Direction.UP)}>⬆️</button>
+          <button
+            className="classic-button"
+            onClick={() => movePlayer(Direction.UP)}
+          >
+            ⬆️
+          </button>
           <div></div>
-          <button className="classic-button" onClick={() => movePlayer(Direction.LEFT)}>⬅️</button>
-          <button className="classic-button" onClick={() => movePlayer(Direction.DOWN)}>⬇️</button>
-          <button className="classic-button" onClick={() => movePlayer(Direction.RIGHT)}>➡️</button>
+          <button
+            className="classic-button"
+            onClick={() => movePlayer(Direction.LEFT)}
+          >
+            ⬅️
+          </button>
+          <button
+            className="classic-button"
+            onClick={() => movePlayer(Direction.DOWN)}
+          >
+            ⬇️
+          </button>
+          <button
+            className="classic-button"
+            onClick={() => movePlayer(Direction.RIGHT)}
+          >
+            ➡️
+          </button>
         </div>
       );
     if (role === PlayerRole.GAME_MASTER)
       return (
         <div className="movement-controls">
           <div></div>
-          <button className="classic-button" onClick={() => moveMonster(Direction.UP)}>⬆️</button>
+          <button
+            className="classic-button"
+            onClick={() => moveMonster(Direction.UP)}
+          >
+            ⬆️
+          </button>
           <div></div>
-          <button className="classic-button" onClick={() => moveMonster(Direction.LEFT)}>⬅️</button>
-          <button className="classic-button" onClick={() => moveMonster(Direction.DOWN)}>⬇️</button>
-          <button className="classic-button" onClick={() => moveMonster(Direction.RIGHT)}>➡️</button>
+          <button
+            className="classic-button"
+            onClick={() => moveMonster(Direction.LEFT)}
+          >
+            ⬅️
+          </button>
+          <button
+            className="classic-button"
+            onClick={() => moveMonster(Direction.DOWN)}
+          >
+            ⬇️
+          </button>
+          <button
+            className="classic-button"
+            onClick={() => moveMonster(Direction.RIGHT)}
+          >
+            ➡️
+          </button>
         </div>
       );
   };
@@ -269,7 +305,7 @@ const GameControls = ({
             aria-controls="panel4-content"
             id="panel4-header"
           >
-            <Typography component="span">Lancers de Dés</Typography>
+            <Typography component="span">Actions Maître du Jeu</Typography>
           </AccordionSummary>
           <div className="dices-section">
             <RedDices
@@ -288,18 +324,33 @@ const GameControls = ({
         </Accordion>
         {role === PlayerRole.GAME_MASTER && (
           <div>
-            <Accordion sx={{ color: "white", background: "inherit" }}>
+            <Accordion
+              sx={{ color: "white", background: "inherit", padding: "5px" }}
+            >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 aria-controls="panel2-content"
                 id="panel2-header"
               >
-                <Typography component="span">Actions Maître du Jeu</Typography>
+                <Typography component="span">Monstres</Typography>
               </AccordionSummary>
-              <Grid container>
-                {/* monster selector: generate buttons from the enum values */}
+
+              <Select
+                sx={{ background: "white", display: "flex", justifyContent: "center", alignItems: "center",  }}
+                value={selectedType}
+                onChange={(e) => {
+                  if (
+                    e.target.value === "" &&
+                    !(e.target.value in MonsterCategory)
+                  ) {
+                    setSelectedType(null);
+                    return;
+                  }
+                  selectMonster(e.target.value as MonsterCategory);
+                }}
+              >
                 {renderMonsterButtons()}
-              </Grid>
+              </Select>
             </Accordion>
 
             <Accordion sx={{ color: "white", background: "inherit" }}>
@@ -337,22 +388,34 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={6}>
-                  <button className="classic-button" onClick={() => putDoor(Direction.UP)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putDoor(Direction.UP)}
+                  >
                     Porte Haut
                   </button>
                 </Grid>
                 <Grid size={6}>
-                  <button className="classic-button" onClick={() => putDoor(Direction.DOWN)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putDoor(Direction.DOWN)}
+                  >
                     Porte Bas
                   </button>
                 </Grid>
                 <Grid size={6}>
-                  <button className="classic-button" onClick={() => putDoor(Direction.LEFT)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putDoor(Direction.LEFT)}
+                  >
                     Porte Gauche
                   </button>
                 </Grid>
                 <Grid size={6}>
-                  <button className="classic-button" onClick={() => putDoor(Direction.RIGHT)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putDoor(Direction.RIGHT)}
+                  >
                     Porte Droite
                   </button>
                 </Grid>
@@ -368,22 +431,32 @@ const GameControls = ({
               </AccordionSummary>
               <Grid container sx={{ width: "fit-content" }}>
                 <Grid size={4}>
-                  <button className="classic-button" onClick={() => putTrap(TrapType.PIT_TRAP)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putTrap(TrapType.PIT_TRAP)}
+                  >
                     Oubliettes
                   </button>
                 </Grid>
                 <Grid size={4}>
-                  <button className="classic-button" onClick={() => putTrap(TrapType.ROCK_TRAP)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putTrap(TrapType.ROCK_TRAP)}
+                  >
                     Éboulement
                   </button>
                 </Grid>
                 <Grid size={4}>
-                  <button className="classic-button" onClick={() => putTrap(TrapType.SPEAR_TRAP)}>
+                  <button
+                    className="classic-button"
+                    onClick={() => putTrap(TrapType.SPEAR_TRAP)}
+                  >
                     Piège à lance
                   </button>
                 </Grid>
                 <Grid size={12}>
-                  <button className="classic-button"
+                  <button
+                    className="classic-button"
                     onClick={() => {
                       setInteraction((prev) => ({
                         ...prev,

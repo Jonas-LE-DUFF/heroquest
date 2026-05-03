@@ -4,10 +4,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(circle at center, rgba(255, 251, 240, 0.2) 0%, rgba(255, 251, 240, 0) 55%),
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(84, 58, 20, 0.06) 100%);
-  box-shadow: inset 0 0 140px rgba(92, 63, 22, 0.22);
   justify-content: center;
   overflow-y: auto;
 }
@@ -84,8 +80,7 @@ button {
 .classic-button,
 .positive-button,
 .closeButton,
-.return-button,
-.monster-button {
+.return-button {
   padding: 12px 24px;
   margin: 5px;
   border-radius: 6px;
@@ -120,12 +115,12 @@ button {
 }
 
 .warning-button {
-  border-color: brown;
-  background-color: rgba(136, 32, 32, 0.897);
+  border-color: rgba(136, 32, 32, 0.897);
+  background-color: brown;
 }
 
 .warning-button:hover {
-  background-color: brown;
+  background-color: rgba(136, 32, 32, 0.897);
 }
 
 .classic-button {
