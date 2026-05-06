@@ -6,7 +6,6 @@ import {
   isHero,
 } from "../../shared/utils";
 import { Dialog, Select, Tooltip } from "@mui/material";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
@@ -14,6 +13,7 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
 import { getHeroesByPlayerId } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import magicStaffIcon from "/assets/images/icons/navbar/magic-staff.svg";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/search-treasure.svg";
 import lockpicks from "/assets/images/icons/navbar/disarm-traps.svg";
@@ -129,9 +129,10 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={() => {
                 setSelectedUnit(hero);
                 setStatsOpen(!statsOpen);
-              }}>
+              }}
+            >
               <img
-                className="imgNav"
+                className="img-nav"
                 src={getHeroClassIconPath(hero.category)}
                 alt={getHeroClassName(hero.category)}
               />
@@ -141,17 +142,6 @@ const Navbar: React.FC<NavbarProps> = ({
       )}
       <div className="nav-elem">Nom de la partie: {game.name}</div>
       <div className="nav-elem">Votre nom: {playerName}</div>
-      {hero?.spells && hero.spells.length > 0 && (
-        <div className="nav-elem">
-          <Tooltip title="Voir mes sorts" arrow>
-            <AutoAwesomeIcon
-              className="imgNav"
-              role="button"
-              onClick={() => showSpells()}
-            />
-          </Tooltip>
-        </div>
-      )}
       <div className="nav-elem">
         {isCurrentTurnPlayer
           ? "À toi de jouer !"
@@ -164,12 +154,12 @@ const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={() => {
                   setShowEquipments(!showEquipments);
-                }}>
+                }}
+              >
                 <img
                   src={backpackIcon}
                   alt="Backpack"
-                  className="imgNav"
-
+                  className="img-nav icon-nav"
                 />
               </button>
             </Tooltip>
@@ -182,10 +172,27 @@ const Navbar: React.FC<NavbarProps> = ({
           </Dialog>
         </>
       )}
+      {hero?.spells && hero.spells.length > 0 && (
+        <div className="nav-elem">
+          <Tooltip title="Voir mes sorts" arrow>
+            <button onClick={() => showSpells()}>
+              <img
+                src={magicStaffIcon}
+                alt="magicStaff"
+                className="img-nav icon-nav"
+              />
+            </button>
+          </Tooltip>
+        </div>
+      )}
       {hero && role !== PlayerRole.HERO && (
-        <button className="nav-elem" onClick={() => searchTreasures()} >
+        <button className="nav-elem" onClick={() => searchTreasures()}>
           <Tooltip title="Rechercher des trésors" arrow>
-            <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+            <img
+              src={drawCardIcon}
+              alt="Draw Card"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </button>
       )}
@@ -193,7 +200,7 @@ const Navbar: React.FC<NavbarProps> = ({
       {role === PlayerRole.HERO && (
         <button className="nav-elem" onClick={() => disarmTrap()}>
           <Tooltip title="Désarmer un piège" arrow>
-            <img src={lockpicks} alt="Lockpicks" className="imgNav" />
+            <img src={lockpicks} alt="Lockpicks" className="img-nav icon-nav" />
           </Tooltip>
         </button>
       )}

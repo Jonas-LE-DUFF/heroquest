@@ -79,7 +79,7 @@ button {
 .warning-button,
 .classic-button,
 .positive-button,
-.closeButton,
+.close-button,
 .return-button {
   padding: 12px 24px;
   margin: 5px;
@@ -97,7 +97,7 @@ button {
   cursor: pointer;
 }
 
-.closeButton {
+.close-button {
   position: absolute;
   top: 8px;
   right: 8px;

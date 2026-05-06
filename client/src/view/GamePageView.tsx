@@ -272,7 +272,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   });
 
   if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
-    return <div>Le Héros que vous jouez est introuvable</div>;
+    setHero(getHeroesByPlayerId(socket.id!, game)?.[0] || null);
   }
 
   return (
