@@ -112,7 +112,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
         onClick={handleClick}
       >
         <Tooltip title="Option de fouille" arrow>
-          <img src={searchIcon} alt="Search" className="imgNav" />
+          <img src={searchIcon} alt="Search" className="img-nav icon-nav" />
         </Tooltip>
       </Button>
       <Menu
@@ -129,17 +129,17 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
       >
         <MenuItem onClick={() => searchTreasures()}>
           <Tooltip title="Rechercher des trésors" arrow>
-            <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+            <img src={drawCardIcon} alt="Draw Card" className="img-nav icon-nav" />
           </Tooltip>
         </MenuItem>
         <MenuItem onClick={() => searchTraps()}>
           <Tooltip title="Rechercher des pièges" arrow>
-            <img src={trapSearch} alt="Trap search" className="imgNav" />
+            <img src={trapSearch} alt="Trap search" className="img-nav icon-nav" />
           </Tooltip>
         </MenuItem>
         <MenuItem onClick={() => searchSecretDoors()}>
           <Tooltip title="Rechercher des portes secrètes" arrow>
-            <img src={secretDoorIcon} alt="Secret Door" className="imgNav" />
+            <img src={secretDoorIcon} alt="Secret Door" className="img-nav icon-nav" />
           </Tooltip>
         </MenuItem>
       </Menu>

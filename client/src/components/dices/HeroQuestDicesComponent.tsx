@@ -94,7 +94,7 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null ? (
             <img
-              className="imgDice"
+              className="img-dice"
               src={getFightDiceFace(currentDiceFaces[i])}
               alt={` `}
             />

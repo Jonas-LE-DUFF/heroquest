@@ -76,25 +76,6 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     );
   };
 
-  function getDiceFace(face: number) {
-    switch (face) {
-      case 1:
-        return <img className="imgDice" src={face1} alt="dé rouge face 1" />;
-      case 2:
-        return <img className="imgDice" src={face2} alt="dé rouge face 2" />;
-      case 3:
-        return <img className="imgDice" src={face3} alt="dé rouge face 3" />;
-      case 4:
-        return <img className="imgDice" src={face4} alt="dé rouge face 4" />;
-      case 5:
-        return <img className="imgDice" src={face5} alt="dé rouge face 5" />;
-      case 6:
-        return <img className="imgDice" src={face6} alt="dé rouge face 6" />;
-      default:
-        return null;
-    }
-  }
-
   function renderDices(currentDiceFaces: Array<number> | null) {
     if (currentDiceFaces === null) {
       return;
@@ -104,7 +85,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       dices.push(
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null
-            ? getDiceFace(currentDiceFaces[i])
+            ? getRedDiceFace(currentDiceFaces[i])
             : "noFace"}
         </div>,
       );
@@ -142,4 +123,23 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
   );
 };
 
-export default RedDices;
+export function getRedDiceFace(face: number) {
+  switch (face) {
+    case 1:
+      return <img className="img-dice" src={face1} alt="dé rouge face 1" />;
+    case 2:
+      return <img className="img-dice" src={face2} alt="dé rouge face 2" />;
+    case 3:
+      return <img className="img-dice" src={face3} alt="dé rouge face 3" />;
+    case 4:
+      return <img className="img-dice" src={face4} alt="dé rouge face 4" />;
+    case 5:
+      return <img className="img-dice" src={face5} alt="dé rouge face 5" />;
+    case 6:
+      return <img className="img-dice" src={face6} alt="dé rouge face 6" />;
+    default:
+      return null;
+  }
+}
+
+export default RedDices

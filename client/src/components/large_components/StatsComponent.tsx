@@ -11,6 +11,7 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import { toast } from "react-toastify";
+import { getRedDiceFace } from "../dices/RedDicesComponent";
 
 interface StatsComponentProps {
   socket: Socket;
@@ -41,7 +42,7 @@ const StatsComponent = ({
   return (
     <Paper sx={{ height: "fit-content" }}>
       <div className="content">
-        <button className="closeButton" onClick={() => setStatsVisible(false)}>
+        <button className="close-button" onClick={() => setStatsVisible(false)}>
           X
         </button>
         <div className="stats">
@@ -57,7 +58,7 @@ const StatsComponent = ({
             </div>
           )}
           <div className="statElem">
-            <p>Nombre de dés en attaque : </p>
+            <p>Attaque : </p>
             {isGameMaster && (
               <input
                 value={statsEdit.attack}
@@ -73,7 +74,7 @@ const StatsComponent = ({
             {statsEdit?.attack && getDices(statsEdit.attack)}
           </div>
           <div className="statElem">
-            <p>Nombre de dés en défense : </p>
+            <p>Défense : </p>
             {isGameMaster && (
               <input
                 value={statsEdit.defense}
@@ -104,13 +105,29 @@ const StatsComponent = ({
             )}
             {!isGameMaster && statsEdit.spirit}
           </div>
+          <div className="statElem">
+            <p>Déplacements : </p>
+
+            {isGameMaster && (
+              <input
+                value={statsEdit.movements}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    movements: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            )}
+            {statsEdit.movements && getRedDices(statsEdit.movements)}
+          </div>
           {statsEdit?.health && statsEdit.maxHealth && (
             <Box
               sx={{
                 width: "100%",
                 borderRadius: "5px",
                 height: "fit-content",
-                mt: 2,
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",
@@ -119,12 +136,14 @@ const StatsComponent = ({
               }}
             >
               <LinearProgress
-                sx={{ minWidth: "250px", borderRadius: "5px", height: "25px" }}
+                sx={{ minWidth: "70%", borderRadius: "5px", height: "25px" }}
                 color="error"
                 variant="determinate"
                 value={(statsEdit?.health / statsEdit?.maxHealth) * 100}
               />
-              <p>{`${statsEdit?.health} / ${statsEdit?.maxHealth} HP`}</p>
+              <p className="statValue" style={{ minWidth: "30%" }}>
+                {`${statsEdit?.health} / ${statsEdit?.maxHealth} HP`}
+              </p>
             </Box>
           )}
           {isGameMaster && (
@@ -158,23 +177,6 @@ const StatsComponent = ({
               />
             </div>
           )}
-          <div className="statElem">
-            <p>Déplacements : </p>
-            {statsEdit.movements}
-
-            {isGameMaster && (
-              <input
-                value={statsEdit.movements}
-                onChange={(e) =>
-                  setStatsEdit({
-                    ...statsEdit,
-                    movements: Number(e.target.value),
-                  })
-                }
-                type="number"
-              />
-            )}
-          </div>
           <div className="statElem">
             <p>Effets : </p>
             <ul>
@@ -262,6 +264,18 @@ const StatsComponent = ({
     );
   }
 };
+
+function getRedDices(numDices: number) {
+  const dices = [];
+  for (let i = 0; i < numDices; i++) {
+    dices.push(
+      <div className="dice" key={"red dice number" + i}>
+        {getRedDiceFace((i % 6) + 1)}
+      </div>,
+    );
+  }
+  return dices;
+}
 
 function getDices(numDices: number) {
   const dices = [];
