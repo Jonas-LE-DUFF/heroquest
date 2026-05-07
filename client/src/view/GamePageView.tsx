@@ -21,7 +21,6 @@ import {
   getHeroesByPlayerId,
   getPlayerByHero,
   getPlayerBySocketId,
-  getPlayerIdToPlay,
 } from "../shared/serverUtils";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -295,11 +294,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           <Navbar
             socket={socket}
             game={game}
-            isCurrentTurnPlayer={getPlayerIdToPlay(game) === socket.id || false}
-            currentTurnPlayerName={
-              getPlayerBySocketId(getPlayerIdToPlay(game) || "Unknown", game)
-                ?.name || "Unknown"
-            }
             player={user}
             statsOpen={statsVisible}
             selectedUnit={

@@ -23,6 +23,8 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
     setAnchorEl(null);
   };
 
+  const isHeroTurn = game.playOrder[game.currentTurnIndex] === hero?.category && game.isMonsterTurn === false;
+
   function searchSecretDoors(): void {
     socket.emit(
       "check-secret-doors",
@@ -106,6 +108,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
     <div className="nav-elem">
       <Button
         id="basic-button"
+        disabled={!isHeroTurn}
         aria-controls={open ? "basic-menu" : undefined}
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}

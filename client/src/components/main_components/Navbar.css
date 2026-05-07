@@ -22,3 +22,13 @@
 .icon-nav {
   filter: brightness(0%);
 }
+
+.nav-elem:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.MuiButtonBase-root.MuiButton-root.Mui-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

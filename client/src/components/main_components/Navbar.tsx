@@ -30,8 +30,6 @@ interface NavbarProps {
   socket: Socket;
   game: GameAsJson;
   player?: PlayerAsJson;
-  isCurrentTurnPlayer: boolean;
-  currentTurnPlayerName: string;
   statsOpen: boolean;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   currentlyPlayedHero: HeroAsJson | null;
@@ -46,8 +44,6 @@ const Navbar: React.FC<NavbarProps> = ({
   socket,
   game,
   player,
-  isCurrentTurnPlayer,
-  currentTurnPlayerName,
   statsOpen,
   selectedUnit,
   setStatsOpen,
@@ -116,6 +112,20 @@ const Navbar: React.FC<NavbarProps> = ({
     }));
   }
 
+  const heroesNotControlledByPlayer = new Set(
+    Object.entries(HeroCategory)
+      .filter(([key, value]) => {
+        const hero = getHeroesByPlayerId(player.id, game)?.find(
+          (h) => h.category === value,
+        );
+        return isNaN(Number(key)) && !hero;
+      })
+      .map(([, value]) => value as HeroCategory),
+  );
+
+  const heroCategoryToPlay = game.playOrder[game.currentTurnIndex];
+  const isHeroTurn = heroCategoryToPlay === hero?.category && game.isMonsterTurn === false;
+
   return (
     <div className="navbar">
       <div className="nav-elem">Navbar</div>
@@ -143,9 +153,9 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className="nav-elem">Nom de la partie: {game.name}</div>
       <div className="nav-elem">Votre nom: {playerName}</div>
       <div className="nav-elem">
-        {isCurrentTurnPlayer
+        {isHeroTurn
           ? "À toi de jouer !"
-          : "Au tour de " + currentTurnPlayerName}
+          : "Au tour de " + getHeroClassName(heroCategoryToPlay)}
       </div>
       {hero && (
         <>
@@ -185,8 +195,11 @@ const Navbar: React.FC<NavbarProps> = ({
           </Tooltip>
         </div>
       )}
-      {hero && role !== PlayerRole.HERO && (
-        <button className="nav-elem" onClick={() => searchTreasures()}>
+      {hero && role === PlayerRole.GAME_MASTER && (
+        <button
+          className={"nav-elem"}
+          onClick={() => searchTreasures()}
+        >
           <Tooltip title="Rechercher des trésors" arrow>
             <img
               src={drawCardIcon}
@@ -198,13 +211,13 @@ const Navbar: React.FC<NavbarProps> = ({
       )}
       {role === PlayerRole.HERO && hero && SearchMenu(socket, game, hero)}
       {role === PlayerRole.HERO && (
-        <button className="nav-elem" onClick={() => disarmTrap()}>
+        <button className="nav-elem" onClick={() => disarmTrap()} disabled={!isHeroTurn}>
           <Tooltip title="Désarmer un piège" arrow>
             <img src={lockpicks} alt="Lockpicks" className="img-nav icon-nav" />
           </Tooltip>
         </button>
       )}
-      {role === PlayerRole.HERO && (
+      {role === PlayerRole.HERO && heroesNotControlledByPlayer.size < 3 && (
         <div className="nav-elem">
           <Select
             labelId="label-hero-class"
@@ -219,19 +232,7 @@ const Navbar: React.FC<NavbarProps> = ({
             autoWidth
             sx={{ background: "white" }}
           >
-            {renderHeroClassOptions(
-              // disabling heroes the player doesn't control
-              new Set(
-                Object.entries(HeroCategory)
-                  .filter(([key, value]) => {
-                    const hero = getHeroesByPlayerId(player.id, game)?.find(
-                      (h) => h.category === value,
-                    );
-                    return isNaN(Number(key)) && !hero;
-                  })
-                  .map(([, value]) => value as HeroCategory),
-              ),
-            )}
+            {renderHeroClassOptions(heroesNotControlledByPlayer)}
           </Select>
         </div>
       )}
