@@ -29,6 +29,7 @@ const StatsComponent = ({
   isGameMaster,
 }: StatsComponentProps) => {
   const [statsEdit, setStatsEdit] = useState<StatsAsJson>(unit.stats);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     setStatsEdit(unit.stats);
@@ -59,7 +60,7 @@ const StatsComponent = ({
           )}
           <div className="statElem">
             <p>Attaque : </p>
-            {isGameMaster && (
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.attack}
                 onChange={(e) =>
@@ -71,11 +72,11 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {statsEdit?.attack && getDices(statsEdit.attack)}
+            {statsEdit?.attack && !isEditing && getDices(statsEdit.attack)}
           </div>
           <div className="statElem">
             <p>Défense : </p>
-            {isGameMaster && (
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.defense}
                 onChange={(e) =>
@@ -87,11 +88,11 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {statsEdit.defense && getDices(statsEdit.defense)}
+            {statsEdit.defense && !isEditing && getDices(statsEdit.defense)}
           </div>
           <div className="statElem">
             <p>Points d&apos;esprit : </p>
-            {isGameMaster && (
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.spirit}
                 onChange={(e) =>
@@ -103,12 +104,12 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {!isGameMaster && statsEdit.spirit}
+            {!isEditing && statsEdit.spirit}
           </div>
           <div className="statElem">
             <p>Déplacements : </p>
 
-            {isGameMaster && (
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.movements}
                 onChange={(e) =>
@@ -120,7 +121,9 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {statsEdit.movements && getRedDices(statsEdit.movements)}
+            {statsEdit.movements &&
+              !isEditing &&
+              getRedDices(statsEdit.movements)}
           </div>
           {statsEdit?.health && statsEdit.maxHealth && (
             <Box
@@ -146,7 +149,7 @@ const StatsComponent = ({
               </p>
             </Box>
           )}
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <div className="statElem">
               <p>HP : </p>
               <input
@@ -161,7 +164,7 @@ const StatsComponent = ({
               />
             </div>
           )}
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <div className="statElem">
               <p>Max HP : </p>
               <input
@@ -184,9 +187,9 @@ const StatsComponent = ({
                 statsEdit.effects.map((effect, index) => (
                   <li key={index}>
                     {effect}
-                    {isGameMaster && (
+                    {isGameMaster && isEditing && (
                       <button
-                        className="warning-button"
+                        className="warning-button remove-effect-button"
                         onClick={() => {
                           const newEffects = statsEdit.effects?.filter(
                             (statusEffect) => statusEffect !== effect,
@@ -207,7 +210,7 @@ const StatsComponent = ({
               )}
             </ul>
           </div>
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <div className="statElem">
               <input type="text" placeholder="Nom de l'effet" id="effectName" />
               <button
@@ -237,12 +240,23 @@ const StatsComponent = ({
               </button>
             </div>
           )}
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <button
               className="positive-button"
-              onClick={() => sendNewStats(statsEdit)}
+              onClick={() => {
+                sendNewStats(statsEdit);
+                setIsEditing(false);
+              }}
             >
               Save Stats
+            </button>
+          )}
+          {isGameMaster && !isEditing && (
+            <button
+              className="classic-button"
+              onClick={() => setIsEditing(true)}
+            >
+              Modifier les stats
             </button>
           )}
         </div>
