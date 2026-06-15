@@ -11,12 +11,12 @@ import { useLocation } from "react-router-dom";
 
 interface DicesProps {
   socket: Socket;
-  role: PlayerRole; //the role to whom this dices belong
+  diceOwner: PlayerRole; //the role to whom this dices belong
 }
 
-const Dices = ({ socket, role }: DicesProps) => {
+const Dices = ({ socket, diceOwner }: DicesProps) => {
   const state = useLocation().state as LocationState;
-  const {playerId, game} = state;
+  const { playerId, game } = state;
   const [currentDiceFaces, setCurrentDiceFaces] = useState<
     FightDiceFaces[] | null
   >(Array.of(FightDiceFaces.Hit));
@@ -38,7 +38,7 @@ const Dices = ({ socket, role }: DicesProps) => {
       listResults: FightDiceFaces[];
       role: PlayerRole;
     }) => {
-      if (data.role !== role) return; // update is not for this component
+      if (data.role !== diceOwner) return; // update is not for this component
       setCurrentNumberOfDices(data.listResults.length);
       setCurrentDiceFaces(data.listResults);
     };
@@ -51,7 +51,7 @@ const Dices = ({ socket, role }: DicesProps) => {
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "fight" &&
-        role === PlayerRole.HERO
+        diceOwner === PlayerRole.HERO
       ) {
         setCurrentNumberOfDices(data.amountOfDices);
         fillDiceFaces(data.amountOfDices);
@@ -65,7 +65,7 @@ const Dices = ({ socket, role }: DicesProps) => {
       socket.off("dice-update", onDiceUpdate);
       socket.off("special-authorization", onSpecialAuthorization);
     };
-  }, [socket, role]);
+  }, [socket, diceOwner]);
 
   const rollDice = () => {
     socket.emit(
@@ -109,33 +109,31 @@ const Dices = ({ socket, role }: DicesProps) => {
     return dices;
   }
 
+  const isOwner = playerRole === diceOwner;
+
   return (
     <div className={"container"}>
       <Paper
-        className="dice-container"
+        className={isOwner ? "dice-container clickable" : "dice-container"}
         sx={{
           display: "flex",
           flexDirection: "row",
         }}
+        onClick={isOwner ? rollDice : undefined}
       >
         {renderDices(currentDiceFaces, currentNumberOfDices)}
       </Paper>
-      {playerRole === role && (
-        <div className="container">
-          <button className="classic-button" onClick={rollDice}>
-            lancer les dés
-          </button>
-          {playerRole === PlayerRole.GAME_MASTER && (
-            <input
-              className="inputDice"
-              type="number"
-              onChange={(e) =>
-                setCurrentNumberOfDices(Number(e.currentTarget.value))
-              }
-            />
-          )}
-        </div>
-      )}
+      {playerRole === PlayerRole.GAME_MASTER &&
+        diceOwner === PlayerRole.GAME_MASTER && (
+          <input
+            className="inputDice"
+            type="number"
+            value={currentNumberOfDices}
+            onChange={(e) =>
+              setCurrentNumberOfDices(Number(e.currentTarget.value))
+            }
+          />
+        )}
     </div>
   );
 };

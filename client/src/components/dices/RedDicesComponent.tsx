@@ -15,10 +15,10 @@ import { LocationState } from "../../POO/types/LocationType";
 
 interface RedDicesProps {
   socket: Socket;
-  role: PlayerRole;
+  diceOwner: PlayerRole;
 }
 
-const RedDices = ({ socket, role }: RedDicesProps) => {
+const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
   const state = useLocation().state as LocationState;
   const { playerId, game } = state;
 
@@ -39,7 +39,7 @@ const RedDices = ({ socket, role }: RedDicesProps) => {
       listResults: number[];
       role: PlayerRole;
     }) => {
-      if (data.role !== role) return; // update not for us
+      if (data.role !== diceOwner) return; // update not for us
       setCurrentDiceFaces(data.listResults);
     };
 
@@ -51,7 +51,7 @@ const RedDices = ({ socket, role }: RedDicesProps) => {
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "red" &&
-        role === PlayerRole.HERO
+        diceOwner === PlayerRole.HERO
       ) {
         setCurrentDiceFaces(
           Array.of(...(Array(data.amountOfDices).fill(1) as number[])),
@@ -66,7 +66,7 @@ const RedDices = ({ socket, role }: RedDicesProps) => {
       socket.off("red-dice-update", onRedDiceUpdate);
       socket.off("special-authorization", onSpecialAuthorization);
     };
-  }, [socket, role, currentDiceFaces]);
+  }, [socket, diceOwner, currentDiceFaces]);
 
   const rollDice = () => {
     socket.emit(
@@ -103,27 +103,26 @@ const RedDices = ({ socket, role }: RedDicesProps) => {
     return dices;
   }
 
+  const isOwner = playerRole === diceOwner;
+
   return (
     <div className="container">
       <Paper
-        className="dice-container"
+        className={isOwner ? "dice-container clickable" : "dice-container"}
         sx={{
           display: "flex",
           flexDirection: "row",
         }}
+        onClick={isOwner ? rollDice : undefined}
       >
         {renderDices(currentDiceFaces)}
       </Paper>
-      {playerRole === role && (
-        <button className="classic-button" onClick={rollDice}>
-          lancer les dés rouges
-        </button>
-      )}
       {playerRole === PlayerRole.GAME_MASTER &&
-        role === PlayerRole.GAME_MASTER && (
+        diceOwner === PlayerRole.GAME_MASTER && (
           <input
             className="inputDice"
             type="number"
+            value={currentNumberOfDices}
             onChange={(e) =>
               setCurrentNumberOfDices(Number(e.currentTarget.value))
             }

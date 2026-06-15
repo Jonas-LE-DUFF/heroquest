@@ -65,6 +65,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
             state: { game, playerId: state.playerId } as LocationState,
           });
         } else {
+          if(response.error?.includes("spawn point")) {
+            toast.warning("Veuillez placer le point de départ sur le plateau avant de lancer la partie.");
+            return;
+          }
           toast.error(`Erreur: ${response.error}`);
         }
       },
@@ -73,7 +77,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const leaveLobby = () => {
     socket.emit(
-      "leave-lobby",
+      "leave-game",
       { gameId : game?.id, playerId: state.playerId },
       () => {
         void navigate("/");

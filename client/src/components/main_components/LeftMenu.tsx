@@ -4,6 +4,9 @@ import "./LeftMenu.css";
 import { Socket } from "socket.io-client";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import RedDices from "../dices/RedDicesComponent";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
+import Dices from "../dices/HeroQuestDicesComponent";
 
 interface LeftMenuProps {
   statsVisible: boolean;
@@ -20,6 +23,14 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
 }) => {
   return (
     <>
+      <div className="dices hero">
+        <RedDices socket={socket} diceOwner={PlayerRole.HERO} />
+        <Dices socket={socket} diceOwner={PlayerRole.HERO} />
+      </div>
+      <div className="dices game-master">
+        <RedDices socket={socket} diceOwner={PlayerRole.GAME_MASTER} />
+        <Dices socket={socket} diceOwner={PlayerRole.GAME_MASTER} />
+      </div>
       {statsVisible && selectedUnit && (
         <div className="game-controls">
           <StatsComponent

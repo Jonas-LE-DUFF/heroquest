@@ -9,7 +9,7 @@
   margin: 0;
 }
 
-.MuiSelect-root {
+div.form-grid .MuiSelect-root {
   padding: 0;
   width: 100%;
 }

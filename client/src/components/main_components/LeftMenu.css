@@ -4,4 +4,33 @@
 
 .game-controls {
     height: fit-content;
+    color: rgb(241, 241, 241);
+}
+
+.hero {
+  background-color: #A4AC86
+}
+
+.game-master {
+  background-color: #414833;
+}
+
+.dices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    max-width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.dices .inputDice {
+    width: 60px;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #A4AC86;
 }

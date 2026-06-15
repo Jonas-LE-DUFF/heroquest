@@ -15,6 +15,10 @@
   padding: 10px;
 }
 
+.dice-container.clickable{
+  cursor: pointer;
+}
+
 .dice {
   width: 40px;
   height: 40px;
