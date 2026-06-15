@@ -21,7 +21,7 @@ interface ClientToServerEvents {
 
   // ############ hero actions ################
   // lobby actions
-  "leave-lobby": (
+  "leave-game": (
     data: { gameId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;

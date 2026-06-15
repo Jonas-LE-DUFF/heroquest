@@ -74,7 +74,7 @@ export function registerLobbyHandlers(socket: Socket) {
   );
 
   socket.on(
-    "leave-lobby",
+    "leave-game",
     withValidation(socket, gameIdSchema, async (socket, data, callback) => {
       const { gameId, playerId } = data;
       console.log(

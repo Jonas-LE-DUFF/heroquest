@@ -14,7 +14,7 @@ server/src/
 │
 ├── handlers/                     # Event handlers (≈ controllers)
 │   ├── connectionHandler.ts      # disconnect event
-│   ├── lobbyHandlers.ts          # join-game, leave-lobby, choose-character
+│   ├── lobbyHandlers.ts          # join-game, leave-game, choose-character
 │   ├── gameHandlers.ts           # start-game, end-turn
 │   ├── movementHandlers.ts       # move-unit-one-step
 │   ├── combatHandlers.ts         # attack, cast-spell
