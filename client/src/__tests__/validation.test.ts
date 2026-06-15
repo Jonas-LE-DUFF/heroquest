@@ -18,7 +18,6 @@ import {
   getHeroesByPlayerId,
   getPlayerByHero,
   getPlayerByHeroCategory,
-  getPlayerBySocketId,
   getPlayerIdToPlay,
 } from "../shared/serverUtils";
 import {
@@ -82,6 +81,7 @@ function createPlayer(overrides?: Partial<PlayerAsJson>): PlayerAsJson {
     name: "Alice",
     role: PlayerRole.HERO,
     isReady: false,
+    socketId: null,
     ...overrides,
   };
 }
@@ -755,13 +755,6 @@ describe("serverUtils validation", () => {
     const player = getPlayerByHero(hero, players);
     expect(player).not.toBeNull();
     expect(player!.id).toBe("p1");
-  });
-
-  it("getPlayerBySocketId should find the correct player", () => {
-    const game = createFullPartyGame();
-    const player = getPlayerBySocketId("p2", game);
-    expect(player).not.toBeNull();
-    expect(player!.name).toBe("Player2");
   });
 
   it("getPlayerByHeroCategory should find the player controlling that hero", () => {
