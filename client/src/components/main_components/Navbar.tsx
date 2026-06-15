@@ -5,17 +5,26 @@ import {
   getHeroClassName,
   isHero,
 } from "../../shared/utils";
-import { Dialog, Select, Tooltip } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Select,
+  Tooltip,
+} from "@mui/material";
 import { PlayerAsJson } from "../../POO/interfaces/ClassAsJson/Server/PlayerAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getHeroesByPlayerId } from "../../shared/serverUtils";
 import magicStaffIcon from "/assets/images/icons/navbar/magic-staff.svg";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/search-treasure.svg";
 import lockpicks from "/assets/images/icons/navbar/disarm-traps.svg";
+import exitIcon from "/assets/images/icons/navbar/exit.svg";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
 import { PlayerService } from "../../POO/PlayerService";
@@ -50,6 +59,7 @@ const Navbar: React.FC<NavbarProps> = ({
   setInteraction,
 }) => {
   const state = useLocation().state as LocationState;
+  const navigate = useNavigate();
   const { playerId, game } = state;
   const player = game.players.find((p) => p.id === playerId) as PlayerAsJson;
   const role = player?.role;
@@ -57,6 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({
   const playerName = player?.name || "Unknown Player";
 
   const [showEquipments, setShowEquipments] = useState(false);
+  const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false);
 
   if (!player) {
     return <div>Loading...</div>;
@@ -101,6 +112,33 @@ const Navbar: React.FC<NavbarProps> = ({
     );
   }
 
+  function leaveGame() {
+    socket.emit(
+      "leave-game",
+      { gameId: game.id, playerId: player.id },
+      (response: { success: boolean; error?: string }) => {
+        if (!response.success) {
+          if (
+            response.error?.includes("Game not found") ||
+            response.error?.includes("Partie non trouvée")
+          ) {
+            void navigate("/");
+            return;
+          }
+          console.error(
+            "Erreur lors de la sortie de la partie : " + response.error,
+          );
+          toast.error(
+            `Erreur lors de la sortie de la partie : ${response.error}`,
+          );
+        } else {
+          toast.info("Vous avez quitté la partie.");
+          void navigate("/");
+        }
+      },
+    );
+  }
+
   function disarmTrap(): void {
     setInteraction((prev: InteractionState) => ({
       ...prev,
@@ -120,119 +158,157 @@ const Navbar: React.FC<NavbarProps> = ({
   );
 
   const heroCategoryToPlay = game.playOrder[game.currentTurnIndex];
-  const isHeroTurn = heroCategoryToPlay === hero?.category && game.isMonsterTurn === false;
+  const isHeroTurn =
+    heroCategoryToPlay === hero?.category && game.isMonsterTurn === false;
 
   return (
-    <div className="navbar">
-      <div className="nav-elem">Navbar</div>
-      {player.role === PlayerRole.HERO && hero?.category && (
-        <div className="nav-elem">
-          <Tooltip
-            title={statsOpen ? "Cacher statistiques" : "Voir statistiques"}
-            arrow
-          >
-            <button
-              onClick={() => {
-                setSelectedUnit(hero);
-                setStatsOpen(!statsOpen);
-              }}
-            >
-              <img
-                className="img-nav"
-                src={getHeroClassIconPath(hero.category)}
-                alt={getHeroClassName(hero.category)}
-              />
-            </button>
-          </Tooltip>
-        </div>
-      )}
-      <div className="nav-elem">Nom de la partie: {game.name}</div>
-      <div className="nav-elem">Votre nom: {playerName}</div>
-      <div className="nav-elem">
-        {isHeroTurn
-          ? "À toi de jouer !"
-          : "Au tour de " + getHeroClassName(heroCategoryToPlay)}
-      </div>
-      {hero && (
-        <>
+    <>
+      <div className="navbar">
+        <div className="nav-elem">Navbar</div>
+        {player.role === PlayerRole.HERO && hero?.category && (
           <div className="nav-elem">
-            <Tooltip title="Voir mon équipement" arrow>
+            <Tooltip
+              title={statsOpen ? "Cacher statistiques" : "Voir statistiques"}
+              arrow
+            >
               <button
                 onClick={() => {
-                  setShowEquipments(!showEquipments);
+                  setSelectedUnit(hero);
+                  setStatsOpen(!statsOpen);
                 }}
               >
                 <img
-                  src={backpackIcon}
-                  alt="Backpack"
+                  className="img-nav"
+                  src={getHeroClassIconPath(hero.category)}
+                  alt={getHeroClassName(hero.category)}
+                />
+              </button>
+            </Tooltip>
+          </div>
+        )}
+        <div className="nav-elem">Nom de la partie: {game.name}</div>
+        <div className="nav-elem">Votre nom: {playerName}</div>
+        <div className="nav-elem">
+          {isHeroTurn
+            ? "À toi de jouer !"
+            : "Au tour de " + getHeroClassName(heroCategoryToPlay)}
+        </div>
+        {hero && (
+          <>
+            <div className="nav-elem">
+              <Tooltip title="Voir mon équipement" arrow>
+                <button
+                  onClick={() => {
+                    setShowEquipments(!showEquipments);
+                  }}
+                >
+                  <img
+                    src={backpackIcon}
+                    alt="Backpack"
+                    className="img-nav icon-nav"
+                  />
+                </button>
+              </Tooltip>
+            </div>
+            <Dialog
+              open={showEquipments}
+              onClose={() => setShowEquipments(false)}
+            >
+              <EquipmentsDialogComponent socket={socket} hero={hero} />
+            </Dialog>
+          </>
+        )}
+        {hero?.spells && hero.spells.length > 0 && (
+          <div className="nav-elem">
+            <Tooltip title="Voir mes sorts" arrow>
+              <button onClick={() => showSpells()}>
+                <img
+                  src={magicStaffIcon}
+                  alt="magicStaff"
                   className="img-nav icon-nav"
                 />
               </button>
             </Tooltip>
           </div>
-          <Dialog
-            open={showEquipments}
-            onClose={() => setShowEquipments(false)}
-          >
-            <EquipmentsDialogComponent socket={socket} hero={hero} />
-          </Dialog>
-        </>
-      )}
-      {hero?.spells && hero.spells.length > 0 && (
-        <div className="nav-elem">
-          <Tooltip title="Voir mes sorts" arrow>
-            <button onClick={() => showSpells()}>
+        )}
+        {hero && role === PlayerRole.GAME_MASTER && (
+          <button className={"nav-elem"} onClick={() => searchTreasures()}>
+            <Tooltip title="Rechercher des trésors" arrow>
               <img
-                src={magicStaffIcon}
-                alt="magicStaff"
+                src={drawCardIcon}
+                alt="Draw Card"
                 className="img-nav icon-nav"
               />
-            </button>
-          </Tooltip>
-        </div>
-      )}
-      {hero && role === PlayerRole.GAME_MASTER && (
-        <button
-          className={"nav-elem"}
-          onClick={() => searchTreasures()}
-        >
-          <Tooltip title="Rechercher des trésors" arrow>
-            <img
-              src={drawCardIcon}
-              alt="Draw Card"
-              className="img-nav icon-nav"
-            />
-          </Tooltip>
-        </button>
-      )}
-      {role === PlayerRole.HERO && hero && SearchMenu(socket, hero)}
-      {role === PlayerRole.HERO && (
-        <button className="nav-elem" onClick={() => disarmTrap()} disabled={!isHeroTurn}>
-          <Tooltip title="Désarmer un piège" arrow>
-            <img src={lockpicks} alt="Lockpicks" className="img-nav icon-nav" />
-          </Tooltip>
-        </button>
-      )}
-      {role === PlayerRole.HERO && heroesNotControlledByPlayer.size < 3 && (
-        <div className="nav-elem">
-          <Select
-            labelId="label-hero-class"
-            id="select-hero-class"
-            value={currentlyPlayedHero?.category || ""}
-            onChange={(e) => {
-              const newCategory = e.target.value as HeroCategory;
-              setCurrentlyPlayedHero(
-                PlayerService.getHeroByCategory(game, player.id, newCategory),
-              );
-            }}
-            autoWidth
-            sx={{ background: "white" }}
+            </Tooltip>
+          </button>
+        )}
+        {role === PlayerRole.HERO && hero && SearchMenu(socket, hero)}
+        {role === PlayerRole.HERO && (
+          <button
+            className="nav-elem"
+            onClick={() => disarmTrap()}
+            disabled={!isHeroTurn}
           >
-            {renderHeroClassOptions(heroesNotControlledByPlayer)}
-          </Select>
-        </div>
-      )}
-    </div>
+            <Tooltip title="Désarmer un piège" arrow>
+              <img
+                src={lockpicks}
+                alt="Lockpicks"
+                className="img-nav icon-nav"
+              />
+            </Tooltip>
+          </button>
+        )}
+        {role === PlayerRole.HERO && heroesNotControlledByPlayer.size < 3 && (
+          <div className="nav-elem">
+            <Select
+              labelId="label-hero-class"
+              id="select-hero-class"
+              value={currentlyPlayedHero?.category || ""}
+              onChange={(e) => {
+                const newCategory = e.target.value as HeroCategory;
+                setCurrentlyPlayedHero(
+                  PlayerService.getHeroByCategory(game, player.id, newCategory),
+                );
+              }}
+              autoWidth
+              sx={{ background: "white" }}
+            >
+              {renderHeroClassOptions(heroesNotControlledByPlayer)}
+            </Select>
+          </div>
+        )}
+        <button className="nav-elem" onClick={() => setShowLeaveConfirmation(true)}>
+          <Tooltip title="Quitter la partie" arrow>
+            <img src={exitIcon} alt="Exit" className="img-nav" />
+          </Tooltip>
+        </button>
+        <Dialog
+          open={showLeaveConfirmation}
+          onClose={() => setShowLeaveConfirmation(false)}
+        >
+          <DialogTitle>Quitter la partie ?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Cette action vous renverra à l&apos;accueil et vous quitterez la partie en cours.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <button onClick={() => setShowLeaveConfirmation(false)} className="classic-button">
+              Annuler
+            </button>
+            <button
+              onClick={() => {
+                setShowLeaveConfirmation(false);
+                leaveGame();
+              }}
+              className="warning-button"
+            >
+              Quitter
+            </button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    </>
   );
 };
 
