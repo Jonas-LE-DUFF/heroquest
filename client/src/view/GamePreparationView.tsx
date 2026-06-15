@@ -7,18 +7,18 @@ import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
+import { LocationState } from "../POO/types/LocationType";
 
 interface GamePreparationProps {
   socket: Socket;
 }
 
 const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
-  const state = useLocation().state as {
-    playerName: string;
-    game: GameAsJson;
-  };
+  const state : LocationState = useLocation().state as LocationState;
   const navigate = useNavigate();
-  const playerName = state.playerName;
+
+  const playerName = state.game.players.find((p) => p.id === state.playerId)?.name || "Unknown Player";
+
   const [game, setGame] = useState<GameAsJson>(state.game);
 
   useEffect(() => {
@@ -43,6 +43,7 @@ const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
       "place-element",
       {
         gameId: game.id,
+        playerId: state.playerId,
         position: pos,
         selectedType: TileType.SPAWN_POINT,
       },
@@ -64,7 +65,7 @@ const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
 
   const goToLobby = () => {
     void navigate("/lobby", {
-      state: { playerName: playerName, game: game },
+      state: { game: game, playerId: state.playerId } as LocationState,
     });
   };
 

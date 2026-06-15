@@ -10,23 +10,28 @@ import face6 from "./../images/redDice6.png";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
 
 interface RedDicesProps {
   socket: Socket;
-  gameId: string;
   role: PlayerRole;
-  viewerRole: PlayerRole;
 }
 
-const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
+const RedDices = ({ socket, role }: RedDicesProps) => {
+  const state = useLocation().state as LocationState;
+  const { playerId, game } = state;
+
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
     Array.of(1, 1),
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(2);
-  const playerRole = viewerRole;
+  const playerRole = game.players.find((p) => p.id === playerId)?.role;
 
   useEffect(() => {
-    setCurrentDiceFaces(Array.of(...Array(currentNumberOfDices).fill(1) as number[]));
+    setCurrentDiceFaces(
+      Array.of(...(Array(currentNumberOfDices).fill(1) as number[])),
+    );
   }, [currentNumberOfDices]);
 
   useEffect(() => {
@@ -48,7 +53,9 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
         data.typeOfDices === "red" &&
         role === PlayerRole.HERO
       ) {
-        setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1) as number[]));
+        setCurrentDiceFaces(
+          Array.of(...(Array(data.amountOfDices).fill(1) as number[])),
+        );
       }
     };
 
@@ -65,12 +72,15 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     socket.emit(
       "roll-red-dice",
       {
-        gameId: gameId,
+        gameId: game.id,
+        playerId: playerId,
         numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          toast.error("Erreur lors du lancement des dés rouges : " + response.error);
+          toast.error(
+            "Erreur lors du lancement des dés rouges : " + response.error,
+          );
         }
       },
     );
@@ -142,4 +152,4 @@ export function getRedDiceFace(face: number) {
   }
 }
 
-export default RedDices
+export default RedDices;

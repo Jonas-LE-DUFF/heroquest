@@ -12,22 +12,26 @@ import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import { toast } from "react-toastify";
 import { getRedDiceFace } from "../dices/RedDicesComponent";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface StatsComponentProps {
   socket: Socket;
-  gameId: string;
   unit: MonsterAsJson | HeroAsJson;
   setStatsVisible: (arg0: boolean) => void;
-  isGameMaster: boolean;
 }
 
 const StatsComponent = ({
   socket,
-  gameId,
   unit,
   setStatsVisible,
-  isGameMaster,
 }: StatsComponentProps) => {
+  const state = useLocation().state as LocationState;
+  const { playerId, game } = state;
+
+  const isGameMaster = game.players.find((p) => p.id === playerId)?.role === PlayerRole.GAME_MASTER;
+
   const [statsEdit, setStatsEdit] = useState<StatsAsJson>(unit.stats);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -267,7 +271,7 @@ const StatsComponent = ({
     // Send the new stats to the server or update the state
     socket.emit(
       "update-stats-unit",
-      { gameId, newStats, unitId: unit.id },
+      { gameId: game.id, playerId, newStats, unitId: unit.id },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           toast.error(

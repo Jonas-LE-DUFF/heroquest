@@ -1,7 +1,6 @@
-import { Socket } from "socket.io";
 import { Game } from "../POO/classes/Server/Game";
 
-export function requirePlayerTurn(socket: Socket, game: Game): boolean {
+export function requirePlayerTurn(playerId: string, game: Game): boolean {
   let currentPlayerTurnId: string | undefined;
   try {
     currentPlayerTurnId = game.getCurrentPlayerTurnId();
@@ -13,8 +12,8 @@ export function requirePlayerTurn(socket: Socket, game: Game): boolean {
     return false;
   }
   if (
-    currentPlayerTurnId !== socket.id &&
-    game.getGameMaster()?.id !== socket.id
+    currentPlayerTurnId !== playerId &&
+    game.getGameMaster()?.id !== playerId
   ) {
     return false;
   }

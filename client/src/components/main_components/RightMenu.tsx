@@ -21,7 +21,6 @@ interface RightMenuProps {
 
 const RightMenu: React.FC<RightMenuProps> = ({
   socket,
-  currentGameState,
   setSelectedType,
   selectedType,
   selectedUnit,
@@ -33,7 +32,6 @@ const RightMenu: React.FC<RightMenuProps> = ({
   return (
     <GameControls
       socket={socket}
-      game={currentGameState}
       setSelectedType={setSelectedType}
       selectedType={selectedType}
       selectedUnit={selectedUnit}

@@ -26,14 +26,14 @@ export function registerGameActionsHandlers(socket: Socket) {
     "cast-spell",
     withValidation(socket, castSpellSchema, async (socket, data, callback) => {
       console.debug("casting spell", data);
-      const { gameId, spellId, position } = data;
+      const { gameId, playerId, spellId, position } = data;
       const game = GameService.getGame(gameId);
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("game couldn't be found in cast-spell"));
       }
 
-      if (!requirePlayerTurn(socket, game!)) {
+      if (!requirePlayerTurn(playerId, game!)) {
         return callback(
           errorResponse("it's not your turn to play in cast-spell"),
         );
@@ -74,7 +74,7 @@ export function registerGameActionsHandlers(socket: Socket) {
   socket.on(
     "attack",
     withValidation(socket, attackSchema, async (socket, data, callback) => {
-      const { gameId, attackerId, targetId, wishedNumberOfDices } = data;
+      const { gameId, playerId, attackerId, targetId, wishedNumberOfDices } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("game couldn't be found in attack"));
@@ -91,7 +91,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         );
       }
 
-      await fight(socket, game!, attacker, defender, wishedNumberOfDices);
+      await fight(playerId, game!, attacker, defender, wishedNumberOfDices);
       callback(successResponse());
     }),
   );
@@ -102,7 +102,7 @@ export function registerGameActionsHandlers(socket: Socket) {
       socket,
       drinkPotionSchema,
       async (socket, data, callback) => {
-        const { gameId, potionId, heroId } = data;
+        const { gameId, playerId, potionId, heroId } = data;
         const game = GameService.getGame(gameId);
 
         if (!requireGameExists(gameId)) {
@@ -111,7 +111,7 @@ export function registerGameActionsHandlers(socket: Socket) {
           );
         }
 
-        if (!requirePlayerTurn(socket, game!)) {
+        if (!requirePlayerTurn(playerId, game!)) {
           return callback(
             errorResponse("it's not your turn to play in drink-potion"),
           );
@@ -167,7 +167,7 @@ export function registerGameActionsHandlers(socket: Socket) {
       socket,
       heroActionSchema,
       (socket, data, callback) => {
-        const { gameId, heroId } = data;
+        const { gameId, playerId, heroId } = data;
 
         console.debug("checking for treasures for hero", heroId, "in game", gameId);
 
@@ -178,7 +178,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         }
         const game = GameService.getGame(gameId);
 
-        if (!requirePlayerTurn(socket, game!)) {
+        if (!requirePlayerTurn(playerId, game!)) {
           return callback(
             errorResponse("it's not your turn to play in check-for-treasures"),
           );
@@ -190,10 +190,10 @@ export function registerGameActionsHandlers(socket: Socket) {
 
         const io = ServerHeroQuest.getServerInstance().getIo();
 
-        if (!requireGameMaster(socket, game!)) {
+        if (!requireGameMaster(playerId, game!)) {
           const gameMasterSocket = getGameMasterSocket(io, game!);
           gameMasterSocket?.emit("player-search", {
-            playerId: socket.id,
+            playerId,
             heroId,
             elementSearched: "treasures",
           });
@@ -230,7 +230,7 @@ export function registerGameActionsHandlers(socket: Socket) {
     socket,
     heroActionSchema,
     (socket, data, callback) => {
-      const { gameId, heroId } = data;
+      const { gameId, playerId, heroId } = data;
 
       console.debug("checking for secret doors for hero", heroId, "in game", gameId);
 
@@ -241,7 +241,7 @@ export function registerGameActionsHandlers(socket: Socket) {
       }
       const game = GameService.getGame(gameId);
 
-      if (!requirePlayerTurn(socket, game!)) {
+      if (!requirePlayerTurn(playerId, game!)) {
         return callback(
           errorResponse("it's not your turn to play in check-secret-doors"),
         );
@@ -249,11 +249,11 @@ export function registerGameActionsHandlers(socket: Socket) {
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
-      if (!requireGameMaster(socket, game!)) {
+      if (!requireGameMaster(playerId, game!)) {
         const gameMasterSocket = getGameMasterSocket(io, game!);
         gameMasterSocket?.emit("player-search", {
           heroId,
-          playerId: socket.id,
+          playerId,
           elementSearched: "secretDoors",
         });
         return callback(

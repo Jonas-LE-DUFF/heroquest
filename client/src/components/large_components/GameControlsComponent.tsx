@@ -18,7 +18,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { getEquipmentName } from "../../shared/equipments";
 import { TileType } from "../../POO/enums/Board/TileType";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
-import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { Direction } from "../../POO/enums/Direction";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -29,22 +28,21 @@ import { TrapType } from "../../POO/enums/Board/TrapType";
 import { SelectType } from "../../POO/types/selectType";
 import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 import { Socket } from "socket.io-client";
+import { LocationState } from "../../POO/types/LocationType";
 
 interface GameControlsProps {
   socket: Socket;
-  game: GameAsJson;
+  setInteraction: Dispatch<SetStateAction<InteractionState>>;
   setSelectedType: (type: SelectType) => void; //Direction -> door placement
   selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
   hero: HeroAsJson | null;
-  setInteraction: Dispatch<SetStateAction<InteractionState>>;
 }
 
 const GameControls = ({
   socket,
-  game,
   setInteraction,
   setSelectedType,
   selectedType,
@@ -53,12 +51,9 @@ const GameControls = ({
   selectedWeapon,
   hero,
 }: GameControlsProps) => {
-  const state = useLocation().state as {
-    gameId: string;
-    role: PlayerRole;
-  };
-  const gameId = state.gameId;
-  const role = state.role;
+  const state = useLocation().state as LocationState;
+  const { playerId, game } = state;
+  const role = game.players.find((p) => p.id === playerId)?.role ?? PlayerRole.HERO;
 
   const isElementsShown: Map<string, boolean> = new Map();
   isElementsShown.set("monsterSelector", false);
@@ -68,14 +63,15 @@ const GameControls = ({
   isElementsShown.set("monsterDices", true);
   isElementsShown.set("masterControls", false);
 
-  const isPlayerTurn = getPlayerIdToPlay(game) === socket.id;
+  const isPlayerTurn = getPlayerIdToPlay(game) === playerId;
 
   const movePlayer = (direction: Direction) => {
     socket.emit(
       "move-unit-one-step",
       {
-        gameId,
-        unitId: socket.id,
+        gameId: game.id,
+        playerId,
+        unitId: playerId,
         direction: direction,
       },
       (response: { success: boolean; error?: string }) => {
@@ -95,7 +91,8 @@ const GameControls = ({
     socket.emit(
       "move-unit-one-step",
       {
-        gameId,
+        gameId: game.id,
+        playerId,
         unitId: selectedUnit.id,
         direction: direction,
       },
@@ -138,7 +135,7 @@ const GameControls = ({
   const endTurn = () => {
     socket.emit(
       "end-turn",
-      { gameId: gameId },
+      { gameId: game.id, playerId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           toast.error(`Erreur lors de la fin du tour: ${response.error}`);
@@ -257,15 +254,11 @@ const GameControls = ({
           <div className="dices-section">
             <RedDices
               socket={socket}
-              gameId={gameId}
               role={PlayerRole.HERO}
-              viewerRole={role}
             />
             <Dices
               socket={socket}
-              gameId={gameId}
               role={PlayerRole.HERO}
-              viewerRole={role}
             />
           </div>
           {role === PlayerRole.HERO && hero?.equipment && (
@@ -310,15 +303,11 @@ const GameControls = ({
           <div className="dices-section">
             <RedDices
               socket={socket}
-              gameId={gameId}
               role={PlayerRole.GAME_MASTER}
-              viewerRole={role}
             />
             <Dices
               socket={socket}
-              gameId={gameId}
               role={PlayerRole.GAME_MASTER}
-              viewerRole={role}
             />
           </div>
         </Accordion>
@@ -485,7 +474,7 @@ const GameControls = ({
               <Typography component="span">Contrôles Maître du Jeu</Typography>
             </AccordionSummary>
             <div>
-              <MasterControls socket={socket} gameId={gameId} />
+              <MasterControls socket={socket}/>
             </div>
           </Accordion>
         )}

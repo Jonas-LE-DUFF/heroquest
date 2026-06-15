@@ -19,6 +19,7 @@ import RotatableCard3D from "../../small_components/RotatableCard3D";
 import { GameAsJson } from "../../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { MonsterAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { isHero } from "../../../shared/utils";
+import { LocationState } from "../../../POO/types/LocationType";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -26,9 +27,11 @@ interface EquipmentsDialogComponentProps {
 }
 
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
-  const state = useLocation().state as { gameId: string; role: PlayerRole };
-  const gameId = state.gameId;
-  const role = state.role;
+  const state = useLocation().state as LocationState;
+  const { game, playerId } = state;
+  const player = game.players.find((p) => p.id === playerId);
+  const role = player?.role ?? PlayerRole.HERO;
+  const gameId = state.game.id;
 
   const { socket, hero } = props;
   const equipment = hero.equipment;
@@ -51,7 +54,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           <div>
             {equipment.name}
             {equipment.type === "Potion" &&
-              hero.controlledByPlayerId === socket.id && (
+              hero.controlledByPlayerId === playerId && (
                 <button className="positive-button" onClick={() => drinkPotion(equipment.id)}>
                   boire
                 </button>
@@ -92,6 +95,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       "updateEquipment",
       {
         gameId,
+        playerId: playerId,
         heroId: hero.id,
         equipment: equipmentAsCards.map((card) => card.id),
         gold: gold,
@@ -141,6 +145,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       "drink-potion",
       {
         gameId,
+        playerId: playerId,
         heroId: hero.id,
         potionId: potionId,
       },

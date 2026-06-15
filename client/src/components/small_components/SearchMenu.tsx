@@ -10,10 +10,13 @@ import secretDoorIcon from "/assets/images/icons/navbar/search-secret-doors.svg"
 import { Tooltip } from "@mui/material";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
-import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
 
-export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroAsJson) {
+export default function SearchMenu(socket: Socket, hero: HeroAsJson) {
+  const state = useLocation().state as LocationState;
+  const { game, playerId } = state;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -28,7 +31,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
   function searchSecretDoors(): void {
     socket.emit(
       "check-secret-doors",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: playerId, heroId: hero?.id },
       (response: {
         success: boolean;
         trapCardId?: string;
@@ -55,7 +58,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
     console.debug("searchTreasures called for hero", hero?.name); // Debug log
     socket.emit(
       "check-for-treasures",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: playerId, heroId: hero?.id },
       (response: {
         success: boolean;
         treasureCardId?: string;
@@ -81,7 +84,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
   function searchTraps(): void {
     socket.emit(
       "check-for-traps",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: playerId, heroId: hero?.id },
       (response: {
         success: boolean;
         trapCardId?: string;

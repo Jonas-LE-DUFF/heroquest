@@ -18,8 +18,20 @@ function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:5000");
+    const localStorage = window.localStorage;
+    const sessionToken = localStorage.getItem("sessionToken");
+
+    const newSocket = io("http://localhost:5000", {
+      auth: { sessionToken },
+    });
+
+    newSocket.on("session", (data: { sessionToken: string }) => {
+      localStorage.setItem("sessionToken", data.sessionToken);
+    });
+
     setSocket(newSocket);
+
+    
 
     return () => {
       newSocket.close();

@@ -9,22 +9,22 @@ import {
   successResponse,
   errorResponse,
   withValidation,
-  gameIdSchema,
   updateEquipmentSchema,
+  gameIdSchema,
 } from "../validation";
 
 export function registerGameHandlers(socket: Socket) {
   socket.on(
     "end-turn",
     withValidation(socket, gameIdSchema, (socket, data, callback) => {
-      const { gameId } = data;
+      const { gameId, playerId } = data;
       const game = GameService.getGame(gameId);
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Partie non trouvée"));
       }
 
-      if (!requirePlayerTurn(socket, game!)) {
+      if (!requirePlayerTurn(playerId, game!)) {
         return callback(errorResponse("Ce n'est pas votre tour"));
       }
 
@@ -41,13 +41,13 @@ export function registerGameHandlers(socket: Socket) {
   socket.on(
     "updateEquipment",
     withValidation(socket, updateEquipmentSchema, (socket, data, callback) => {
-      const { gameId } = data;
+      const { gameId, playerId } = data;
       const game = GameService.getGame(gameId);
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Partie non trouvée"));
       }
-      if (!requireGameMaster(socket, game!)) {
+      if (!requireGameMaster(playerId, game!)) {
         return callback(errorResponse("Seul le maître du jeu peut faire cela"));
       }
 

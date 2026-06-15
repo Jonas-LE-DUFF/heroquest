@@ -20,7 +20,6 @@ import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import {
   getHeroesByPlayerId,
   getPlayerByHero,
-  getPlayerBySocketId,
 } from "../shared/serverUtils";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
@@ -36,18 +35,18 @@ import useBoardTileClickHandlers, {
   TargetingState,
 } from "./hooks/useBoardTileClickHandlers";
 import { Socket } from "socket.io-client";
+import { LocationState } from "../POO/types/LocationType";
 
 interface GamePageProps {
   socket: Socket;
 }
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
-  const state = useLocation().state as {
-    playerName: string;
-    role: PlayerRole;
-    game: GameAsJson;
-  };
-  const role = state.role;
+  const state = useLocation().state as LocationState 
+
+  const player = state.game.players.find((p) => p.id === state.playerId);
+
+  const role = player?.role;
 
   const [interaction, setInteraction] = useState<InteractionState>({
     selectedType: null,
@@ -82,9 +81,8 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   const [game, setGame] = useState<GameAsJson>(state.game);
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
-  const user = game.players.find((p) => p.id === socket.id);
   const [hero, setHero] = useState<HeroAsJson | null>(
-    getHeroesByPlayerId(socket.id!, game)?.[0] || null,
+    getHeroesByPlayerId(player?.id ?? "", game)?.[0] || null,
   );
   
   const [statsVisible, setStatsVisible] = useState(false);
@@ -96,13 +94,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       console.error("Game data is missing");
       return;
     }
-    const hero = getHeroesByPlayerId(socket.id!, game)?.[0] || null;
+    const hero = getHeroesByPlayerId(player?.id ?? "", game)?.[0] || null;
     if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
       console.error("Couldn't find a hero for the current player");
       return;
     }
     setHero(hero);
-  }, [game, socket.id, role]);
+  }, [game, player?.id, role]);
 
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
@@ -217,7 +215,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
     const handlePlayerSearching = (data: { playerId : string, heroId: string, elementSearched: string }) => {
       const hero = game.gameState.Units.find((u) => u.id === data.heroId) as HeroAsJson;
-      const player = getPlayerBySocketId(data.playerId, game);
       toast.info(
         `Le joueur ${player?.name || data.playerId} cherche des ${data.elementSearched} avec le/la ${getHeroClassName(hero.category)} `,
       );
@@ -236,7 +233,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       socket.off("game-state-update", handleGameStateUpdate);
       socket.off("card-drawn", handleCardDrawn);
     };
-  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate, game]);
+  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate, game, player?.name]);
 
   const setSelectedUnit = (unit: HeroAsJson | MonsterAsJson | null) => {
     if (!unit) return;
@@ -264,6 +261,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     interaction,
     setInteraction,
     game,
+    playerId: player?.id ?? "",
     socket,
     hero,
     setStatsVisible,
@@ -293,8 +291,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className="Navbar">
           <Navbar
             socket={socket}
-            game={game}
-            player={user}
             statsOpen={statsVisible}
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
@@ -311,12 +307,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           <LeftMenu
             statsVisible={statsVisible}
             socket={socket}
-            currentGameState={game}
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }
             setStatsVisible={setStatsVisible}
-            role={role}
           />
         </Grid>
 

@@ -6,6 +6,7 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
 import { Paper } from "@mui/material";
+import { LocationState } from "../POO/types/LocationType";
 
 interface LoginPageProps {
   socket: Socket;
@@ -43,10 +44,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       async (data: { playerId: string; game: GameAsJson }) => {
         await navigate("/lobby", {
           state: {
-            playerName: playerName,
             game: data.game,
             playerId: data.playerId,
-          },
+          } as LocationState,
         });
       },
     );

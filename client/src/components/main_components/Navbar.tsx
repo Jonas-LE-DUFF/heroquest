@@ -12,7 +12,6 @@ import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation } from "react-router-dom";
 import { getHeroesByPlayerId } from "../../shared/serverUtils";
-import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import magicStaffIcon from "/assets/images/icons/navbar/magic-staff.svg";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/search-treasure.svg";
@@ -25,11 +24,10 @@ import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 import { toast } from "react-toastify";
 import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 import SearchMenu from "../small_components/SearchMenu";
+import { LocationState } from "../../POO/types/LocationType";
 
 interface NavbarProps {
   socket: Socket;
-  game: GameAsJson;
-  player?: PlayerAsJson;
   statsOpen: boolean;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   currentlyPlayedHero: HeroAsJson | null;
@@ -42,8 +40,6 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({
   socket,
-  game,
-  player,
   statsOpen,
   selectedUnit,
   setStatsOpen,
@@ -53,12 +49,12 @@ const Navbar: React.FC<NavbarProps> = ({
   setCurrentlyPlayedHero,
   setInteraction,
 }) => {
-  const state = useLocation().state as {
-    role: PlayerRole;
-    playerName: string;
-  };
-  const role = state.role;
-  const playerName = state.playerName;
+  const state = useLocation().state as LocationState;
+  const { playerId, game } = state;
+  const player = game.players.find((p) => p.id === playerId) as PlayerAsJson;
+  const role = player?.role;
+
+  const playerName = player?.name || "Unknown Player";
 
   const [showEquipments, setShowEquipments] = useState(false);
 
@@ -82,7 +78,7 @@ const Navbar: React.FC<NavbarProps> = ({
     console.debug("searchTreasures called for hero", hero?.name); // Debug log
     socket.emit(
       "check-for-treasures",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: player.id, heroId: hero?.id },
       (response: {
         success: boolean;
         treasureCardId?: string;
@@ -209,7 +205,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </Tooltip>
         </button>
       )}
-      {role === PlayerRole.HERO && hero && SearchMenu(socket, game, hero)}
+      {role === PlayerRole.HERO && hero && SearchMenu(socket, hero)}
       {role === PlayerRole.HERO && (
         <button className="nav-elem" onClick={() => disarmTrap()} disabled={!isHeroTurn}>
           <Tooltip title="Désarmer un piège" arrow>

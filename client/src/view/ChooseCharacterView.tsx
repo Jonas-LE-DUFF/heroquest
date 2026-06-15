@@ -30,6 +30,7 @@ import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { toast } from "react-toastify";
 import { CardType } from "../POO/interfaces/ClassAsJson/CardAsJson";
 import { Socket } from "socket.io-client";
+import { LocationState } from "../POO/types/LocationType";
 
 interface ChooseCharacterProps {
   socket: Socket;
@@ -37,16 +38,15 @@ interface ChooseCharacterProps {
 
 const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   const navigate = useNavigate();
-  const state = useLocation().state as {
-    playerName: string;
-    game: GameAsJson;
+  const state = useLocation().state as LocationState & {
     hero?: HeroAsJson;
-    playerId: string;
   };
+
+  const playerName = state.game.players.find((p) => p.id === state.playerId)?.name || "Unknown Player";
 
   const [game, setGame] = useState<GameAsJson>(state.game);
 
-  const { playerName, hero } = state;
+  const { hero } = state;
 
   const modifiedHero = hero;
 
@@ -254,7 +254,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     socket.emit(
       "choose-character",
-      { heroCreationWish: heroCreation, gameId: game.id },
+      { heroCreationWish: heroCreation, gameId: game.id, playerId: state.playerId },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success && response.data) {
           void navigate("/lobby", {

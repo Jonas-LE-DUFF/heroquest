@@ -6,20 +6,22 @@ import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
+import { LocationState } from "../../POO/types/LocationType";
+import { useLocation } from "react-router-dom";
 
 interface DicesProps {
   socket: Socket;
-  gameId: string;
   role: PlayerRole; //the role to whom this dices belong
-  viewerRole: PlayerRole; //who is watching the dices
 }
 
-const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
+const Dices = ({ socket, role }: DicesProps) => {
+  const state = useLocation().state as LocationState;
+  const {playerId, game} = state;
   const [currentDiceFaces, setCurrentDiceFaces] = useState<
     FightDiceFaces[] | null
   >(Array.of(FightDiceFaces.Hit));
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
-  const playerRole = viewerRole;
+  const playerRole = game.players.find((p) => p.id === playerId)?.role;
 
   useEffect(() => {
     const fillDiceFaces = (numberOfDices: number) => {
@@ -69,8 +71,8 @@ const Dices = ({ socket, gameId, role, viewerRole }: DicesProps) => {
     socket.emit(
       "roll-dice",
       {
-        gameId,
-        playerId: socket.id,
+        gameId: game.id,
+        playerId: playerId,
         numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {

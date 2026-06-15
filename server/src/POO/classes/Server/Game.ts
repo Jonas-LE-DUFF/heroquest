@@ -12,7 +12,7 @@ import { Direction } from "../../enums/Direction";
 class Game {
   id: string;
   name: string;
-  private players: Map<string, Player>; // playerId -> Player
+  private players: Map<string, Player>; // playerId -> Player !!! pas socketId -> Player
 
   playOrder: HeroCategory[] = [];
   isMonsterTurn: boolean = false;

@@ -9,6 +9,8 @@ import { HeroAsJson } from "../ClassAsJson/Unit/HeroAsJson";
 
 // Événements Socket.io
 interface ServerToClientEvents {
+  "session": (data: { sessionToken: string }) => void;
+
   // connection responses
   "join-success": (data: { playerId: string; game: GameAsJson }) => void;
 

@@ -7,25 +7,21 @@ import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
 import Card from "@mui/material/Card";
 import "./LobbyPageView.css";
+import { LocationState } from "../POO/types/LocationType";
 
 interface LobbyPageProps {
   socket: Socket;
 }
 
 const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
-  const state = useLocation().state as {
-    playerName: string;
-    game: GameAsJson;
-    playerId: string;
-  };
+  const state : LocationState = useLocation().state as LocationState;
   const navigate = useNavigate();
 
-  const playerName : string = state.playerName;
+  const player = state.game.players.find((p) => p.id === state.playerId);
+  const playerName = player?.name || "Unknown Player";
+  const role = player?.role;
+
   const [game, setgame] = useState<GameAsJson | null>(state.game);
-  const gameId = game?.id;
-  const role: PlayerRole | undefined = game?.players?.find(
-    (p) => p.id === socket.id,
-  )?.role;
 
   useEffect(() => {
     if (!game || !playerName) {
@@ -40,7 +36,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       const game = data.game;
       console.log("Game is starting...", game);
       void navigate("/game", {
-        state: { playerName, gameId, role, game: game, playerId: state.playerId },
+        state: { game: game, playerId: state.playerId } as LocationState,
       });
     };
 
@@ -56,17 +52,17 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       socket.off("game-start", handleGameStart);
       socket.off("game-state-update", handlegameUpdate);
     };
-  }, [navigate, playerName, socket, game, gameId, role, state.playerId]);
+  }, [navigate, playerName, socket, game, role, state.playerId]);
 
   const startGame = () => {
     socket.emit(
       "start-game",
-      { gameId },
+      { gameId: game?.id, playerId: state.playerId },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success) {
           const game = response.data;
           void navigate("/game", {
-            state: { playerName, gameId, role, game, playerId: state.playerId },
+            state: { game, playerId: state.playerId } as LocationState,
           });
         } else {
           toast.error(`Erreur: ${response.error}`);
@@ -78,7 +74,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const leaveLobby = () => {
     socket.emit(
       "leave-lobby",
-      { gameId },
+      { gameId : game?.id, playerId: state.playerId },
       () => {
         void navigate("/");
       },
@@ -95,11 +91,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     void navigate("/characterChoice", {
       state: {
         game,
-        playerName,
-        gameId,
-        role,
         playerId: state.playerId,
-      },
+      } as LocationState,
     });
   };
 
@@ -111,7 +104,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     }
     socket.emit(
       "unselect-character",
-      { gameId, heroId },
+      { gameId : game?.id, playerId: state.playerId, heroId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           console.error("Error unselecting character:", response.error);
@@ -125,15 +118,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     void navigate("/gamePreparation", {
       state: {
         game,
-        playerName,
-        gameId,
-        role,
         playerId: state.playerId,
-      },
+      } as LocationState,
     });
   };
 
-  if (!game) {
+  if (!game || !player) {
     void navigate("/");
     return null;
   }

@@ -38,7 +38,7 @@ function getPlayerBySocketId(
   socketId: string,
   game: GameAsJson,
 ): PlayerAsJson | null {
-  const player = game.players.find((p) => p.id === socketId) || null;
+  const player = game.players.find((p) => p.socketId === socketId) || null;
   return player;
 }
 

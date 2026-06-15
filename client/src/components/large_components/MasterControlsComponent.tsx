@@ -4,20 +4,25 @@ import { renderHeroClassOptions } from "../../shared/selectHeroClass";
 import "./MasterControlsComponent.css";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 import { Socket } from "socket.io-client";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
 
 interface MasterControlsProps {
   socket: Socket;
-  gameId: string;
 }
 
-const MasterControls = ({ socket, gameId }: MasterControlsProps) => {
+const MasterControls = ({ socket }: MasterControlsProps) => {
+  const locationState = useLocation().state as LocationState;
+  const { playerId, game } = locationState;
+
   const [numberOfDices, setNumberOfDices] = useState<number>(1);
   const [heroType, setHeroType] = useState<HeroCategory>(HeroCategory.Barbarian);
   const [diceType, setDiceType] = useState<"fight" | "red">("fight");
 
   const authorizeNumberOfFightDices = () => {
     socket.emit("authorize-special-throw-dices", {
-      gameId: gameId,
+      gameId: game.id,
+      playerId,
       numberOfDices: numberOfDices,
       typeOfDices: diceType,
       playerClass: heroType,

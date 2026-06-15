@@ -7,10 +7,12 @@ import path from "path/win32";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 import { registerSocketHandlers } from "../socket/SocketRouter";
+import { SessionStore } from "./SessionStore";
 
 class ServerHeroQuest {
   private static serverInstance: ServerHeroQuest | undefined = undefined;
 
+  private sessionStore = new SessionStore();
   private app = express();
   private httpServer = createServer(this.app);
   private io = new Server<ClientToServerEvents, ServerToClientEvents>(
@@ -87,6 +89,10 @@ class ServerHeroQuest {
 
   getIo(): Server<ClientToServerEvents, ServerToClientEvents> {
     return this.io;
+  }
+
+  getSessionStore(): SessionStore {
+    return this.sessionStore;
   }
 }
 

@@ -19,10 +19,12 @@ export const positionSchema = z.object({
 
 export const gameIdSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
 });
 
 export const heroActionSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
 });
 
@@ -45,6 +47,7 @@ export const joinGameSchema = z.object({
 });
 
 export const chooseCharacterSchema = z.object({
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   heroCreationWish: z.object({
     name: z.string().min(1, "Le nom du héros est requis"),
@@ -58,6 +61,7 @@ export const chooseCharacterSchema = z.object({
 
 export const unselectCharacterSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
 });
 
@@ -65,12 +69,14 @@ export const unselectCharacterSchema = z.object({
 
 export const castSpellSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   spellId: z.string().min(1, "L'ID du sort est requis"),
   position: positionSchema,
 });
 
 export const attackSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   attackerId: z.string().min(1, "L'ID de l'attaquant est requis"),
   targetId: z.string().min(1, "L'ID de la cible est requis"),
   wishedNumberOfDices: z.number().int().min(1),
@@ -78,6 +84,7 @@ export const attackSchema = z.object({
 
 export const drinkPotionSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
   potionId: z.string().min(1, "L'ID de la potion est requis"),
 });
@@ -86,12 +93,14 @@ export const drinkPotionSchema = z.object({
 
 export const disarmTrapSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
   position: positionSchema,
 });
 
 export const revealTrapSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   position: positionSchema,
 });
 
@@ -99,6 +108,7 @@ export const revealTrapSchema = z.object({
 
 export const authorizeSpecialThrowSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   numberOfDices: z
     .number()
     .int()
@@ -109,6 +119,7 @@ export const authorizeSpecialThrowSchema = z.object({
 
 export const rollRedDiceSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   numberOfDice: z
     .number()
     .int()
@@ -117,6 +128,7 @@ export const rollRedDiceSchema = z.object({
 
 export const rollDiceSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   numberOfDice: z
     .number()
     .int()
@@ -127,18 +139,21 @@ export const rollDiceSchema = z.object({
 
 export const placeElementSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   position: positionSchema,
   selectedType: z.custom<SelectType>(), // SelectType - complexe à valider
 });
 
 export const updateStatsUnitSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   newStats: StatSchema, // StatsAsJson - objet complexe
   unitId: z.string().min(1, "L'ID de l'unité est requis"),
 });
 
 export const updateEquipmentSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
   equipment: z.array(z.string()), // Liste d'IDs d'équipements
   gold: z.number().int().min(0, "L'or ne peut pas être négatif"),
@@ -148,6 +163,7 @@ export const updateEquipmentSchema = z.object({
 
 export const moveUnitOneStepSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   unitId: z.string().min(1, "L'ID de l'unité est requis"),
   direction: z.enum(Direction),
 });

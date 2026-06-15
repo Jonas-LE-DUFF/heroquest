@@ -40,43 +40,49 @@ interface ClientToServerEvents {
   ) => void;
 
   "unselect-character": (
-    data: { gameId: string; heroId: string },
+    data: { gameId: string; heroId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 
   // in-game actions
-  "move-player-one-step": (
-    data: {
-      gameId: string;
-      playerId: string;
-      direction: Direction;
-    },
-    callback: (response: { success: boolean; error?: string }) => void,
-  ) => void;
   "attack-monster": (
-    data: { gameId: string; monsterId: string },
+    data: { gameId: string; monsterId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
   "cast-spell": (
     data: {
       gameId: string;
+      playerId: string;
       spellId: string;
       position: PositionAsJson;
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
-  "check-for-treasures": (data: { gameId: string; heroId: string }) => void;
-  "check-traps": (data: { gameId: string; heroId: string }) => void;
-  "check-secret-doors": (data: { gameId: string; heroId: string }) => void;
+  "check-for-treasures": (data: {
+    gameId: string;
+    heroId: string;
+    playerId: string;
+  }) => void;
+  "check-traps": (data: {
+    gameId: string;
+    heroId: string;
+    playerId: string;
+  }) => void;
+  "check-secret-doors": (data: {
+    gameId: string;
+    heroId: string;
+    playerId: string;
+  }) => void;
   "disarm-trap": (data: {
     gameId: string;
     trapTargeted: PositionAsJson;
+    playerId: string;
   }) => void;
 
   // ############################ game master actions ############################
   // lobby actions
   "start-game": (
-    data: { gameId: string },
+    data: { gameId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
   // in-turn actions
@@ -85,6 +91,7 @@ interface ClientToServerEvents {
       gameId: string;
       unitId: string;
       direction: Direction;
+      playerId: string;
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
@@ -94,6 +101,7 @@ interface ClientToServerEvents {
       gameId: string;
       position: PositionAsJson;
       selectedType: TileType | Direction | MonsterCategory;
+      playerId: string;
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
@@ -101,6 +109,7 @@ interface ClientToServerEvents {
   "authorize-special-throw-dices": (
     data: {
       gameId: string;
+      playerId: string;
       numberOfDices: number;
       typeOfDices: "red" | "fight";
       playerClass: HeroCategory;
@@ -111,6 +120,7 @@ interface ClientToServerEvents {
   "update-stats-unit": (
     data: {
       gameId: string;
+      playerId: string;
       newStats: StatsAsJson;
       position: PositionAsJson;
     },
@@ -129,13 +139,14 @@ interface ClientToServerEvents {
   "roll-red-dice": (
     data: {
       gameId: string;
+      playerId: string;
       numberOfDice: number;
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 
   "end-turn": (
-    data: { gameId: string },
+    data: { gameId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 }

@@ -5,6 +5,7 @@ interface PlayerAsJson {
     name: string;
     role: PlayerRole;
     isReady: boolean;
+    socketId: string | null;
 }
 
 export type { PlayerAsJson };
