@@ -57,7 +57,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
 
   return (
     <Paper elevation={5} className="login-page">
-      <h1>HeroQuest Online</h1>
       <form onSubmit={handleJoinGame} className="login-form">
         <div className="form-group">
           <p>Votre nom :</p>
@@ -96,13 +95,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
           Rejoindre la partie
         </button>
       </form>
-
-      <div className="game-info">
-        <h3>Comment jouer ?</h3>
-        <p>• Créez une partie avec un ID unique</p>
-        <p>• Partagez l&apos;ID avec vos amis</p>
-        <p>• Un joueur doit être le Maître du Jeu</p>
-      </div>
     </Paper>
   );
 };

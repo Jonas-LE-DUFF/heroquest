@@ -83,7 +83,7 @@ button {
 .return-button {
   padding: 12px 24px;
   margin: 5px;
-  border-radius: 6px;
+  border-radius: 32px;
   border: 2px solid #ccc;
   background-color: #979797;
   color: white;
@@ -111,7 +111,7 @@ button {
 }
 
 .positive-button:hover {
-  background-color: #174719;
+  background-color: #236826;
 }
 
 .warning-button {
@@ -120,16 +120,16 @@ button {
 }
 
 .warning-button:hover {
-  background-color: rgba(136, 32, 32, 0.897);
+  background-color: rgba(175, 52, 52, 0.897);
 }
 
 .classic-button {
-  border-color: #0e234b;
+  border-color: #5274b3;
   background-color: #2d58a8;
 }
 
 .classic-button:hover {
-  background-color: #0e234b;
+  background-color: #3061c2;
 }
 
 form, .form {
@@ -149,9 +149,13 @@ form, .form {
   margin-right: auto;
   margin-top: 4vh;
   margin-bottom: 4vh;
-  background : rgba(0, 0, 0, 0.06) !important; /* override Paper default background*/
+  background : var(--vanilla-custard) !important; /* override Paper default background*/
   border-radius: 16px !important;
   width: fit-content;
+}
+
+.login-page {
+  margin-top: 16vh;
 }
 
 .equipments-dialog {

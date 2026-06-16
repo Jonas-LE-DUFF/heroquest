@@ -22,17 +22,19 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
   >(Array.of(FightDiceFaces.Hit));
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
   const playerRole = game.players.find((p) => p.id === playerId)?.role;
+  
+  function fillDiceFaces(numberOfDices: number) {
+    const PosssibleFaces = [FightDiceFaces.Hit, FightDiceFaces.BlackShield, FightDiceFaces.WhiteShield];
+    setCurrentDiceFaces((prev) => {
+      const faceList = prev ? [...prev] : [];
+      for (let i = 0; i < numberOfDices; i++) {
+        if (faceList[i] === undefined) faceList[i] = PosssibleFaces[i % 3];
+      }
+      return faceList;
+    });
+  }
 
   useEffect(() => {
-    const fillDiceFaces = (numberOfDices: number) => {
-      setCurrentDiceFaces((prev) => {
-        const faceList = prev ? [...prev] : [];
-        for (let i = 0; i < numberOfDices; i++) {
-          if (faceList[i] === undefined) faceList[i] = FightDiceFaces.Hit;
-        }
-        return faceList;
-      });
-    };
 
     const onDiceUpdate = (data: {
       listResults: FightDiceFaces[];
@@ -129,9 +131,10 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
             className="inputDice"
             type="number"
             value={currentNumberOfDices}
-            onChange={(e) =>
-              setCurrentNumberOfDices(Number(e.currentTarget.value))
-            }
+            onChange={(e) => {
+              setCurrentNumberOfDices(Number(e.currentTarget.value));
+              fillDiceFaces(Number(e.currentTarget.value));
+            }}
           />
         )}
     </div>

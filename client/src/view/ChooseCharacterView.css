@@ -12,11 +12,16 @@
 div.form-grid .MuiSelect-root {
   padding: 0;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #3b3b3b;
 }
 
-.MuiInputBase-root {
-  border: 1px solid #3b3b3b;
+.MuiInputBase-root .MuiSelect-select {
   border-radius: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .selectHeroClass {

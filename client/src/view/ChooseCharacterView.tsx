@@ -7,6 +7,7 @@ import {
   SelectChangeEvent,
   TextField,
   Checkbox,
+  Paper,
 } from "@mui/material";
 import "./ChooseCharacterView.css";
 import { renderHeroClassOptions } from "../shared/selectHeroClass";
@@ -272,7 +273,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   };
 
   return (
-    <div className="character-page">
+    <Paper elevation={5} className="character-page">
       <h1>Choisissez votre personnage {playerName}</h1>
       <div className="form">
         <div className="form-grid">
@@ -333,7 +334,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
           </button>
         </div>
       </div>
-    </div>
+    </Paper>
   );
 };
 

@@ -1,26 +1,27 @@
 :root {
-  --hero-bg: radial-gradient(
-    ellipse at center,
-    rgba(255, 248, 230, 0.98) 0%,
-    var(--light-apricot) 50%,
-    var(--camel) 85%,
-    var(--dark-coffee) 100%
-  );
-
+  
 
   /* CSS HEX */
-  --dark-wine: #6f1d1bff;
-  --camel: #bb9457ff;
   --dark-coffee: #432818ff;
-  --chocolate-brown: #99582aff;
-  --light-apricot: #ffe6a7ff;
-
+  --tan: #ddbc98ff;
+  --vanilla-custard: #dbd8aeff;
+  --turf-green: #297045ff;
+  --dark-slate-grey: #204e4aff;
+  
   /* CSS HSL */
-  --dark-wine: hsla(1, 61%, 27%, 1);
-  --camel: hsla(37, 42%, 54%, 1);
   --dark-coffee: hsla(22, 47%, 18%, 1);
-  --chocolate-brown: hsla(25, 57%, 38%, 1);
-  --light-apricot: hsla(43, 100%, 83%, 1);
+  --tan: hsla(31, 50%, 73%, 1);
+  --vanilla-custard: rgb(206, 184, 155, 0.9);
+  --turf-green: hsla(144, 46%, 30%, 1);
+  --dark-slate-grey: hsla(175, 42%, 22%, 1);
+}
+
+.hero {
+  background: #A4AC86;
+}
+
+.game-master{
+  background: var(--dark-slate-grey);
 }
 
 body {
@@ -30,10 +31,12 @@ body {
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--hero-bg);
+  background-image: url(/assets/images/icons/heroquestlogo.png);
+  background-color: var(--tan);
   background-attachment: fixed;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-position: top;
+  background-size: 1000px auto;
   color: #2f2416;
 }
 

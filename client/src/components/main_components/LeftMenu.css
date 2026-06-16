@@ -7,17 +7,12 @@
     color: rgb(241, 241, 241);
 }
 
-.hero {
-  background-color: #A4AC86
-}
-
 .game-master {
   background-color: #414833;
 }
 
 .dices {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
     gap: 5px;
     max-width: 100%;

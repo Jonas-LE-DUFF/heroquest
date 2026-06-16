@@ -4,6 +4,8 @@ p {
 
 .form-component p{
     color: white;
+    margin-right: 10px;
+    width: auto;
 }
 
 .form-component{
@@ -12,4 +14,13 @@ p {
     align-items: center;
     justify-content: space-around;
     width: 100%;
+}
+
+.form-component > input{
+    width : 20%;
+}
+
+.form-component > .MuiInputBase-root{
+    width: fit-content;
+    min-width: 150px;
 }

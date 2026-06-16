@@ -32,7 +32,7 @@ const MasterControls = ({ socket }: MasterControlsProps) => {
   return (
     <div className="container">
       <div className="form-component">
-        <p>Nombre de dés à lancer authorisé</p>
+        <p>Nombre de dés</p>
         <input
           value={numberOfDices}
           type="number"
@@ -40,7 +40,7 @@ const MasterControls = ({ socket }: MasterControlsProps) => {
         />
       </div>
       <div className="form-component">
-        <p>Joueur.se autorisé.e</p>
+        <p>Héros</p>
         <Select
           labelId="label-hero-class"
           id="select-hero-class"

@@ -11,6 +11,7 @@ import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../../POO/enums/Direction";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { getPlayerIdToPlay } from "../../shared/serverUtils";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
@@ -25,6 +26,7 @@ import MagnifingGlassIcon from "/assets/images/icons/actions/magnifying-glass.sv
 
 interface GameControlsProps {
   socket: Socket;
+  currentGameState: GameAsJson;
   setInteraction: Dispatch<SetStateAction<InteractionState>>;
   setSelectedType: (type: SelectType) => void; //Direction -> door placement
   selectedType: SelectType;
@@ -36,6 +38,7 @@ interface GameControlsProps {
 
 const GameControls = ({
   socket,
+  currentGameState,
   setInteraction,
   setSelectedType,
   selectedType,
@@ -45,14 +48,15 @@ const GameControls = ({
   hero,
 }: GameControlsProps) => {
   const state = useLocation().state as LocationState;
-  const { playerId, game } = state;
+  const { playerId } = state;
   const role =
-    game.players.find((p) => p.id === playerId)?.role ?? PlayerRole.HERO;
+    currentGameState.players.find((p) => p.id === playerId)?.role ??
+    PlayerRole.HERO;
 
   const isElementsShown: Map<string, boolean> = new Map();
   isElementsShown.set("masterControls", false);
 
-  const isPlayerTurn = getPlayerIdToPlay(game) === playerId;
+  const isPlayerTurn = getPlayerIdToPlay(currentGameState) === playerId;
 
   const [selectedMonster, setSelectedMonster] = useState<MonsterCategory>(
     MonsterCategory.Goblin,
@@ -67,7 +71,7 @@ const GameControls = ({
     socket.emit(
       "move-unit-one-step",
       {
-        gameId: game.id,
+        gameId: currentGameState.id,
         playerId,
         unitId: playerId,
         direction: direction,
@@ -89,7 +93,7 @@ const GameControls = ({
     socket.emit(
       "move-unit-one-step",
       {
-        gameId: game.id,
+        gameId: currentGameState.id,
         playerId,
         unitId: selectedUnit.id,
         direction: direction,
@@ -113,7 +117,7 @@ const GameControls = ({
   const endTurn = () => {
     socket.emit(
       "end-turn",
-      { gameId: game.id, playerId },
+      { gameId: currentGameState.id, playerId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           toast.error(`Erreur lors de la fin du tour: ${response.error}`);
@@ -273,7 +277,7 @@ const GameControls = ({
                 />
               </Grid>
               <Grid size={3}>
-                <h3>Monstres</h3>
+                <h5>Monstres</h5>
               </Grid>
               <Grid size={8}>
                 <Select
@@ -298,7 +302,7 @@ const GameControls = ({
                 />
               </Grid>
               <Grid size={3}>
-                <h3>Meubles</h3>
+                <h5>Meubles</h5>
               </Grid>
               <Grid size={8}>
                 <Select
@@ -320,7 +324,7 @@ const GameControls = ({
                 />
               </Grid>
               <Grid size={3}>
-                <h3>Portes</h3>
+                <h5>Portes</h5>
               </Grid>
               <Grid size={8}>
                 <Select
@@ -344,7 +348,7 @@ const GameControls = ({
                 />
               </Grid>
               <Grid size={3}>
-                <h3>Pièges</h3>
+                <h5>Pièges</h5>
               </Grid>
               <Grid size={8}>
                 <Select
@@ -384,17 +388,13 @@ const GameControls = ({
                 </button>
               </div>
             </div>
+            <hr />
           </>
         )}
-        <hr />
         {role === PlayerRole.GAME_MASTER &&
           selectedUnit !== null &&
           renderMovementControls(role)}
-        {role === PlayerRole.GAME_MASTER && (
-          <div>
-            <MasterControls socket={socket} />
-          </div>
-        )}
+        {role === PlayerRole.GAME_MASTER && <MasterControls socket={socket} />}
       </div>
     </div>
   );

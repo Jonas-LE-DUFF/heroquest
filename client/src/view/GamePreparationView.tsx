@@ -14,10 +14,12 @@ interface GamePreparationProps {
 }
 
 const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
-  const state : LocationState = useLocation().state as LocationState;
+  const state: LocationState = useLocation().state as LocationState;
   const navigate = useNavigate();
 
-  const playerName = state.game.players.find((p) => p.id === state.playerId)?.name || "Unknown Player";
+  const playerName =
+    state.game.players.find((p) => p.id === state.playerId)?.name ||
+    "Unknown Player";
 
   const [game, setGame] = useState<GameAsJson>(state.game);
 
@@ -35,7 +37,7 @@ const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
 
     return () => {
       socket.off("game-state-update");
-    }
+    };
   });
 
   const placeStairs = (pos: PositionAsJson) => {
@@ -61,7 +63,6 @@ const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
       },
     );
   };
-  
 
   const goToLobby = () => {
     void navigate("/lobby", {
@@ -72,14 +73,16 @@ const GamePreparation: React.FC<GamePreparationProps> = ({ socket }) => {
   return (
     <div className="game-preparation">
       <h1>Préparation de la partie...</h1>
-      <Board
-        game={game}
-        onTileClick={(position) => {
-          placeStairs(position);
-        }}
-        selectedPosition={null}
-        selectedType={null}
-      />
+      <div className="Board">
+        <Board
+          game={game}
+          onTileClick={(position) => {
+            placeStairs(position);
+          }}
+          selectedPosition={null}
+          selectedType={null}
+        />
+      </div>
       <button className="classic-button" onClick={goToLobby}>
         Retour au lobby
       </button>

@@ -1,11 +1,13 @@
 .navbar {
   padding:8px;
   width: 100%;
+  height: calc(100% - 16px);
   display: flex;
   flex-direction: row;
   justify-content: start;
-  background-color: #a68a6494;
-  border-bottom: 2px solid #582f0e;
+  background-color: var(--tan);
+  color: var(--dark-coffee);
+  border-bottom: 2px solid var(--dark-coffee);
 }
 
 .nav-elem {
@@ -20,7 +22,7 @@
 }
 
 .icon-nav {
-  filter: brightness(0%);
+  filter: brightness(100%);
 }
 
 .nav-elem:disabled {

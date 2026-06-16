@@ -38,3 +38,9 @@
     z-index: 1;
     pointer-events: none;
 }
+
+.Board > .MuiTableCell-body, .Board > .MuiTableContainer-root{
+    background: none;
+    background-color: transparent;
+    background-image: none;
+}

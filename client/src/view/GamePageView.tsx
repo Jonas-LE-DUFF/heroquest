@@ -17,10 +17,7 @@ import {
   removeUnitFromBoardById,
 } from "../shared/boardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import {
-  getHeroesByPlayerId,
-  getPlayerByHero,
-} from "../shared/serverUtils";
+import { getHeroesByPlayerId, getPlayerByHero } from "../shared/serverUtils";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
@@ -42,7 +39,7 @@ interface GamePageProps {
 }
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
-  const state = useLocation().state as LocationState 
+  const state = useLocation().state as LocationState;
 
   const player = state.game.players.find((p) => p.id === state.playerId);
 
@@ -84,7 +81,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const [hero, setHero] = useState<HeroAsJson | null>(
     getHeroesByPlayerId(player?.id ?? "", game)?.[0] || null,
   );
-  
+
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
@@ -213,12 +210,18 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       });
     };
 
-    const handlePlayerSearching = (data: { playerId : string, heroId: string, elementSearched: string }) => {
-      const hero = game.gameState.Units.find((u) => u.id === data.heroId) as HeroAsJson;
+    const handlePlayerSearching = (data: {
+      playerId: string;
+      heroId: string;
+      elementSearched: string;
+    }) => {
+      const hero = game.gameState.Units.find(
+        (u) => u.id === data.heroId,
+      ) as HeroAsJson;
       toast.info(
         `Le joueur ${player?.name || data.playerId} cherche des ${data.elementSearched} avec le/la ${getHeroClassName(hero.category)} `,
       );
-    }
+    };
 
     socket.on("player-search", handlePlayerSearching);
     socket.on("game-state-update", handleGameStateUpdate);
@@ -233,7 +236,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       socket.off("game-state-update", handleGameStateUpdate);
       socket.off("card-drawn", handleCardDrawn);
     };
-  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate, game, player?.name]);
+  }, [
+    socket,
+    selectedPosition,
+    selectedEntityId,
+    handleStatsUpdate,
+    game,
+    player?.name,
+  ]);
 
   const setSelectedUnit = (unit: HeroAsJson | MonsterAsJson | null) => {
     if (!unit) return;
