@@ -1,4 +1,11 @@
-import { Dispatch, SetStateAction, JSX, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  JSX,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useLocation } from "react-router-dom";
 import "./GameControlsComponent.css";
 import { Grid, MenuItem, Radio, Select } from "@mui/material";
@@ -67,44 +74,98 @@ const GameControls = ({
   const [selectedDoor, setSelectedDoor] = useState<Direction>(Direction.UP);
   const [selectedTrap, setSelectedTrap] = useState<TrapType>(TrapType.PIT_TRAP);
 
-  const movePlayer = (direction: Direction) => {
-    socket.emit(
-      "move-unit-one-step",
-      {
-        gameId: currentGameState.id,
-        playerId,
-        unitId: playerId,
-        direction: direction,
-      },
-      (response: { success: boolean; error?: string }) => {
-        if (!response.success) {
-          toast.error(`Erreur de déplacement du joueur: ${response.error}`);
-        }
-      },
-    );
-  };
+  const movePlayer = useCallback(
+    (direction: Direction) => {
+      if (!hero) {
+        console.error("No hero found for the current player");
+        return;
+      }
 
-  const moveMonster = (direction: Direction) => {
-    if (!selectedUnit || role !== PlayerRole.GAME_MASTER) {
-      console.error("No unit selected for movement");
-      return;
-    }
+      socket.emit(
+        "move-unit-one-step",
+        {
+          gameId: currentGameState.id,
+          playerId,
+          unitId: hero.id,
+          direction: direction,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (!response.success) {
+            toast.error(`Erreur de déplacement du joueur: ${response.error}`);
+          }
+        },
+      );
+    },
+    [currentGameState.id, hero, playerId, socket],
+  );
 
-    socket.emit(
-      "move-unit-one-step",
-      {
-        gameId: currentGameState.id,
-        playerId,
-        unitId: selectedUnit.id,
-        direction: direction,
-      },
-      (response: { success: boolean; error?: string }) => {
-        if (!response.success) {
-          toast.error(`Erreur de déplacement du monstre: ${response.error}`);
-        }
-      },
-    );
-  };
+  const moveMonster = useCallback(
+    (direction: Direction) => {
+      if (!selectedUnit || role !== PlayerRole.GAME_MASTER) {
+        console.error("No unit selected for movement");
+        return;
+      }
+
+      socket.emit(
+        "move-unit-one-step",
+        {
+          gameId: currentGameState.id,
+          playerId,
+          unitId: selectedUnit.id,
+          direction: direction,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (!response.success) {
+            toast.error(`Erreur de déplacement du monstre: ${response.error}`);
+          }
+        },
+      );
+    },
+    [currentGameState.id, playerId, role, selectedUnit, socket],
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const directionByKey: Record<string, Direction> = {
+        ArrowUp: Direction.UP,
+        ArrowDown: Direction.DOWN,
+        ArrowLeft: Direction.LEFT,
+        ArrowRight: Direction.RIGHT,
+      };
+
+      const direction = directionByKey[event.key];
+      if (!direction) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (role === PlayerRole.HERO && isPlayerTurn) {
+        movePlayer(direction);
+        return;
+      }
+
+      if (role === PlayerRole.GAME_MASTER && selectedUnit) {
+        moveMonster(direction);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPlayerTurn, moveMonster, movePlayer, role, selectedUnit]);
 
   const unSelect = () => {
     setSelectedType(null);
