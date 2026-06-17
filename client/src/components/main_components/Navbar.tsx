@@ -34,6 +34,8 @@ import { toast } from "react-toastify";
 import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 import SearchMenu from "../small_components/SearchMenu";
 import { LocationState } from "../../POO/types/LocationType";
+import logoImage from "/assets/images/icons/heroquestlogo.png";
+import { getEquipmentName } from "../../shared/equipments";
 
 interface NavbarProps {
   socket: Socket;
@@ -45,6 +47,8 @@ interface NavbarProps {
   setSelectedUnit: (arg0: HeroAsJson | MonsterAsJson | null) => void;
   openSpellPage: () => void;
   setInteraction: Dispatch<SetStateAction<InteractionState>>;
+  setSelectedWeapon: (weaponId: string | null) => void;
+  selectedWeapon: string | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -57,6 +61,8 @@ const Navbar: React.FC<NavbarProps> = ({
   currentlyPlayedHero,
   setCurrentlyPlayedHero,
   setInteraction,
+  setSelectedWeapon,
+  selectedWeapon,
 }) => {
   const state = useLocation().state as LocationState;
   const navigate = useNavigate();
@@ -164,7 +170,11 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <div className="navbar">
-        <div className="nav-elem">Navbar</div>
+        <div className="nav-elem">
+          <button>
+            <img className="img-nav" src={logoImage} alt="Logo" />
+          </button>
+        </div>
         {player.role === PlayerRole.HERO && hero?.category && (
           <div className="nav-elem">
             <Tooltip
@@ -186,8 +196,9 @@ const Navbar: React.FC<NavbarProps> = ({
             </Tooltip>
           </div>
         )}
-        <div className="nav-elem">Nom de la partie: {game.name}</div>
+        <div className="nav-elem">Partie: {game.name}</div>
         <div className="nav-elem">Votre nom: {playerName}</div>
+        <hr style={{ border: "solid 1px black", marginRight: "10px" }} />
         <div className="nav-elem">
           {isHeroTurn
             ? "À toi de jouer !"
@@ -277,7 +288,28 @@ const Navbar: React.FC<NavbarProps> = ({
             </Select>
           </div>
         )}
-        <button className="nav-elem" onClick={() => setShowLeaveConfirmation(true)}>
+        {role === PlayerRole.HERO && hero && (
+          <Select
+            className="weapons"
+            id="weapons-select"
+            onChange={(e) => {
+              setSelectedWeapon(e.target.value);
+            }}
+            value={selectedWeapon ?? ""}
+          >
+            {hero?.equipment?.weapons?.map((weapon) => {
+              return (
+                <option key={weapon.id} value={weapon.id}>
+                  {getEquipmentName(weapon.name)}
+                </option>
+              );
+            })}
+          </Select>
+        )}
+        <button
+          className="nav-elem"
+          onClick={() => setShowLeaveConfirmation(true)}
+        >
           <Tooltip title="Quitter la partie" arrow>
             <img src={exitIcon} alt="Exit" className="img-nav" />
           </Tooltip>
@@ -289,11 +321,15 @@ const Navbar: React.FC<NavbarProps> = ({
           <DialogTitle>Quitter la partie ?</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Cette action vous renverra à l&apos;accueil et vous quitterez la partie en cours.
+              Cette action vous renverra à l&apos;accueil et vous quitterez la
+              partie en cours.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <button onClick={() => setShowLeaveConfirmation(false)} className="classic-button">
+            <button
+              onClick={() => setShowLeaveConfirmation(false)}
+              className="classic-button"
+            >
               Annuler
             </button>
             <button

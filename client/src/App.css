@@ -1,20 +1,24 @@
 .App {
   text-align: center;
   width: 100%;
+  height: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   overflow-y: auto;
+  background-color: var(--tan);
+  font-size: 1.25rem;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
 }
 
 menu {
-  padding : 0;
+  padding: 0;
 }
 
 .App-logo {
@@ -35,7 +39,6 @@ menu {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
 }
 
@@ -54,7 +57,6 @@ menu {
 
 .input,
 .select,
-select,
 input {
   width: auto;
   padding: 0.5em;
@@ -64,8 +66,10 @@ input {
   background-color: rgba(0, 0, 0, 0.06);
 }
 
-.input:hover, input:hover, select:hover, .select:hover
-{
+.input:hover,
+input:hover,
+select:hover,
+.select:hover {
   background-color: rgba(0, 0, 0, 0.12);
 }
 
@@ -132,13 +136,27 @@ button {
   background-color: #3061c2;
 }
 
-form, .form {
+form,
+.form {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5em;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-image: url(/assets/images/icons/heroquestlogo.png);
+  background-repeat: no-repeat;
+  background-position: top;
+  background-attachment: fixed;
+  background-size: 1000px auto;
 }
 
 .login-page,
@@ -149,7 +167,9 @@ form, .form {
   margin-right: auto;
   margin-top: 4vh;
   margin-bottom: 4vh;
-  background : var(--vanilla-custard) !important; /* override Paper default background*/
+  background: var(
+    --vanilla-custard
+  ) !important; /* override Paper default background*/
   border-radius: 16px !important;
   width: fit-content;
 }
@@ -164,11 +184,11 @@ form, .form {
   min-width: 400px;
 }
 
-h2{
+h2 {
   margin: 0;
 }
 
-.card{
+.card {
   max-height: inherit;
   max-width: inherit;
   display: block;
@@ -176,7 +196,7 @@ h2{
   border-radius: 12px;
 }
 
-.buttons{
+.buttons {
   display: flex;
   flex-direction: row;
   gap: 5px;
@@ -184,8 +204,8 @@ h2{
 }
 
 .greyish {
-  filter : grayscale(80%) brightness(50%);
-  opacity : 0.8;
+  filter: grayscale(80%) brightness(50%);
+  opacity: 0.8;
 }
 
 .icon {
@@ -194,7 +214,7 @@ h2{
 }
 
 .game-preparation {
-  width : 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;

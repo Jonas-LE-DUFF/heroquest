@@ -311,6 +311,22 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             setCurrentlyPlayedHero={setHero}
             currentlyPlayedHero={hero}
             setInteraction={setInteraction}
+            setSelectedWeapon={(weapon) => {
+              setHero((prev) => {
+                return {
+                  ...prev,
+                  equipment: {
+                    ...prev?.equipment,
+                    selectedWeaponIndex:
+                      prev?.equipment.weapons.findIndex(
+                        (w) => w.id === weapon,
+                      ) ?? 0,
+                  },
+                } as HeroAsJson;
+              });
+              setTargetMode(true);
+            }}
+            selectedWeapon={selectedWeapon}
           />
         </Grid>
         <Grid className="LeftMenu">
@@ -342,22 +358,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }
-            setSelectedWeapon={(weapon) => {
-              setHero((prev) => {
-                return {
-                  ...prev,
-                  equipment: {
-                    ...prev?.equipment,
-                    selectedWeaponIndex:
-                      prev?.equipment.weapons.findIndex(
-                        (w) => w.id === weapon,
-                      ) ?? 0,
-                  },
-                } as HeroAsJson;
-              });
-              setTargetMode(true);
-            }}
-            selectedWeapon={selectedWeapon}
             hero={hero}
             setInteraction={setInteraction}
           />

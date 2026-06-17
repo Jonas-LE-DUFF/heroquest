@@ -5,7 +5,7 @@ import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
-import { Paper } from "@mui/material";
+import { Paper, Select } from "@mui/material";
 import { LocationState } from "../POO/types/LocationType";
 
 interface LoginPageProps {
@@ -56,46 +56,48 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   }, [socket, navigate, playerName]);
 
   return (
-    <Paper elevation={5} className="login-page">
-      <form onSubmit={handleJoinGame} className="login-form">
-        <div className="form-group">
-          <p>Votre nom :</p>
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Ex: Jean"
-            required
-          />
-        </div>
+    <div className="page-container">
+      <Paper elevation={5} className="login-page">
+        <form onSubmit={handleJoinGame} className="login-form">
+          <div className="form-group">
+            <p>Votre nom :</p>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Ex: Jean"
+              required
+            />
+          </div>
 
-        <div className="form-group">
-          <p>Nom de la partie :</p>
-          <input
-            type="text"
-            value={gameName}
-            onChange={(e) => setGameName(e.target.value)}
-            placeholder="Ex: partie-1"
-            required
-          />
-        </div>
+          <div className="form-group">
+            <p>Nom de la partie :</p>
+            <input
+              type="text"
+              value={gameName}
+              onChange={(e) => setGameName(e.target.value)}
+              placeholder="Ex: partie-1"
+              required
+            />
+          </div>
 
-        <div className="form-group">
-          <p>Rôle :</p>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as PlayerRole)}
-          >
-            <option value={PlayerRole.HERO}>Héros</option>
-            <option value={PlayerRole.GAME_MASTER}>Maître du Jeu</option>
-          </select>
-        </div>
+          <div className="form-group">
+            <p>Rôle :</p>
+            <Select
+              value={role}
+              onChange={(e) => setRole(e.target.value as PlayerRole)}
+            >
+              <option value={PlayerRole.HERO}>Héros</option>
+              <option value={PlayerRole.GAME_MASTER}>Maître du Jeu</option>
+            </Select>
+          </div>
 
-        <button type="submit" className="positive-button">
-          Rejoindre la partie
-        </button>
-      </form>
-    </Paper>
+          <button type="submit" className="positive-button">
+            Rejoindre la partie
+          </button>
+        </form>
+      </Paper>
+    </div>
   );
 };
 

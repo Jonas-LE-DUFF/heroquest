@@ -12,7 +12,6 @@ import { Grid, MenuItem, Radio, Select } from "@mui/material";
 import { getMonsterIconPath } from "../../shared/utils";
 import { monsterClassFr } from "../../shared/languages/frenchEnums";
 import MasterControls from "./MasterControlsComponent";
-import { getEquipmentName } from "../../shared/equipments";
 import { TileType } from "../../POO/enums/Board/TileType";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../../POO/enums/Direction";
@@ -38,8 +37,6 @@ interface GameControlsProps {
   setSelectedType: (type: SelectType) => void; //Direction -> door placement
   selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
-  setSelectedWeapon: (weaponId: string | null) => void;
-  selectedWeapon: string | null;
   hero: HeroAsJson | null;
 }
 
@@ -50,8 +47,6 @@ const GameControls = ({
   setSelectedType,
   selectedType,
   selectedUnit,
-  setSelectedWeapon,
-  selectedWeapon,
   hero,
 }: GameControlsProps) => {
   const state = useLocation().state as LocationState;
@@ -214,71 +209,6 @@ const GameControls = ({
     return buttons;
   };
 
-  const renderMovementControls = (role: PlayerRole) => {
-    if (role === PlayerRole.HERO)
-      return (
-        <div className="movement-controls">
-          <div></div>
-          <button
-            className="classic-button"
-            onClick={() => movePlayer(Direction.UP)}
-          >
-            ⬆️
-          </button>
-          <div></div>
-          <button
-            className="classic-button"
-            onClick={() => movePlayer(Direction.LEFT)}
-          >
-            ⬅️
-          </button>
-          <button
-            className="classic-button"
-            onClick={() => movePlayer(Direction.DOWN)}
-          >
-            ⬇️
-          </button>
-          <button
-            className="classic-button"
-            onClick={() => movePlayer(Direction.RIGHT)}
-          >
-            ➡️
-          </button>
-        </div>
-      );
-    if (role === PlayerRole.GAME_MASTER)
-      return (
-        <div className="movement-controls">
-          <div></div>
-          <button
-            className="classic-button"
-            onClick={() => moveMonster(Direction.UP)}
-          >
-            ⬆️
-          </button>
-          <div></div>
-          <button
-            className="classic-button"
-            onClick={() => moveMonster(Direction.LEFT)}
-          >
-            ⬅️
-          </button>
-          <button
-            className="classic-button"
-            onClick={() => moveMonster(Direction.DOWN)}
-          >
-            ⬇️
-          </button>
-          <button
-            className="classic-button"
-            onClick={() => moveMonster(Direction.RIGHT)}
-          >
-            ➡️
-          </button>
-        </div>
-      );
-  };
-
   function revealTrap(): void {
     setInteraction((prev) => ({
       ...prev,
@@ -290,32 +220,7 @@ const GameControls = ({
   return (
     <div>
       <div className="game-controls hero">
-        <h3>Actions Héros</h3>
-        {role === PlayerRole.HERO &&
-          isPlayerTurn &&
-          renderMovementControls(role)}
-
-        {role === PlayerRole.HERO && hero?.equipment && (
-          <div className="attack-choice">
-            Arme selectionnée :
-            <select
-              className="weapons"
-              id="weapons-select"
-              onChange={(e) => {
-                setSelectedWeapon(e.target.value);
-              }}
-              value={selectedWeapon ?? ""}
-            >
-              {hero?.equipment?.weapons?.map((weapon) => {
-                return (
-                  <option key={weapon.id} value={weapon.id}>
-                    {getEquipmentName(weapon.name)}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        )}
+        <h3>Actions héros</h3>
         {isPlayerTurn && (
           <div>
             <button className="warning-button" onClick={endTurn}>
@@ -452,9 +357,6 @@ const GameControls = ({
             <hr />
           </>
         )}
-        {role === PlayerRole.GAME_MASTER &&
-          selectedUnit !== null &&
-          renderMovementControls(role)}
         {role === PlayerRole.GAME_MASTER && <MasterControls socket={socket} />}
       </div>
     </div>
