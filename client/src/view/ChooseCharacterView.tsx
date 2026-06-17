@@ -43,7 +43,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     hero?: HeroAsJson;
   };
 
-  const playerName = state.game.players.find((p) => p.id === state.playerId)?.name || "Unknown Player";
+  const playerName =
+    state.game.players.find((p) => p.id === state.playerId)?.name ||
+    "Unknown Player";
 
   const [game, setGame] = useState<GameAsJson>(state.game);
 
@@ -255,11 +257,19 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
     socket.emit(
       "choose-character",
-      { heroCreationWish: heroCreation, gameId: game.id, playerId: state.playerId },
+      {
+        heroCreationWish: heroCreation,
+        gameId: game.id,
+        playerId: state.playerId,
+      },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success && response.data) {
           void navigate("/lobby", {
-            state: { playerName: playerName, game: response.data, playerId: state.playerId },
+            state: {
+              playerName: playerName,
+              game: response.data,
+              playerId: state.playerId,
+            },
           });
         } else {
           toast.error(`Error: ${response.error}`);
@@ -269,72 +279,76 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
   };
 
   const goBackToLobby = () => {
-    void navigate("/lobby", { state: { playerName: playerName, game: game, playerId: state.playerId } });
+    void navigate("/lobby", {
+      state: { playerName: playerName, game: game, playerId: state.playerId },
+    });
   };
 
   return (
-    <Paper elevation={5} className="character-page">
-      <h1>Choisissez votre personnage {playerName}</h1>
-      <div className="form">
-        <div className="form-grid">
-          <p id="label-hero-class">Classe : </p>
-          <Select
-            className="select"
-            labelId="label-hero-class"
-            id="select-hero-class"
-            value={heroCreation.heroCategory}
-            onChange={handleChangeHeroClass}
-          >
-            {renderHeroClassOptions(getSelectedClasses())}
-          </Select>
-          <p id="label-coins">Pièces d&apos;or : </p>
-          <TextField
-            className="input"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+    <div className="page-container">
+      <Paper elevation={5} className="character-page">
+        <h1>Choisissez votre personnage {playerName}</h1>
+        <div className="form">
+          <div className="form-grid">
+            <p id="label-hero-class">Classe : </p>
+            <Select
+              className="select"
+              labelId="label-hero-class"
+              id="select-hero-class"
+              value={heroCreation.heroCategory}
+              onChange={handleChangeHeroClass}
+            >
+              {renderHeroClassOptions(getSelectedClasses())}
+            </Select>
+            <p id="label-coins">Pièces d&apos;or : </p>
+            <TextField
+              className="input"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setHeroCreation((prev) => ({
+                  ...prev,
+                  gold: Math.max(0, Number(e.target.value)),
+                }))
+              }
+              type="number"
+              value={heroCreation.gold}
+            />
+          </div>
+          {[HeroCategory.Cleric, HeroCategory.Elf].includes(
+            heroCreation.heroCategory,
+          ) && (
+            <div className="spellList">
+            <p id="label-spell-elements">Éléments de sort</p>
+              <div className="spellCards">{renderSpellElements()}</div>
+            </div>
+          )}
+
+          <CardSelectionComponent
+            cards={getAllEquipmentsAsCards()}
+            selectedCards={heroCreation.equipments.map((id) => ({
+              id,
+              name: id,
+              imgPath: getEquipmentById(id)?.image_path ?? "",
+              backImgPath: getEquipmentById(id)?.image_path ?? "",
+              type: CardType.Item,
+            }))}
+            onCardsChange={(equipments) =>
               setHeroCreation((prev) => ({
                 ...prev,
-                gold: Math.max(0, Number(e.target.value)),
+                equipments: equipments.map((e) => e.id),
               }))
             }
-            type="number"
-            value={heroCreation.gold}
           />
-        </div>
-        {[HeroCategory.Cleric, HeroCategory.Elf].includes(
-          heroCreation.heroCategory,
-        ) && (
-          <div className="spellList">
-            <p id="label-spell-elements">Éléments de sort</p>
-            <div className="spellCards">{renderSpellElements()}</div>
+          <div>
+            <button className="classic-button" onClick={() => handleSubmit()}>
+              Sauvegarder les modifications
+            </button>
+            <button className="warning-button" onClick={() => goBackToLobby()}>
+              Annuler
+            </button>
           </div>
-        )}
-
-        <CardSelectionComponent
-          cards={getAllEquipmentsAsCards()}
-          selectedCards={heroCreation.equipments.map((id) => ({
-            id,
-            name: id,
-            imgPath: getEquipmentById(id)?.image_path ?? "",
-            backImgPath: getEquipmentById(id)?.image_path ?? "",
-            type: CardType.Item,
-          }))}
-          onCardsChange={(equipments) =>
-            setHeroCreation((prev) => ({
-              ...prev,
-              equipments: equipments.map((e) => e.id),
-            }))
-          }
-        />
-        <div>
-          <button className="classic-button" onClick={() => handleSubmit()}>
-            Sauvegarder les modifications
-          </button>
-          <button className="warning-button" onClick={() => goBackToLobby()}>
-            Annuler
-          </button>
         </div>
-      </div>
-    </Paper>
+      </Paper>
+    </div>
   );
 };
 

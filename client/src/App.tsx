@@ -13,6 +13,10 @@ import "./App.css";
 import ChooseCharacter from "./view/ChooseCharacterView";
 import GamePreparation from "./view/GamePreparationView";
 import { ToastContainer } from "react-toastify";
+import { ThemeProvider } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
+
+import theme from "./index";
 
 function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -31,8 +35,6 @@ function App() {
 
     setSocket(newSocket);
 
-    
-
     return () => {
       newSocket.close();
     };
@@ -44,36 +46,39 @@ function App() {
 
   return (
     <>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        rtl={false}
-        pauseOnFocusLoss
-        pauseOnHover
-        aria-label={"toast container"}
-        style={{ width : "fit-content" }}
-      />
-      <Router>
-        <title>HeroQuest</title>
-        <div className="App">
-          <Routes>
-            <Route path="/" element={<LoginPage socket={socket} />} />
-            <Route path="/lobby" element={<LobbyPage socket={socket} />} />
-            <Route
-              path="/characterChoice"
-              element={<ChooseCharacter socket={socket} />}
-            />
-            <Route
-              path="/gamePreparation"
-              element={<GamePreparation socket={socket} />}
-            />
-            <Route path="/game" element={<GamePage socket={socket} />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
-      </Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          rtl={false}
+          pauseOnFocusLoss
+          pauseOnHover
+          aria-label={"toast container"}
+          style={{ width: "fit-content" }}
+        />
+        <Router>
+          <title>HeroQuest</title>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<LoginPage socket={socket} />} />
+              <Route path="/lobby" element={<LobbyPage socket={socket} />} />
+              <Route
+                path="/characterChoice"
+                element={<ChooseCharacter socket={socket} />}
+              />
+              <Route
+                path="/gamePreparation"
+                element={<GamePreparation socket={socket} />}
+              />
+              <Route path="/game" element={<GamePage socket={socket} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </Router>
+      </ThemeProvider>
     </>
   );
 }

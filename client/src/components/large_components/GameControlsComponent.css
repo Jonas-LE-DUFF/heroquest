@@ -3,6 +3,20 @@
   flex-direction: column;
   margin: 3%;
   border-radius: 10px;
+  font-size: 1rem;
+}
+
+.game-controls h3 {
+  font-size: 1.25rem;
+}
+
+.game-controls h5 {
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0;
+  align-content: start;
+  text-align: start;
+  margin-left: 8px
 }
 
 .monster-item {
@@ -12,11 +26,6 @@
   padding: 2px;
   gap: 10px;
   align-items: center;
-}
-
-.monster-item.selected {
-  background-color: #414833;
-  border-radius: 5px;
 }
 
 .buttons-container {
@@ -52,18 +61,20 @@
   height: auto;
 }
 
+.game-controls .MuiGrid-root {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
 .MuiGrid-root > .MuiSelect-root {
   background: white;
   display: flex;
   justify-content: center;
   align-items: center;
   width: fit-content;
-}
-
-.MuiGrid-root > h5 {
-  align-content: start;
-  text-align: start;
-  margin-left: 8px
 }
 
 div .MuiInputBase-root {

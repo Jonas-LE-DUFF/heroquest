@@ -8,6 +8,7 @@
   background-color: var(--tan);
   color: var(--dark-coffee);
   border-bottom: 2px solid var(--dark-coffee);
+  font-size: 1.5rem;
 }
 
 .nav-elem {

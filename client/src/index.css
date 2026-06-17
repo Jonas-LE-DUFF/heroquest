@@ -28,3 +28,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: #2f2416;
 }
+
+* {
+  font-family: 'dumbledor', sans-serif;
+}
