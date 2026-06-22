@@ -12,10 +12,11 @@ class Weapon extends Item {
     name: string,
     cost: number,
     imagePath: string,
+    canClericCarry: boolean = true,
     damage: number,
     range: WeaponRange,
   ) {
-    super(reference, name, cost, imagePath);
+    super(reference, name, cost, imagePath, canClericCarry);
     this.damage = damage;
     this.range = range;
   }

@@ -19,7 +19,13 @@ class HeroFactory {
     const equipment: Equipment = getHeroStartingEquipment(heroCategory);
     
     for (const equipmentId of heroCreationWish.equipments) {
-      equipment.addEquipmentById(equipmentId);
+      if (!equipment.hasEquipment(equipmentId)) {
+        equipment.addEquipmentById(equipmentId);
+      }
+    }
+
+    if (heroCategory === HeroCategory.Cleric){
+      equipment.removeClericUncarryableEquipment();
     }
 
     const spells = getSpellsForElements(gameId, heroCreationWish.spellElements);

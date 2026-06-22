@@ -13,11 +13,12 @@ class Armor extends Item {
     name: string,
     cost: number,
     image: string,
+    canClericCarry: boolean = true,
     defenseValue: number,
     movementDebuff: number,
     armorType: ArmorType,
   ) {
-    super(reference, name, cost, image);
+    super(reference, name, cost, image, canClericCarry);
     this.defenseValue = defenseValue;
     this.armorMovementDebuff = movementDebuff;
     this.armorType = armorType;
