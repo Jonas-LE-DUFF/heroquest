@@ -5,7 +5,7 @@ import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
-import { Paper, Select } from "@mui/material";
+import { MenuItem, Paper, Select } from "@mui/material";
 import { LocationState } from "../POO/types/LocationType";
 
 interface LoginPageProps {
@@ -87,8 +87,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
               value={role}
               onChange={(e) => setRole(e.target.value as PlayerRole)}
             >
-              <option value={PlayerRole.HERO}>Héros</option>
-              <option value={PlayerRole.GAME_MASTER}>Maître du Jeu</option>
+              <MenuItem value={PlayerRole.HERO}>Héros</MenuItem>
+              <MenuItem value={PlayerRole.GAME_MASTER}>Maître du Jeu</MenuItem>
             </Select>
           </div>
 

@@ -8,7 +8,7 @@
       "image_path": "/assets/images/cards/treasures/wanderingMonster.png",
       "is_put_back": true,
       "effect": {
-        "name": "spawns a monster that attacks"
+        "name": "Spawns a monster that attacks"
       }
     },
     {
@@ -18,7 +18,7 @@
       "image_path": "/assets/images/cards/treasures/spikeTrap.png",
       "is_put_back": true,
       "effect": {
-        "name": "deal damage and end turn",
+        "name": "Deal damage and end turn",
         "amount_of_damage": 1
       }
     },
@@ -29,7 +29,7 @@
       "image_path": "/assets/images/cards/treasures/arrowTrap.png",
       "is_put_back": true,
       "effect": {
-        "name": "deal damage and end turn",
+        "name": "Deal damage and end turn",
         "amount_of_damage": 1
       }
     },
@@ -40,7 +40,7 @@
       "image_path": "/assets/images/cards/treasures/jewels.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain gold",
+        "name": "Gain gold",
         "amount_of_gold": 50
       }
     },
@@ -51,7 +51,7 @@
       "image_path": "/assets/images/cards/treasures/preciousStone.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain gold",
+        "name": "Gain gold",
         "amount_of_gold": 35
       }
     },
@@ -62,7 +62,7 @@
       "image_path": "/assets/images/cards/treasures/gold25.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain gold",
+        "name": "Gain gold",
         "amount_of_gold": 25
       }
     },
@@ -73,7 +73,7 @@
       "image_path": "/assets/images/cards/treasures/gold15.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain gold",
+        "name": "Gain gold",
         "amount_of_gold": 15
       }
     },
@@ -84,7 +84,7 @@
       "image_path": "/assets/images/cards/treasures/defensePotion.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain potion",
+        "name": "Gain potion",
         "potion_gained": "defense_potion"
       }
     },
@@ -95,7 +95,7 @@
       "image_path": "/assets/images/cards/treasures/healthPotion.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain potion",
+        "name": "Gain potion",
         "potion_gained": "heal_potion"
       }
     },
@@ -106,7 +106,7 @@
       "image_path": "/assets/images/cards/treasures/heroismPotion.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain potion",
+        "name": "Gain potion",
         "potion_gained": "heroisim_potion"
       }
     },
@@ -117,7 +117,7 @@
       "image_path": "/assets/images/cards/treasures/strengthPotion.png",
       "is_put_back": false,
       "effect": {
-        "name": "gain potion",
+        "name": "Gain potion",
         "potion_gained": "strengh_potion"
       }
     }

@@ -37,7 +37,7 @@
   },
   {
     "id": "Djinn Open door",
-    "name": "ouvrir une porte",
+    "name": "Ouvrir une porte",
     "image_path": "/assets/images/cards/spells/air/djinnSubSpells/DjinnOpenDoor.png",
     "range": "any",
     "target_type": "door",

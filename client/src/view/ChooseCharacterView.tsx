@@ -324,13 +324,16 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
 
           <CardSelectionComponent
             cards={getAllEquipmentsAsCards()}
-            selectedCards={heroCreation.equipments.map((id) => ({
-              id,
-              name: id,
-              imgPath: getEquipmentById(id)?.image_path ?? "",
-              backImgPath: getEquipmentById(id)?.image_path ?? "",
-              type: CardType.Item,
-            }))}
+            selectedCards={heroCreation.equipments.map((id) => {
+              const equipment = getEquipmentById(id);
+              return {
+                id,
+                name: equipment?.name ?? id,
+                imgPath: equipment?.image_path ?? "",
+                backImgPath: equipment?.image_path ?? "",
+                type: CardType.Item,
+              };
+            })}
             onCardsChange={(equipments) =>
               setHeroCreation((prev) => ({
                 ...prev,
