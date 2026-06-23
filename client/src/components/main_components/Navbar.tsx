@@ -204,6 +204,7 @@ const Navbar: React.FC<NavbarProps> = ({
             ? "À toi de jouer !"
             : "Au tour de " + getHeroClassName(heroCategoryToPlay)}
         </div>
+        {/*equipment button*/}
         {hero && (
           <>
             <div className="nav-elem">
@@ -229,6 +230,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </Dialog>
           </>
         )}
+        {/*spells button*/}
         {hero?.spells && hero.spells.length > 0 && (
           <div className="nav-elem">
             <Tooltip title="Voir mes sorts" arrow>
@@ -242,6 +244,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </Tooltip>
           </div>
         )}
+        {/*treasures button*/}
         {hero && role === PlayerRole.GAME_MASTER && (
           <button className={"nav-elem"} onClick={() => searchTreasures()}>
             <Tooltip title="Rechercher des trésors" arrow>
@@ -253,7 +256,9 @@ const Navbar: React.FC<NavbarProps> = ({
             </Tooltip>
           </button>
         )}
+        {/*search menu*/}
         {role === PlayerRole.HERO && hero && SearchMenu(socket, hero)}
+        {/*disarm trap button*/}
         {role === PlayerRole.HERO && (
           <button
             className="nav-elem"

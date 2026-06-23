@@ -4,6 +4,7 @@ import {
   getFightDiceFaceNumber,
   getIconClassPath,
   getUnitClassName,
+  isHero,
 } from "../../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
@@ -30,7 +31,9 @@ const StatsComponent = ({
   const state = useLocation().state as LocationState;
   const { playerId, game } = state;
 
-  const isGameMaster = game.players.find((p) => p.id === playerId)?.role === PlayerRole.GAME_MASTER;
+  const isGameMaster =
+    game.players.find((p) => p.id === playerId)?.role ===
+    PlayerRole.GAME_MASTER;
 
   const [statsEdit, setStatsEdit] = useState<StatsAsJson>(unit.stats);
   const [isEditing, setIsEditing] = useState(false);
@@ -45,11 +48,15 @@ const StatsComponent = ({
     return null;
   }
   return (
-    <Paper sx={{ height: "fit-content" }}>
+    <Paper
+      sx={{
+        width: "min(720px, calc(100vw - 32px))",
+        maxHeight: "calc(100vh - 32px)",
+        overflow: "hidden",
+        borderRadius: "16px",
+      }}
+    >
       <div className="content">
-        <button className="close-button" onClick={() => setStatsVisible(false)}>
-          X
-        </button>
         <div className="stats">
           <p>{unit.name} Stats</p>
           {unit.category && (
@@ -127,7 +134,9 @@ const StatsComponent = ({
             )}
             {statsEdit.movements &&
               !isEditing &&
-              getRedDices(statsEdit.movements)}
+              (isHero(unit)
+                ? getRedDices(statsEdit.movements)
+                : statsEdit.movements)}
           </div>
           {statsEdit?.health && statsEdit.maxHealth && (
             <Box

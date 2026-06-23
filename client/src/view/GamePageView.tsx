@@ -5,7 +5,7 @@ import "./GamePageView.css";
 import { getHeroClassName, isHero } from "../shared/utils";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
-import { Grid } from "@mui/material";
+import { Dialog, Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
@@ -284,7 +284,19 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   return (
     <>
-      {spellPageVisible && (
+      <Dialog
+        open={spellPageVisible}
+        onClose={() => setSpellPageVisible(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            width: "80%",
+            height: "80%",
+            maxWidth: "80%",
+            borderRadius: "10px",
+            background: "none",
+          },
+        }}
+      >
         <SpellsPopUp
           spellSchools={hero?.spellElements}
           spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
@@ -296,7 +308,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           }}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
-      )}
+      </Dialog>
       <Grid className="game-page" container>
         <Grid className="Navbar">
           <Navbar

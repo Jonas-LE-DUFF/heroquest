@@ -219,18 +219,14 @@ const GameControls = ({
 
   return (
     <div>
-      <div className="game-controls hero">
-        <h3>Actions héros</h3>
-        {isPlayerTurn && (
-          <div>
-            <button className="warning-button" onClick={endTurn}>
-              END TURN
-            </button>
-          </div>
-        )}
-      </div>
-      <div className="game-controls game-master">
-        {role === PlayerRole.GAME_MASTER && (
+      {role === PlayerRole.HERO && isPlayerTurn && (
+        <button className="warning-button" onClick={endTurn}>
+          END TURN
+        </button>
+      )}
+      {role === PlayerRole.GAME_MASTER && (
+        <div className="game-controls game-master">
+          <h3>Actions</h3>
           <>
             <Grid container alignItems="center">
               <Grid size={1}>
@@ -356,9 +352,16 @@ const GameControls = ({
             </div>
             <hr />
           </>
-        )}
-        {role === PlayerRole.GAME_MASTER && <MasterControls socket={socket} />}
-      </div>
+          <MasterControls socket={socket} />
+          {isPlayerTurn && (
+            <div>
+              <button className="warning-button" onClick={endTurn}>
+                END TURN
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
