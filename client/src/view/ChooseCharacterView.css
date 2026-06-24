@@ -16,6 +16,7 @@ div.form-grid .MuiSelect-root {
   justify-content: center;
   align-items: center;
   border: 1px solid #3b3b3b;
+  font-size: 1.25rem;
 }
 
 .MuiInputBase-root .MuiSelect-select {
@@ -56,7 +57,7 @@ div.form-grid .MuiSelect-root {
 }
 
 .spellCards {
-  width: 50%;
+  width: 80%;
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -64,7 +65,7 @@ div.form-grid .MuiSelect-root {
   margin: 0 auto;
 }
 
-.singleSpellCard{
+.singleSpellCard {
   display: flex;
   justify-content: center;
   align-items: center;

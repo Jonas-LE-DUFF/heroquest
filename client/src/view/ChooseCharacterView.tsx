@@ -25,6 +25,7 @@ import {
   flattenEquipment,
   getAllEquipmentsAsCards,
   getEquipmentById,
+  getHeroBaseEquipment,
 } from "../shared/equipments";
 import { getSpellEllementAsCard } from "../components/Card/cardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
@@ -102,6 +103,9 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     setHeroCreation((prev) => ({
       ...prev,
       heroCategory: Number(event.target.value),
+      equipments: getHeroBaseEquipment(
+        Number(event.target.value) as HeroCategory,
+      ),
     }));
   };
 
@@ -317,7 +321,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
             heroCreation.heroCategory,
           ) && (
             <div className="spellList">
-            <p id="label-spell-elements">Éléments de sort</p>
+              <p id="label-spell-elements">Éléments de sort</p>
               <div className="spellCards">{renderSpellElements()}</div>
             </div>
           )}

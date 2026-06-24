@@ -2,21 +2,22 @@
   display: flex;
   flex-direction: column;
   margin: 3%;
+  padding-top: 10px;
   border-radius: 10px;
-  font-size: 1rem;
-}
-
-.game-controls h3 {
   font-size: 1.25rem;
 }
 
+.game-controls h3 {
+  font-size: 1.75rem;
+}
+
 .game-controls h5 {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 400;
   margin: 0;
   align-content: start;
   text-align: start;
-  margin-left: 8px
+  margin-left: 8px;
 }
 
 .monster-item {

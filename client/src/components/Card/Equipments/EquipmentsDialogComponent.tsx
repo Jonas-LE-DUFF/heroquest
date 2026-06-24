@@ -55,11 +55,17 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
             {equipment.name}
             {equipment.type === "Potion" &&
               hero.controlledByPlayerId === playerId && (
-                <button className="positive-button" onClick={() => drinkPotion(equipment.id)}>
+                <button
+                  className="positive-button"
+                  onClick={() => drinkPotion(equipment.id)}
+                >
                   boire
                 </button>
               )}
-            <button className="classic-button" onClick={() => openItemDetails(equipment)}>
+            <button
+              className="classic-button"
+              onClick={() => openItemDetails(equipment)}
+            >
               détails
             </button>
 
@@ -130,7 +136,6 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       setPotions(updatedHero.equipment.potions);
       setTools(updatedHero.equipment.tools);
       setGold(updatedHero.equipment.gold);
-
     };
 
     socket.on("game-state-update", handleGameStateUpdate);
@@ -208,7 +213,10 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         )}
       </p>
       {role === PlayerRole.GAME_MASTER && !editionState && (
-        <button className="classic-button" onClick={() => setEditionState(true)}>
+        <button
+          className="classic-button"
+          onClick={() => setEditionState(true)}
+        >
           Édition
         </button>
       )}
@@ -219,11 +227,17 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
         <>
-          <button className="classic-button" onClick={() => openAddEquipmentMenu()}>
-            ajouter un équipement
+          <button
+            className="classic-button"
+            onClick={() => openAddEquipmentMenu()}
+          >
+            Ajouter un équipement
           </button>
-          <button className="classic-button" onClick={() => openAddTreasureMenu()}>
-            ajouter un trésor
+          <button
+            className="classic-button"
+            onClick={() => openAddTreasureMenu()}
+          >
+            Ajouter un trésor
           </button>
         </>
       )}

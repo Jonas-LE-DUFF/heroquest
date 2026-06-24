@@ -1,61 +1,63 @@
-p, label{
-    color: black;
+p,
+label {
+  color: black;
+  margin: 0;
 }
 
-.content{
-    background-color: #cfb898; 
-    background-size: 100% 100%;
-    width: 100%;
-    max-height: calc(100vh - 32px);
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
+.content {
+  background-color: #cfb898;
+  background-size: 100% 100%;
+  width: 100%;
+  max-height: calc(100vh - 32px);
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-.stats{
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    height: fit-content;
-    padding: 5px 0 0;
-    gap: 10px;
+.stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: fit-content;
+  padding: 5px 0 0;
+  gap: 10px;
 }
 
-.statElem{
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    width: 100%;
-    height: auto;
+.statElem {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  height: auto;
 }
 
-.statElem input{
-    width: 50px;
-    order: 0;
+.statElem input {
+  width: 50px;
+  order: 0;
 }
 
-.statElem p{
-    flex: 0 0 fit-content;
-    color: black;
+.statElem p {
+  flex: 0 0 fit-content;
+  color: black;
 }
 
-.heroClassIcon{
-    width: auto;
-    height: 40px;
-    margin-right: 15px;
+.heroClassIcon {
+  width: auto;
+  height: 40px;
+  margin-right: 15px;
 }
 
-.diceImage{
-    width: 100%;
-    height: auto;
+.diceImage {
+  width: 100%;
+  height: auto;
 }
 
-.warning-button.remove-effect-button{
-    margin-left: 10px;
-    padding: 2px 5px;
-    font-size: 12px;
+.warning-button.remove-effect-button {
+  margin-left: 10px;
+  padding: 2px 5px;
+  font-size: 12px;
 }
