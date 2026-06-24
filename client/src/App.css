@@ -136,6 +136,24 @@ button:disabled {
   background-color: #3061c2;
 }
 
+@keyframes pop {
+  0% {
+    box-shadow: 0 0 10px 10px rgba(228, 143, 25, 0.589);
+  } 
+  50%{
+    box-shadow: 0 0 30px 30px rgba(255, 222, 32, 0.767);
+    
+  }
+  100% {
+    box-shadow: 0 0 10px 10px rgba(228, 143, 25, 0.589);
+  }
+}
+.attractive-button {
+  animation-name: pop;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
 form,
 .form {
   display: flex;

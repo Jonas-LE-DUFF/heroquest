@@ -7,10 +7,6 @@
   font-size: 1.25rem;
 }
 
-.game-controls h3 {
-  font-size: 1.75rem;
-}
-
 .game-controls h5 {
   font-size: 1.25rem;
   font-weight: 400;
@@ -91,12 +87,6 @@ div .MuiInputBase-root {
   padding: 8px 8px 8px 16px;
   flex-wrap: wrap;
 }
-
-.weapons {
-  margin-left: 10px;
-  margin-bottom: 10px;
-}
-
 hr {
   border: none;
   border-top: 1px solid #3b3b3b;

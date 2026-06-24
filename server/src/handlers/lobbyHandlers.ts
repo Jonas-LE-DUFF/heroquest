@@ -41,6 +41,7 @@ export function registerLobbyHandlers(socket: Socket) {
         game = GameService.createGame(gameName, newPlayer);
       } else {
         game = GameService.getGameByName(gameName)!;
+        //TODO: check if player is already in the game and prevent joining multiple times
         try {
           game.addPlayer(newPlayer);
         } catch (error) {
@@ -52,12 +53,16 @@ export function registerLobbyHandlers(socket: Socket) {
           return callback(errorResponse(`Erreur inattendue.`));
         }
       }
+      // TODO prevent player from joining multiple games at the same time
 
       await socket.join(game.id);
       const server = ServerHeroQuest.getServerInstance();
       const sessionStore = server.getSessionStore();
-      sessionStore.save({ sessionToken: socket.handshake.auth.sessionToken as string, playerId: newPlayer.id, gameId: game.id });
-
+      sessionStore.save({
+        sessionToken: socket.handshake.auth.sessionToken as string,
+        playerId: newPlayer.id,
+        gameId: game.id,
+      });
 
       const io = server.getIo();
       socket.emit("join-success", {
@@ -256,12 +261,15 @@ export function registerLobbyHandlers(socket: Socket) {
           return callback(errorResponse("Player not found."));
         }
 
-        const heroesControlled = game.gameState.getHeroesControlledByPlayer(
-          playerId,
-        );
+        const heroesControlled =
+          game.gameState.getHeroesControlledByPlayer(playerId);
         const heroToRemove = game.gameState.getHeroById(heroId);
 
-        if (!heroToRemove || (!heroesControlled.includes(heroToRemove) && player.role !== PlayerRole.GAME_MASTER)) {
+        if (
+          !heroToRemove ||
+          (!heroesControlled.includes(heroToRemove) &&
+            player.role !== PlayerRole.GAME_MASTER)
+        ) {
           return callback(errorResponse("Hero not found."));
         }
         game.gameState.removeUnit(heroToRemove);

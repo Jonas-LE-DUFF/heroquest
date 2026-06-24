@@ -17,12 +17,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
   const [playerName, setPlayerName] = useState("a");
   const [gameName, setGameName] = useState("a");
   const [role, setRole] = useState<PlayerRole>(PlayerRole.HERO);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleJoinGame = (e: React.SubmitEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     if (!playerName.trim() || !gameName.trim()) {
       toast.error("Veuillez remplir tous les champs");
+      setIsLoading(false);
       return;
     }
 
@@ -32,6 +35,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           toast.error(`Erreur: ${response.error}`);
+          setIsLoading(false);
           return;
         }
       },
@@ -92,7 +96,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ socket }) => {
             </Select>
           </div>
 
-          <button type="submit" className="positive-button">
+          <button
+            type="submit"
+            className="positive-button"
+            disabled={isLoading}
+          >
             Rejoindre la partie
           </button>
         </form>

@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  MenuItem,
   Select,
   Tooltip,
 } from "@mui/material";
@@ -35,7 +36,7 @@ import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
 import SearchMenu from "../small_components/SearchMenu";
 import { LocationState } from "../../POO/types/LocationType";
 import logoImage from "/assets/images/icons/heroquestlogo.png";
-import { getEquipmentName } from "../../shared/equipments";
+import { findEquipmentName } from "../../shared/equipments";
 
 interface NavbarProps {
   socket: Socket;
@@ -88,9 +89,6 @@ const Navbar: React.FC<NavbarProps> = ({
     return <div>Loading...</div>;
   }
 
-  function showSpells() {
-    openSpellPage();
-  }
   function searchTreasures() {
     console.debug("searchTreasures called for hero", hero?.name); // Debug log
     socket.emit(
@@ -234,7 +232,7 @@ const Navbar: React.FC<NavbarProps> = ({
         {hero?.spells && hero.spells.length > 0 && (
           <div className="nav-elem">
             <Tooltip title="Voir mes sorts" arrow>
-              <button onClick={() => showSpells()}>
+              <button onClick={() => openSpellPage()}>
                 <img
                   src={magicStaffIcon}
                   alt="magicStaff"
@@ -274,6 +272,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </Tooltip>
           </button>
         )}
+        {/*hero class selection */}
         {role === PlayerRole.HERO && heroesNotControlledByPlayer.size < 3 && (
           <div className="nav-elem">
             <Select
@@ -293,23 +292,37 @@ const Navbar: React.FC<NavbarProps> = ({
             </Select>
           </div>
         )}
-        {role === PlayerRole.HERO && hero && (
-          <Select
-            className="weapons"
-            id="weapons-select"
-            onChange={(e) => {
-              setSelectedWeapon(e.target.value);
-            }}
-            value={selectedWeapon ?? ""}
-          >
-            {hero?.equipment?.weapons?.map((weapon) => {
-              return (
-                <option key={weapon.id} value={weapon.id}>
-                  {getEquipmentName(weapon.name)}
-                </option>
-              );
-            })}
-          </Select>
+        {/*weapon selection */}
+        {role === PlayerRole.HERO &&
+        hero &&
+        hero?.equipment?.weapons.length > 1 ? (
+          <div className="nav-elem">
+            <Select
+              onChange={(e) => {
+                setSelectedWeapon(e.target.value);
+              }}
+              value={selectedWeapon ?? ""}
+            >
+              {hero?.equipment?.weapons?.map((weapon) => {
+                return (
+                  <MenuItem key={weapon.id} value={weapon.id}>
+                    {findEquipmentName(weapon.name)}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </div>
+        ) : (
+          role === PlayerRole.HERO && (
+            <div className="nav-elem">
+              <p>
+                Arme :{" "}
+                {findEquipmentName(
+                  selectedWeapon ?? hero?.equipment?.weapons[0]?.name,
+                ) ?? "Aucune arme"}
+              </p>
+            </div>
+          )
         )}
         <button
           className="nav-elem"

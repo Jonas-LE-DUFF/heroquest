@@ -47,7 +47,10 @@ export function getAllEquipmentsAsCards(): CardAsJson[] {
 /**
  * Get the French name of an equipment by its id
  */
-export function getEquipmentName(id: string): string {
+export function findEquipmentName(id: string | undefined): string | undefined {
+  if (!id) {
+    return undefined;
+  }
   const equipment = getEquipmentById(id);
   return equipment?.name ?? id;
 }

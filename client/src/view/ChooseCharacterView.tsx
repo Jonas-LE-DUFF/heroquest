@@ -60,7 +60,7 @@ const ChooseCharacter: React.FC<ChooseCharacterProps> = ({ socket }) => {
     heroCategory: modifiedHero?.category || getAvailableClasses()[0],
     gold: modifiedHero?.equipment?.gold || 0,
     spellElements: modifiedHero?.spellElements || [],
-    equipments: modifiedHero ? flattenEquipment(modifiedHero.equipment) : [],
+    equipments: modifiedHero ? flattenEquipment(modifiedHero.equipment) : getHeroBaseEquipment(getAvailableClasses()[0]),
     modifiedHeroId: modifiedHero?.id,
   });
 

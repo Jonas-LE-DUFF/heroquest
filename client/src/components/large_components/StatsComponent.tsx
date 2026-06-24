@@ -57,8 +57,10 @@ const StatsComponent = ({
       }}
     >
       <div className="content">
+        <h3>Caractéristiques</h3>
+        <hr />
         <div className="stats">
-          <p>{unit.name} Stats</p>
+          <p>Nom : {unit.name}</p>
           {unit.category && (
             <div className="statElem">
               <p>Classe : </p>
@@ -286,6 +288,13 @@ const StatsComponent = ({
           toast.error(
             "Erreur lors de la mise à jour des stats : " + response.error,
           );
+          if (statsEdit !== unit.stats) {
+            toast.info(
+              "Les stats ont été réinitialisées aux valeurs précédentes.",
+            );
+            setStatsEdit(unit.stats);
+          }
+          return;
         }
       },
     );

@@ -218,9 +218,16 @@ const GameControls = ({
   }
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        height: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       {role === PlayerRole.HERO && isPlayerTurn && (
-        <button className="warning-button" onClick={endTurn}>
+        <button className="warning-button attractive-button" onClick={endTurn}>
           END TURN
         </button>
       )}

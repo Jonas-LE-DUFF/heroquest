@@ -83,3 +83,17 @@ body {
 button {
   font-size: 18px;
 }
+
+h3 {
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+p {
+  font-size: 1.25rem;
+}
