@@ -103,6 +103,26 @@ const Board = ({
         />,
       );
     }
+
+    if(tile.transientUnitId) {
+      const transientUnit = game.gameState.Units.find(
+        (u) => u.id === tile.transientUnitId,
+      );
+      if (transientUnit) {
+        let className = "boardImg";
+        if (tile.type !== TileType.FLOOR || unit) {
+          className += " onTopImage";
+        }
+        elements.push(
+          <img
+            className={className}
+            src={getIconClassPath(transientUnit)}
+            alt={getUnitClassName(transientUnit)}
+          />,
+        );
+      }
+    }
+
     if (elements.length === 0) {
       return `${x},${y}`;
     }

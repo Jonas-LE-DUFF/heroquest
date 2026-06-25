@@ -60,41 +60,45 @@ class Tile {
   }
 
   placeUnit(unitId: string): void {
-    if(!this.unitId) {
+    if (!this.unitId) {
       this.unitId = unitId;
       return;
     }
-    if(!this.transientUnitId) {
+    if (!this.transientUnitId) {
       this.transientUnitId = unitId;
-      console.warn("A unit is already present on the tile, placing the new unit in transient state");
+      console.warn(
+        "A unit is already present on the tile, placing the new unit in transient state",
+      );
       return;
     }
     // this should never happen, a player cannot stop on a tile occupied by another unit and only one unit can be moving at a time, but we throw an error just in case
-    throw new Error("Tile is already occupied by two units, cannot place another one");
+    throw new Error(
+      "Tile is already occupied by two units, cannot place another one",
+    );
   }
 
-  /***
-   * removes one and only one unit from the tile, if there is a transient unit it removes it first, otherwise it removes the main unit
-   * @returns the id of the unit removed or null if there were no unit on the tile
-   */
-  removeUnit(): string | null {
-    let removedUnitId: string | null = null;
-    if(this.transientUnitId) {
-      removedUnitId = this.transientUnitId;
+  removeDesignatedUnit(unitId: string): string | null {
+    if (this.transientUnitId === unitId) {
       this.transientUnitId = null;
-      return removedUnitId;
+      return unitId;
     }
-    removedUnitId = this.unitId;
-    this.unitId = null;
-    return removedUnitId;
+    if (this.unitId === unitId) {
+      this.unitId = null;
+      return unitId;
+    }
+    return null;
   }
 
   toJson(gameMaster: boolean = false): TileAsJson {
     return {
       type: this.type,
       unitId: this.unitId,
+      transientUnitId: this.transientUnitId,
       // should show trap details only if it's revealed or if its game master view
-      trap: this.trap && (this.trap.isRevealed || gameMaster) ? this.trap.toJson() : null,
+      trap:
+        this.trap && (this.trap.isRevealed || gameMaster)
+          ? this.trap.toJson()
+          : null,
     };
   }
 }

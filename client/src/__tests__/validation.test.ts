@@ -94,7 +94,12 @@ function createEmptyBoard(
   for (let x = 0; x < width; x++) {
     const row: TileAsJson[] = [];
     for (let y = 0; y < height; y++) {
-      row.push({ type: TileType.FLOOR, unitId: null, trap: null });
+      row.push({
+        type: TileType.FLOOR,
+        unitId: null,
+        trap: null,
+        transientUnitId: null,
+      });
     }
     tiles.push(row);
   }
@@ -103,19 +108,23 @@ function createEmptyBoard(
     height,
     tiles,
     doors: {
-      horizontalDoors: Array.from({ length: width + 1 }, () =>
-        Array(height).fill(false) as boolean[],
+      horizontalDoors: Array.from(
+        { length: width + 1 },
+        () => Array(height).fill(false) as boolean[],
       ),
-      verticalDoors: Array.from({ length: width }, () =>
-        Array(height + 1).fill(false) as boolean[],
+      verticalDoors: Array.from(
+        { length: width },
+        () => Array(height + 1).fill(false) as boolean[],
       ),
     },
     walls: {
-      horizontalWalls: Array.from({ length: width + 1 }, () =>
-        Array(height).fill(false) as boolean[],
+      horizontalWalls: Array.from(
+        { length: width + 1 },
+        () => Array(height).fill(false) as boolean[],
       ),
-      verticalWalls: Array.from({ length: width }, () =>
-        Array(height + 1).fill(false) as boolean[],
+      verticalWalls: Array.from(
+        { length: width },
+        () => Array(height + 1).fill(false) as boolean[],
       ),
     },
   };
