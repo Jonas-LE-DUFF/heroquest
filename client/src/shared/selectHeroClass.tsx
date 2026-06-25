@@ -3,7 +3,7 @@ import { getHeroClassIconPath, getHeroClassName } from "./utils";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 
 export function renderHeroClassOptions(
-  disabledClasses: Set<HeroCategory | undefined> = new Set()
+  disabledClasses: Set<HeroCategory | undefined> = new Set(),
 ) {
   return Object.entries(HeroCategory)
     .filter(([key]) => isNaN(Number(key)))
@@ -13,14 +13,12 @@ export function renderHeroClassOptions(
         value={value}
         disabled={disabledClasses.has(value as HeroCategory)}
       >
-        <div className="selectHeroClass">
-          <img
-            className="heroFaceimage"
-            src={getHeroClassIconPath(value as HeroCategory)}
-            alt={"icon" + value}
-          />
-          {getHeroClassName(Number(value))}
-        </div>
+        <img
+          className="heroFaceimage"
+          src={getHeroClassIconPath(value as HeroCategory)}
+          alt={"icon" + value}
+        />
+        {getHeroClassName(Number(value))}
       </MenuItem>
     ));
 }

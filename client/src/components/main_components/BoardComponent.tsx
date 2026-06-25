@@ -7,7 +7,12 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { getIconClassPath, getUnitClassName, getTrapTypePath, isHero } from "../../shared/utils";
+import {
+  getIconClassPath,
+  getUnitClassName,
+  getTrapTypePath,
+  isHero,
+} from "../../shared/utils";
 import { getTileStyle } from "../../shared/tileStyle";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
@@ -21,10 +26,7 @@ import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 
 interface BoardProps {
   game: GameAsJson;
-  onTileClick: (
-    position: PositionAsJson,
-    selectedType: SelectType,
-  ) => void;
+  onTileClick: (position: PositionAsJson, selectedType: SelectType) => void;
   selectedPosition: PositionAsJson | null;
   selectedType: SelectType;
 }
@@ -47,37 +49,7 @@ const Board = ({
     onTileClick(position, selectedType);
   };
 
-  const renderGrid = () => {
-    const grid = [];
-    if (!game) {
-      return;
-    }
-    for (let row = 0; row < game.gameState.board.tiles.length; row++) {
-      const cells = [];
-      for (let col = 0; col < game.gameState.board.tiles[row].length; col++) {
-        cells.push(
-          <TableCell
-            key={col}
-            className="tile"
-            sx={getTileStyle(
-              row,
-              col,
-              game.gameState,
-              selectedPosition,
-            )}
-            onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
-          >
-            {getTileContent(row, col)}
-          </TableCell>,
-        );
-      }
-      grid.push(<TableRow key={row}>{cells}</TableRow>);
-    }
-
-    return grid;
-  };
-
-  const getTileContent = (x: number, y: number) => {
+  function getTileContent(x: number, y: number) {
     const tile: TileAsJson | undefined = game.gameState.board.tiles[x]?.[y];
     if (!tile) {
       console.error("Tile is undefined at position:", x, y);
@@ -131,16 +103,54 @@ const Board = ({
         />,
       );
     }
+
+    if(tile.transientUnitId) {
+      const transientUnit = game.gameState.Units.find(
+        (u) => u.id === tile.transientUnitId,
+      );
+      if (transientUnit) {
+        let className = "boardImg";
+        if (tile.type !== TileType.FLOOR || unit) {
+          className += " onTopImage";
+        }
+        elements.push(
+          <img
+            className={className}
+            src={getIconClassPath(transientUnit)}
+            alt={getUnitClassName(transientUnit)}
+          />,
+        );
+      }
+    }
+
     if (elements.length === 0) {
       return `${x},${y}`;
     }
     return <div>{elements}</div>;
-  };
+  }
+
+  const grid: JSX.Element[] = [];
+  for (let row = 0; row < game.gameState.board.tiles.length; row++) {
+    const cells = [];
+    for (let col = 0; col < game.gameState.board.tiles[row].length; col++) {
+      cells.push(
+        <TableCell
+          key={col}
+          className="tile"
+          sx={getTileStyle(row, col, game.gameState, selectedPosition)}
+          onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
+        >
+          {getTileContent(row, col)}
+        </TableCell>,
+      );
+    }
+    grid.push(<TableRow key={row}>{cells}</TableRow>);
+  }
 
   return (
     <TableContainer component={Paper} sx={{ width: "fit-content" }}>
       <Table>
-        <TableBody>{renderGrid()}</TableBody>
+        <TableBody>{grid}</TableBody>
       </Table>
     </TableContainer>
   );

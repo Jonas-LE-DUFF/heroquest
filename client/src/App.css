@@ -1,24 +1,19 @@
 .App {
   text-align: center;
   width: 100%;
+  height: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(circle at center, rgba(255, 251, 240, 0.2) 0%, rgba(255, 251, 240, 0) 55%),
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(84, 58, 20, 0.06) 100%);
-  box-shadow: inset 0 0 140px rgba(92, 63, 22, 0.22);
-  justify-content: center;
   overflow-y: auto;
+  background-color: var(--tan);
+  font-family: "dumbledor", sans-serif;
+  color: black;
+  font-size: 1.25rem;
 }
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-}
-
-menu {
-  padding : 0;
+* {
+  font-family: "dumbledor", sans-serif;
 }
 
 .App-logo {
@@ -39,7 +34,6 @@ menu {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
 }
 
@@ -58,18 +52,19 @@ menu {
 
 .input,
 .select,
-select,
 input {
   width: auto;
   padding: 0.5em;
   font-size: 1em;
   border: 2px solid #3a3a3a;
-  border-radius: 10px;
+  border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.06);
 }
 
-.input:hover, input:hover, select:hover, .select:hover
-{
+.input:hover,
+input:hover,
+select:hover,
+.select:hover {
   background-color: rgba(0, 0, 0, 0.12);
 }
 
@@ -80,15 +75,19 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .warning-button,
 .classic-button,
 .positive-button,
-.closeButton,
-.return-button,
-.monster-button {
+.close-button,
+.return-button {
   padding: 12px 24px;
   margin: 5px;
-  border-radius: 6px;
+  border-radius: 32px;
   border: 2px solid #ccc;
   background-color: #979797;
   color: white;
@@ -102,7 +101,7 @@ button {
   cursor: pointer;
 }
 
-.closeButton {
+.close-button {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -116,28 +115,47 @@ button {
 }
 
 .positive-button:hover {
-  background-color: #174719;
+  background-color: #236826;
 }
 
 .warning-button {
-  border-color: brown;
-  background-color: rgba(136, 32, 32, 0.897);
-}
-
-.warning-button:hover {
+  border-color: rgba(136, 32, 32, 0.897);
   background-color: brown;
 }
 
+.warning-button:hover {
+  background-color: rgba(175, 52, 52, 0.897);
+}
+
 .classic-button {
-  border-color: #0e234b;
+  border-color: #5274b3;
   background-color: #2d58a8;
 }
 
 .classic-button:hover {
-  background-color: #0e234b;
+  background-color: #3061c2;
 }
 
-form, .form {
+@keyframes pop {
+  0% {
+    box-shadow: 0 0 10px 10px rgba(228, 143, 25, 0.589);
+  } 
+  50%{
+    box-shadow: 0 0 30px 30px rgba(255, 222, 32, 0.767);
+    
+  }
+  100% {
+    box-shadow: 0 0 10px 10px rgba(228, 143, 25, 0.589);
+  }
+}
+.attractive-button {
+  animation-name: pop;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+form,
+.form {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -146,30 +164,45 @@ form, .form {
   gap: 0.5em;
 }
 
+.page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-image: url(/assets/images/icons/heroquestlogo.png);
+  background-repeat: no-repeat;
+  background-position: top;
+  background-attachment: fixed;
+  background-size: 1000px auto;
+  overflow-y: scroll;
+}
+
 .login-page,
 .lobby-page,
 .character-page {
-  padding: 0 5% 2% 5%;
+  padding: 2% 5% 2% 5%;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 4vh;
+  margin-top: 24vh;
   margin-bottom: 4vh;
-  background : rgba(0, 0, 0, 0.06) !important; /* override Paper default background*/
+  background: var(
+    --vanilla-custard
+  ) !important; /* override Paper default background*/
   border-radius: 16px !important;
   width: fit-content;
 }
 
 .equipments-dialog {
   width: fit-content;
-  margin: 16px;
+  padding: 16px;
   min-width: 400px;
+  background: var(
+    --vanilla-custard
+  ) !important; /* override Paper default background*/
 }
 
-h2{
-  margin: 0;
-}
-
-.card{
+.card {
   max-height: inherit;
   max-width: inherit;
   display: block;
@@ -177,16 +210,17 @@ h2{
   border-radius: 12px;
 }
 
-.buttons{
+.buttons {
   display: flex;
   flex-direction: row;
   gap: 5px;
   justify-content: center;
+  font-size: 16px;
 }
 
 .greyish {
-  filter : grayscale(80%) brightness(50%);
-  opacity : 0.8;
+  filter: grayscale(80%) brightness(50%);
+  opacity: 0.8;
 }
 
 .icon {
@@ -195,7 +229,7 @@ h2{
 }
 
 .game-preparation {
-  width : 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;

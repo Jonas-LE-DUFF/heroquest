@@ -4,6 +4,7 @@ import {
   getFightDiceFaceNumber,
   getIconClassPath,
   getUnitClassName,
+  isHero,
 } from "../../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
@@ -11,23 +12,31 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import { toast } from "react-toastify";
+import { getRedDiceFace } from "../dices/RedDicesComponent";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
 
 interface StatsComponentProps {
   socket: Socket;
-  gameId: string;
   unit: MonsterAsJson | HeroAsJson;
   setStatsVisible: (arg0: boolean) => void;
-  isGameMaster: boolean;
 }
 
 const StatsComponent = ({
   socket,
-  gameId,
   unit,
   setStatsVisible,
-  isGameMaster,
 }: StatsComponentProps) => {
+  const state = useLocation().state as LocationState;
+  const { playerId, game } = state;
+
+  const isGameMaster =
+    game.players.find((p) => p.id === playerId)?.role ===
+    PlayerRole.GAME_MASTER;
+
   const [statsEdit, setStatsEdit] = useState<StatsAsJson>(unit.stats);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     setStatsEdit(unit.stats);
@@ -39,13 +48,19 @@ const StatsComponent = ({
     return null;
   }
   return (
-    <Paper sx={{ height: "fit-content" }}>
+    <Paper
+      sx={{
+        width: "min(720px, calc(100vw - 32px))",
+        maxHeight: "calc(100vh - 32px)",
+        overflow: "hidden",
+        borderRadius: "16px",
+      }}
+    >
       <div className="content">
-        <button className="closeButton" onClick={() => setStatsVisible(false)}>
-          X
-        </button>
+        <h3>Caractéristiques</h3>
+        <hr />
         <div className="stats">
-          <p>{unit.name} Stats</p>
+          <p>Nom : {unit.name}</p>
           {unit.category && (
             <div className="statElem">
               <p>Classe : </p>
@@ -57,8 +72,8 @@ const StatsComponent = ({
             </div>
           )}
           <div className="statElem">
-            <p>Nombre de dés en attaque : </p>
-            {isGameMaster && (
+            <p>Attaque : </p>
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.attack}
                 onChange={(e) =>
@@ -70,11 +85,11 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {statsEdit?.attack && getDices(statsEdit.attack)}
+            {statsEdit?.attack && !isEditing && getDices(statsEdit.attack)}
           </div>
           <div className="statElem">
-            <p>Nombre de dés en défense : </p>
-            {isGameMaster && (
+            <p>Défense : </p>
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.defense}
                 onChange={(e) =>
@@ -86,11 +101,11 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {statsEdit.defense && getDices(statsEdit.defense)}
+            {statsEdit.defense && !isEditing && getDices(statsEdit.defense)}
           </div>
           <div className="statElem">
             <p>Points d&apos;esprit : </p>
-            {isGameMaster && (
+            {isGameMaster && isEditing && (
               <input
                 value={statsEdit.spirit}
                 onChange={(e) =>
@@ -102,7 +117,28 @@ const StatsComponent = ({
                 type="number"
               />
             )}
-            {!isGameMaster && statsEdit.spirit}
+            {!isEditing && statsEdit.spirit}
+          </div>
+          <div className="statElem">
+            <p>Déplacements : </p>
+
+            {isGameMaster && isEditing && (
+              <input
+                value={statsEdit.movements}
+                onChange={(e) =>
+                  setStatsEdit({
+                    ...statsEdit,
+                    movements: Number(e.target.value),
+                  })
+                }
+                type="number"
+              />
+            )}
+            {statsEdit.movements &&
+              !isEditing &&
+              (isHero(unit)
+                ? getRedDices(statsEdit.movements)
+                : statsEdit.movements)}
           </div>
           {statsEdit?.health && statsEdit.maxHealth && (
             <Box
@@ -110,7 +146,6 @@ const StatsComponent = ({
                 width: "100%",
                 borderRadius: "5px",
                 height: "fit-content",
-                mt: 2,
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",
@@ -119,15 +154,17 @@ const StatsComponent = ({
               }}
             >
               <LinearProgress
-                sx={{ minWidth: "250px", borderRadius: "5px", height: "25px" }}
+                sx={{ minWidth: "70%", borderRadius: "5px", height: "25px" }}
                 color="error"
                 variant="determinate"
                 value={(statsEdit?.health / statsEdit?.maxHealth) * 100}
               />
-              <p>{`${statsEdit?.health} / ${statsEdit?.maxHealth} HP`}</p>
+              <p className="statValue" style={{ minWidth: "30%" }}>
+                {`${statsEdit?.health} / ${statsEdit?.maxHealth} HP`}
+              </p>
             </Box>
           )}
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <div className="statElem">
               <p>HP : </p>
               <input
@@ -142,7 +179,7 @@ const StatsComponent = ({
               />
             </div>
           )}
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <div className="statElem">
               <p>Max HP : </p>
               <input
@@ -159,32 +196,15 @@ const StatsComponent = ({
             </div>
           )}
           <div className="statElem">
-            <p>Déplacements : </p>
-            {statsEdit.movements}
-
-            {isGameMaster && (
-              <input
-                value={statsEdit.movements}
-                onChange={(e) =>
-                  setStatsEdit({
-                    ...statsEdit,
-                    movements: Number(e.target.value),
-                  })
-                }
-                type="number"
-              />
-            )}
-          </div>
-          <div className="statElem">
             <p>Effets : </p>
             <ul>
               {statsEdit.effects.length > 0 ? (
                 statsEdit.effects.map((effect, index) => (
                   <li key={index}>
                     {effect}
-                    {isGameMaster && (
+                    {isGameMaster && isEditing && (
                       <button
-                        className="warning-button"
+                        className="warning-button remove-effect-button"
                         onClick={() => {
                           const newEffects = statsEdit.effects?.filter(
                             (statusEffect) => statusEffect !== effect,
@@ -205,7 +225,7 @@ const StatsComponent = ({
               )}
             </ul>
           </div>
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <div className="statElem">
               <input type="text" placeholder="Nom de l'effet" id="effectName" />
               <button
@@ -235,12 +255,23 @@ const StatsComponent = ({
               </button>
             </div>
           )}
-          {isGameMaster && (
+          {isGameMaster && isEditing && (
             <button
               className="positive-button"
-              onClick={() => sendNewStats(statsEdit)}
+              onClick={() => {
+                sendNewStats(statsEdit);
+                setIsEditing(false);
+              }}
             >
               Save Stats
+            </button>
+          )}
+          {isGameMaster && !isEditing && (
+            <button
+              className="classic-button"
+              onClick={() => setIsEditing(true)}
+            >
+              Modifier les stats
             </button>
           )}
         </div>
@@ -251,17 +282,36 @@ const StatsComponent = ({
     // Send the new stats to the server or update the state
     socket.emit(
       "update-stats-unit",
-      { gameId, newStats, unitId: unit.id },
+      { gameId: game.id, playerId, newStats, unitId: unit.id },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           toast.error(
             "Erreur lors de la mise à jour des stats : " + response.error,
           );
+          if (statsEdit !== unit.stats) {
+            toast.info(
+              "Les stats ont été réinitialisées aux valeurs précédentes.",
+            );
+            setStatsEdit(unit.stats);
+          }
+          return;
         }
       },
     );
   }
 };
+
+function getRedDices(numDices: number) {
+  const dices = [];
+  for (let i = 0; i < numDices; i++) {
+    dices.push(
+      <div className="dice" key={"red dice number" + i}>
+        {getRedDiceFace((i % 6) + 1)}
+      </div>,
+    );
+  }
+  return dices;
+}
 
 function getDices(numDices: number) {
   const dices = [];

@@ -19,6 +19,7 @@ import RotatableCard3D from "../../small_components/RotatableCard3D";
 import { GameAsJson } from "../../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { MonsterAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { isHero } from "../../../shared/utils";
+import { LocationState } from "../../../POO/types/LocationType";
 
 interface EquipmentsDialogComponentProps {
   socket: Socket;
@@ -26,9 +27,11 @@ interface EquipmentsDialogComponentProps {
 }
 
 const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
-  const state = useLocation().state as { gameId: string; role: PlayerRole };
-  const gameId = state.gameId;
-  const role = state.role;
+  const state = useLocation().state as LocationState;
+  const { game, playerId } = state;
+  const player = game.players.find((p) => p.id === playerId);
+  const role = player?.role ?? PlayerRole.HERO;
+  const gameId = state.game.id;
 
   const { socket, hero } = props;
   const equipment = hero.equipment;
@@ -45,39 +48,56 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
     equipments: T[],
     setEquipments: (equipments: T[]) => void,
   ) => (
-    <ul>
-      {equipments.map((equipment: ItemAsJson) => (
-        <li key={equipment.id}>
-          <div>
-            {equipment.name}
-            {equipment.type === "Potion" &&
-              hero.controlledByPlayerId === socket.id && (
-                <button className="positive-button" onClick={() => drinkPotion(equipment.id)}>
-                  boire
+    <>
+      <ul>
+        {equipments.map((equipment: ItemAsJson) => (
+          <li key={equipment.id}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto auto",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <p>{equipment.name}</p>
+              {equipment.type === "Potion" &&
+                hero.controlledByPlayerId === playerId && (
+                  <button
+                    className="positive-button"
+                    onClick={() => drinkPotion(equipment.id)}
+                  >
+                    boire
+                  </button>
+                )}
+              <button
+                className="classic-button"
+                onClick={() => openItemDetails(equipment)}
+              >
+                Détails
+              </button>
+
+              {editionState && role === PlayerRole.GAME_MASTER && (
+                <button
+                  className="warning-button"
+                  onClick={() => {
+                    const updatedEquipments = equipments.filter(
+                      (e) => e.id !== equipment.id,
+                    );
+                    setEquipments(updatedEquipments);
+                  }}
+                >
+                  Supprimer
                 </button>
               )}
-            <button className="classic-button" onClick={() => openItemDetails(equipment)}>
-              détails
-            </button>
-
-            {editionState && role === PlayerRole.GAME_MASTER && (
-              <button
-                className="warning-button"
-                onClick={() => {
-                  const updatedEquipments = equipments.filter(
-                    (e) => e.id !== equipment.id,
-                  );
-                  setEquipments(updatedEquipments);
-                }}
-              >
-                Supprimer
-              </button>
-            )}
-          </div>
-        </li>
-      ))}
-    </ul>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <hr />
+    </>
   );
+
   function openItemDetails(item: ItemAsJson): void {
     const cardData = getItemAsCard(item.id);
     toast.info(RotatableCard3D, {
@@ -92,6 +112,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       "updateEquipment",
       {
         gameId,
+        playerId: playerId,
         heroId: hero.id,
         equipment: equipmentAsCards.map((card) => card.id),
         gold: gold,
@@ -106,6 +127,13 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           toast.error(
             "Erreur lors de la mise à jour de l'équipement : " + response.error,
           );
+          //reset local equipment state to the previous one
+          setArmors(equipment.armors);
+          setWeapons(equipment.weapons);
+          setPotions(equipment.potions);
+          setTools(equipment.tools);
+          setGold(equipment.gold);
+          return;
         }
       },
     );
@@ -126,7 +154,6 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       setPotions(updatedHero.equipment.potions);
       setTools(updatedHero.equipment.tools);
       setGold(updatedHero.equipment.gold);
-
     };
 
     socket.on("game-state-update", handleGameStateUpdate);
@@ -141,6 +168,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
       "drink-potion",
       {
         gameId,
+        playerId: playerId,
         heroId: hero.id,
         potionId: potionId,
       },
@@ -203,22 +231,31 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
         )}
       </p>
       {role === PlayerRole.GAME_MASTER && !editionState && (
-        <button className="classic-button" onClick={() => setEditionState(true)}>
+        <button
+          className="classic-button"
+          onClick={() => setEditionState(true)}
+        >
           Édition
         </button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
-        <button className="classic-button" onClick={() => saveEditions()}>
+        <button className="positive-button" onClick={() => saveEditions()}>
           Terminer l&apos;édition
         </button>
       )}
       {editionState && role === PlayerRole.GAME_MASTER && (
         <>
-          <button className="classic-button" onClick={() => openAddEquipmentMenu()}>
-            ajouter un équipement
+          <button
+            className="classic-button"
+            onClick={() => openAddEquipmentMenu()}
+          >
+            Ajouter un équipement
           </button>
-          <button className="classic-button" onClick={() => openAddTreasureMenu()}>
-            ajouter un trésor
+          <button
+            className="classic-button"
+            onClick={() => openAddTreasureMenu()}
+          >
+            Ajouter un trésor
           </button>
         </>
       )}

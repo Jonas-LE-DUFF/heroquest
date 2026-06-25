@@ -28,14 +28,14 @@ export function registerMasterHandlers(socket: Socket) {
   socket.on(
     "place-element",
     withValidation(socket, placeElementSchema, (socket, data, callback) => {
-      const { position: posData, selectedType, gameId } = data;
+      const { position: posData, selectedType, gameId, playerId } = data;
       const position = toPosition(posData);
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Game not found"));
       }
 
-      if (!requireGameMaster(socket, GameService.getGame(gameId)!)) {
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
         return callback(errorResponse("You are not the game master"));
       }
 
@@ -128,13 +128,13 @@ export function registerMasterHandlers(socket: Socket) {
   socket.on(
     "update-stats-unit",
     withValidation(socket, updateStatsUnitSchema, (socket, data, callback) => {
-      const { newStats, unitId, gameId } = data;
+      const { newStats, unitId, gameId, playerId } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Game not found"));
       }
 
-      if (!requireGameMaster(socket, GameService.getGame(gameId)!)) {
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
         return callback(errorResponse("You are not the game master"));
       }
 
@@ -194,6 +194,8 @@ function handleDoorPlacement(
   return { success: true };
 }
 
+//TODO : refactor all the following functions and put them in a dedicated service, the GameService is not the right place for them
+
 function handleTilePlacement(
   gameId: string,
   position: Position,
@@ -211,10 +213,7 @@ function handleTilePlacement(
     };
   }
   tile.type = TileType;
-  io.to(gameId).emit("tile-placed", {
-    position: position,
-    TileType: TileType,
-  });
+  emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }
 

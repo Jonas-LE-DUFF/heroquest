@@ -1,18 +1,43 @@
-.Navbar{
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    padding: 5px;
+.navbar {
+  padding:8px;
+  width: 100%;
+  height: calc(100% - 16px);
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  background-color: var(--tan);
+  color: var(--dark-coffee);
+  border-bottom: 2px solid var(--dark-coffee);
+  font-size: 1.5rem;
 }
 
-.nav-elem{
-    margin-right: 15px;
-    display: flex;
-    align-items: center;
+.nav-elem {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
 }
 
-.imgNav{
-    height: 40px;
-    width: auto;
-    cursor: pointer;
+.img-nav {
+  height: 40px;
+  width: auto;
+}
+
+.icon-nav {
+  filter: brightness(100%);
+}
+
+.nav-elem:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.MuiButtonBase-root.MuiButton-root.Mui-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.nav-elem:nth-last-child(1) {
+  margin-right: 16px;
+  margin-left: auto;
+
 }

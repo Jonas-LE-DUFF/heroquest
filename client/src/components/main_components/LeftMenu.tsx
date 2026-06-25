@@ -1,42 +1,60 @@
 import React from "react";
 import StatsComponent from "../large_components/StatsComponent";
 import "./LeftMenu.css";
-import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { Dialog } from "@mui/material";
 import { Socket } from "socket.io-client";
-import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import RedDices from "../dices/RedDicesComponent";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
+import Dices from "../dices/HeroQuestDicesComponent";
 
 interface LeftMenuProps {
   statsVisible: boolean;
   socket: Socket;
-  currentGameState: GameAsJson;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   setStatsVisible: (arg0: boolean) => void;
-  role: PlayerRole;
 }
 
 const LeftMenu: React.FC<LeftMenuProps> = ({
   statsVisible,
   socket,
-  currentGameState,
   selectedUnit,
   setStatsVisible,
-  role,
 }) => {
   return (
     <>
-      {statsVisible && selectedUnit && (
+      <div className="dices hero">
+        <RedDices socket={socket} diceOwner={PlayerRole.HERO} />
+        <Dices socket={socket} diceOwner={PlayerRole.HERO} />
+      </div>
+      <div className="dices game-master">
+        <RedDices socket={socket} diceOwner={PlayerRole.GAME_MASTER} />
+        <Dices socket={socket} diceOwner={PlayerRole.GAME_MASTER} />
+      </div>
+      <Dialog
+        open={statsVisible && selectedUnit !== null}
+        onClose={() => setStatsVisible(false)}
+        aria-labelledby="unit-stats-dialog"
+        sx={{
+          "& .MuiDialog-paper": {
+            background: "transparent",
+            boxShadow: "none",
+            maxWidth: "calc(100vw - 32px)",
+            maxHeight: "calc(100vh - 32px)",
+            margin: 0,
+            overflow: "visible",
+          },
+        }}
+      >
         <div className="game-controls">
           <StatsComponent
             socket={socket}
-            gameId={currentGameState.id}
-            unit={selectedUnit}
+            unit={selectedUnit!}
             setStatsVisible={setStatsVisible}
-            isGameMaster={role === PlayerRole.GAME_MASTER}
           />
         </div>
-      )}
+      </Dialog>
 
       <div>
         {selectedUnit !== null && (

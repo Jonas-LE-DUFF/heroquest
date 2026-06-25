@@ -12,6 +12,7 @@ import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/Equipmen
 import { WeaponRange } from "../../enums/WeaponRange";
 import { ArmorType } from "../../enums/ArmorType";
 import { Tool } from "./Items/Tool";
+import { Item } from "./Items/Item";
 
 class Equipment {
   gold: number;
@@ -82,6 +83,25 @@ class Equipment {
     this.tools.push(tool);
   }
 
+  hasEquipment(equipmentId: string): boolean {
+    return this.mergeEquipment().some((item) => item.reference === equipmentId);
+  }
+
+  private mergeEquipment(): Item[] {
+    return ([...this.weapons, ...this.armors, ...this.potions, ...this.tools] as Item[]).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+  }
+
+  removeClericUncarryableEquipment() {
+    this.armors = this.armors.filter(
+      (armor) => armor.canClericCarry,
+    );
+    this.weapons = this.weapons.filter(
+      (weapon) => weapon.canClericCarry,
+    );
+  }
+
   addEquipmentById(equipmentId: string) {
     const equipmentData = equipmentJson.deck.find((e) => e.id === equipmentId);
     const treasureData = treasuresJson.deck.find((t) => t.id === equipmentId);
@@ -109,6 +129,7 @@ class Equipment {
           equipmentData.name,
           equipmentData.cost,
           equipmentData.image_path,
+          equipmentData.cleric_bearable ?? true,
           equipmentData.modifiers.damage || 0,
           (equipmentData.range || "melee") as WeaponRange,
         );
@@ -121,6 +142,7 @@ class Equipment {
           equipmentData.name,
           equipmentData.cost,
           equipmentData.image_path,
+          equipmentData.cleric_bearable ?? true,
           equipmentData.modifiers.defense || 0,
           equipmentData.modifiers.movementDebuff || 0,
           equipmentData.type as ArmorType,

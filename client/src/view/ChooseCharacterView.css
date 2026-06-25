@@ -9,14 +9,20 @@
   margin: 0;
 }
 
-.MuiSelect-root {
+div.form-grid .MuiSelect-root {
   padding: 0;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #3b3b3b;
+  font-size: 1.25rem;
 }
 
-.MuiInputBase-root {
-  border: 1px solid #3b3b3b;
+.MuiInputBase-root .MuiSelect-select {
   border-radius: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .selectHeroClass {
@@ -51,7 +57,7 @@
 }
 
 .spellCards {
-  width: 50%;
+  width: 80%;
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -59,7 +65,7 @@
   margin: 0 auto;
 }
 
-.singleSpellCard{
+.singleSpellCard {
   display: flex;
   justify-content: center;
   align-items: center;

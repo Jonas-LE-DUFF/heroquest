@@ -25,18 +25,18 @@ function registerMovementHandlers(socket: Socket) {
   socket.on(
     "move-unit-one-step",
     withValidation(socket, moveUnitOneStepSchema, async (socket, data, callback) => {
-      const { gameId, unitId, direction } = data;
+      const { gameId, playerId, unitId, direction } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("La partie n'existe plus."));
       }
 
-      if (!requirePlayerTurn(socket, GameService.getGame(gameId)!)) {
+      if (!requirePlayerTurn(playerId, GameService.getGame(gameId)!)) {
         return callback(errorResponse("Ce n'est pas votre tour."));
       }
 
       const game = GameService.getGame(gameId);
-      const isGameMaster = game!.getGameMaster()?.id === socket.id;
+      const isGameMaster = game!.getGameMaster()?.id === playerId;
 
       const unitMoved: Unit<HeroCategory | MonsterCategory> | null =
         getUnitToMove(game!, unitId, isGameMaster);

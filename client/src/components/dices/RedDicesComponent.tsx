@@ -10,23 +10,28 @@ import face6 from "./../images/redDice6.png";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
 
 interface RedDicesProps {
   socket: Socket;
-  gameId: string;
-  role: PlayerRole;
-  viewerRole: PlayerRole;
+  diceOwner: PlayerRole;
 }
 
-const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
+const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
+  const state = useLocation().state as LocationState;
+  const { playerId, game } = state;
+
   const [currentDiceFaces, setCurrentDiceFaces] = useState<number[] | null>(
     Array.of(1, 1),
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(2);
-  const playerRole = viewerRole;
+  const playerRole = game.players.find((p) => p.id === playerId)?.role;
 
   useEffect(() => {
-    setCurrentDiceFaces(Array.of(...Array(currentNumberOfDices).fill(1) as number[]));
+    setCurrentDiceFaces(
+      Array.of(...(Array(currentNumberOfDices).fill(1) as number[])),
+    );
   }, [currentNumberOfDices]);
 
   useEffect(() => {
@@ -34,7 +39,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       listResults: number[];
       role: PlayerRole;
     }) => {
-      if (data.role !== role) return; // update not for us
+      if (data.role !== diceOwner) return; // update not for us
       setCurrentDiceFaces(data.listResults);
     };
 
@@ -46,9 +51,11 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       if (
         data.playerId === socket.id &&
         data.typeOfDices === "red" &&
-        role === PlayerRole.HERO
+        diceOwner === PlayerRole.HERO
       ) {
-        setCurrentDiceFaces(Array.of(...Array(data.amountOfDices).fill(1) as number[]));
+        setCurrentDiceFaces(
+          Array.of(...(Array(data.amountOfDices).fill(1) as number[])),
+        );
       }
     };
 
@@ -59,41 +66,25 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       socket.off("red-dice-update", onRedDiceUpdate);
       socket.off("special-authorization", onSpecialAuthorization);
     };
-  }, [socket, role, currentDiceFaces]);
+  }, [socket, diceOwner, currentDiceFaces]);
 
   const rollDice = () => {
     socket.emit(
       "roll-red-dice",
       {
-        gameId: gameId,
+        gameId: game.id,
+        playerId: playerId,
         numberOfDice: currentNumberOfDices,
       },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
-          toast.error("Erreur lors du lancement des dés rouges : " + response.error);
+          toast.error(
+            "Erreur lors du lancement des dés rouges : " + response.error,
+          );
         }
       },
     );
   };
-
-  function getDiceFace(face: number) {
-    switch (face) {
-      case 1:
-        return <img className="imgDice" src={face1} alt="dé rouge face 1" />;
-      case 2:
-        return <img className="imgDice" src={face2} alt="dé rouge face 2" />;
-      case 3:
-        return <img className="imgDice" src={face3} alt="dé rouge face 3" />;
-      case 4:
-        return <img className="imgDice" src={face4} alt="dé rouge face 4" />;
-      case 5:
-        return <img className="imgDice" src={face5} alt="dé rouge face 5" />;
-      case 6:
-        return <img className="imgDice" src={face6} alt="dé rouge face 6" />;
-      default:
-        return null;
-    }
-  }
 
   function renderDices(currentDiceFaces: Array<number> | null) {
     if (currentDiceFaces === null) {
@@ -104,7 +95,7 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
       dices.push(
         <div className="dice" key={"dice number" + i}>
           {currentDiceFaces[i] !== null
-            ? getDiceFace(currentDiceFaces[i])
+            ? getRedDiceFace(currentDiceFaces[i])
             : "noFace"}
         </div>,
       );
@@ -112,27 +103,26 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     return dices;
   }
 
+  const isOwner = playerRole === diceOwner;
+
   return (
     <div className="container">
       <Paper
-        className="dice-container"
+        className={isOwner ? "dice-container clickable" : "dice-container"}
         sx={{
           display: "flex",
           flexDirection: "row",
         }}
+        onClick={isOwner ? rollDice : undefined}
       >
         {renderDices(currentDiceFaces)}
       </Paper>
-      {playerRole === role && (
-        <button className="classic-button" onClick={rollDice}>
-          lancer les dés rouges
-        </button>
-      )}
       {playerRole === PlayerRole.GAME_MASTER &&
-        role === PlayerRole.GAME_MASTER && (
+        diceOwner === PlayerRole.GAME_MASTER && (
           <input
             className="inputDice"
             type="number"
+            value={currentNumberOfDices}
             onChange={(e) =>
               setCurrentNumberOfDices(Number(e.currentTarget.value))
             }
@@ -141,5 +131,24 @@ const RedDices = ({ socket, gameId, role, viewerRole }: RedDicesProps) => {
     </div>
   );
 };
+
+export function getRedDiceFace(face: number) {
+  switch (face) {
+    case 1:
+      return <img className="img-dice" src={face1} alt="dé rouge face 1" />;
+    case 2:
+      return <img className="img-dice" src={face2} alt="dé rouge face 2" />;
+    case 3:
+      return <img className="img-dice" src={face3} alt="dé rouge face 3" />;
+    case 4:
+      return <img className="img-dice" src={face4} alt="dé rouge face 4" />;
+    case 5:
+      return <img className="img-dice" src={face5} alt="dé rouge face 5" />;
+    case 6:
+      return <img className="img-dice" src={face6} alt="dé rouge face 6" />;
+    default:
+      return null;
+  }
+}
 
 export default RedDices;

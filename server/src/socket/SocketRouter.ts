@@ -10,15 +10,61 @@ import { registerMasterHandlers } from "../handlers/masterHandlers";
 import { Socket } from "socket.io";
 import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { registerTrapsActionsHandlers } from "../handlers/trapsActionsHandlers";
+import { randomUUID } from "crypto";
+
+async function restoreSession(socket: Socket, sessionToken: string) {
+  const server = ServerHeroQuest.getServerInstance();
+  const io = server.getIo();
+  const sessionStore = server.getSessionStore();
+
+  console.log("Attempting to restore session for token:", sessionToken);
+
+  const existingSession = sessionStore.findByToken(sessionToken);
+
+  if (existingSession) {
+    console.log(
+      `Restoring session for player ${existingSession.playerId} in game ${existingSession.gameId}`,
+    );
+    if (!existingSession.gameId || !existingSession.playerId) {
+      console.error(
+        `Invalid session data for token ${sessionToken}: missing gameId or playerId`,
+      );
+      return;
+    }
+
+    const game = server.getGame(existingSession.gameId);
+    const player = game?.getPlayer(existingSession.playerId);
+
+    if (game && player) {
+      player.socketId = socket.id; // Update player ID to the new socket ID
+      await socket.join(existingSession.gameId);
+      console.log(`Player ${player.name} reconnected to game ${game.name}`);
+      emitGameStateUpdate(io, game.id, game);
+      return;
+    }
+    console.error(
+      `Failed to restore session: game or player not found for session token ${sessionToken}`,
+    );
+  }
+}
 
 export function registerSocketHandlers(server: ServerHeroQuest) {
   const io = server.getIo();
+  const sessionStore = server.getSessionStore();
 
   // Apply middlewares
   io.use(loggerMiddleware);
 
-  io.on("connection", (socket: Socket) => {
+  io.on("connection", async (socket: Socket) => {
+    const sessionToken =
+      (socket.handshake.auth.sessionToken as string) ?? randomUUID();
+
+    await restoreSession(socket, sessionToken);
+
+    socket.emit("session", { sessionToken });
+    sessionStore.save({ sessionToken, playerId: null, gameId: null }); // Save session with null values until player joins a game
     console.log("Connected:", socket.id);
+    socket.handshake.auth.sessionToken = sessionToken;
 
     // Register all handlers
     registerLobbyHandlers(socket);

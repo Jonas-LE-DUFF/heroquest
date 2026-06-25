@@ -5,27 +5,23 @@ import { PlayerRole } from "../POO/enums/PlayerRole";
 import PlayerStatusComponent from "../components/large_components/PlayerStatusComponent";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
-import Card from "@mui/material/Card";
 import "./LobbyPageView.css";
+import { LocationState } from "../POO/types/LocationType";
+import { Paper } from "@mui/material";
 
 interface LobbyPageProps {
   socket: Socket;
 }
 
 const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
-  const state = useLocation().state as {
-    playerName: string;
-    game: GameAsJson;
-    playerId: string;
-  };
+  const state: LocationState = useLocation().state as LocationState;
   const navigate = useNavigate();
 
-  const playerName : string = state.playerName;
+  const player = state.game.players.find((p) => p.id === state.playerId);
+  const playerName = player?.name || "Unknown Player";
+  const role = player?.role;
+
   const [game, setgame] = useState<GameAsJson | null>(state.game);
-  const gameId = game?.id;
-  const role: PlayerRole | undefined = game?.players?.find(
-    (p) => p.id === socket.id,
-  )?.role;
 
   useEffect(() => {
     if (!game || !playerName) {
@@ -40,7 +36,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       const game = data.game;
       console.log("Game is starting...", game);
       void navigate("/game", {
-        state: { playerName, gameId, role, game: game, playerId: state.playerId },
+        state: { game: game, playerId: state.playerId } as LocationState,
       });
     };
 
@@ -56,19 +52,25 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
       socket.off("game-start", handleGameStart);
       socket.off("game-state-update", handlegameUpdate);
     };
-  }, [navigate, playerName, socket, game, gameId, role, state.playerId]);
+  }, [navigate, playerName, socket, game, role, state.playerId]);
 
   const startGame = () => {
     socket.emit(
       "start-game",
-      { gameId },
+      { gameId: game?.id, playerId: state.playerId },
       (response: { success: boolean; error?: string; data?: GameAsJson }) => {
         if (response.success) {
           const game = response.data;
           void navigate("/game", {
-            state: { playerName, gameId, role, game, playerId: state.playerId },
+            state: { game, playerId: state.playerId } as LocationState,
           });
         } else {
+          if (response.error?.includes("spawn point")) {
+            toast.warning(
+              "Veuillez placer le point de départ sur le plateau avant de lancer la partie.",
+            );
+            return;
+          }
           toast.error(`Erreur: ${response.error}`);
         }
       },
@@ -77,8 +79,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const leaveLobby = () => {
     socket.emit(
-      "leave-lobby",
-      { gameId },
+      "leave-game",
+      { gameId: game?.id, playerId: state.playerId },
       () => {
         void navigate("/");
       },
@@ -87,7 +89,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
 
   const chooseCharacter = () => {
     if (!game) {
-      toast.error("Game state is missing. Cannot proceed to character selection.");
+      toast.error(
+        "Game state is missing. Cannot proceed to character selection.",
+      );
       void navigate("/");
       return;
     }
@@ -95,23 +99,22 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     void navigate("/characterChoice", {
       state: {
         game,
-        playerName,
-        gameId,
-        role,
         playerId: state.playerId,
-      },
+      } as LocationState,
     });
   };
 
   const unselectCharacter = (heroId: string) => {
     if (!game) {
-      toast.error("Game state is missing. Cannot proceed to character unselection.");
+      toast.error(
+        "Game state is missing. Cannot proceed to character unselection.",
+      );
       void navigate("/");
       return;
     }
     socket.emit(
       "unselect-character",
-      { gameId, heroId },
+      { gameId: game?.id, playerId: state.playerId, heroId },
       (response: { success: boolean; error?: string }) => {
         if (!response.success) {
           console.error("Error unselecting character:", response.error);
@@ -125,15 +128,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
     void navigate("/gamePreparation", {
       state: {
         game,
-        playerName,
-        gameId,
-        role,
         playerId: state.playerId,
-      },
+      } as LocationState,
     });
   };
 
-  if (!game) {
+  if (!game || !player) {
     void navigate("/");
     return null;
   }
@@ -142,45 +142,49 @@ const LobbyPage: React.FC<LobbyPageProps> = ({ socket }) => {
   const players = game.players;
 
   return (
-    <Card className="lobby-page">
-      <h1>Lobby - {game.name}</h1>
-      <p>
-        Bienvenue, <strong>{playerName}</strong> (
-        {role === PlayerRole.GAME_MASTER ? "Maître du Jeu" : "Héros"})
-      </p>
-      {game && (
-        <PlayerStatusComponent
-          game={game}
-          unselectCharacter={unselectCharacter}
-        />
-      )}
-      <div className="players-list">
-        <h2>Joueurs connectés ({game && players ? players.length : "0"}/5)</h2>
-      </div>
+    <div className="page-container">
+      <Paper elevation = {5} className="lobby-page">
+        <h1>Lobby - {game.name}</h1>
+        <p>
+          Bienvenue, <strong>{playerName}</strong> (
+          {role === PlayerRole.GAME_MASTER ? "Maître du Jeu" : "Héros"})
+        </p>
+        {game && (
+          <PlayerStatusComponent
+            game={game}
+            unselectCharacter={unselectCharacter}
+          />
+        )}
+        <div className="players-list">
+          <h2>
+            Joueurs connectés ({game && players ? players.length : "0"}/5)
+          </h2>
+        </div>
 
-      <div className="lobby-actions">
-        {isGameMaster && (
-          <>
-            {canStartGame && (
-              <button className="positive-button" onClick={startGame}>
-                lancer la partie
+        <div className="lobby-actions">
+          {isGameMaster && (
+            <>
+              {canStartGame && (
+                <button className="positive-button" onClick={startGame}>
+                  lancer la partie
+                </button>
+              )}
+              <button className="classic-button" onClick={prepareGame}>
+                Préparer la partie
               </button>
-            )}
-            <button className="classic-button" onClick={prepareGame}>
-              Préparer la partie
-            </button>
-          </>
-        )}
-        <button className="warning-button" onClick={leaveLobby}>
-          Sortir du Lobby
-        </button>
-        {!isGameMaster && (
-          <button className="classic-button" onClick={chooseCharacter}>
-            Choisir son personnage
+            </>
+          )}
+          <button className="warning-button" onClick={leaveLobby}>
+            Sortir du Lobby
           </button>
-        )}
-      </div>
-    </Card>
+          {!isGameMaster && (
+            <button className="classic-button" onClick={chooseCharacter}>
+              Choisir son personnage
+            </button>
+          )}
+        </div>
+      </Paper>
+    </div>
   );
 };
 

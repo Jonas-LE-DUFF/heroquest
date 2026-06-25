@@ -13,8 +13,6 @@ interface RightMenuProps {
   setSelectedType: (type: SelectType) => void;
   selectedType: SelectType;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
-  setSelectedWeapon: (weaponId: string | null) => void;
-  selectedWeapon: string | null;
   hero: HeroAsJson | null;
   setInteraction: Dispatch<SetStateAction<InteractionState>>;
 }
@@ -25,25 +23,19 @@ const RightMenu: React.FC<RightMenuProps> = ({
   setSelectedType,
   selectedType,
   selectedUnit,
-  setSelectedWeapon,
-  selectedWeapon,
   hero,
   setInteraction,
 }) => {
   return (
-    <div>
-      <GameControls
-        socket={socket}
-        game={currentGameState}
-        setSelectedType={setSelectedType}
-        selectedType={selectedType}
-        selectedUnit={selectedUnit}
-        setSelectedWeapon={setSelectedWeapon}
-        selectedWeapon={selectedWeapon}
-        hero={hero}
-        setInteraction={setInteraction}
-      />
-    </div>
+    <GameControls
+      socket={socket}
+      currentGameState={currentGameState}
+      setSelectedType={setSelectedType}
+      selectedType={selectedType}
+      selectedUnit={selectedUnit}
+      hero={hero}
+      setInteraction={setInteraction}
+    />
   );
 };
 

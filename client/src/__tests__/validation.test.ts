@@ -18,7 +18,6 @@ import {
   getHeroesByPlayerId,
   getPlayerByHero,
   getPlayerByHeroCategory,
-  getPlayerBySocketId,
   getPlayerIdToPlay,
 } from "../shared/serverUtils";
 import {
@@ -82,6 +81,7 @@ function createPlayer(overrides?: Partial<PlayerAsJson>): PlayerAsJson {
     name: "Alice",
     role: PlayerRole.HERO,
     isReady: false,
+    socketId: null,
     ...overrides,
   };
 }
@@ -94,7 +94,12 @@ function createEmptyBoard(
   for (let x = 0; x < width; x++) {
     const row: TileAsJson[] = [];
     for (let y = 0; y < height; y++) {
-      row.push({ type: TileType.FLOOR, unitId: null, trap: null });
+      row.push({
+        type: TileType.FLOOR,
+        unitId: null,
+        trap: null,
+        transientUnitId: null,
+      });
     }
     tiles.push(row);
   }
@@ -103,19 +108,23 @@ function createEmptyBoard(
     height,
     tiles,
     doors: {
-      horizontalDoors: Array.from({ length: width + 1 }, () =>
-        Array(height).fill(false) as boolean[],
+      horizontalDoors: Array.from(
+        { length: width + 1 },
+        () => Array(height).fill(false) as boolean[],
       ),
-      verticalDoors: Array.from({ length: width }, () =>
-        Array(height + 1).fill(false) as boolean[],
+      verticalDoors: Array.from(
+        { length: width },
+        () => Array(height + 1).fill(false) as boolean[],
       ),
     },
     walls: {
-      horizontalWalls: Array.from({ length: width + 1 }, () =>
-        Array(height).fill(false) as boolean[],
+      horizontalWalls: Array.from(
+        { length: width + 1 },
+        () => Array(height).fill(false) as boolean[],
       ),
-      verticalWalls: Array.from({ length: width }, () =>
-        Array(height + 1).fill(false) as boolean[],
+      verticalWalls: Array.from(
+        { length: width },
+        () => Array(height + 1).fill(false) as boolean[],
       ),
     },
   };
@@ -755,13 +764,6 @@ describe("serverUtils validation", () => {
     const player = getPlayerByHero(hero, players);
     expect(player).not.toBeNull();
     expect(player!.id).toBe("p1");
-  });
-
-  it("getPlayerBySocketId should find the correct player", () => {
-    const game = createFullPartyGame();
-    const player = getPlayerBySocketId("p2", game);
-    expect(player).not.toBeNull();
-    expect(player!.name).toBe("Player2");
   });
 
   it("getPlayerByHeroCategory should find the player controlling that hero", () => {

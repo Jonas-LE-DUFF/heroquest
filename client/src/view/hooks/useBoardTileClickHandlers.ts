@@ -28,6 +28,7 @@ interface UseBoardTileClickHandlersProps {
   interaction: InteractionState;
   setInteraction: Dispatch<SetStateAction<InteractionState>>;
   game: GameAsJson;
+  playerId: string;
   socket: Socket;
   hero: HeroAsJson | null;
   setStatsVisible: Dispatch<SetStateAction<boolean>>;
@@ -38,6 +39,7 @@ const useBoardTileClickHandlers = ({
   interaction,
   setInteraction,
   game,
+  playerId,
   socket,
   hero,
   setStatsVisible,
@@ -59,6 +61,7 @@ const useBoardTileClickHandlers = ({
         "cast-spell",
         {
           gameId: game.id,
+          playerId: playerId,
           spellId: interaction.targeting.spellId,
           position: position,
         },
@@ -70,7 +73,7 @@ const useBoardTileClickHandlers = ({
       );
       setInteraction((prev) => ({ ...prev, targeting: getDefaultTargetingState() }));
     },
-    [interaction.targeting, socket, game.id, setInteraction, getDefaultTargetingState],
+    [interaction.targeting, socket, game.id, playerId, setInteraction, getDefaultTargetingState],
   );
 
   const handleAttackTileClick = useCallback(
@@ -89,7 +92,8 @@ const useBoardTileClickHandlers = ({
         "attack",
         {
           gameId: game.id,
-          attackerId: socket.id,
+          playerId: playerId,
+          attackerId: hero?.id,
           targetId: target.id,
           weaponId: PlayerService.getHeroSelectedWeapon(hero) ?? undefined,
         },
@@ -103,7 +107,7 @@ const useBoardTileClickHandlers = ({
       );
       setInteraction((prev) => ({ ...prev, targeting: getDefaultTargetingState() }));
     },
-    [game, socket, hero, setInteraction, getDefaultTargetingState],
+    [game, socket, hero, playerId, setInteraction, getDefaultTargetingState],
   );
 
   const handleDefaultTileClick = useCallback(
@@ -148,6 +152,7 @@ const useBoardTileClickHandlers = ({
         "place-element",
         {
           gameId: game.id,
+          playerId: playerId,
           position,
           selectedType,
         },
@@ -165,7 +170,7 @@ const useBoardTileClickHandlers = ({
         },
       );
     },
-    [interaction.selectedType, handleDefaultTileClick, game.id, socket, setGame],
+    [interaction.selectedType, handleDefaultTileClick, game.id, socket, playerId, setGame],
   );
 
   const handleDisarmTrapTileClick = useCallback(
@@ -174,6 +179,7 @@ const useBoardTileClickHandlers = ({
         "disarm-trap",
         {
           gameId: game.id,
+          playerId: playerId,
           heroId: hero?.id,
           position,
         },
@@ -185,7 +191,7 @@ const useBoardTileClickHandlers = ({
       );
       setInteraction((prev) => ({ ...prev, targeting: getDefaultTargetingState() }));
     },
-    [game.id, hero, socket, setInteraction, getDefaultTargetingState],
+    [game.id, hero, socket, playerId, setInteraction, getDefaultTargetingState],
   );
 
   const handleRevealTrapTileClick = useCallback(
@@ -195,6 +201,7 @@ const useBoardTileClickHandlers = ({
         "reveal-trap",
         {
           gameId: game.id,
+          playerId: playerId,
           position,
         },
         (response: { success: boolean; error?: string }) => {
@@ -207,7 +214,7 @@ const useBoardTileClickHandlers = ({
       );
       setInteraction((prev) => ({ ...prev, targeting: getDefaultTargetingState() }));
     },
-    [game.id, socket, setInteraction, getDefaultTargetingState],
+    [game.id, socket, playerId, setInteraction, getDefaultTargetingState],
   );
 
   const handleTileClick = useCallback(

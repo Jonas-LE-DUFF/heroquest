@@ -34,14 +34,6 @@ function getPlayerByHeroCategory(
   return null;
 }
 
-function getPlayerBySocketId(
-  socketId: string,
-  game: GameAsJson,
-): PlayerAsJson | null {
-  const player = game.players.find((p) => p.id === socketId) || null;
-  return player;
-}
-
 function getHeroesByPlayerId(
   playerId: string,
   game: GameAsJson,
@@ -88,7 +80,6 @@ export {
   getHeroes,
   getPlayerByHeroCategory,
   getHeroesByPlayerId,
-  getPlayerBySocketId,
   getPlayerIdToPlay,
   getHeroToPlay,
   getHeroByCategory,

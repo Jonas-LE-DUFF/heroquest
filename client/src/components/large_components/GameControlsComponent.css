@@ -1,37 +1,56 @@
 .game-controls {
-  border: solid 2px black;
+  display: flex;
+  flex-direction: column;
   margin: 3%;
+  padding-top: 10px;
   border-radius: 10px;
-  box-shadow: 2px 2px 2px gray;
+  font-size: 1.25rem;
 }
 
-.gridElem {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: fit-content;
+.game-controls h5 {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0;
+  align-content: start;
+  text-align: start;
+  margin-left: 8px;
 }
 
-.monster-button {
+.monster-item {
   display: flex;
   flex-direction: row;
-  height: 64.8px;
-  justify-content: center;
-  align-items: center;
-}
-
-.two-button-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-
-select {
-  padding: 10px;
-  border-radius: 10px;
   height: fit-content;
-  width: fit-content;
+  padding: 2px;
+  gap: 10px;
+  align-items: center;
+}
+
+.buttons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+}
+
+.buttons-container > button {
+  background-color: #30382071;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.buttons-container > button:hover {
+  background-color: #414833;
+}
+
+.buttons-container > button.selected {
+  background-color: #282e1d;
+}
+
+.buttons-container > button > img {
+  width: 20px;
+  height: auto;
 }
 
 .monster-img {
@@ -39,33 +58,37 @@ select {
   height: auto;
 }
 
-.selected {
-  background-color: darkgray;
-  border-color: black;
+.game-controls .MuiGrid-root {
+  padding: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 
-.hero {
-  background-color: #cfb898;
+.MuiGrid-root > .MuiSelect-root {
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
 }
 
-.game-master {
-  background-color: #5a141b;
+div .MuiInputBase-root {
+  width: fit-content;
+  min-width: 150px;
 }
 
-.hidden {
-  display: none;
-  width: 0%;
-}
-
-.dices-section{
+.MuiInputBase-root > .MuiSelect-select {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-around;
-  width: 100%;
+  gap: 10px;
+  padding: 8px 8px 8px 16px;
+  flex-wrap: wrap;
 }
-
-.weapons{
-  margin-left: 10px;
-  margin-bottom: 10px;
+hr {
+  border: none;
+  border-top: 1px solid #3b3b3b;
+  margin: 10px 0;
 }

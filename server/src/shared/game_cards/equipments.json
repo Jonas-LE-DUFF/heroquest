@@ -48,7 +48,7 @@
     },
     {
       "id": "bracelets",
-      "name": "bracelets",
+      "name": "Bracelets",
       "image_path": "/assets/images/cards/equipments/bracelets.png",
       "cost": 550,
       "amountOfCopies": 1,

@@ -2,19 +2,21 @@ import { randomUUID } from "crypto";
 import { ItemAsJson } from "../../../interfaces/ClassAsJson/Equipment/ItemAsJson";
 
 abstract class Item {
-  id: string;
+  id: string;        // a unique identifier for this specific item instance, generated when the item is created
   reference: string; // the name of the item in the json file
   abstract type: string;
   name: string;
   cost: number;
   image: string;
+  canClericCarry: boolean = true;
 
-  constructor(reference: string, name: string, cost: number, image: string) {
+  constructor(reference: string, name: string, cost: number, image: string, canClericCarry: boolean = true) {
     this.id = randomUUID();
     this.reference = reference;
     this.name = name;
     this.cost = cost;
     this.image = image;
+    this.canClericCarry = canClericCarry;
   }
 
   abstract toJson(): ItemAsJson;

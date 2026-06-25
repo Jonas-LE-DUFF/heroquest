@@ -36,7 +36,7 @@ function checkForTraps(socket: Socket) {
       socket,
       heroActionSchema,
       (socket, data, callback) => {
-        const { gameId, heroId } = data;
+        const { gameId, playerId, heroId } = data;
         console.log(`Checking for traps in game ${gameId} for hero ${heroId}`);
         if (!requireGameExists(gameId)) {
           return callback(errorResponse("La partie n'existe plus."));
@@ -44,7 +44,7 @@ function checkForTraps(socket: Socket) {
 
         const game = GameService.getGame(gameId);
 
-        if (!requirePlayerTurn(socket, game!)) {
+        if (!requirePlayerTurn(playerId, game!)) {
           return callback(errorResponse("Ce n'est pas votre tour."));
         }
 
@@ -67,7 +67,7 @@ function disarmTrap(socket: Socket) {
   socket.on(
     "disarm-trap",
     withValidation(socket, disarmTrapSchema, async (socket, data, callback) => {
-      const { gameId, heroId } = data;
+      const { gameId, playerId, heroId } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("La partie n'existe plus."));
@@ -96,7 +96,7 @@ function disarmTrap(socket: Socket) {
         );
       }
 
-      if (!requirePlayerTurn(socket, game!)) {
+      if (!requirePlayerTurn(playerId, game!)) {
         return callback(errorResponse("Ce n'est pas votre tour."));
       }
 
@@ -153,12 +153,12 @@ function revealTrap(socket: Socket) {
     "reveal-trap",
     withValidation(socket, revealTrapSchema, (socket, data, callback) => {
       console.log("Received reveal trap request with data:", data);
-      const { gameId, position } = data;
+      const { gameId, playerId, position } = data;
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("La partie n'existe plus."));
       }
       const game = GameService.getGame(gameId);
-      if (!requireGameMaster(socket, game!)) {
+      if (!requireGameMaster(playerId, game!)) {
         return callback(
           errorResponse("Seul le maître du jeu peut faire cela."),
         );

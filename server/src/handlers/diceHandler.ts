@@ -27,14 +27,14 @@ function handleSpecialRollAuthorization(socket: Socket) {
       socket,
       authorizeSpecialThrowSchema,
       (socket, data, callback) => {
-        const { gameId, numberOfDices, typeOfDices, playerClass } = data;
+        const { gameId, playerId, numberOfDices, typeOfDices, playerClass } = data;
         const gameState = GameService.getGame(gameId);
 
         if (!requireGameExists(gameId)) {
           return callback(errorResponse("Partie non trouvée"));
         }
 
-        if (!requireGameMaster(socket, gameState!)) {
+        if (!requireGameMaster(playerId, gameState!)) {
           return callback(errorResponse("Vous n'êtes pas le maître du jeu"));
         }
 
@@ -58,7 +58,7 @@ function handleRollRedDice(socket: Socket) {
       socket,
       rollRedDiceSchema,
       async (socket, data, callback) => {
-        const { gameId, numberOfDice } = data;
+        const { gameId, playerId, numberOfDice } = data;
         const game = GameService.getGame(gameId);
 
         if (!requireGameExists(gameId)) {
@@ -73,7 +73,7 @@ function handleRollRedDice(socket: Socket) {
 
         let amountOfDice;
 
-        const player = game!.getPlayer(socket.id);
+        const player = game!.getPlayer(playerId);
         if (!player) {
           console.error("no player found for rolling fight dices");
           return callback(
@@ -108,7 +108,7 @@ function handleRollRedDice(socket: Socket) {
             amountOfDice = hero.getMovementPoints();
           } catch (error) {
             if (error instanceof Error) {
-              console.error("error while getting current hero turn:", error);
+              console.error("error while getting current hero turn:", error.message);
               return callback(errorResponse(error.message || "erreur interne"));
             }
             console.error("unexpected error while getting current hero turn");
@@ -132,7 +132,7 @@ function handleRollFightDice(socket: Socket) {
   socket.on(
     "roll-dice",
     withValidation(socket, rollDiceSchema, async (socket, data, callback) => {
-      const { gameId, numberOfDice } = data;
+      const { gameId, playerId, numberOfDice } = data;
       const game = GameService.getGame(gameId);
 
       if (!requireGameExists(gameId)) {
@@ -147,7 +147,7 @@ function handleRollFightDice(socket: Socket) {
 
       let amountOfDice;
 
-      const player = game!.getPlayer(socket.id);
+      const player = game!.getPlayer(playerId);
       if (!player) {
         console.error("no player found for rolling fight dices");
         return callback(
@@ -179,7 +179,7 @@ function handleRollFightDice(socket: Socket) {
           amountOfDice = hero.getAttackDiceCount();
         } catch (error) {
           if (error instanceof Error) {
-            console.error("error while getting current hero turn:", error);
+            console.error("error while getting current hero turn:", error.message);
             return callback(errorResponse(error.message || "erreur interne"));
           }
           console.error("unexpected error while getting current hero turn");

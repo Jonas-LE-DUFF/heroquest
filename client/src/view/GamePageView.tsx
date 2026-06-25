@@ -3,10 +3,9 @@ import { useLocation } from "react-router-dom";
 import Board from "../components/main_components/BoardComponent";
 import "./GamePageView.css";
 import { getHeroClassName, isHero } from "../shared/utils";
-import Footer from "../components/main_components/Footer";
 import Navbar from "../components/main_components/Navbar";
 import RightMenu from "../components/main_components/RightMenu";
-import { Grid } from "@mui/material";
+import { Dialog, Grid } from "@mui/material";
 import LeftMenu from "../components/main_components/LeftMenu";
 import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
@@ -16,16 +15,9 @@ import {
   getPositionByUnitId,
   getTileByPosition,
   removeUnitFromBoardById,
-  setTileTypeAtPosition,
 } from "../shared/boardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import {
-  getHeroesByPlayerId,
-  getPlayerByHero,
-  getPlayerBySocketId,
-  getPlayerIdToPlay,
-} from "../shared/serverUtils";
-import { TileType } from "../POO/enums/Board/TileType";
+import { getHeroesByPlayerId, getPlayerByHero } from "../shared/serverUtils";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
@@ -40,18 +32,18 @@ import useBoardTileClickHandlers, {
   TargetingState,
 } from "./hooks/useBoardTileClickHandlers";
 import { Socket } from "socket.io-client";
+import { LocationState } from "../POO/types/LocationType";
 
 interface GamePageProps {
   socket: Socket;
 }
 
 const GamePage: React.FC<GamePageProps> = ({ socket }) => {
-  const state = useLocation().state as {
-    playerName: string;
-    role: PlayerRole;
-    game: GameAsJson;
-  };
-  const role = state.role;
+  const state = useLocation().state as LocationState;
+
+  const player = state.game.players.find((p) => p.id === state.playerId);
+
+  const role = player?.role;
 
   const [interaction, setInteraction] = useState<InteractionState>({
     selectedType: null,
@@ -86,11 +78,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
 
   const [game, setGame] = useState<GameAsJson>(state.game);
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
-  const user = game.players.find((p) => p.id === socket.id);
   const [hero, setHero] = useState<HeroAsJson | null>(
-    getHeroesByPlayerId(socket.id!, game)?.[0] || null,
+    getHeroesByPlayerId(player?.id ?? "", game)?.[0] || null,
   );
-  
+
   const [statsVisible, setStatsVisible] = useState(false);
   const [spellPageVisible, setSpellPageVisible] = useState(false);
   const selectedWeapon = PlayerService.getHeroSelectedWeapon(hero);
@@ -100,13 +91,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       console.error("Game data is missing");
       return;
     }
-    const hero = getHeroesByPlayerId(socket.id!, game)?.[0] || null;
+    const hero = getHeroesByPlayerId(player?.id ?? "", game)?.[0] || null;
     if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
       console.error("Couldn't find a hero for the current player");
       return;
     }
     setHero(hero);
-  }, [game, socket.id, role]);
+  }, [game, player?.id, role]);
 
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
@@ -182,23 +173,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       setBoardKey((k) => k + 1);
     };
 
-    const handleTilePlaced = (data: {
-      position: PositionAsJson;
-      TileType: TileType;
-    }) => {
-      console.log("tile placed received in game page", data);
-      setGame((prev) => {
-        if (!prev) return prev;
-
-        setTileTypeAtPosition(data.position, data.TileType, prev.gameState.board);
-
-        return { ...prev } as GameAsJson;
-      });
-
-      // TODO : try to remove this setTimeout
-      setBoardKey((k) => k + 1);
-    };
-
     const handleDoorPlaced = (data: {
       position: PositionAsJson;
       verticalOrHorizontal: "vertical" | "horizontal";
@@ -236,30 +210,40 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       });
     };
 
-    const handlePlayerSearching = (data: { playerId : string, heroId: string, elementSearched: string }) => {
-      const hero = game.gameState.Units.find((u) => u.id === data.heroId) as HeroAsJson;
-      const player = getPlayerBySocketId(data.playerId, game);
+    const handlePlayerSearching = (data: {
+      playerId: string;
+      heroId: string;
+      elementSearched: string;
+    }) => {
+      const hero = game.gameState.Units.find(
+        (u) => u.id === data.heroId,
+      ) as HeroAsJson;
       toast.info(
         `Le joueur ${player?.name || data.playerId} cherche des ${data.elementSearched} avec le/la ${getHeroClassName(hero.category)} `,
       );
-    }
+    };
 
     socket.on("player-search", handlePlayerSearching);
     socket.on("game-state-update", handleGameStateUpdate);
     socket.on("stats-updated", handleStatsUpdate);
-    socket.on("tile-placed", handleTilePlaced);
     socket.on("door-placed", handleDoorPlaced);
     socket.on("card-drawn", handleCardDrawn);
 
     return () => {
       socket.off("player-search", handlePlayerSearching);
-      socket.off("tile-placed", handleTilePlaced);
       socket.off("door-placed", handleDoorPlaced);
       socket.off("stats-updated", handleStatsUpdate);
       socket.off("game-state-update", handleGameStateUpdate);
       socket.off("card-drawn", handleCardDrawn);
     };
-  }, [socket, selectedPosition, selectedEntityId, handleStatsUpdate, game]);
+  }, [
+    socket,
+    selectedPosition,
+    selectedEntityId,
+    handleStatsUpdate,
+    game,
+    player?.name,
+  ]);
 
   const setSelectedUnit = (unit: HeroAsJson | MonsterAsJson | null) => {
     if (!unit) return;
@@ -287,6 +271,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     interaction,
     setInteraction,
     game,
+    playerId: player?.id ?? "",
     socket,
     hero,
     setStatsVisible,
@@ -294,12 +279,24 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   });
 
   if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
-    return <div>Le Héros que vous jouez est introuvable</div>;
+    setHero(getHeroesByPlayerId(socket.id!, game)?.[0] || null);
   }
 
   return (
     <>
-      {spellPageVisible && (
+      <Dialog
+        open={spellPageVisible}
+        onClose={() => setSpellPageVisible(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            width: "80%",
+            height: "80%",
+            maxWidth: "80%",
+            borderRadius: "10px",
+            background: "none",
+          },
+        }}
+      >
         <SpellsPopUp
           spellSchools={hero?.spellElements}
           spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
@@ -311,18 +308,12 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           }}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
-      )}
+      </Dialog>
       <Grid className="game-page" container>
         <Grid className="Navbar">
           <Navbar
             socket={socket}
             game={game}
-            isCurrentTurnPlayer={getPlayerIdToPlay(game) === socket.id || false}
-            currentTurnPlayerName={
-              getPlayerBySocketId(getPlayerIdToPlay(game) || "Unknown", game)
-                ?.name || "Unknown"
-            }
-            player={user}
             statsOpen={statsVisible}
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
@@ -333,18 +324,32 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             setCurrentlyPlayedHero={setHero}
             currentlyPlayedHero={hero}
             setInteraction={setInteraction}
+            setSelectedWeapon={(weapon) => {
+              setHero((prev) => {
+                return {
+                  ...prev,
+                  equipment: {
+                    ...prev?.equipment,
+                    selectedWeaponIndex:
+                      prev?.equipment.weapons.findIndex(
+                        (w) => w.id === weapon,
+                      ) ?? 0,
+                  },
+                } as HeroAsJson;
+              });
+              setTargetMode(true);
+            }}
+            selectedWeapon={selectedWeapon}
           />
         </Grid>
         <Grid className="LeftMenu">
           <LeftMenu
             statsVisible={statsVisible}
             socket={socket}
-            currentGameState={game}
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }
             setStatsVisible={setStatsVisible}
-            role={role}
           />
         </Grid>
 
@@ -366,28 +371,9 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null
             }
-            setSelectedWeapon={(weapon) => {
-              setHero((prev) => {
-                return {
-                  ...prev,
-                  equipment: {
-                    ...prev?.equipment,
-                    selectedWeaponIndex:
-                      prev?.equipment.weapons.findIndex(
-                        (w) => w.id === weapon,
-                      ) ?? 0,
-                  },
-                } as HeroAsJson;
-              });
-              setTargetMode(true);
-            }}
-            selectedWeapon={selectedWeapon}
             hero={hero}
             setInteraction={setInteraction}
           />
-        </Grid>
-        <Grid className="Footer">
-          <Footer />
         </Grid>
       </Grid>
     </>

@@ -1,12 +1,9 @@
-import { Socket } from "socket.io";
 import { Unit } from "../POO/classes/Units/Unit";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { Game } from "../POO/classes/Server/Game";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { checkUnitDefeat } from "../shared/death/death";
-import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
-import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "./GameService";
@@ -14,13 +11,13 @@ import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { DiceServiceRegistry } from "./DiceServiceRegistry";
 
 async function fight(
-  socket: Socket<ClientToServerEvents, ServerToClientEvents>,
+  playerId: string,
   game: Game,
   attacker: Unit<MonsterCategory | HeroCategory>,
   defender: Unit<MonsterCategory | HeroCategory>,
   wishedNumberOfDices: number,
 ) {
-  const isGameMaster = socket.id === game.getGameMaster()?.id;
+  const isGameMaster = playerId === game.getGameMaster()?.id;
 
   const defenderRole: PlayerRole = defender.getRole();
   const attackerRole: PlayerRole = attacker.getRole();

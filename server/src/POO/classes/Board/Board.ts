@@ -41,7 +41,7 @@ class Board {
     for (let x = 0; x < this.BOARD_WIDTH; x++) {
       for (let y = 0; y < this.BOARD_HEIGHT; y++) {
         const tile = this.Map[x]![y];
-        if (tile!.unitId === unitId) {
+        if (tile!.unitId === unitId || tile!.transientUnitId === unitId) {
           return new Position(x, y);
         }
       }
@@ -50,7 +50,8 @@ class Board {
   }
 
   getUnitAt(position: Position): string | undefined {
-    return this.getTileAtPosition(position)?.unitId || undefined;
+    const tile = this.getTileAtPosition(position);
+    return tile?.unitId || tile?.transientUnitId || undefined;
   }
 
   placeUnitAt(
@@ -169,7 +170,7 @@ class Board {
       console.error("Tile not found at position:", position);
       return null;
     }
-    return tile.removeUnit();
+    return tile.removeDesignatedUnit(unit.id);
   }
 
   clearTileAtPosition(position: Position): string | null {
@@ -192,7 +193,7 @@ class Board {
     return null;
   }
 
-  placeThinWall(position : Position, direction : Direction) {
+  placeThinWall(position: Position, direction: Direction) {
     const positionAfterMove = position.doorPosition(direction);
     const isCrossingHorizontal = this.isCrossingHorizontal(direction);
     if (isCrossingHorizontal) {

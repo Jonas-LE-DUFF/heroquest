@@ -36,7 +36,7 @@
   },
   {
     "id": "Djinn Open door",
-    "name": "ouvrir une porte",
+    "name": "Ouvrir une porte",
     "range": "any",
     "target_type": "door",
     "effect": {

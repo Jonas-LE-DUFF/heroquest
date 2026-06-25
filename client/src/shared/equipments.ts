@@ -1,7 +1,9 @@
 import equipmentsData from "./game_cards/equipments.json";
+import heroesData from "./game_cards/heroes.json";
 import { EquipmentAsJson } from "../POO/interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { ItemAsJson } from "../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
 import { CardAsJson, CardType } from "../POO/interfaces/ClassAsJson/CardAsJson";
+import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 
 export interface EquipmentModifiers {
   nbAttackDice?: number;
@@ -45,7 +47,10 @@ export function getAllEquipmentsAsCards(): CardAsJson[] {
 /**
  * Get the French name of an equipment by its id
  */
-export function getEquipmentName(id: string): string {
+export function findEquipmentName(id: string | undefined): string | undefined {
+  if (!id) {
+    return undefined;
+  }
   const equipment = getEquipmentById(id);
   return equipment?.name ?? id;
 }
@@ -79,4 +84,13 @@ export function getEquipmentAsItems(equipment: EquipmentAsJson): ItemAsJson[] {
   items.push(...equipment.potions);
   items.push(...equipment.tools);
   return items;
+}
+
+export function getHeroBaseEquipment(hero: HeroCategory): string[] {
+  const heroCategoryAsNumber = hero as number;
+  const heroData = heroesData.find((h) => h.id === heroCategoryAsNumber);
+  if (!heroData) {
+    return [];
+  }
+  return heroData.equipments;
 }

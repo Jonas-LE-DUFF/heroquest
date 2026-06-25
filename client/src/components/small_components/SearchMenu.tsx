@@ -10,10 +10,19 @@ import secretDoorIcon from "/assets/images/icons/navbar/search-secret-doors.svg"
 import { Tooltip } from "@mui/material";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
-import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { useLocation } from "react-router-dom";
+import { LocationState } from "../../POO/types/LocationType";
+import { getHeroToPlay } from "../../shared/serverUtils";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
-export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroAsJson) {
+export default function SearchMenu(
+  socket: Socket,
+  hero: HeroAsJson,
+  game: GameAsJson,
+) {
+  const state = useLocation().state as LocationState;
+  const { playerId } = state;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -23,10 +32,13 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
     setAnchorEl(null);
   };
 
+  const heroToPlay = getHeroToPlay(game);
+  const isHeroTurn = hero === heroToPlay;
+
   function searchSecretDoors(): void {
     socket.emit(
       "check-secret-doors",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: playerId, heroId: hero?.id },
       (response: {
         success: boolean;
         trapCardId?: string;
@@ -53,7 +65,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
     console.debug("searchTreasures called for hero", hero?.name); // Debug log
     socket.emit(
       "check-for-treasures",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: playerId, heroId: hero?.id },
       (response: {
         success: boolean;
         treasureCardId?: string;
@@ -79,7 +91,7 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
   function searchTraps(): void {
     socket.emit(
       "check-for-traps",
-      { gameId: game.id, heroId: hero?.id },
+      { gameId: game.id, playerId: playerId, heroId: hero?.id },
       (response: {
         success: boolean;
         trapCardId?: string;
@@ -106,13 +118,14 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
     <div className="nav-elem">
       <Button
         id="basic-button"
+        disabled={!isHeroTurn}
         aria-controls={open ? "basic-menu" : undefined}
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}
         onClick={handleClick}
       >
         <Tooltip title="Option de fouille" arrow>
-          <img src={searchIcon} alt="Search" className="imgNav" />
+          <img src={searchIcon} alt="Search" className="img-nav icon-nav" />
         </Tooltip>
       </Button>
       <Menu
@@ -122,24 +135,36 @@ export default function SearchMenu(socket: Socket, game: GameAsJson, hero: HeroA
         slotProps={{
           paper: {
             sx: {
-              backgroundColor: '#cfb898',
+              backgroundColor: "#cfb898",
             },
           },
         }}
       >
         <MenuItem onClick={() => searchTreasures()}>
           <Tooltip title="Rechercher des trésors" arrow>
-            <img src={drawCardIcon} alt="Draw Card" className="imgNav" />
+            <img
+              src={drawCardIcon}
+              alt="Draw Card"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </MenuItem>
         <MenuItem onClick={() => searchTraps()}>
           <Tooltip title="Rechercher des pièges" arrow>
-            <img src={trapSearch} alt="Trap search" className="imgNav" />
+            <img
+              src={trapSearch}
+              alt="Trap search"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </MenuItem>
         <MenuItem onClick={() => searchSecretDoors()}>
           <Tooltip title="Rechercher des portes secrètes" arrow>
-            <img src={secretDoorIcon} alt="Secret Door" className="imgNav" />
+            <img
+              src={secretDoorIcon}
+              alt="Secret Door"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </MenuItem>
       </Menu>

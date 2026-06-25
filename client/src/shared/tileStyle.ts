@@ -57,7 +57,7 @@ export const getTileStyle = (
     verticalAlign: "middle" as const,
     boxSizing: "border-box" as const,
     padding: "0px",
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     backgroundRepeat: "no-repeat",
     position: "relative" as const,
     overflow: "visible",
@@ -156,28 +156,28 @@ export const getTileStyle = (
 
   return style;
 
-  function setBorderRight(color: string = "black", width: string = "2px") {
+  function setBorderRight(color: string = "white", width: string = "2px") {
     borderDirectionSet.push(Direction.RIGHT);
     images.push(`linear-gradient(to bottom, ${color} 0 100%)`);
     sizes.push(`${width} 100%`);
     positions.push("top right");
   }
 
-  function setBorderLeft(color: string = "black", width: string = "2px") {
+  function setBorderLeft(color: string = "white", width: string = "2px") {
     borderDirectionSet.push(Direction.LEFT);
     images.push(`linear-gradient(to bottom, ${color} 0 100%)`);
     sizes.push(`${width} 100%`);
     positions.push("top left");
   }
 
-  function setBorderBottom(color: string = "black", width: string = "2px") {
+  function setBorderBottom(color: string = "white", width: string = "2px") {
     borderDirectionSet.push(Direction.DOWN);
     images.push(`linear-gradient(to right, ${color} 0 100%)`);
     sizes.push(`100% ${width}`);
     positions.push("bottom left");
   }
 
-  function setBorderTop(color: string = "black", width: string = "2px") {
+  function setBorderTop(color: string = "white", width: string = "2px") {
     borderDirectionSet.push(Direction.UP);
     images.push(`linear-gradient(to right, ${color} 0 100%)`);
     sizes.push(`100% ${width}`);
