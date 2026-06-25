@@ -37,9 +37,11 @@ import SearchMenu from "../small_components/SearchMenu";
 import { LocationState } from "../../POO/types/LocationType";
 import logoImage from "/assets/images/icons/heroquestlogo.png";
 import { findEquipmentName } from "../../shared/equipments";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
 interface NavbarProps {
   socket: Socket;
+  game: GameAsJson;
   statsOpen: boolean;
   selectedUnit: HeroAsJson | MonsterAsJson | null;
   currentlyPlayedHero: HeroAsJson | null;
@@ -54,6 +56,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({
   socket,
+  game,
   statsOpen,
   selectedUnit,
   setStatsOpen,
@@ -67,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const state = useLocation().state as LocationState;
   const navigate = useNavigate();
-  const { playerId, game } = state;
+  const { playerId } = state;
   const player = game.players.find((p) => p.id === playerId) as PlayerAsJson;
   const role = player?.role;
 
@@ -255,7 +258,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </button>
         )}
         {/*search menu*/}
-        {role === PlayerRole.HERO && hero && SearchMenu(socket, hero)}
+        {role === PlayerRole.HERO && hero && SearchMenu(socket, hero, game)}
         {/*disarm trap button*/}
         {role === PlayerRole.HERO && (
           <button

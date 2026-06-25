@@ -41,7 +41,10 @@ export function emitGameStateUpdate(
   }
 }
 
-export function getGameMasterSocket(io: Server<ClientToServerEvents, ServerToClientEvents>, game : Game) {
+export function getGameMasterSocket(
+  io: Server<ClientToServerEvents, ServerToClientEvents>,
+  game: Game,
+) {
   const room = io.sockets.adapter.rooms.get(game.id);
 
   if (!room) {
@@ -55,8 +58,8 @@ export function getGameMasterSocket(io: Server<ClientToServerEvents, ServerToCli
     const socket = io.sockets.sockets.get(socketId);
     if (!socket) continue;
 
-    const player = game.getPlayer(socket.id);
-    if (player?.role === PlayerRole.GAME_MASTER) {
+    const gameMaster = game.getGameMaster();
+    if (gameMaster.socketId === socketId) {
       return socket;
     }
   }
@@ -64,4 +67,3 @@ export function getGameMasterSocket(io: Server<ClientToServerEvents, ServerToCli
   console.warn(`No game master found in game ${game.id}`);
   return null;
 }
-

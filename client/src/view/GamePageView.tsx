@@ -313,6 +313,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         <Grid className="Navbar">
           <Navbar
             socket={socket}
+            game={game}
             statsOpen={statsVisible}
             selectedUnit={
               getSelectedUnit(selectedPosition, game.gameState.board) || null

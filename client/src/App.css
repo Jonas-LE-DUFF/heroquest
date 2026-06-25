@@ -195,8 +195,11 @@ form,
 
 .equipments-dialog {
   width: fit-content;
-  margin: 16px;
+  padding: 16px;
   min-width: 400px;
+  background: var(
+    --vanilla-custard
+  ) !important; /* override Paper default background*/
 }
 
 .card {

@@ -13,10 +13,16 @@ import { Socket } from "socket.io-client";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { useLocation } from "react-router-dom";
 import { LocationState } from "../../POO/types/LocationType";
+import { getHeroToPlay } from "../../shared/serverUtils";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
-export default function SearchMenu(socket: Socket, hero: HeroAsJson) {
+export default function SearchMenu(
+  socket: Socket,
+  hero: HeroAsJson,
+  game: GameAsJson,
+) {
   const state = useLocation().state as LocationState;
-  const { game, playerId } = state;
+  const { playerId } = state;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -26,7 +32,8 @@ export default function SearchMenu(socket: Socket, hero: HeroAsJson) {
     setAnchorEl(null);
   };
 
-  const isHeroTurn = game.playOrder[game.currentTurnIndex] === hero?.category && game.isMonsterTurn === false;
+  const heroToPlay = getHeroToPlay(game);
+  const isHeroTurn = hero === heroToPlay;
 
   function searchSecretDoors(): void {
     socket.emit(
@@ -128,24 +135,36 @@ export default function SearchMenu(socket: Socket, hero: HeroAsJson) {
         slotProps={{
           paper: {
             sx: {
-              backgroundColor: '#cfb898',
+              backgroundColor: "#cfb898",
             },
           },
         }}
       >
         <MenuItem onClick={() => searchTreasures()}>
           <Tooltip title="Rechercher des trésors" arrow>
-            <img src={drawCardIcon} alt="Draw Card" className="img-nav icon-nav" />
+            <img
+              src={drawCardIcon}
+              alt="Draw Card"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </MenuItem>
         <MenuItem onClick={() => searchTraps()}>
           <Tooltip title="Rechercher des pièges" arrow>
-            <img src={trapSearch} alt="Trap search" className="img-nav icon-nav" />
+            <img
+              src={trapSearch}
+              alt="Trap search"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </MenuItem>
         <MenuItem onClick={() => searchSecretDoors()}>
           <Tooltip title="Rechercher des portes secrètes" arrow>
-            <img src={secretDoorIcon} alt="Secret Door" className="img-nav icon-nav" />
+            <img
+              src={secretDoorIcon}
+              alt="Secret Door"
+              className="img-nav icon-nav"
+            />
           </Tooltip>
         </MenuItem>
       </Menu>
