@@ -48,11 +48,13 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
         }}
       >
         <div className="game-controls">
-          <StatsComponent
-            socket={socket}
-            unit={selectedUnit!}
-            setStatsVisible={setStatsVisible}
-          />
+          {selectedUnit !== null && (
+            <StatsComponent
+              socket={socket}
+              unit={selectedUnit}
+              setStatsVisible={setStatsVisible}
+            />
+          )}
         </div>
       </Dialog>
 

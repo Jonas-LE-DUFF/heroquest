@@ -1,5 +1,6 @@
 import { GameState } from "../POO/classes/GameState";
 import { Position } from "../POO/classes/Position/Position";
+import { Game } from "../POO/classes/Server/Game";
 import { TileType } from "../POO/enums/Board/TileType";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
@@ -266,7 +267,9 @@ describe("rock trap", () => {
   });
 
   it("rock trap killing player should not throw an error", async () => {
+    const game = new Game("test-game");
     const gameState = new GameState();
+    game.gameState = gameState;
     const hero = createTestHero({
       stats: createTestStats({ health: 3 }),
     });
@@ -275,7 +278,7 @@ describe("rock trap", () => {
     const server = ServerHeroQuest.getServerInstance() as unknown as {
       getGame: jest.Mock;
     };
-    server.getGame.mockReturnValue({ gameState });
+    server.getGame.mockReturnValue(game);
 
     gameState.addUnit(hero);
     gameState.board.placeUnitAt(hero, pos);
@@ -288,11 +291,7 @@ describe("rock trap", () => {
     DiceServiceRegistry.override({
       rollFightDice: jest.fn().mockResolvedValueOnce({
         success: true,
-        results: [
-          FightDiceFaces.Hit,
-          FightDiceFaces.Hit,
-          FightDiceFaces.Hit,
-        ],
+        results: [FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit],
       }),
       rollRedDice: jest
         .fn()
@@ -305,10 +304,11 @@ describe("rock trap", () => {
     expect(
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.type,
     ).toBe(TileType.WALL);
-    expect(gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap).toBeNull(); // trap should be removed after triggering
+    expect(
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,
+    ).toBeNull(); // trap should be removed after triggering
   });
 });
-
 
 describe("spear trap", () => {
   it("spear trap should disapear after triggering", async () => {

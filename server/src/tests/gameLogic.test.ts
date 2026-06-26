@@ -3,6 +3,12 @@ jest.mock("../server/ServerHeroQuest", () => {
   const mockIo = {
     to: jest.fn().mockReturnThis(),
     emit: jest.fn(),
+    sockets: {
+      adapter: {
+        rooms: new Map<string, Set<string>>(),
+      },
+      sockets: new Map<string, Socket>(),
+    },
   };
   return {
     ServerHeroQuest: {
@@ -31,7 +37,14 @@ import { dealDamage } from "../services/CombatService";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
 import { TileType } from "../POO/enums/Board/TileType";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
-import { createTestMonster, createTestHero, createTestStats, setupGameWithPlayers } from "./testUtils";
+import {
+  createTestMonster,
+  createTestHero,
+  createTestStats,
+  setupGameWithPlayers,
+} from "./testUtils";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { Socket } from "socket.io";
 
 // ── Tests ──
 
@@ -331,14 +344,12 @@ describe("castSpell (Hero)", () => {
 describe("endTurn (Game)", () => {
   it("should start on monster turn after launching", () => {
     const game = setupGameWithPlayers();
-    game.launchGame();
 
     expect(game.isMonsterTurn).toBe(true);
   });
 
   it("should transition from monster turn to first hero turn", () => {
     const game = setupGameWithPlayers();
-    game.launchGame();
 
     game.endTurn(); // end monster turn
     expect(game.isMonsterTurn).toBe(false);
@@ -347,7 +358,6 @@ describe("endTurn (Game)", () => {
 
   it("should cycle through hero turns then back to monster turn", () => {
     const game = setupGameWithPlayers();
-    game.launchGame();
 
     // End monster turn -> hero 1
     game.endTurn();
@@ -367,7 +377,6 @@ describe("endTurn (Game)", () => {
 
   it("should cycle back to first hero after a full round", () => {
     const game = setupGameWithPlayers();
-    game.launchGame();
 
     // Full cycle: monster -> hero1 -> hero2 -> monster -> hero1
     game.endTurn(); // monster -> hero1
@@ -540,6 +549,31 @@ describe("clearTileAtPosition (GameState)", () => {
       expect(gameState.board.getUnitAt(pos.afterMove(Direction.DOWN))).toBe(
         monster.id,
       );
+    });
+  });
+
+  describe("playerDeath", () => {
+    it("should remove the hero from the game state when health reaches 0", () => {
+      const game = setupGameWithPlayers();
+      game.endTurn(); // end monster turn to start hero turn
+      const gameState = game.getGameState();
+      const hero = game.getHeroes()[0];
+      const pos = gameState.board.getPositionOfUnit(hero!.id)!;
+
+      const server = ServerHeroQuest.getServerInstance() as unknown as {
+        getGame: jest.Mock;
+      };
+      server.getGame.mockReturnValue(game);
+
+      // Deal lethal damage
+      dealDamage("test-game", hero!, 8);
+
+      // unit removed from the list of units
+      expect(gameState.getUnitById(hero!.id)).toBeUndefined();
+      // unit removed from the board
+      expect(gameState.board.getUnitAt(pos)).toBeUndefined();
+      // unit removed from the play order
+      expect(game.getCurrentHeroTurn().id).not.toBe(hero!.id);
     });
   });
 });

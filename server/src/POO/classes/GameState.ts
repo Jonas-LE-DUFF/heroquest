@@ -34,7 +34,7 @@ class GameState {
    * @param unit the unit to remove
    */
   removeUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
-    this.Units = this.Units.filter((u) => u !== unit);
+    this.Units = this.Units.filter((u) => u.id !== unit.id);
     this.board.removeUnitFromTile(unit);
   }
 

@@ -1,6 +1,5 @@
 import { Server } from "socket.io";
 import { Game } from "../POO/classes/Server/Game";
-import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 
@@ -26,14 +25,14 @@ export function emitGameStateUpdate(
     );
     return;
   }
+  const gameMasterId = game.findGameMaster()?.socketId;
 
   // Send to each socket individually with the appropriate filtering
   for (const socketId of room) {
     const socket = io.sockets.sockets.get(socketId);
     if (!socket) continue;
 
-    const player = game.getPlayer(socket.id);
-    const isGameMaster = player?.role === PlayerRole.GAME_MASTER;
+    const isGameMaster = socket.id === gameMasterId;
 
     socket.emit("game-state-update", {
       game: game.toJson(isGameMaster),

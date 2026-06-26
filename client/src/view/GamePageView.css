@@ -4,6 +4,10 @@
   grid-template : auto 1fr auto / auto 1fr auto ;
 }
 
+.spectating {
+  filter: grayscale(100%);
+}
+
 .info-on-the-side {
   display: flex;
   flex-direction: column;

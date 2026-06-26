@@ -107,8 +107,7 @@ function setupGameWithPlayers(): Game {
 
   game.gameState.addUnit(hero1);
   game.gameState.addUnit(hero2);
-  game.gameState.board.placeUnitAt(hero1, new Position(0, 0));
-  game.gameState.board.placeUnitAt(hero2, new Position(1, 0));
+  game.launchGame();
 
   return game;
 }
