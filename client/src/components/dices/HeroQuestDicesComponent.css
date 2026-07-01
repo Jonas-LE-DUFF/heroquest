@@ -57,7 +57,3 @@
   border: 8px solid #634211;
 }
 
-.MuiDialog-container > .MuiPaper-root {
-  min-width: 1200px;
-  min-height: 800px;
-}

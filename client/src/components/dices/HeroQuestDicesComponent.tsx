@@ -50,7 +50,6 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
       listResults: FightDiceFaces[];
       role: PlayerRole;
     }) => {
-      console.log("onDiceUpdate data:", data);
       if (data.role !== diceOwner) return; // update is not for this component
       setOpenFightDiceBox(true);
       setCurrentNumberOfDices(data.listResults.length);
@@ -156,6 +155,14 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
         className="dice-dialog"
         open={openFightDiceBox}
         onClose={() => setOpenFightDiceBox(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            width: "1200px",
+            maxWidth: "1200px",
+            height: "800px",
+            maxHeight: "800px",
+          },
+        }}
       >
         <ThreeDFightDiceRoller rollData={rollData} />
       </Dialog>

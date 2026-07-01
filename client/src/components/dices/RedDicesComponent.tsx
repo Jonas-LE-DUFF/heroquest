@@ -46,7 +46,6 @@ const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
       listResults: number[];
       role: PlayerRole;
     }) => {
-      console.log("onRedDiceUpdate data:", data);
       if (data.role !== diceOwner) return;
       setOpenRedDiceBox(true);
       setCurrentNumberOfDices(data.listResults.length);
@@ -146,6 +145,14 @@ const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
         className="dice-dialog"
         open={openRedDiceBox}
         onClose={() => setOpenRedDiceBox(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            width: "1200px",
+            maxWidth: "1200px",
+            height: "800px",
+            maxHeight: "800px",
+          },
+        }}
       >
         <ThreeDRedDiceRoller rollData={rollData} />
       </Dialog>
