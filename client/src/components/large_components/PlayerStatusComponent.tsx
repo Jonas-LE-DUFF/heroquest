@@ -26,10 +26,7 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
   const state = useLocation().state as {
     playerId: string;
   };
-  console.log("Rendering PlayerStatusComponent with game:", game);
-  console.log("Player ID from state:", state.playerId);
   const player = game.players.find((p) => p.id === state.playerId);
-  console.log("Player found in game:", player);
   const navigate = useNavigate();
 
   function modifyHero(hero: HeroAsJson) {
@@ -133,21 +130,21 @@ const PlayerStatusComponent: React.FC<PlayerStatusProps> = ({
             >
               {(player?.role === PlayerRole.GAME_MASTER ||
                 player?.id === hero.controlledByPlayerId) && (
-                  <>
-                    <button
-                      className="classic-button"
-                      onClick={() => modifyHero(hero)}
-                    >
-                      modifier
-                    </button>
-                    <button
-                      className="warning-button"
-                      onClick={() => unselectCharacter(hero.id)}
-                    >
-                      déselectionner
-                    </button>
-                  </>
-                )}
+                <>
+                  <button
+                    className="classic-button"
+                    onClick={() => modifyHero(hero)}
+                  >
+                    modifier
+                  </button>
+                  <button
+                    className="warning-button"
+                    onClick={() => unselectCharacter(hero.id)}
+                  >
+                    déselectionner
+                  </button>
+                </>
+              )}
             </div>
           </span>,
         );

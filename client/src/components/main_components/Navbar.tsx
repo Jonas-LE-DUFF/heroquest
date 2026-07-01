@@ -71,8 +71,6 @@ const Navbar: React.FC<NavbarProps> = ({
   const state = useLocation().state as LocationState;
   const navigate = useNavigate();
   const { playerId } = state;
-  console.log("Rendering Navbar with game:", game.playOrder);
-  console.log("Player ID from state:", game.players);
   const player = game.players.find((p) => p.id === playerId) as PlayerAsJson;
   const role = player?.role;
 

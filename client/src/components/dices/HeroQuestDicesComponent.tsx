@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Paper } from "@mui/material";
+import { Dialog, Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
 import { getFightDiceFace } from "../../shared/utils";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
 import { LocationState } from "../../POO/types/LocationType";
 import { useLocation } from "react-router-dom";
+import { ThreeDFightDiceRoller } from "./ThreeDFightDiceRoller";
 
 interface DicesProps {
   socket: Socket;
@@ -22,9 +23,19 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
   >(Array.of(FightDiceFaces.Hit));
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(1);
   const playerRole = game.players.find((p) => p.id === playerId)?.role;
-  
+
+  const [rollData, setRollData] = useState<{
+    listResults: FightDiceFaces[];
+    role: PlayerRole;
+  } | null>(null);
+  const [openFightDiceBox, setOpenFightDiceBox] = useState<boolean>(false);
+
   function fillDiceFaces(numberOfDices: number) {
-    const PosssibleFaces = [FightDiceFaces.Hit, FightDiceFaces.BlackShield, FightDiceFaces.WhiteShield];
+    const PosssibleFaces = [
+      FightDiceFaces.Hit,
+      FightDiceFaces.BlackShield,
+      FightDiceFaces.WhiteShield,
+    ];
     setCurrentDiceFaces((prev) => {
       const faceList = prev ? [...prev] : [];
       for (let i = 0; i < numberOfDices; i++) {
@@ -35,14 +46,16 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
   }
 
   useEffect(() => {
-
     const onDiceUpdate = (data: {
       listResults: FightDiceFaces[];
       role: PlayerRole;
     }) => {
+      console.log("onDiceUpdate data:", data);
       if (data.role !== diceOwner) return; // update is not for this component
+      setOpenFightDiceBox(true);
       setCurrentNumberOfDices(data.listResults.length);
       setCurrentDiceFaces(data.listResults);
+      setRollData(data);
     };
 
     const onSpecialAuthorization = (data: {
@@ -114,30 +127,39 @@ const Dices = ({ socket, diceOwner }: DicesProps) => {
   const isOwner = playerRole === diceOwner;
 
   return (
-    <div className={"container"}>
-      <Paper
-        className={isOwner ? "dice-container clickable" : "dice-container"}
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-        }}
-        onClick={isOwner ? rollDice : undefined}
+    <>
+      <div className={"container"}>
+        <Paper
+          className={isOwner ? "dice-container clickable" : "dice-container"}
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+          }}
+          onClick={isOwner ? rollDice : undefined}
+        >
+          {renderDices(currentDiceFaces, currentNumberOfDices)}
+        </Paper>
+        {playerRole === PlayerRole.GAME_MASTER &&
+          diceOwner === PlayerRole.GAME_MASTER && (
+            <input
+              className="inputDice"
+              type="number"
+              value={currentNumberOfDices}
+              onChange={(e) => {
+                setCurrentNumberOfDices(Number(e.currentTarget.value));
+                fillDiceFaces(Number(e.currentTarget.value));
+              }}
+            />
+          )}
+      </div>
+      <Dialog
+        className="dice-dialog"
+        open={openFightDiceBox}
+        onClose={() => setOpenFightDiceBox(false)}
       >
-        {renderDices(currentDiceFaces, currentNumberOfDices)}
-      </Paper>
-      {playerRole === PlayerRole.GAME_MASTER &&
-        diceOwner === PlayerRole.GAME_MASTER && (
-          <input
-            className="inputDice"
-            type="number"
-            value={currentNumberOfDices}
-            onChange={(e) => {
-              setCurrentNumberOfDices(Number(e.currentTarget.value));
-              fillDiceFaces(Number(e.currentTarget.value));
-            }}
-          />
-        )}
-    </div>
+        <ThreeDFightDiceRoller rollData={rollData} />
+      </Dialog>
+    </>
   );
 };
 

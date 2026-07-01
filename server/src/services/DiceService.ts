@@ -5,65 +5,58 @@ import { SpecialAuthorizedHero } from "../POO/interfaces/SpecialAuthorizedHero";
 import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { IDiceService } from "../POO/interfaces/IClass/IDiceService";
-import { setTimeout } from "timers";
-
-const sleep = (ms: number) => {
-  return new Promise((r) => setTimeout(r, ms));
-};
 
 export class DiceService implements IDiceService {
-  async rollFightDice(
+  rollFightDice(
     gameId: string,
     wishedNumberOfDices: number,
     playerRole: PlayerRole,
-  ): Promise<{ success: boolean; results?: FightDiceFaces[]; error?: string }> {
+  ): { success: boolean; results?: FightDiceFaces[]; error?: string } {
     const io = ServerHeroQuest.getServerInstance().getIo();
 
     let results: FightDiceFaces[] = [];
-    for (let j = 0; j < 15; j++) {
-      results = [];
-      for (let i = 0; i < wishedNumberOfDices; i++) {
-        const randomNumber = Math.floor(Math.random() * 6 + 1);
-        let face: FightDiceFaces = FightDiceFaces.Hit;
-        if (randomNumber === 1) {
-          face = FightDiceFaces.BlackShield;
-        } else if (randomNumber < 3) {
-          face = FightDiceFaces.WhiteShield;
-        } else {
-          face = FightDiceFaces.Hit;
-        }
-        results.push(face);
+    results = [];
+    for (let i = 0; i < wishedNumberOfDices; i++) {
+      const randomNumber = Math.floor(Math.random() * 6 + 1);
+      let face: FightDiceFaces = FightDiceFaces.Hit;
+      if (randomNumber === 1) {
+        face = FightDiceFaces.BlackShield;
+      } else if (randomNumber < 3) {
+        face = FightDiceFaces.WhiteShield;
+      } else {
+        face = FightDiceFaces.Hit;
       }
-      io.to(gameId).emit("dice-update", {
-        listResults: results,
-        role: playerRole,
-      });
-
-      await sleep(75);
+      results.push(face);
     }
+
+    console.log("rollFightDice results:", results);
+
+    io.to(gameId).emit("dice-update", {
+      listResults: results,
+      role: playerRole,
+    });
+
     return { success: true, results: results };
   }
 
-  async rollRedDice(
+  rollRedDice(
     gameId: string,
     numberOfDices: number,
     playerRole: PlayerRole,
-  ): Promise<{ success: boolean; results?: number[]; error?: string }> {
+  ): { success: boolean; results?: number[]; error?: string } {
     const io = ServerHeroQuest.getServerInstance().getIo();
 
     let results: number[] = [];
-    for (let j = 0; j < 15; j++) {
-      results = [];
-      for (let i = 0; i < numberOfDices; i++) {
-        const randomNumber = Math.floor(Math.random() * 6 + 1);
-        results.push(randomNumber);
-      }
-      io.to(gameId).emit("red-dice-update", {
-        listResults: results,
-        role: playerRole,
-      });
-      await sleep(75);
+    results = [];
+    for (let i = 0; i < numberOfDices; i++) {
+      const randomNumber = Math.floor(Math.random() * 6 + 1);
+      results.push(randomNumber);
     }
+    console.log("rollRedDice results:", results);
+    io.to(gameId).emit("red-dice-update", {
+      listResults: results,
+      role: playerRole,
+    });
     return { success: true, results: results };
   }
 }

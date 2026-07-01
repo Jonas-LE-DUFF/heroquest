@@ -10,9 +10,9 @@ import iconAbomination from "./../components/images/icons/monster/abomination.pn
 import iconMummy from "./../components/images/icons/monster/mummy.png";
 import iconDreadWarrior from "./../components/images/icons/monster/dreadwarrior.png";
 import iconGargoyle from "./../components/images/icons/monster/gargoyle.png";
-import diceDeathHead from "./../components/images/dices/battleDices/death.png";
-import diceMonsterShield from "./../components/images/dices/battleDices/blackShield.png";
-import diceHeroShield from "./../components/images/dices/battleDices/whiteShield.png";
+import diceDeathHead from "/assets/dice/fightDiceFaces/death.png";
+import diceMonsterShield from "/assets/dice/fightDiceFaces/blackShield.png";
+import diceHeroShield from "/assets/dice/fightDiceFaces/whiteShield.png";
 
 import {
   heroClassFr,

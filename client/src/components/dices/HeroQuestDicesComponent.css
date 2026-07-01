@@ -15,7 +15,7 @@
   padding: 10px;
 }
 
-.dice-container.clickable{
+.dice-container.clickable {
   cursor: pointer;
 }
 
@@ -44,4 +44,20 @@
   text-align: center;
   border-radius: 5px;
   border: 1px solid #ccc;
+}
+
+.dice-roller {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  border: 8px solid #634211;
+}
+
+.MuiDialog-container > .MuiPaper-root {
+  min-width: 1200px;
+  min-height: 800px;
 }

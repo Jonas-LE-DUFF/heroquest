@@ -6,7 +6,7 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 import importPlugin from "eslint-plugin-import";
 import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import prettierConfig from "eslint-config-prettier";
-import jestPlugin from "eslint-plugin-jest"
+import jestPlugin from "eslint-plugin-jest";
 
 export default [
   // Fichiers ignorés (remplace .eslintignore)
@@ -19,6 +19,12 @@ export default [
 
   // Config principale pour tout le code TypeScript/React
   {
+    root: true,
+    env: {
+      browser: true,
+      es2024: true,
+      node: true,
+    },
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsParser,
@@ -51,9 +57,9 @@ export default [
       // React
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
-      "react/react-in-jsx-scope": "off",         // Inutile depuis React 17
+      "react/react-in-jsx-scope": "off", // Inutile depuis React 17
       "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
-      "react/require-default-props": "off",       // TypeScript gère ça
+      "react/require-default-props": "off", // TypeScript gère ça
       "react/jsx-props-no-spreading": "off",
 
       // Imports
@@ -65,7 +71,6 @@ export default [
     settings: {
       react: { version: "detect" },
     },
-
   },
 
   // test files
@@ -77,7 +82,7 @@ export default [
       jest: {
         version: 29, // mets ici ta version de Jest (vérifie avec: npm list jest)
       },
-    }
+    },
   },
 
   // Prettier en dernier — désactive les règles qui conflictent avec le formatage

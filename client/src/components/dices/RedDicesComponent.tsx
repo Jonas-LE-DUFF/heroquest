@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import { Paper } from "@mui/material";
+import { Dialog, Paper } from "@mui/material";
 import "./HeroQuestDicesComponent.css";
-import face1 from "./../images/redDice1.png";
-import face2 from "./../images/redDice2.png";
-import face3 from "./../images/redDice3.png";
-import face4 from "./../images/redDice4.png";
-import face5 from "./../images/redDice5.png";
-import face6 from "./../images/redDice6.png";
+import face1 from "/assets/dice/redDiceFaces/redDice1.png";
+import face2 from "/assets/dice/redDiceFaces/redDice2.png";
+import face3 from "/assets/dice/redDiceFaces/redDice3.png";
+import face4 from "/assets/dice/redDiceFaces/redDice4.png";
+import face5 from "/assets/dice/redDiceFaces/redDice5.png";
+import face6 from "/assets/dice/redDiceFaces/redDice6.png";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
 import { useLocation } from "react-router-dom";
 import { LocationState } from "../../POO/types/LocationType";
+import { ThreeDRedDiceRoller } from "./ThreeDRedDiceRoller";
 
 interface RedDicesProps {
   socket: Socket;
@@ -26,7 +27,13 @@ const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
     Array.of(1, 1),
   );
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(2);
+  const [openRedDiceBox, setOpenRedDiceBox] = useState<boolean>(false);
   const playerRole = game.players.find((p) => p.id === playerId)?.role;
+
+  const [rollData, setRollData] = useState<{
+    listResults: number[];
+    role: PlayerRole;
+  } | null>(null);
 
   useEffect(() => {
     setCurrentDiceFaces(
@@ -39,8 +46,12 @@ const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
       listResults: number[];
       role: PlayerRole;
     }) => {
-      if (data.role !== diceOwner) return; // update not for us
+      console.log("onRedDiceUpdate data:", data);
+      if (data.role !== diceOwner) return;
+      setOpenRedDiceBox(true);
+      setCurrentNumberOfDices(data.listResults.length);
       setCurrentDiceFaces(data.listResults);
+      setRollData(data); // transmis à DiceRoller via prop
     };
 
     const onSpecialAuthorization = (data: {
@@ -69,6 +80,7 @@ const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
   }, [socket, diceOwner, currentDiceFaces]);
 
   const rollDice = () => {
+    setOpenRedDiceBox(true);
     socket.emit(
       "roll-red-dice",
       {
@@ -106,29 +118,38 @@ const RedDices = ({ socket, diceOwner }: RedDicesProps) => {
   const isOwner = playerRole === diceOwner;
 
   return (
-    <div className="container">
-      <Paper
-        className={isOwner ? "dice-container clickable" : "dice-container"}
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-        }}
-        onClick={isOwner ? rollDice : undefined}
+    <>
+      <div className="container">
+        <Paper
+          className={isOwner ? "dice-container clickable" : "dice-container"}
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+          }}
+          onClick={isOwner ? rollDice : undefined}
+        >
+          {renderDices(currentDiceFaces)}
+        </Paper>
+        {playerRole === PlayerRole.GAME_MASTER &&
+          diceOwner === PlayerRole.GAME_MASTER && (
+            <input
+              className="inputDice"
+              type="number"
+              value={currentNumberOfDices}
+              onChange={(e) =>
+                setCurrentNumberOfDices(Number(e.currentTarget.value))
+              }
+            />
+          )}
+      </div>
+      <Dialog
+        className="dice-dialog"
+        open={openRedDiceBox}
+        onClose={() => setOpenRedDiceBox(false)}
       >
-        {renderDices(currentDiceFaces)}
-      </Paper>
-      {playerRole === PlayerRole.GAME_MASTER &&
-        diceOwner === PlayerRole.GAME_MASTER && (
-          <input
-            className="inputDice"
-            type="number"
-            value={currentNumberOfDices}
-            onChange={(e) =>
-              setCurrentNumberOfDices(Number(e.currentTarget.value))
-            }
-          />
-        )}
-    </div>
+        <ThreeDRedDiceRoller rollData={rollData} />
+      </Dialog>
+    </>
   );
 };
 
