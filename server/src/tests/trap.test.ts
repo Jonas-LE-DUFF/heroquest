@@ -199,11 +199,13 @@ describe("jump above traps", () => {
     )!.trap!.isRevealed = true;
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn().mockResolvedValue({
+      rollFightDice: jest.fn(() => ({
         success: true,
         results: [FightDiceFaces.WhiteShield],
+      })),
+      rollRedDice: jest.fn(() => {
+        return { success: true, results: [1] };
       }),
-      rollRedDice: jest.fn().mockResolvedValue({ success: true, results: [1] }),
     }); // Force the jump to succeed
 
     // Attempt to jump over the trap tile
@@ -244,17 +246,17 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn().mockResolvedValueOnce({
-        success: true,
-        results: [
-          FightDiceFaces.Hit,
-          FightDiceFaces.BlackShield,
-          FightDiceFaces.Hit,
-        ],
+      rollFightDice: jest.fn(() => {
+        return {
+          success: true,
+          results: [
+            FightDiceFaces.Hit,
+            FightDiceFaces.BlackShield,
+            FightDiceFaces.Hit,
+          ],
+        };
       }),
-      rollRedDice: jest
-        .fn()
-        .mockResolvedValueOnce({ success: true, results: [1] }),
+      rollRedDice: jest.fn(() => ({ success: true, results: [1] })),
     }); // Force the rock trap to deal 2 damage
 
     moveUnit(gameState.board, pos, Direction.DOWN, hero);
@@ -289,9 +291,11 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn().mockResolvedValueOnce({
-        success: true,
-        results: [FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit],
+      rollFightDice: jest.fn(() => {
+        return {
+          success: true,
+          results: [FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit],
+        };
       }),
       rollRedDice: jest
         .fn()
