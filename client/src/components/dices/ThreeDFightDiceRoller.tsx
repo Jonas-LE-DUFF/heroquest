@@ -38,9 +38,7 @@ export const ThreeDFightDiceRoller = ({ rollData }: DiceRollerProps) => {
     }
 
     if (rollDataRef.current) {
-      triggerRoll(diceBoxRef.current!, rollDataRef.current).catch(
-        console.error,
-      );
+      triggerRoll(diceBoxRef.current!, rollDataRef.current);
     }
 
     return () => {
@@ -61,7 +59,7 @@ export const ThreeDFightDiceRoller = ({ rollData }: DiceRollerProps) => {
   );
 };
 
-async function triggerRoll(
+function triggerRoll(
   diceBox: DiceBox,
   rollData: { listResults: FightDiceFaces[] },
 ) {
@@ -77,9 +75,5 @@ async function triggerRoll(
         return 1; // Default to Hit if unknown face
     }
   });
-  await diceBox.roll(
-    rollData.listResults.length,
-    () => {},
-    rollResult,
-  );
+  diceBox.roll(rollData.listResults.length, () => {}, rollResult);
 }

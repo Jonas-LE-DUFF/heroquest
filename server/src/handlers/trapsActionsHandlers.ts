@@ -32,41 +32,39 @@ function registerTrapsActionsHandlers(socket: Socket) {
 function checkForTraps(socket: Socket) {
   socket.on(
     "check-for-traps",
-    withValidation(
-      socket,
-      heroActionSchema,
-      (socket, data, callback) => {
-        const { gameId, playerId, heroId } = data;
-        console.log(`Checking for traps in game ${gameId} for hero ${heroId}`);
-        if (!requireGameExists(gameId)) {
-          return callback(errorResponse("La partie n'existe plus."));
-        }
+    withValidation(socket, heroActionSchema, (socket, data, callback) => {
+      const { gameId, playerId, heroId } = data;
+      console.log(`Checking for traps in game ${gameId} for hero ${heroId}`);
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("La partie n'existe plus."));
+      }
 
-        const game = GameService.getGame(gameId);
+      const game = GameService.getGame(gameId);
 
-        if (!requirePlayerTurn(playerId, game!)) {
-          return callback(errorResponse("Ce n'est pas votre tour."));
-        }
+      if (!requirePlayerTurn(playerId, game!)) {
+        return callback(errorResponse("Ce n'est pas votre tour."));
+      }
 
-        const io = ServerHeroQuest.getServerInstance().getIo();
+      const io = ServerHeroQuest.getServerInstance().getIo();
 
-        const gameMasterSocket = getGameMasterSocket(io, game!);
+      const gameMasterSocket = getGameMasterSocket(io, game!);
 
-        gameMasterSocket?.emit("player-search", {
-          heroId,
-          playerId: socket.id,
-          elementSearched: "traps",
-        });
-        return callback(successResponse({ message: `request sent to game master` }));
-      },
-    ),
+      gameMasterSocket?.emit("player-search", {
+        heroId,
+        playerId: socket.id,
+        elementSearched: "traps",
+      });
+      return callback(
+        successResponse({ message: `request sent to game master` }),
+      );
+    }),
   );
 }
 
 function disarmTrap(socket: Socket) {
   socket.on(
     "disarm-trap",
-    withValidation(socket, disarmTrapSchema, async (socket, data, callback) => {
+    withValidation(socket, disarmTrapSchema, (socket, data, callback) => {
       const { gameId, playerId, heroId } = data;
 
       if (!requireGameExists(gameId)) {
@@ -111,12 +109,14 @@ function disarmTrap(socket: Socket) {
         hero.getCategory() !== HeroCategory.Dwarf
       ) {
         return callback(
-          errorResponse("Le héros ne peut pas désarmer le piège car il ne possède pas d'outils appropriés et qu'il n'est pas nain."),
+          errorResponse(
+            "Le héros ne peut pas désarmer le piège car il ne possède pas d'outils appropriés et qu'il n'est pas nain.",
+          ),
         );
       }
 
       const dice = DiceServiceRegistry.get();
-      const roll = await dice.rollFightDice(gameId, 1, PlayerRole.HERO);
+      const roll = dice.rollFightDice(gameId, 1, PlayerRole.HERO);
       if (!roll.success) {
         return callback(
           errorResponse("Une erreur est survenue lors du lancer de dés."),
@@ -137,7 +137,9 @@ function disarmTrap(socket: Socket) {
         }
       }
 
-      console.log(`Hero ${hero.name} attempted to disarm trap at position (${position.x}, ${position.y}) with roll result: ${result}`);
+      console.log(
+        `Hero ${hero.name} attempted to disarm trap at position (${position.x}, ${position.y}) with roll result: ${result}`,
+      );
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
@@ -174,15 +176,19 @@ function revealTrap(socket: Socket) {
       }
       const tile = game!.gameState.board.getTileAtPosition(pos);
       if (!tile) {
-        return callback(errorResponse("Aucune tuile trouvée à cette position."));
+        return callback(
+          errorResponse("Aucune tuile trouvée à cette position."),
+        );
       }
-      
+
       if (!tile.trap) {
         return callback(errorResponse("Aucun piège trouvé à cette position."));
       }
 
       tile.trap.isRevealed = true;
-      console.log(`Trap at position (${position.x}, ${position.y}) revealed by game master.`);
+      console.log(
+        `Trap at position (${position.x}, ${position.y}) revealed by game master.`,
+      );
 
       const io = ServerHeroQuest.getServerInstance().getIo();
       emitGameStateUpdate(io, gameId, game!);

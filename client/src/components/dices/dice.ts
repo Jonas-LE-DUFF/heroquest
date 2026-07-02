@@ -108,8 +108,6 @@ export class DiceBox {
   private d6Geometry: DiceGeometry | undefined;
   private d6Materials: THREE.MeshPhongMaterial[] | undefined;
 
-  private texturesLoading: Promise<void> | null = null;
-
   constructor(container: HTMLElement, config: Partial<DiceBoxConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.container = container;
@@ -165,14 +163,14 @@ export class DiceBox {
     this.addBarriers(barrierMaterial);
 
     if (config.diceLabels) {
-      this.texturesLoading = this.loadDiceMaterials();
+      this.loadDiceMaterials();
     }
 
     this.renderer.render(this.scene, this.camera);
   }
 
-  private async loadDiceMaterials(): Promise<void> {
-    this.d6Materials = await buildD6MaterialsAsync(
+  private loadDiceMaterials(): void {
+    this.d6Materials = buildD6MaterialsAsync(
       this.config.diceLabels,
       this.config.scale / 2,
       0.9,
@@ -186,17 +184,12 @@ export class DiceBox {
    * Lance `count` dés à 6 faces et appelle `onResult` avec les résultats.
    * Si `forcedValues` est fourni, les dés s'arrêteront sur ces valeurs.
    */
-  public async roll(
+  public roll(
     count: number,
     onResult: (result: RollResult) => void,
     forcedValues?: number[],
-  ): Promise<void> {
+  ): void {
     if (this.rolling) return;
-
-    if (this.texturesLoading) {
-      await this.texturesLoading;
-      this.texturesLoading = null;
-    }
 
     this.rolling = true;
 
@@ -459,12 +452,12 @@ export class DiceBox {
         !this.config.useAdaptiveTimestep &&
         timeDiff < this.config.frameRate
       ) {
-        setTimeout(
-          () => requestAnimationFrame(() => this.animate(threadId)),
+        window.setTimeout(
+          () => window.requestAnimationFrame(() => this.animate(threadId)),
           (this.config.frameRate - timeDiff) * 1000,
         );
       } else {
-        requestAnimationFrame(() => this.animate(threadId));
+        window.requestAnimationFrame(() => this.animate(threadId));
       }
     }
   }
@@ -477,7 +470,7 @@ export class DiceBox {
       if (dice.body) this.world.removeBody(dice.body);
     }
     this.renderer.render(this.scene, this.camera);
-    setTimeout(() => this.renderer.render(this.scene, this.camera), 100);
+    window.setTimeout(() => this.renderer.render(this.scene, this.camera), 100);
   }
 
   // ── Setup monde physique ─────────────────────────────────────────────
@@ -593,7 +586,7 @@ function shiftDiceFaces(
   naturalResult: number,
 ): void {
   if (value < 1 || value > 6) return;
-  const geo = (dice.geometry as DiceGeometry).clone() as DiceGeometry;
+  const geo = (dice.geometry as DiceGeometry).clone();
   geo.cannonShape = (dice.geometry as DiceGeometry).cannonShape;
   const shift = value - naturalResult;
   for (const group of geo.groups) {
@@ -670,12 +663,12 @@ function createFallbackTexture(color: number): THREE.Texture {
   return new THREE.CanvasTexture(canvas);
 }
 
-async function buildD6MaterialsAsync(
+function buildD6MaterialsAsync(
   labels: string[],
   size: number,
   margin: number,
   config: DiceBoxConfig,
-): Promise<THREE.MeshPhongMaterial[]> {
+): THREE.MeshPhongMaterial[] {
   return labels.map((label, index) => {
     if (index === 0) {
       return new THREE.MeshPhongMaterial({
@@ -731,8 +724,6 @@ function makeGeom(
   vectors: THREE.Vector3[],
   faces: Face[],
   radius: number,
-  tab: number,
-  af: number,
 ): THREE.BufferGeometry {
   const positions: number[] = [];
   const uvs: number[] = [];
@@ -751,7 +742,6 @@ function makeGeom(
 
   for (const ii of faces) {
     const fl = ii.length - 1;
-    const aa = (Math.PI * 2) / fl;
     const materialIndex = ii[fl]; // dernier élément = numéro de face
     const groupStart = positions.length / 3;
     let groupCount = 0;
@@ -877,13 +867,7 @@ function createD6Geometry(radius: number): DiceGeometry {
 
   const vectors = rawVertices.map((v) => new THREE.Vector3(...v).normalize());
   const cg = chamferGeom(vectors, faces, 0.96);
-  const geo = makeGeom(
-    cg.vectors,
-    cg.faces,
-    radius,
-    0.1,
-    Math.PI / 4,
-  ) as DiceGeometry;
+  const geo = makeGeom(cg.vectors, cg.faces, radius) as DiceGeometry;
   geo.cannonShape = createCannonShape(rawVertices, faces, radius);
   return geo;
 }

@@ -48,7 +48,7 @@ afterEach(() => {
 });
 
 describe("traps", () => {
-  it("should trigger the trap effect when a hero steps on a trap tile", async () => {
+  it("should trigger the trap effect when a hero steps on a trap tile", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -63,7 +63,7 @@ describe("traps", () => {
       TrapType.PIT_TRAP,
     );
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The pit trap should deal 1 damage to the hero
     expect(hero.stats.health).toBe(4);
@@ -73,7 +73,7 @@ describe("traps", () => {
     ).toBe(true);
   });
 
-  it("should not trigger the trap effect when a monster steps on a trap tile", async () => {
+  it("should not trigger the trap effect when a monster steps on a trap tile", () => {
     const gameState = new GameState();
     const monster = createTestMonster({
       stats: createTestStats({ health: 5 }),
@@ -88,7 +88,7 @@ describe("traps", () => {
       TrapType.PIT_TRAP,
     );
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, monster);
+    moveUnit(gameState.board, pos, Direction.DOWN, monster);
 
     // The pit trap should not affect the monster
     expect(monster.stats.health).toBe(5);
@@ -99,7 +99,7 @@ describe("traps", () => {
   });
 
   describe("pit trap", () => {
-    it("pit trap should reduce attack and defense dice by one", async () => {
+    it("pit trap should reduce attack and defense dice by one", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -114,7 +114,7 @@ describe("traps", () => {
         TrapType.PIT_TRAP,
       );
 
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
       // The pit trap should deal 1 damage but not reduce attack dice
       expect(hero.stats.health).toBe(4);
@@ -122,7 +122,7 @@ describe("traps", () => {
       expect(hero.getDefenseDiceCount()).toBe(1); // base defense dice is 2
     });
 
-    it("pit trap should not reduce attack or defense dice below 1", async () => {
+    it("pit trap should not reduce attack or defense dice below 1", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5, nbDefenseDice: 1 }),
@@ -138,7 +138,7 @@ describe("traps", () => {
         TrapType.PIT_TRAP,
       );
 
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
       // The pit trap should deal 1 damage but not reduce attack dice below 1
       expect(hero.stats.health).toBe(4);
@@ -146,7 +146,7 @@ describe("traps", () => {
       expect(hero.getDefenseDiceCount()).toBe(1); // should not go below 1
     });
 
-    it("leaving pit trap should remove the pit trap effect", async () => {
+    it("leaving pit trap should remove the pit trap effect", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -160,12 +160,12 @@ describe("traps", () => {
         pos.afterMove(Direction.DOWN),
         TrapType.PIT_TRAP,
       );
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
       // test may failed after making traps end the player's turn
 
       // Move back up to leave the trap tile
-      await moveUnit(
+      moveUnit(
         gameState.board,
         pos.afterMove(Direction.DOWN),
         Direction.UP,
@@ -180,7 +180,7 @@ describe("traps", () => {
 });
 
 describe("jump above traps", () => {
-  it("should allow jumping over a trap tile and not trigger the trap", async () => {
+  it("should allow jumping over a trap tile and not trigger the trap", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -207,7 +207,7 @@ describe("jump above traps", () => {
     }); // Force the jump to succeed
 
     // Attempt to jump over the trap tile
-    const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    const result = moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     expect(result.success).toBe(true);
     expect(
@@ -223,7 +223,7 @@ describe("jump above traps", () => {
 });
 
 describe("rock trap", () => {
-  it("rock trap should place a wall on the trap tile after triggering", async () => {
+  it("rock trap should place a wall on the trap tile after triggering", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -257,7 +257,7 @@ describe("rock trap", () => {
         .mockResolvedValueOnce({ success: true, results: [1] }),
     }); // Force the rock trap to deal 2 damage
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The rock trap should place a wall on the tile after the trap in the direction the hero came from
     expect(
@@ -266,7 +266,7 @@ describe("rock trap", () => {
     expect(hero.stats.health).toBe(3); // health should be reduced by 2 from the rock trap
   });
 
-  it("rock trap killing player should not throw an error", async () => {
+  it("rock trap killing player should not throw an error", () => {
     const game = new Game("test-game");
     const gameState = new GameState();
     game.gameState = gameState;
@@ -298,7 +298,7 @@ describe("rock trap", () => {
         .mockResolvedValueOnce({ success: true, results: [1] }),
     }); // Force the rock trap to deal 2 damage
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The rock trap should place a wall on the tile after the trap in the direction the hero came from
     expect(
@@ -311,7 +311,7 @@ describe("rock trap", () => {
 });
 
 describe("spear trap", () => {
-  it("spear trap should disapear after triggering", async () => {
+  it("spear trap should disapear after triggering", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -331,7 +331,7 @@ describe("spear trap", () => {
       TrapType.SPEAR_TRAP,
     );
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     expect(
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,

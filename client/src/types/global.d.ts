@@ -8,7 +8,7 @@ interface Window {
   ) => number;
   clearTimeout: (id: number) => void;
   requestAnimationFrame: (
-    callback: (time: DOMHighResTimestamp) => void,
+    callback: (time: window.DOMHighResTimestamp) => void,
   ) => number;
   cancelAnimationFrame: (id: number) => void;
 }

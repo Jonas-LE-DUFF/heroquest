@@ -38,7 +38,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.DEFENSE);
     const multiplier = EffectService.getStatMultiplier(this, StatType.DEFENSE);
 
-    return Math.max(Math.floor((baseDefense + modifier) * multiplier),1); // cannot be lower than 1 defense die
+    return Math.max(Math.floor((baseDefense + modifier) * multiplier), 1); // cannot be lower than 1 defense die
   }
 
   getAttackDiceCount(): number {
@@ -47,7 +47,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.ATTACK);
     const multiplier = EffectService.getStatMultiplier(this, StatType.ATTACK);
 
-    return Math.max(Math.floor((weaponAttack + modifier) * multiplier),1); // cannot be lower than 1 attack dice
+    return Math.max(Math.floor((weaponAttack + modifier) * multiplier), 1); // cannot be lower than 1 attack dice
   }
 
   getMovementPoints(): number {
@@ -57,7 +57,7 @@ class Hero extends Unit<HeroCategory> {
     const modifier = EffectService.getStatModifier(this, StatType.MOVEMENT);
     const multiplier = EffectService.getStatMultiplier(this, StatType.MOVEMENT);
 
-    return Math.max(Math.floor((baseMovement + modifier) * multiplier),1); // cannot be lower than 1 movement point
+    return Math.max(Math.floor((baseMovement + modifier) * multiplier), 1); // cannot be lower than 1 movement point
   }
 
   updateEquipment(equipment: string[]) {
@@ -92,8 +92,8 @@ class Hero extends Unit<HeroCategory> {
     this.spells = spells;
   }
 
-  async castSpell(spell: Spell, target: Unit<MonsterCategory | HeroCategory>): Promise<void> {
-    await spell.applyEffect(target);
+  castSpell(spell: Spell, target: Unit<MonsterCategory | HeroCategory>): void {
+    spell.applyEffect(target);
     this.usedSpells.push(spell);
   }
 
@@ -119,8 +119,8 @@ class Hero extends Unit<HeroCategory> {
     return Array.from(elementsSet);
   }
 
-  async drinkPotion(gameId: string, potion: Potion): Promise<void> {
-    const response = await potion.applyEffect(gameId, this);
+  drinkPotion(gameId: string, potion: Potion): void {
+    const response = potion.applyEffect(gameId, this);
     if (!response.success) {
       throw new Error(`Failed to apply potion effect: ${response.error}`);
     }

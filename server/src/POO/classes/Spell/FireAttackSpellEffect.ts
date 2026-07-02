@@ -16,9 +16,9 @@ class FireAttackSpellEffect extends SpellEffect {
     this.damageAmount = damageAmount;
   }
 
-  async applyEffect(target: Unit<HeroCategory | MonsterCategory>): Promise<void> {
+  applyEffect(target: Unit<HeroCategory | MonsterCategory>): void {
     const dice = DiceServiceRegistry.get();
-    const result = await dice.rollRedDice(
+    const result = dice.rollRedDice(
       this.gameId,
       this.damageAmount,
       PlayerRole.GAME_MASTER,

@@ -5,17 +5,17 @@ import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
 
 class ApplyEffectSpellEffect extends SpellEffect {
-    effect : Effect;
+  effect: Effect;
 
-    constructor(effect: Effect) {
-        super(effect.isBuff ? "buff" : "debuff");
-        this.effect = effect;
-    }
+  constructor(effect: Effect) {
+    super(effect.isBuff ? "buff" : "debuff");
+    this.effect = effect;
+  }
 
-    applyEffect(target: Unit<HeroCategory | MonsterCategory>): Promise<void> {
-        target.addEffect(this.effect);
-        return Promise.resolve();
-    }
+  applyEffect(target: Unit<HeroCategory | MonsterCategory>): void {
+    target.addEffect(this.effect);
+    return;
+  }
 }
 
 export { ApplyEffectSpellEffect };

@@ -101,39 +101,29 @@ describe("dealDamage - lethal damage (CombatService)", () => {
 });
 
 describe("moveUnit (MovementService)", () => {
-  it("should move a hero to a new tile", async () => {
+  it("should move a hero to a new tile", () => {
     const board = new Board();
     const hero = createTestHero();
     // Place hero at a safe interior position
     board.placeUnitAt(hero, new Position(5, 5));
 
-    const result = await moveUnit(
-      board,
-      new Position(5, 5),
-      Direction.DOWN,
-      hero,
-    );
+    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
 
     expect(result.success).toBe(true);
     expect(board.getUnitAt(new Position(5, 5))).toBeUndefined();
     expect(board.getUnitAt(new Position(6, 5))).toBe(hero.id);
   });
 
-  it("should fail when moving out of bounds", async () => {
+  it("should fail when moving out of bounds", () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(0, 0));
 
-    const result = await moveUnit(
-      board,
-      new Position(0, 0),
-      Direction.UP,
-      hero,
-    );
+    const result = moveUnit(board, new Position(0, 0), Direction.UP, hero);
     expect(result.success).toBe(false);
   });
 
-  it("should fail when moving to an occupied tile", async () => {
+  it("should fail when moving to an occupied tile", () => {
     const board = new Board();
     const hero = createTestHero();
     const monster = createTestMonster();
@@ -142,17 +132,12 @@ describe("moveUnit (MovementService)", () => {
     board.placeUnitAt(hero, new Position(5, 5));
     board.placeUnitAt(monster, new Position(6, 5));
 
-    const result = await moveUnit(
-      board,
-      new Position(5, 5),
-      Direction.DOWN,
-      hero,
-    );
+    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
     expect(result.success).toBe(false);
     expect(result.error).toBe("tile is occupied");
   });
 
-  it("should fail when moving into a wall (tile)", async () => {
+  it("should fail when moving into a wall (tile)", () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(5, 5));
@@ -161,28 +146,18 @@ describe("moveUnit (MovementService)", () => {
       new Position(5, 5).afterMove(Direction.DOWN),
     )!.type = TileType.WALL;
 
-    const result = await moveUnit(
-      board,
-      new Position(5, 5),
-      Direction.DOWN,
-      hero,
-    );
+    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
     expect(result.success).toBe(false);
     expect(result.error).toBe("Tile is impassable");
   });
 
-  it("should fail when moving into wall from board.walls", async () => {
+  it("should fail when moving into wall from board.walls", () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(5, 5));
     board.placeThinWall(new Position(5, 5), Direction.DOWN);
 
-    const result = await moveUnit(
-      board,
-      new Position(5, 5),
-      Direction.DOWN,
-      hero,
-    );
+    const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
     expect(result.success).toBe(false);
     expect(result.error).toBe("wall in the way");
   });
@@ -286,7 +261,7 @@ describe("updateUnitStats (GameState)", () => {
 });
 
 describe("castSpell (Hero)", () => {
-  it("should heal a hero with HealSpellEffect", async () => {
+  it("should heal a hero with HealSpellEffect", () => {
     const hero = createTestHero({
       stats: createTestStats({ health: 3, maxHealth: 10 }),
     });
@@ -296,13 +271,13 @@ describe("castSpell (Hero)", () => {
     ]);
     hero.setSpells([spell]);
 
-    await hero.castSpell(spell, hero);
+    hero.castSpell(spell, hero);
 
     expect(hero.stats.health).toBe(7);
     expect(hero.usedSpells).toContain(spell);
   });
 
-  it("should not heal above maxHealth", async () => {
+  it("should not heal above maxHealth", () => {
     const hero = createTestHero({
       stats: createTestStats({ health: 8, maxHealth: 10 }),
     });
@@ -316,12 +291,12 @@ describe("castSpell (Hero)", () => {
     );
     hero.setSpells([spell]);
 
-    await hero.castSpell(spell, hero);
+    hero.castSpell(spell, hero);
 
     expect(hero.stats.health).toBe(10);
   });
 
-  it("should apply an effect with ApplyEffectSpellEffect", async () => {
+  it("should apply an effect with ApplyEffectSpellEffect", () => {
     const hero = createTestHero();
     const rockSkin = EffectFactory.createRockSkin();
     const applyEffect = new ApplyEffectSpellEffect(rockSkin);
@@ -334,7 +309,7 @@ describe("castSpell (Hero)", () => {
     );
     hero.setSpells([spell]);
 
-    await hero.castSpell(spell, hero);
+    hero.castSpell(spell, hero);
 
     expect(hero.effects).toContain(rockSkin);
     expect(hero.usedSpells).toContain(spell);
@@ -475,7 +450,7 @@ describe("clearTileAtPosition (GameState)", () => {
   });
 
   describe("effects", () => {
-    it("phase-through-walls effect should allow moving through walls", async () => {
+    it("phase-through-walls effect should allow moving through walls", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -489,12 +464,12 @@ describe("clearTileAtPosition (GameState)", () => {
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))!.type =
         TileType.WALL;
 
-      const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      const result = moveUnit(gameState.board, pos, Direction.DOWN, hero);
       expect(result.success).toBe(true);
       expect(gameState.board.getUnitAt(new Position(5, 4))).toBe(hero.id);
     });
 
-    it("phase-through-monsters effect should allow moving through monsters", async () => {
+    it("phase-through-monsters effect should allow moving through monsters", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -512,7 +487,7 @@ describe("clearTileAtPosition (GameState)", () => {
       gameState.board.placeUnitAt(monster, pos.afterMove(Direction.DOWN));
       hero.effects.push(moveThroughMonstersEffect);
 
-      const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      const result = moveUnit(gameState.board, pos, Direction.DOWN, hero);
       expect(result.success).toBe(true);
       expect(
         gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))
@@ -520,7 +495,7 @@ describe("clearTileAtPosition (GameState)", () => {
       ).toBe(hero.id);
     });
 
-    it("phase-through-monsters effects should not destroy not the monster nor the hero", async () => {
+    it("phase-through-monsters effects should not destroy not the monster nor the hero", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -538,8 +513,8 @@ describe("clearTileAtPosition (GameState)", () => {
       gameState.board.placeUnitAt(monster, pos.afterMove(Direction.DOWN));
       hero.effects.push(moveThroughMonstersEffect);
 
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
-      await moveUnit(
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(
         gameState.board,
         pos.afterMove(Direction.DOWN),
         Direction.UP,

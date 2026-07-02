@@ -3,7 +3,10 @@ import { requireGameExists } from "../guards/requireGameExists";
 import { requirePlayerTurn } from "../guards/requirePlayerTurn";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { fight } from "../services/CombatService";
-import { emitGameStateUpdate, getGameMasterSocket } from "../utils/gameStateEmitter";
+import {
+  emitGameStateUpdate,
+  getGameMasterSocket,
+} from "../utils/gameStateEmitter";
 import { GameService } from "../services/GameService";
 import {
   withValidation,
@@ -24,7 +27,7 @@ export function registerGameActionsHandlers(socket: Socket) {
   // cast-spell
   socket.on(
     "cast-spell",
-    withValidation(socket, castSpellSchema, async (socket, data, callback) => {
+    withValidation(socket, castSpellSchema, (socket, data, callback) => {
       console.debug("casting spell", data);
       const { gameId, playerId, spellId, position } = data;
       const game = GameService.getGame(gameId);
@@ -61,7 +64,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         return callback(errorResponse("spell or target unit not found"));
       }
 
-      await heroCaster.castSpell(spellToCast, targetUnit);
+      heroCaster.castSpell(spellToCast, targetUnit);
 
       const io = ServerHeroQuest.getServerInstance().getIo();
 
@@ -73,8 +76,9 @@ export function registerGameActionsHandlers(socket: Socket) {
 
   socket.on(
     "attack",
-    withValidation(socket, attackSchema, async (socket, data, callback) => {
-      const { gameId, playerId, attackerId, targetId, wishedNumberOfDices } = data;
+    withValidation(socket, attackSchema, (socket, data, callback) => {
+      const { gameId, playerId, attackerId, targetId, wishedNumberOfDices } =
+        data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("game couldn't be found in attack"));
@@ -91,148 +95,156 @@ export function registerGameActionsHandlers(socket: Socket) {
         );
       }
 
-      await fight(playerId, game!, attacker, defender, wishedNumberOfDices);
+      fight(playerId, game!, attacker, defender, wishedNumberOfDices);
       callback(successResponse());
     }),
   );
 
   socket.on(
     "drink-potion",
-    withValidation(
-      socket,
-      drinkPotionSchema,
-      async (socket, data, callback) => {
-        const { gameId, playerId, potionId, heroId } = data;
-        const game = GameService.getGame(gameId);
+    withValidation(socket, drinkPotionSchema, (socket, data, callback) => {
+      const { gameId, playerId, potionId, heroId } = data;
+      const game = GameService.getGame(gameId);
 
-        if (!requireGameExists(gameId)) {
-          return callback(
-            errorResponse("game couldn't be found in drink-potion"),
-          );
-        }
-
-        if (!requirePlayerTurn(playerId, game!)) {
-          return callback(
-            errorResponse("it's not your turn to play in drink-potion"),
-          );
-        }
-
-        const hero = game!.getCurrentHeroTurn();
-        if (!hero) {
-          return callback(errorResponse("hero not found in drink-potion"));
-        }
-        if (hero.id !== heroId) {
-          return callback(
-            errorResponse(
-              "the hero trying to drink the potion is not the current hero turn in drink-potion",
-            ),
-          );
-        }
-
-        const potion = hero.equipment.potions.find(
-          (p) => p.reference === potionId,
+      if (!requireGameExists(gameId)) {
+        return callback(
+          errorResponse("game couldn't be found in drink-potion"),
         );
-        if (!potion) {
+      }
+
+      if (!requirePlayerTurn(playerId, game!)) {
+        return callback(
+          errorResponse("it's not your turn to play in drink-potion"),
+        );
+      }
+
+      const hero = game!.getCurrentHeroTurn();
+      if (!hero) {
+        return callback(errorResponse("hero not found in drink-potion"));
+      }
+      if (hero.id !== heroId) {
+        return callback(
+          errorResponse(
+            "the hero trying to drink the potion is not the current hero turn in drink-potion",
+          ),
+        );
+      }
+
+      const potion = hero.equipment.potions.find(
+        (p) => p.reference === potionId,
+      );
+      if (!potion) {
+        return callback(
+          errorResponse(
+            "potion not found in drink-potion, maybe the hero doesn't have it?",
+          ),
+        );
+      }
+      try {
+        hero.drinkPotion(gameId, potion);
+      } catch (error) {
+        if (error instanceof Error) {
           return callback(
             errorResponse(
-              "potion not found in drink-potion, maybe the hero doesn't have it?",
+              `the drinking encountered an error : ${error.message}`,
             ),
           );
         }
-        try {
-          await hero.drinkPotion(gameId, potion);
-        } catch (error) {
-          if (error instanceof Error) {
-            return callback(
-              errorResponse(`the drinking encountered an error : ${error.message}`),
-            );
-          }
-          return callback(
-            errorResponse(`the drinking encountered an unexpected error`),
-          );
-        }
+        return callback(
+          errorResponse(`the drinking encountered an unexpected error`),
+        );
+      }
 
-        const io = ServerHeroQuest.getServerInstance().getIo();
+      const io = ServerHeroQuest.getServerInstance().getIo();
 
-        emitGameStateUpdate(io, gameId, game!);
+      emitGameStateUpdate(io, gameId, game!);
 
-        return callback(successResponse());
-      },
-    ),
+      return callback(successResponse());
+    }),
   );
 
   socket.on(
     "check-for-treasures",
-    withValidation(
-      socket,
-      heroActionSchema,
-      (socket, data, callback) => {
-        const { gameId, playerId, heroId } = data;
-
-        console.debug("checking for treasures for hero", heroId, "in game", gameId);
-
-        if (!requireGameExists(gameId)) {
-          return callback(
-            errorResponse("game couldn't be found in check-for-treasures"),
-          );
-        }
-        const game = GameService.getGame(gameId);
-
-        if (!requirePlayerTurn(playerId, game!)) {
-          return callback(
-            errorResponse("it's not your turn to play in check-for-treasures"),
-          );
-        }
-
-        // player may find a special treasure if the room he is in has one
-        // for now the game does not handle this case, therefore the game master will have to make the change manually if there is somthing to find
-        // Therefore this signal will only work for the game master, who will give the hero looking for the treasure a card
-
-        const io = ServerHeroQuest.getServerInstance().getIo();
-
-        if (!requireGameMaster(playerId, game!)) {
-          const gameMasterSocket = getGameMasterSocket(io, game!);
-          gameMasterSocket?.emit("player-search", {
-            playerId,
-            heroId,
-            elementSearched: "treasures",
-          });
-          return callback(
-            successResponse({
-              message: `The request has been sent to the game master so that he may respond to it`,
-            }),
-          );
-        }
-
-        const hero = game!.getGameState().getHeroById(heroId);
-        if (!hero) {
-          return callback(
-            errorResponse("hero couldn't be found in check-for-treasures"),
-          );
-        }
-
-        const treasureCard =
-          TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
-
-        io.to(gameId).emit("card-drawn", {
-          hero: hero.toJson(),
-          card: treasureCard.toJson(),
-        });
-
-        console.debug("treasure card drawn for hero", hero.name, "card", treasureCard.name);
-
-        return callback(successResponse({ treasureCardId: treasureCard.id }));
-      },
-    ),
-  );
-
-  socket.on("check-secret-doors", withValidation(
-    socket,
-    heroActionSchema,
-    (socket, data, callback) => {
+    withValidation(socket, heroActionSchema, (socket, data, callback) => {
       const { gameId, playerId, heroId } = data;
 
-      console.debug("checking for secret doors for hero", heroId, "in game", gameId);
+      console.debug(
+        "checking for treasures for hero",
+        heroId,
+        "in game",
+        gameId,
+      );
+
+      if (!requireGameExists(gameId)) {
+        return callback(
+          errorResponse("game couldn't be found in check-for-treasures"),
+        );
+      }
+      const game = GameService.getGame(gameId);
+
+      if (!requirePlayerTurn(playerId, game!)) {
+        return callback(
+          errorResponse("it's not your turn to play in check-for-treasures"),
+        );
+      }
+
+      // player may find a special treasure if the room he is in has one
+      // for now the game does not handle this case, therefore the game master will have to make the change manually if there is somthing to find
+      // Therefore this signal will only work for the game master, who will give the hero looking for the treasure a card
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+
+      if (!requireGameMaster(playerId, game!)) {
+        const gameMasterSocket = getGameMasterSocket(io, game!);
+        gameMasterSocket?.emit("player-search", {
+          playerId,
+          heroId,
+          elementSearched: "treasures",
+        });
+        return callback(
+          successResponse({
+            message: `The request has been sent to the game master so that he may respond to it`,
+          }),
+        );
+      }
+
+      const hero = game!.getGameState().getHeroById(heroId);
+      if (!hero) {
+        return callback(
+          errorResponse("hero couldn't be found in check-for-treasures"),
+        );
+      }
+
+      const treasureCard =
+        TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
+
+      io.to(gameId).emit("card-drawn", {
+        hero: hero.toJson(),
+        card: treasureCard.toJson(),
+      });
+
+      console.debug(
+        "treasure card drawn for hero",
+        hero.name,
+        "card",
+        treasureCard.name,
+      );
+
+      return callback(successResponse({ treasureCardId: treasureCard.id }));
+    }),
+  );
+
+  socket.on(
+    "check-secret-doors",
+    withValidation(socket, heroActionSchema, (socket, data, callback) => {
+      const { gameId, playerId, heroId } = data;
+
+      console.debug(
+        "checking for secret doors for hero",
+        heroId,
+        "in game",
+        gameId,
+      );
 
       if (!requireGameExists(gameId)) {
         return callback(
@@ -273,6 +285,6 @@ export function registerGameActionsHandlers(socket: Socket) {
       // Implementation for checking secret doors would go here
       // For now, we'll just return a success response
       return callback(successResponse());
-    },
-  ));
+    }),
+  );
 }

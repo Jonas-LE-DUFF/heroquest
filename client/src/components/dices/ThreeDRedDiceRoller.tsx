@@ -37,9 +37,7 @@ export const ThreeDRedDiceRoller = ({ rollData }: DiceRollerProps) => {
     }
 
     if (rollDataRef.current) {
-      triggerRoll(diceBoxRef.current!, rollDataRef.current).catch(
-        console.error,
-      );
+      triggerRoll(diceBoxRef.current!, rollDataRef.current);
     }
 
     return () => {
@@ -47,11 +45,11 @@ export const ThreeDRedDiceRoller = ({ rollData }: DiceRollerProps) => {
     };
   }, []);
 
-    useEffect(() => {
-      if (rollData && diceBoxRef.current) {
-        triggerRoll(diceBoxRef.current, rollData);
-      }
-    }, [rollData]);
+  useEffect(() => {
+    if (rollData && diceBoxRef.current) {
+      triggerRoll(diceBoxRef.current, rollData);
+    }
+  }, [rollData]);
 
   return (
     <div className="dice-roller">
@@ -60,13 +58,9 @@ export const ThreeDRedDiceRoller = ({ rollData }: DiceRollerProps) => {
   );
 };
 
-async function triggerRoll(
+function triggerRoll(
   diceBox: DiceBox,
   rollData: { listResults: number[]; role: string },
 ) {
-  diceBox.roll(
-    rollData.listResults.length,
-    () => {},
-    rollData.listResults,
-  );
+  diceBox.roll(rollData.listResults.length, () => {}, rollData.listResults);
 }

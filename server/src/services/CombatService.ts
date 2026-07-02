@@ -10,7 +10,7 @@ import { GameService } from "./GameService";
 import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { DiceServiceRegistry } from "./DiceServiceRegistry";
 
-async function fight(
+function fight(
   playerId: string,
   game: Game,
   attacker: Unit<MonsterCategory | HeroCategory>,
@@ -27,7 +27,7 @@ async function fight(
     : attacker.getAttackDiceCount();
 
   const dice = DiceServiceRegistry.get();
-  const attackerRoll = await dice.rollFightDice(
+  const attackerRoll = dice.rollFightDice(
     game.id,
     attackDiceAmount,
     attackerRole,
@@ -36,7 +36,7 @@ async function fight(
     throw new Error("Failed to roll fight dice for Djinn DIE spell.");
   }
 
-  const defenderRoll = await dice.rollFightDice(
+  const defenderRoll = dice.rollFightDice(
     game.id,
     defenderDiceAmount,
     defenderRole,

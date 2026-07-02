@@ -19,12 +19,6 @@ export default [
 
   // Config principale pour tout le code TypeScript/React
   {
-    root: true,
-    env: {
-      browser: true,
-      es2024: true,
-      node: true,
-    },
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsParser,
@@ -38,6 +32,7 @@ export default [
         window: "readonly",
         document: "readonly",
         console: "readonly",
+        browser: "readonly",
       },
     },
     plugins: {

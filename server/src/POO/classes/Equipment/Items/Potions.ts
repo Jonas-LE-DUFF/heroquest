@@ -31,7 +31,7 @@ abstract class Potion extends Item {
   abstract applyEffect(
     gameId: string,
     target: Unit<MonsterCategory | HeroCategory>,
-  ): Promise<{ success: boolean; error?: string }>;
+  ): { success: boolean; error?: string };
 
   toJson(): PotionAsJson {
     const baseJson = this.getBaseJson();
@@ -63,11 +63,11 @@ abstract class ClassicPotion extends Potion {
   applyEffect(
     gameId: string,
     target: Unit<MonsterCategory | HeroCategory>,
-  ): Promise<{ success: boolean; error?: string }> {
+  ): { success: boolean; error?: string } {
     // Logic to apply the effect to the target
-    if(!this.effect) return Promise.resolve({ success: false });
+    if (!this.effect) return { success: false };
     target.effects.push(this.effect);
-    return Promise.resolve({ success: true });
+    return { success: true };
   }
 }
 
@@ -97,12 +97,12 @@ class HolyWater extends Potion {
     );
   }
 
-  applyEffect(): Promise<{ success: boolean; error?: string }> {
-    return Promise.resolve({
+  applyEffect(): { success: boolean; error?: string } {
+    return {
       success: false,
       error:
         "Veuillez demander au game master d'appliquer cette potion manuellement",
-    });
+    };
   }
 }
 
@@ -117,12 +117,12 @@ class HealthPotion extends Potion {
     );
   }
 
-  async applyEffect(
+  applyEffect(
     gameId: string,
     target: Hero,
-  ): Promise<{ success: boolean; error?: string }> {
+  ): { success: boolean; error?: string } {
     const dice = DiceServiceRegistry.get();
-    const diceResult = await dice.rollRedDice(gameId, 1, PlayerRole.HERO);
+    const diceResult = dice.rollRedDice(gameId, 1, PlayerRole.HERO);
     if (!diceResult.success) {
       console.error("Failed to roll dice for Health Potion:");
       return { success: false, error: "Failed to roll dice for Health Potion" };
@@ -189,12 +189,12 @@ class HeroismPotion extends Potion {
     );
   }
 
-  applyEffect(): Promise<{ success: boolean; error?: string }> {
-    return Promise.resolve({
+  applyEffect(): { success: boolean; error?: string } {
+    return {
       success: false,
       error:
         "Veuillez demander au game master d'appliquer cette potion manuellement",
-    });
+    };
   }
 }
 
