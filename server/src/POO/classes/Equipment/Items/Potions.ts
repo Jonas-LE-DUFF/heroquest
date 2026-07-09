@@ -4,7 +4,6 @@ import { Item } from "./Item";
 import { EffectType } from "../../../enums/Effects/EffectType";
 import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { StatType } from "../../../enums/Effects/StatType";
-import { PlayerRole } from "../../../enums/PlayerRole";
 import treasures from "../../../../shared/game_cards/treasure.json";
 import equipments from "../../../../shared/game_cards/equipments.json";
 import { Hero } from "../../Units/Hero";
@@ -122,7 +121,11 @@ class HealthPotion extends Potion {
     target: Hero,
   ): { success: boolean; error?: string } {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollRedDice(gameId, 1, PlayerRole.HERO);
+    const diceResult = dice.rollRedDice({
+      gameId,
+      wishedNumberOfDices: 1,
+      playerId: target.controlledByPlayerId,
+    });
     if (!diceResult.success) {
       console.error("Failed to roll dice for Health Potion:");
       return { success: false, error: "Failed to roll dice for Health Potion" };

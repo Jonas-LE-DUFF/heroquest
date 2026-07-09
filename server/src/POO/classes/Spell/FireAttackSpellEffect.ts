@@ -2,7 +2,6 @@ import { dealDamage } from "../../../services/CombatService";
 import { DiceServiceRegistry } from "../../../services/DiceServiceRegistry";
 import { HeroCategory } from "../../enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
-import { PlayerRole } from "../../enums/PlayerRole";
 import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
 
@@ -18,11 +17,11 @@ class FireAttackSpellEffect extends SpellEffect {
 
   applyEffect(target: Unit<HeroCategory | MonsterCategory>): void {
     const dice = DiceServiceRegistry.get();
-    const result = dice.rollRedDice(
-      this.gameId,
-      this.damageAmount,
-      PlayerRole.GAME_MASTER,
-    );
+    const result = dice.rollRedDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 1,
+      playerId: target.controlledByPlayerId,
+    });
     const redDiceRoll = result.results?.filter((value) => {
       return value === 5 || value === 6;
     });

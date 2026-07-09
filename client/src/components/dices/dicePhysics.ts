@@ -55,8 +55,8 @@ interface DiceVector {
 
 // ── Constantes d6 ──────────────────────────────────────────────────────────
 
-const D6_MASS = 300;
-const D6_INERTIA = 13;
+const D6_MASS = 50;
+const D6_INERTIA = 30;
 
 // Labels des 6 faces + index 0 réservé (pas de label)
 const D6_LABELS = [" ", "1", "2", "3", "4", "5", "6"];
@@ -86,6 +86,7 @@ export class DiceBox {
   private readonly world: CANNON.World;
   private readonly container: HTMLElement;
   private readonly renderer: THREE.WebGLRenderer;
+  private readonly handleResize = () => this.reinit(this.container);
   private camera!: THREE.PerspectiveCamera;
   private light!: THREE.SpotLight;
   private desk!: THREE.Mesh;
@@ -126,7 +127,7 @@ export class DiceBox {
     this.renderer.setClearColor(0xffffff, 0);
 
     this.reinit(container);
-    window.addEventListener("resize", () => this.reinit(container));
+    window.addEventListener("resize", this.handleResize);
 
     this.scene.add(new THREE.AmbientLight(this.config.ambientLightColor));
 
@@ -194,21 +195,14 @@ export class DiceBox {
     this.rolling = true;
 
     const vector = {
-      x: (rnd() * 2 - 1) * this.w,
-      y: -(rnd() * 2 - 1) * this.h,
+      x: rnd() * 2 - 1,
+      y: -(rnd() * 2 - 1),
+      z: rnd() * 2 - 1,
     };
     const dist = Math.sqrt(vector.x ** 2 + vector.y ** 2);
-    const boost = (rnd() + 3) * dist;
-    vector.x /= dist;
-    vector.y /= dist;
+    const boost = (rnd() + 3) * dist * Math.sqrt(this.w ** 2 + this.h ** 2);
 
-    const vectors = this.generateVectors(count, vector, boost);
-
-    const numSounds = Math.min(count, 10);
-    for (let i = 0; i < numSounds; i++) {
-      playSound(this.container, Math.max(0.1, i / 10), this.config.soundPath);
-    }
-    this.doRoll(vectors, forcedValues ?? [], onResult);
+    this.rollWithVector(vector, boost, count, onResult, forcedValues);
   }
 
   /** Re-initialise caméra, lumière et sol après un resize */
@@ -263,6 +257,89 @@ export class DiceBox {
     this.renderer.render(this.scene, this.camera);
   }
 
+  public bindSwipe(
+    onResult: (x: number, y: number, z: number, boost: number) => void,
+  ): () => void {
+    let startPos: { x: number; y: number } | null = null;
+    let startTime = 0;
+
+    const getCoords = (
+      e: MouseEvent | TouchEvent,
+    ): { x: number; y: number } => {
+      if (e instanceof TouchEvent) {
+        return {
+          x: e.changedTouches[0].clientX,
+          y: e.changedTouches[0].clientY,
+        };
+      }
+      return { x: e.clientX, y: e.clientY };
+    };
+
+    const onStart = (e: MouseEvent | TouchEvent) => {
+      e.preventDefault();
+      startPos = getCoords(e);
+      startTime = Date.now();
+    };
+
+    const onEnd = (e: MouseEvent | TouchEvent) => {
+      if (!startPos || this.rolling) return;
+      const end = getCoords(e);
+
+      const vector = {
+        x: end.x - startPos.x,
+        y: -(end.y - startPos.y), // inverser Y (coords écran vs coords 3D)
+      };
+      startPos = null;
+
+      const dist = Math.sqrt(vector.x ** 2 + vector.y ** 2);
+      // Ignore les micro-clics (moins de 1% de la surface)
+      if (dist < Math.sqrt(this.w * this.h * 0.01)) return;
+
+      // La durée du swipe influence la force : swipe rapide = plus de boost
+      const timeInt = Math.min(Date.now() - startTime, 2000);
+      const boost = Math.sqrt((5000 - timeInt) / 5000) * dist * 5;
+
+      vector.x /= dist;
+      vector.y /= dist;
+
+      onResult(vector.x, vector.y, Math.random(), boost);
+    };
+
+    this.container.addEventListener("mousedown", onStart);
+    this.container.addEventListener("touchstart", onStart, { passive: false });
+    this.container.addEventListener("mouseup", onEnd);
+    this.container.addEventListener("touchend", onEnd);
+
+    return () => {
+      this.container.removeEventListener("mousedown", onStart);
+      this.container.removeEventListener("touchstart", onStart);
+      this.container.removeEventListener("mouseup", onEnd);
+      this.container.removeEventListener("touchend", onEnd);
+    };
+  }
+
+  // Sépare la logique de lancer avec vecteur imposé
+  public rollWithVector(
+    vector: { x: number; y: number; z: number },
+    boost: number,
+    count: number,
+    onResult: (result: RollResult) => void,
+    forcedValues?: number[],
+  ): void {
+    if (this.rolling) return;
+
+    this.rolling = true;
+
+    const vectors = this.generateVectors(count, vector, boost);
+
+    const numSounds = Math.min(count, 10);
+    for (let i = 0; i < numSounds; i++) {
+      playSound(this.container, Math.max(0.1, i / 10), this.config.soundPath);
+    }
+
+    this.doRoll(vectors, forcedValues ?? [], onResult);
+  }
+
   // ── Orchestration du lancer ────────────────────────────────────────────
 
   private doRoll(
@@ -303,27 +380,26 @@ export class DiceBox {
 
   private generateVectors(
     count: number,
-    vector: { x: number; y: number },
+    vector: { x: number; y: number; z: number },
     boost: number,
   ): DiceVector[] {
     return Array.from({ length: count }, () => {
-      const vec = makeRandomVector(vector);
+      const vec = makeVector(vector);
       let px = this.w * (vec.x > 0 ? -1 : 1) * 0.9;
       let py = this.h * (vec.y > 0 ? -1 : 1) * 0.9;
       const projector = Math.abs(vec.x / vec.y);
       if (projector > 1.0) py /= projector;
       else px *= projector;
 
-      const velvec = makeRandomVector(vector);
       return {
-        pos: new CANNON.Vec3(px, py, rnd() * 200 + 200),
-        velocity: new CANNON.Vec3(velvec.x * boost, velvec.y * boost, -10),
+        pos: new CANNON.Vec3(px, py, 400),
+        velocity: new CANNON.Vec3(boost, boost, -10),
         angle: {
-          x: -(rnd() * vec.y * 5 + D6_INERTIA * vec.y),
-          y: rnd() * vec.x * 5 + D6_INERTIA * vec.x,
-          z: 0,
+          x: -(vec.y * 5 + D6_INERTIA * vec.y),
+          y: vec.x * 5 + D6_INERTIA * vec.x,
+          z: vec.z * 5 + D6_INERTIA * vec.z,
         },
-        axis: { x: rnd(), y: rnd(), z: rnd(), a: rnd() },
+        axis: { x: 0.5, y: 0.5, z: 0.5, a: 0.5 },
       };
     });
   }
@@ -356,8 +432,8 @@ export class DiceBox {
     );
     body.angularVelocity.set(dv.angle.x, dv.angle.y, dv.angle.z);
     body.velocity.copy(dv.velocity);
-    body.linearDamping = 0.1;
-    body.angularDamping = 0.1;
+    body.linearDamping = 0.5;
+    body.angularDamping = 0.5;
 
     mesh.body = body;
     mesh.diceStopped = undefined;
@@ -473,6 +549,13 @@ export class DiceBox {
     window.setTimeout(() => this.renderer.render(this.scene, this.camera), 100);
   }
 
+  public dispose(): void {
+    window.removeEventListener("resize", this.handleResize);
+    this.clear();
+    this.renderer.dispose();
+    this.renderer.domElement.remove();
+  }
+
   // ── Setup monde physique ─────────────────────────────────────────────
 
   private addBarriers(material: CANNON.Material): void {
@@ -521,14 +604,19 @@ function rnd(): number {
   return Math.random();
 }
 
-function makeRandomVector(vector: { x: number; y: number }): {
+function makeVector(vector: { x: number; y: number; z: number }): {
   x: number;
   y: number;
+  z: number;
 } {
-  const angle = (rnd() * Math.PI) / 5 - Math.PI / 10;
+  const angle = Math.PI / 5 - Math.PI / 10;
   const x = vector.x * Math.cos(angle) - vector.y * Math.sin(angle);
   const y = vector.x * Math.sin(angle) + vector.y * Math.cos(angle);
-  return { x: x === 0 ? 0.01 : x, y: y === 0 ? 0.01 : y };
+  return {
+    x: x === 0 ? 0.01 : x,
+    y: y === 0 ? 0.01 : y,
+    z: vector.z === 0 ? 0.01 : vector.z,
+  };
 }
 
 function playSound(
@@ -670,7 +758,7 @@ function buildD6MaterialsAsync(
   config: DiceBoxConfig,
 ): THREE.MeshPhongMaterial[] {
   return labels.map((label, index) => {
-    if (index === 0) {
+    if (index === 0 || index === -1 || label === " ") {
       return new THREE.MeshPhongMaterial({
         color: 0xffffff,
         transparent: true,
@@ -705,20 +793,6 @@ function buildD6MaterialsAsync(
 
 type Vertex = [number, number, number];
 type Face = number[];
-
-function createCannonShape(
-  vertices: Vertex[],
-  faces: Face[],
-  radius: number,
-): CANNON.ConvexPolyhedron {
-  const cv = vertices.map(
-    ([x, y, z]) => new CANNON.Vec3(x * radius, y * radius, z * radius),
-  );
-  return new CANNON.ConvexPolyhedron({
-    vertices: cv,
-    faces: faces.map((f) => f.slice(0, f.length - 1)),
-  });
-}
 
 function makeGeom(
   vectors: THREE.Vector3[],
@@ -868,6 +942,12 @@ function createD6Geometry(radius: number): DiceGeometry {
   const vectors = rawVertices.map((v) => new THREE.Vector3(...v).normalize());
   const cg = chamferGeom(vectors, faces, 0.96);
   const geo = makeGeom(cg.vectors, cg.faces, radius) as DiceGeometry;
-  geo.cannonShape = createCannonShape(rawVertices, faces, radius);
+  const cannonVertices = cg.vectors.map(
+    (v) => new CANNON.Vec3(v.x * radius, v.y * radius, v.z * radius),
+  );
+  geo.cannonShape = new CANNON.ConvexPolyhedron({
+    vertices: cannonVertices,
+    faces: cg.faces.map((f) => f.slice(0, f.length - 1)),
+  });
   return geo;
 }

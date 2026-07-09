@@ -135,6 +135,16 @@ export const rollDiceSchema = z.object({
     .min(1, "Le nombre de dés doit être au moins 1"),
 });
 
+export const provideRollVectorSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  vector: z.object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number(),
+  }),
+  boost: z.number().min(0, "Le boost ne peut pas être négatif"),
+});
+
 // --- Master Events ---
 
 export const placeElementSchema = z.object({

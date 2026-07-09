@@ -145,6 +145,15 @@ interface ClientToServerEvents {
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 
+  "provide-roll-vector": (
+    data: {
+      gameId: string;
+      vector: { x: number; y: number; z: number };
+      boost: number;
+    },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+
   "end-turn": (
     data: { gameId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,

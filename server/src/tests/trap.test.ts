@@ -206,6 +206,7 @@ describe("jump above traps", () => {
       rollRedDice: jest.fn(() => {
         return { success: true, results: [1] };
       }),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the jump to succeed
 
     // Attempt to jump over the trap tile
@@ -257,6 +258,7 @@ describe("rock trap", () => {
         };
       }),
       rollRedDice: jest.fn(() => ({ success: true, results: [1] })),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
 
     moveUnit(gameState.board, pos, Direction.DOWN, hero);
@@ -300,6 +302,7 @@ describe("rock trap", () => {
       rollRedDice: jest
         .fn()
         .mockResolvedValueOnce({ success: true, results: [1] }),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
 
     moveUnit(gameState.board, pos, Direction.DOWN, hero);
@@ -316,7 +319,9 @@ describe("rock trap", () => {
 
 describe("spear trap", () => {
   it("spear trap should disapear after triggering", () => {
+    const game = new Game("test-game");
     const gameState = new GameState();
+    game.gameState = gameState;
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
     });
@@ -324,7 +329,7 @@ describe("spear trap", () => {
     const server = ServerHeroQuest.getServerInstance() as unknown as {
       getGame: jest.Mock;
     };
-    server.getGame.mockReturnValue({ gameState });
+    server.getGame.mockReturnValue(game);
     const pos = new Position(4, 4);
 
     gameState.addUnit(hero);
@@ -334,6 +339,18 @@ describe("spear trap", () => {
       pos.afterMove(Direction.DOWN),
       TrapType.SPEAR_TRAP,
     );
+    DiceServiceRegistry.override({
+      rollFightDice: jest.fn(() => {
+        return {
+          success: true,
+          results: [FightDiceFaces.Hit],
+        };
+      }),
+      rollRedDice: jest
+        .fn()
+        .mockResolvedValueOnce({ success: true, results: [1] }),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
+    });
 
     moveUnit(gameState.board, pos, Direction.DOWN, hero);
 

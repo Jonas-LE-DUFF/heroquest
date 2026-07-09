@@ -10,9 +10,6 @@ import iconAbomination from "./../components/images/icons/monster/abomination.pn
 import iconMummy from "./../components/images/icons/monster/mummy.png";
 import iconDreadWarrior from "./../components/images/icons/monster/dreadwarrior.png";
 import iconGargoyle from "./../components/images/icons/monster/gargoyle.png";
-import diceDeathHead from "/assets/dice/fightDiceFaces/death.png";
-import diceMonsterShield from "/assets/dice/fightDiceFaces/blackShield.png";
-import diceHeroShield from "/assets/dice/fightDiceFaces/whiteShield.png";
 
 import {
   heroClassFr,
@@ -24,7 +21,6 @@ import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson"
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
-import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { TrapType } from "../POO/enums/Board/TrapType";
 
@@ -102,33 +98,6 @@ function getMonsterIconPath(monsterType: MonsterCategory): string {
   }
 }
 
-function getFightDiceFace(face: FightDiceFaces) {
-  switch (face) {
-    case FightDiceFaces.Hit:
-      return diceDeathHead;
-    case FightDiceFaces.BlackShield:
-      return diceMonsterShield;
-    case FightDiceFaces.WhiteShield:
-      return diceHeroShield;
-    default:
-      return "dice"; // or a default icon
-  }
-}
-
-function getFightDiceFaceNumber(face: number) {
-  face = face % 3;
-  switch (face) {
-    case 0:
-      return diceDeathHead;
-    case 1:
-      return diceMonsterShield;
-    case 2:
-      return diceHeroShield;
-    default:
-      return "dice"; // or a default icon
-  }
-}
-
 function getElementName(element: SpellElement, language: string = "en") {
   switch (language) {
     case "fr":
@@ -172,8 +141,6 @@ export {
   getTrapTypePath,
   getHeroClassIconPath,
   getMonsterIconPath,
-  getFightDiceFace,
-  getFightDiceFaceNumber,
   getUnitClassName,
   getElementName,
   getHeroClassName,

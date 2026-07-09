@@ -16,7 +16,6 @@ import {
 } from "../utils/gameStateEmitter";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
-import { PlayerRole } from "../POO/enums/PlayerRole";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { dealDamage } from "../services/CombatService";
 import { Position } from "../POO/classes/Position/Position";
@@ -116,7 +115,11 @@ function disarmTrap(socket: Socket) {
       }
 
       const dice = DiceServiceRegistry.get();
-      const roll = dice.rollFightDice(gameId, 1, PlayerRole.HERO);
+      const roll = dice.rollFightDice({
+        gameId,
+        wishedNumberOfDices: 1,
+        playerId,
+      });
       if (!roll.success) {
         return callback(
           errorResponse("Une erreur est survenue lors du lancer de dés."),

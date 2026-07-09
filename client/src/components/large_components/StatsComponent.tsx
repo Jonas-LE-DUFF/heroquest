@@ -1,21 +1,16 @@
 import { Box, LinearProgress, Paper } from "@mui/material";
 import "./StatsComponent.css";
-import {
-  getFightDiceFaceNumber,
-  getIconClassPath,
-  getUnitClassName,
-  isHero,
-} from "../../shared/utils";
+import { getIconClassPath, getUnitClassName, isHero } from "../../shared/utils";
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { StatsAsJson } from "../../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import { toast } from "react-toastify";
-import { getRedDiceFace } from "../dices/RedDicesComponent";
 import { useLocation } from "react-router-dom";
 import { LocationState } from "../../POO/types/LocationType";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { getFightDiceFaceNumber, getRedDiceFace } from "../dices/diceHelper";
 
 interface StatsComponentProps {
   socket: Socket;
@@ -306,7 +301,11 @@ function getRedDices(numDices: number) {
   for (let i = 0; i < numDices; i++) {
     dices.push(
       <div className="dice" key={"red dice number" + i}>
-        {getRedDiceFace((i % 6) + 1)}
+        <img
+          className="diceImage"
+          src={getRedDiceFace((i % 6) + 1)}
+          alt={`dé face`}
+        />
       </div>,
     );
   }

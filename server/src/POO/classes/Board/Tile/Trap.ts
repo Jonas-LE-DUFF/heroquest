@@ -28,8 +28,8 @@ abstract class Trap {
   }
 
   public walkOnTrap(target: Unit<HeroCategory | MonsterCategory>): void {
-    if (this.isRevealed) {
-      if (this.jumpAboveTrap()) {
+    if (this.isRevealed && target.getRole() === PlayerRole.HERO) {
+      if (this.jumpAboveTrap(target as Hero)) {
         return;
       }
     }
@@ -60,9 +60,13 @@ abstract class Trap {
     this.isRevealed = true;
   }
 
-  private jumpAboveTrap(): boolean {
+  private jumpAboveTrap(target: Hero): boolean {
     const dice = DiceServiceRegistry.get();
-    const result = dice.rollFightDice(this.gameId, 1, PlayerRole.HERO);
+    const result = dice.rollFightDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 1,
+      playerId: target.controlledByPlayerId,
+    });
     if (!result.success || !result.results) {
       throw new Error(result.error || "Failed to roll fight dice");
     }
@@ -123,7 +127,11 @@ class RockTrap extends Trap {
 
   trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollFightDice(this.gameId, 3, PlayerRole.HERO);
+    const diceResult = dice.rollFightDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 3,
+      playerId: target.controlledByPlayerId,
+    });
 
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
@@ -161,7 +169,11 @@ class SpearTrap extends Trap {
 
   trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollFightDice(this.gameId, 1, PlayerRole.HERO);
+    const diceResult = dice.rollFightDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 1,
+      playerId: target.controlledByPlayerId,
+    });
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }

@@ -10,14 +10,17 @@ import {
   authorizeSpecialThrowSchema,
   rollRedDiceSchema,
   rollDiceSchema,
+  provideRollVectorSchema,
 } from "../validation";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
 import { grantSpecialRollAuthorization } from "../services/DiceService";
+import { RollProps } from "../POO/interfaces/IClass/IDiceService";
 
 export function registerDiceHandlers(socket: Socket) {
   handleSpecialRollAuthorization(socket);
   handleRollRedDice(socket);
   handleRollFightDice(socket);
+  handleProvideRollVector(socket);
 }
 
 function handleSpecialRollAuthorization(socket: Socket) {
@@ -69,7 +72,7 @@ function handleRollRedDice(socket: Socket) {
         );
       }
 
-      let amountOfDice;
+      let wishedNumberOfDices;
 
       const player = game!.getPlayer(playerId);
       if (!player) {
@@ -81,9 +84,13 @@ function handleRollRedDice(socket: Socket) {
 
       const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
       if (player.role === PlayerRole.GAME_MASTER) {
-        amountOfDice = numberOfDice;
+        wishedNumberOfDices = numberOfDice;
         const dice = DiceServiceRegistry.get();
-        const result = dice.rollRedDice(gameId, amountOfDice, player.role);
+        const result = dice.rollRedDice({
+          gameId,
+          wishedNumberOfDices,
+          playerId,
+        } as RollProps);
         return callback(result);
       }
       const authorizedHero = game?.gameState.getHeroById(
@@ -94,12 +101,12 @@ function handleRollRedDice(socket: Socket) {
         authorizedHero?.controlledByPlayerId === player.id &&
         specialAuthorization.diceType === "red"
       ) {
-        amountOfDice = specialAuthorization.numberOfDices;
+        wishedNumberOfDices = specialAuthorization.numberOfDices;
         game!.gameState.setSpecialAuthorizedHero(undefined);
       } else if (player.role === PlayerRole.HERO) {
         try {
           const hero = game!.getCurrentHeroTurn();
-          amountOfDice = hero.getMovementPoints();
+          wishedNumberOfDices = hero.getMovementPoints();
         } catch (error) {
           if (error instanceof Error) {
             console.error(
@@ -114,11 +121,15 @@ function handleRollRedDice(socket: Socket) {
           );
         }
       } else {
-        amountOfDice = numberOfDice;
+        wishedNumberOfDices = numberOfDice;
       }
 
       const dice = DiceServiceRegistry.get();
-      const result = dice.rollRedDice(gameId, amountOfDice, player.role);
+      const result = dice.rollRedDice({
+        gameId,
+        wishedNumberOfDices,
+        playerId,
+      } as RollProps);
       callback(result);
     }),
   );
@@ -141,7 +152,7 @@ function handleRollFightDice(socket: Socket) {
         );
       }
 
-      let amountOfDice;
+      let wishedNumberOfDices;
 
       const player = game!.getPlayer(playerId);
       if (!player) {
@@ -153,9 +164,13 @@ function handleRollFightDice(socket: Socket) {
 
       const specialAuthorization = game?.gameState.getSpecialAuthorizedHero();
       if (player.role === PlayerRole.GAME_MASTER) {
-        amountOfDice = numberOfDice;
+        wishedNumberOfDices = numberOfDice;
         const dice = DiceServiceRegistry.get();
-        const result = dice.rollFightDice(gameId, amountOfDice, player.role);
+        const result = dice.rollFightDice({
+          gameId,
+          wishedNumberOfDices,
+          playerId,
+        });
         return callback(result);
       }
 
@@ -167,12 +182,12 @@ function handleRollFightDice(socket: Socket) {
         authorizedHero?.controlledByPlayerId === player.id &&
         specialAuthorization.diceType === "fight"
       ) {
-        amountOfDice = specialAuthorization.numberOfDices;
+        wishedNumberOfDices = specialAuthorization.numberOfDices;
         game!.gameState.setSpecialAuthorizedHero(undefined);
       } else if (player.role === PlayerRole.HERO) {
         try {
           const hero = game!.getCurrentHeroTurn();
-          amountOfDice = hero.getAttackDiceCount();
+          wishedNumberOfDices = hero.getAttackDiceCount();
         } catch (error) {
           if (error instanceof Error) {
             console.error(
@@ -187,12 +202,34 @@ function handleRollFightDice(socket: Socket) {
           );
         }
       } else {
-        amountOfDice = numberOfDice;
+        wishedNumberOfDices = numberOfDice;
       }
 
       const dice = DiceServiceRegistry.get();
-      const result = dice.rollFightDice(gameId, amountOfDice, player.role);
+      const result = dice.rollFightDice({
+        gameId,
+        wishedNumberOfDices,
+        playerId,
+      });
       callback(result);
     }),
+  );
+}
+
+function handleProvideRollVector(socket: Socket) {
+  socket.on(
+    "provide-roll-vector",
+    withValidation(
+      socket,
+      provideRollVectorSchema,
+      (socket, data, callback) => {
+        const { gameId, vector, boost } = data;
+        const dice = DiceServiceRegistry.get();
+        const vectorWithBoost = { ...vector, boost };
+        console.log("Received roll vector from client:", vectorWithBoost);
+        dice.resolveWithVector(gameId, vectorWithBoost);
+        callback({ success: true });
+      },
+    ),
   );
 }
