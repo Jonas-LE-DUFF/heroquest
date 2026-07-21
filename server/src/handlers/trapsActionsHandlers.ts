@@ -115,10 +115,11 @@ function disarmTrap(socket: Socket) {
       }
 
       const dice = DiceServiceRegistry.get();
-      const roll = dice.rollFightDice({
+      const roll = dice.rollDice({
         gameId,
         wishedNumberOfDices: 1,
-        playerId,
+        playerId: hero.id,
+        kind: "fight",
       });
       if (!roll.success) {
         return callback(

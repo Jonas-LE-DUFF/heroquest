@@ -17,81 +17,50 @@ export class DiceService implements IDiceService {
     }
   >();
 
-  rollFightDice(rollProps: RollProps): {
+  rollDice(rollProps: RollProps): {
     success: boolean;
     results?: FightDiceFaces[];
     error?: string;
   } {
-    const { gameId, wishedNumberOfDices, playerId } = rollProps;
+    const { gameId, wishedNumberOfDices, playerId, kind } = rollProps;
     const socket = findSocketByPlayerId(gameId, playerId);
     if (!socket) {
       console.error("No socket found for player:", playerId);
       return { success: false, error: "No socket found for player" };
     }
-
-    let results: FightDiceFaces[] = [];
-    results = [];
-    for (let i = 0; i < wishedNumberOfDices; i++) {
-      const randomNumber = Math.floor(Math.random() * 6 + 1);
-      let face: FightDiceFaces = FightDiceFaces.Hit;
-      if (randomNumber === 1) {
-        face = FightDiceFaces.BlackShield;
-      } else if (randomNumber <= 3) {
-        face = FightDiceFaces.WhiteShield;
-      } else {
-        face = FightDiceFaces.Hit;
+    let results: FightDiceFaces[] | number[] = [];
+    if (kind === "fight") {
+      results = [];
+      for (let i = 0; i < wishedNumberOfDices; i++) {
+        const randomNumber = Math.floor(Math.random() * 6 + 1);
+        let face: FightDiceFaces = FightDiceFaces.Hit;
+        if (randomNumber === 1) {
+          face = FightDiceFaces.BlackShield;
+        } else if (randomNumber <= 3) {
+          face = FightDiceFaces.WhiteShield;
+        } else {
+          face = FightDiceFaces.Hit;
+        }
+        results.push(face);
       }
-      results.push(face);
+    } else /*if (kind === "red")*/ {
+      for (let i = 0; i < wishedNumberOfDices; i++) {
+        const randomNumber = Math.floor(Math.random() * 6 + 1);
+        results.push(randomNumber);
+      }
     }
 
     this.pendingRolls.set(gameId, {
       results,
-      diceType: "fight",
-      playerId,
+      diceType: kind,
+      playerId: playerId,
       expiresAt: Date.now() + 30_000, // expire après 30s
     });
 
-    console.log("rollFightDice results:", results);
-
     socket.emit("request-dice-vector", {
-      typeOfDices: "fight",
+      typeOfDices: kind,
     });
 
-    return { success: true, results: results };
-  }
-
-  rollRedDice(rollProps: RollProps): {
-    success: boolean;
-    results?: number[];
-    error?: string;
-  } {
-    const { gameId, wishedNumberOfDices, playerId } = rollProps;
-    const socket = findSocketByPlayerId(gameId, playerId);
-    if (!socket) {
-      console.error("No socket found for player:", playerId);
-      return { success: false, error: "No socket found for player" };
-    }
-
-    let results: number[] = [];
-    results = [];
-    for (let i = 0; i < wishedNumberOfDices; i++) {
-      const randomNumber = Math.floor(Math.random() * 6 + 1);
-      results.push(randomNumber);
-    }
-
-    this.pendingRolls.set(gameId, {
-      results,
-      diceType: "red",
-      playerId,
-      expiresAt: Date.now() + 30_000, // expire après 30s
-    });
-
-    console.log("rollRedDice results:", results);
-    console.log("waiting for vector from player:", playerId, socket?.id);
-
-    socket.emit("request-dice-vector", {
-      typeOfDices: "red",
-    });
     return { success: true, results: results };
   }
 
@@ -126,21 +95,13 @@ export class DiceService implements IDiceService {
       .getGame(gameId)!
       .getPlayer(pending.playerId)!.role;
 
-    if (pending.diceType === "fight") {
-      console.log("Emitting dice-update with results:", pending.results);
-      io.to(gameId).emit("dice-update", {
-        listResults: pending.results,
-        role: playerRole,
-        vector,
-      });
-    } else {
-      console.log("Emitting red-dice-update with results:", pending.results);
-      io.to(gameId).emit("red-dice-update", {
-        listResults: pending.results,
-        role: playerRole,
-        vector,
-      });
-    }
+    console.log("Emitting dice-update with results:", pending.results);
+    io.to(gameId).emit("dice-update", {
+      listResults: pending.results,
+      role: playerRole,
+      vector,
+      kind: pending.diceType,
+    });
 
     return { success: true };
   }

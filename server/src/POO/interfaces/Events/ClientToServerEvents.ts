@@ -132,15 +132,7 @@ interface ClientToServerEvents {
       gameId: string;
       playerId: string;
       numberOfDice: number;
-    },
-    callback: (response: { success: boolean; error?: string }) => void,
-  ) => void;
-
-  "roll-red-dice": (
-    data: {
-      gameId: string;
-      playerId: string;
-      numberOfDice: number;
+      kind: "red" | "fight";
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;

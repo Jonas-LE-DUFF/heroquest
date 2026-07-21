@@ -174,8 +174,7 @@ export class DiceBox {
     this.d6Materials = buildD6MaterialsAsync(
       this.config.diceLabels,
       this.config.scale / 2,
-      0.9,
-      this.config,
+      0.9
     );
   }
 
@@ -266,7 +265,7 @@ export class DiceBox {
     const getCoords = (
       e: MouseEvent | TouchEvent,
     ): { x: number; y: number } => {
-      if (e instanceof TouchEvent) {
+      if ("changedTouches" in e) {
         return {
           x: e.changedTouches[0].clientX,
           y: e.changedTouches[0].clientY,
@@ -694,68 +693,43 @@ function calcTextureSize(approx: number): number {
 }
 
 function createFaceTexture(
-  textOrUrl: string,
-  labelColor: string,
-  diceColor: string,
+  imgSrc:string,
   size: number,
   margin: number,
 ): THREE.Texture {
-  if (
-    textOrUrl.startsWith("http") ||
-    textOrUrl.endsWith(".png") ||
-    textOrUrl.endsWith(".jpg") ||
-    textOrUrl.endsWith(".jpeg") ||
-    textOrUrl.endsWith(".webp")
-  ) {
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load(
-      textOrUrl,
-      undefined, // onLoad
-      undefined, // onProgress
-      (err) => {
-        console.error("Erreur de chargement de l'image:", err);
-        return createFallbackTexture(0xffffff);
-      },
-    );
-
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-    return texture;
-  }
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d")!;
-  // Taille minimale de 64x64 pour éviter les textures trop petites
   const ts = Math.max(64, calcTextureSize(size + size * 2 * margin) * 2);
-  canvas.width = canvas.height = ts;
-  ctx.font = `${ts / 2}px Arial`; // Police plus lisible
-  ctx.fillStyle = diceColor;
-  ctx.fillRect(0, 0, ts, ts);
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = labelColor;
-  ctx.fillText(textOrUrl, ts / 2, ts / 2);
-  if (textOrUrl === "6" || textOrUrl === "9")
-    ctx.fillText("_", ts / 2, ts / 2 + ts / 10); // Point pour le 6
-  return new THREE.CanvasTexture(canvas);
-}
-
-function createFallbackTexture(color: number): THREE.Texture {
   const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
+  canvas.width = canvas.height = ts;
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-  ctx.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(canvas);
+
+  // Fond opaque dessiné AVANT l'image pour éviter la transparence
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, ts, ts);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.magFilter = THREE.LinearFilter;
+  texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+  const img = new window.Image();
+  img.crossOrigin = "anonymous"; // utile si l'image vient d'un autre domaine
+  img.onload = () => {
+    // On redessine par-dessus le fond, en centrant/adaptant l'image au canvas
+    ctx.drawImage(img, 0, 0, ts, ts);
+    texture.needsUpdate = true; // recharge le GPU avec le nouveau contenu
+  };
+  img.onerror = (err) => {
+    console.error("Erreur de chargement de l'image:", err);
+  };
+  img.src = imgSrc;
+
+  return texture;
 }
 
 function buildD6MaterialsAsync(
   labels: string[],
   size: number,
   margin: number,
-  config: DiceBoxConfig,
 ): THREE.MeshPhongMaterial[] {
   return labels.map((label, index) => {
     if (index === 0 || index === -1 || label === " ") {
@@ -771,15 +745,11 @@ function buildD6MaterialsAsync(
       shininess: 10,
       emissiveMap: createFaceTexture(
         label,
-        config.labelColor,
-        config.diceColor,
         size,
         margin,
       ), // ← sur le canal emissive plutôt que diffuse
       map: createFaceTexture(
         label,
-        config.labelColor,
-        config.diceColor,
         size,
         margin,
       ),

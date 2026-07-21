@@ -14,21 +14,12 @@ import redDice6 from "/assets/dice/redDiceFaces/redDice6.png";
 
 export type DiceKind = "red" | "fight";
 
-export type RedRollData = {
-  listResults: number[];
+export type RollData = {
+  listResults: number[] | FightDiceFaces[];
+  playerId: string;
   role: PlayerRole;
   vector: { x: number; y: number; z: number; boost: number };
-};
-
-export type FightRollData = {
-  listResults: FightDiceFaces[];
-  role: PlayerRole;
-  vector: { x: number; y: number; z: number; boost: number };
-};
-
-export type RollDataByKind = {
-  red: RedRollData;
-  fight: FightRollData;
+  kind: DiceKind;
 };
 
 function getDiceLabels(kind: DiceKind): string[] {

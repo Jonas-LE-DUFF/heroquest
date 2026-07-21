@@ -121,10 +121,11 @@ class HealthPotion extends Potion {
     target: Hero,
   ): { success: boolean; error?: string } {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollRedDice({
+    const diceResult = dice.rollDice({
       gameId,
       wishedNumberOfDices: 1,
       playerId: target.controlledByPlayerId,
+      kind: "red",
     });
     if (!diceResult.success) {
       console.error("Failed to roll dice for Health Potion:");

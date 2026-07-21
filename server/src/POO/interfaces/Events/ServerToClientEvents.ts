@@ -23,11 +23,7 @@ interface ServerToClientEvents {
     listResults: FightDiceFaces[];
     role: PlayerRole;
     vector: { x: number; y: number; z: number; boost: number };
-  }) => void;
-  "red-dice-update": (data: {
-    listResults: number[];
-    role: PlayerRole;
-    vector: { x: number; y: number; z: number; boost: number };
+    kind: "fight" | "red";
   }) => void;
   "request-dice-vector": (data: { typeOfDices: "fight" | "red" }) => void;
 

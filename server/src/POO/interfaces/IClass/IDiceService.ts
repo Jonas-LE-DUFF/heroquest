@@ -4,15 +4,11 @@ export type RollProps = {
   gameId: string;
   wishedNumberOfDices: number;
   playerId: string;
+  kind: "fight" | "red";
 };
 
 export interface IDiceService {
-  rollRedDice(rollProps: RollProps): {
-    success: boolean;
-    results?: number[];
-    error?: string;
-  };
-  rollFightDice(rollProps: RollProps): {
+  rollDice(rollProps: RollProps): {
     success: boolean;
     results?: FightDiceFaces[];
     error?: string;

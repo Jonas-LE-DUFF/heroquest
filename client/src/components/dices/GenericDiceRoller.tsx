@@ -7,7 +7,7 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
 import "./DiceComponentsStyle.css";
 import { Generic3DDiceRoller } from "./Generic3DDiceRoller";
-import { DiceKind, getDiceFaceImage, RollDataByKind } from "./diceHelper";
+import { DiceKind, getDiceFaceImage, RollData } from "./diceHelper";
 
 interface GenericDiceRollerProps<K extends DiceKind> {
   kind: K;
@@ -37,7 +37,7 @@ export function GenericDiceRoller<K extends DiceKind>({
   const [currentNumberOfDices, setCurrentNumberOfDices] = useState<number>(
     kind === "red" ? 2 : 1,
   );
-  const [rollData, setRollData] = useState<RollDataByKind[K] | null>(null);
+  const [rollData, setRollData] = useState<RollData | null>(null);
 
   const [internalOpen, setInternalOpen] = useState(false);
   const popupOpenedRef = useRef(false);
@@ -80,24 +80,21 @@ export function GenericDiceRoller<K extends DiceKind>({
       }
     };
 
-    const onDiceUpdate = (data: RollDataByKind[K], resultKind: DiceKind) => {
-      if (data.role !== diceOwner || kind !== resultKind) return;
+    const onDiceUpdate = (data: RollData) => {
+      console.log("Received dice-update:", data);
+      if (data.role !== diceOwner || kind !== data.kind) return;
       setRollData(data);
       setCurrentNumberOfDices(data.listResults.length);
       setCurrentDiceFaces(data.listResults);
       openPopupOnce();
     };
 
-    socket.on("red-dice-update", (data: RollDataByKind["red"]) =>
-      onDiceUpdate(data, "red"),
-    );
-    socket.on("dice-update", (data: RollDataByKind["fight"]) =>
-      onDiceUpdate(data, "fight"),
-    );
+    socket.on("dice-update", (data: RollData) => onDiceUpdate(data));
     socket.on("request-dice-vector", onRequestDiceVector);
     socket.on("special-authorization", onSpecialAuthorization);
 
     return () => {
+      socket.off("dice-update", (data: RollData) => onDiceUpdate(data));
       socket.off("request-dice-vector", onRequestDiceVector);
       socket.off("special-authorization", onSpecialAuthorization);
     };
@@ -114,11 +111,12 @@ export function GenericDiceRoller<K extends DiceKind>({
       numberOfDice: currentNumberOfDices,
     });
     socket.emit(
-      eventName,
+      "roll-dice",
       {
         gameId: game.id,
         playerId: playerId,
         numberOfDice: currentNumberOfDices,
+        kind: kind,
       },
       (response: { success: boolean; message?: string }) => {
         if (!response.success) {
@@ -213,4 +211,3 @@ function fillDiceFaces(
 
   return diceFaces;
 }
-export type { RollDataByKind };

@@ -24,19 +24,21 @@ function fight(
     : attacker.getAttackDiceCount();
 
   const dice = DiceServiceRegistry.get();
-  const attackerRoll = dice.rollFightDice({
+  const attackerRoll = dice.rollDice({
     gameId: game.id,
     wishedNumberOfDices: attackDiceAmount,
     playerId: attacker.controlledByPlayerId,
+    kind: "fight",
   });
   if (!attackerRoll.success || !attackerRoll.results) {
     throw new Error("Failed to roll fight dice for Djinn DIE spell.");
   }
 
-  const defenderRoll = dice.rollFightDice({
+  const defenderRoll = dice.rollDice({
     gameId: game.id,
     wishedNumberOfDices: defenderDiceAmount,
     playerId: defender.controlledByPlayerId,
+    kind: "fight",
   });
   if (!defenderRoll.success || !defenderRoll.results) {
     throw new Error("Failed to roll fight dice for Djinn DIE spell monster.");

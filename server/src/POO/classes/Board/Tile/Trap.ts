@@ -62,10 +62,11 @@ abstract class Trap {
 
   private jumpAboveTrap(target: Hero): boolean {
     const dice = DiceServiceRegistry.get();
-    const result = dice.rollFightDice({
+    const result = dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: 1,
       playerId: target.controlledByPlayerId,
+      kind: "fight",
     });
     if (!result.success || !result.results) {
       throw new Error(result.error || "Failed to roll fight dice");
@@ -127,10 +128,11 @@ class RockTrap extends Trap {
 
   trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollFightDice({
+    const diceResult = dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: 3,
       playerId: target.controlledByPlayerId,
+      kind: "fight",
     });
 
     if (!diceResult.success || !diceResult.results) {
@@ -169,10 +171,11 @@ class SpearTrap extends Trap {
 
   trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollFightDice({
+    const diceResult = dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: 1,
       playerId: target.controlledByPlayerId,
+      kind: "fight",
     });
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");

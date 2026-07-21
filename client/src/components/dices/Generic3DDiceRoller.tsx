@@ -2,13 +2,13 @@ import { useEffect, useRef } from "react";
 import { DiceBox } from "./dicePhysics";
 import { Socket } from "socket.io-client";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
-import { DiceKind, getDiceLabels, RollDataByKind } from "./diceHelper";
+import { DiceKind, getDiceLabels, RollData } from "./diceHelper";
 
 interface DiceRollerProps<K extends DiceKind> {
   socket: Socket;
   gameId: string;
-  rollData: RollDataByKind[K] | null;
-  setRollData: (data: RollDataByKind[K] | null) => void;
+  rollData: RollData | null;
+  setRollData: (data: RollData | null) => void;
   kind: K;
 }
 
@@ -112,7 +112,7 @@ function triggerRoll(
     rollData.vector,
     rollData.vector.boost,
     rollData.listResults.length,
-    (result) => console.log("Roll result:", result),
+    () => {},
     results,
   );
 }

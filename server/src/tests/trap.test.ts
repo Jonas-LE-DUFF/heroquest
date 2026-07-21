@@ -199,13 +199,10 @@ describe("jump above traps", () => {
     )!.trap!.isRevealed = true;
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn(() => ({
+      rollDice: jest.fn(() => ({
         success: true,
         results: [FightDiceFaces.WhiteShield],
       })),
-      rollRedDice: jest.fn(() => {
-        return { success: true, results: [1] };
-      }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the jump to succeed
 
@@ -247,7 +244,7 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn(() => {
+      rollDice: jest.fn(() => {
         return {
           success: true,
           results: [
@@ -257,7 +254,6 @@ describe("rock trap", () => {
           ],
         };
       }),
-      rollRedDice: jest.fn(() => ({ success: true, results: [1] })),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
 
@@ -293,15 +289,12 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn(() => {
+      rollDice: jest.fn(() => {
         return {
           success: true,
           results: [FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit],
         };
       }),
-      rollRedDice: jest
-        .fn()
-        .mockResolvedValueOnce({ success: true, results: [1] }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
 
@@ -340,15 +333,12 @@ describe("spear trap", () => {
       TrapType.SPEAR_TRAP,
     );
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn(() => {
+      rollDice: jest.fn(() => {
         return {
           success: true,
           results: [FightDiceFaces.Hit],
         };
       }),
-      rollRedDice: jest
-        .fn()
-        .mockResolvedValueOnce({ success: true, results: [1] }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     });
 
