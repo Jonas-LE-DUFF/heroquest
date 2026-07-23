@@ -116,16 +116,6 @@ export const authorizeSpecialThrowSchema = z.object({
   typeOfDices: z.enum(["fight", "red"]),
   playerClass: z.enum(HeroCategory),
 });
-
-export const rollRedDiceSchema = z.object({
-  gameId: z.string().min(1, "L'ID de la partie est requis"),
-  playerId: z.string().min(1, "L'ID du joueur est requis"),
-  numberOfDice: z
-    .number()
-    .int()
-    .min(1, "Le nombre de dés doit être au moins 1"),
-});
-
 export const rollDiceSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   playerId: z.string().min(1, "L'ID du joueur est requis"),
@@ -133,6 +123,17 @@ export const rollDiceSchema = z.object({
     .number()
     .int()
     .min(1, "Le nombre de dés doit être au moins 1"),
+  kind: z.enum(["fight", "red"]),
+});
+
+export const provideRollVectorSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  vector: z.object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number(),
+  }),
+  boost: z.number().min(0, "Le boost ne peut pas être négatif"),
 });
 
 // --- Master Events ---
@@ -178,7 +179,6 @@ export type AttackData = z.infer<typeof attackSchema>;
 export type AuthorizeSpecialThrowData = z.infer<
   typeof authorizeSpecialThrowSchema
 >;
-export type RollRedDiceData = z.infer<typeof rollRedDiceSchema>;
 export type RollDiceData = z.infer<typeof rollDiceSchema>;
 export type PlaceElementData = z.infer<typeof placeElementSchema>;
 export type UpdateStatsUnitData = z.infer<typeof updateStatsUnitSchema>;

@@ -5,9 +5,8 @@ import { Dialog } from "@mui/material";
 import { Socket } from "socket.io-client";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import RedDices from "../dices/RedDicesComponent";
 import { PlayerRole } from "../../POO/enums/PlayerRole";
-import Dices from "../dices/HeroQuestDicesComponent";
+import { GenericDiceRoller } from "../dices/GenericDiceRoller";
 
 interface LeftMenuProps {
   statsVisible: boolean;
@@ -25,12 +24,28 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
   return (
     <>
       <div className="dices hero">
-        <RedDices socket={socket} diceOwner={PlayerRole.HERO} />
-        <Dices socket={socket} diceOwner={PlayerRole.HERO} />
+        <GenericDiceRoller
+          kind="red"
+          socket={socket}
+          diceOwner={PlayerRole.HERO}
+        />
+        <GenericDiceRoller
+          kind="fight"
+          socket={socket}
+          diceOwner={PlayerRole.HERO}
+        />
       </div>
       <div className="dices game-master">
-        <RedDices socket={socket} diceOwner={PlayerRole.GAME_MASTER} />
-        <Dices socket={socket} diceOwner={PlayerRole.GAME_MASTER} />
+        <GenericDiceRoller
+          kind="red"
+          socket={socket}
+          diceOwner={PlayerRole.GAME_MASTER}
+        />
+        <GenericDiceRoller
+          kind="fight"
+          socket={socket}
+          diceOwner={PlayerRole.GAME_MASTER}
+        />
       </div>
       <Dialog
         open={statsVisible && selectedUnit !== null}
@@ -48,11 +63,13 @@ const LeftMenu: React.FC<LeftMenuProps> = ({
         }}
       >
         <div className="game-controls">
-          <StatsComponent
-            socket={socket}
-            unit={selectedUnit!}
-            setStatsVisible={setStatsVisible}
-          />
+          {selectedUnit !== null && (
+            <StatsComponent
+              socket={socket}
+              unit={selectedUnit}
+              setStatsVisible={setStatsVisible}
+            />
+          )}
         </div>
       </Dialog>
 

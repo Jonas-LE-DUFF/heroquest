@@ -8,6 +8,8 @@ import { GameAsJson } from "../../interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerRole } from "../../enums/PlayerRole";
 import { Position } from "../Position/Position";
 import { Direction } from "../../enums/Direction";
+import { Unit } from "../Units/Unit";
+import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
 
 class Game {
   id: string;
@@ -81,6 +83,17 @@ class Game {
     return this.players.size;
   }
 
+  public killUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
+    if (unit.getCategory() in HeroCategory) {
+      console.log("play order before removing unit:", this.playOrder);
+      this.playOrder = this.playOrder.filter(
+        (category) => category !== unit.category,
+      );
+      console.log("play order after removing unit:", this.playOrder);
+    }
+    this.gameState.removeUnit(unit);
+  }
+
   /**
    * Launch the game if all conditions are met
    * @throws Error if the game cannot be launched
@@ -106,7 +119,7 @@ class Game {
 
     const allSpells = this.gameState.Units.filter(
       (unit) => unit instanceof Hero,
-    ).flatMap((hero) => (hero).getSpellElements());
+    ).flatMap((hero) => hero.getSpellElements());
     const uniqueSpells = new Set(allSpells);
     if (allSpells.length !== uniqueSpells.size) {
       throw new Error(
@@ -209,10 +222,17 @@ class Game {
     throw new Error("Game master not found.");
   }
 
+  findGameMaster(): Player | undefined {
+    for (const player of this.players.values()) {
+      if (player.role === PlayerRole.GAME_MASTER) {
+        return player;
+      }
+    }
+    return undefined;
+  }
+
   getHeroes(): Hero[] {
-    return this.gameState.Units.filter(
-      (unit) => unit instanceof Hero,
-    );
+    return this.gameState.Units.filter((unit) => unit instanceof Hero);
   }
 
   getGameState(): GameState {
@@ -256,7 +276,7 @@ class Game {
   }
 
   updateHeroEquipment(heroId: string, equipment: string[], gold: number): void {
-    const hero: Hero | undefined= this.gameState.getHeroById(heroId);
+    const hero: Hero | undefined = this.gameState.getHeroById(heroId);
     if (!hero) {
       throw new Error(`Hero with id ${heroId} not found.`);
     }

@@ -27,15 +27,14 @@ abstract class Trap {
     this.hasBeenTriggered = false;
   }
 
-  public async walkOnTrap(
-    target: Unit<HeroCategory | MonsterCategory>,
-  ): Promise<void> {
-    if (this.isRevealed){
-      if(await this.jumpAboveTrap()){
+  public walkOnTrap(target: Unit<HeroCategory | MonsterCategory>): void {
+    if (this.isRevealed && target.getRole() === PlayerRole.HERO) {
+      if (this.jumpAboveTrap(target as Hero)) {
         return;
       }
     }
-    if (!(target instanceof Hero)) { //monster don't trigger traps, only heroes do
+    if (!(target instanceof Hero)) {
+      //monster don't trigger traps, only heroes do
       return;
     }
 
@@ -55,17 +54,20 @@ abstract class Trap {
       }
       tile.trap = null; // removing the trap from the tile after it's been triggered if it can't be triggered multiple times
     }
-    
-    await this.trigger(target);
+
+    this.trigger(target);
     this.hasBeenTriggered = true;
     this.isRevealed = true;
-    
-    
   }
 
-  private async jumpAboveTrap(): Promise<boolean> {
+  private jumpAboveTrap(target: Hero): boolean {
     const dice = DiceServiceRegistry.get();
-    const result = await dice.rollFightDice(this.gameId, 1, PlayerRole.HERO);
+    const result = dice.rollDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 1,
+      playerId: target.controlledByPlayerId,
+      kind: "fight",
+    });
     if (!result.success || !result.results) {
       throw new Error(result.error || "Failed to roll fight dice");
     }
@@ -74,7 +76,7 @@ abstract class Trap {
     }
     return true;
   }
-  abstract trigger(target: Hero): Promise<void>;
+  abstract trigger(target: Hero): void;
 
   abstract getTrapType(): TrapType;
 
@@ -90,10 +92,10 @@ abstract class Trap {
 class PitTrap extends Trap {
   canBeTriggeredMultipleTimes = true;
 
-  trigger(target: Hero): Promise<void> {
+  trigger(target: Hero): void {
     dealDamage(this.gameId, target, 1);
-    if(target.effects.some(effect => effect.name === "Pit Trap")) {
-      return  Promise.resolve(); // if the hero already has the pit trap effect, we don't apply it again
+    if (target.effects.some((effect) => effect.name === "Pit Trap")) {
+      return; // if the hero already has the pit trap effect, we don't apply it again
     }
     target.addEffect(
       new Effect(
@@ -113,7 +115,7 @@ class PitTrap extends Trap {
         { stat: StatType.DEFENSE, value: -1 },
       ),
     );
-    return Promise.resolve()
+    return; // if the hero already has the pit trap effect, we don't apply it again
   }
 
   getTrapType() {
@@ -124,10 +126,15 @@ class PitTrap extends Trap {
 class RockTrap extends Trap {
   canBeTriggeredMultipleTimes = false;
 
-  async trigger(target: Hero): Promise<void> {
+  trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = await dice.rollFightDice(this.gameId, 3, PlayerRole.HERO);
-    
+    const diceResult = dice.rollDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 3,
+      playerId: target.controlledByPlayerId,
+      kind: "fight",
+    });
+
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }
@@ -162,13 +169,14 @@ class RockTrap extends Trap {
 class SpearTrap extends Trap {
   canBeTriggeredMultipleTimes = false;
 
-  async trigger(target: Hero): Promise<void> {
+  trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = await dice.rollFightDice(
-      this.gameId,
-      1,
-      PlayerRole.HERO,
-    );
+    const diceResult = dice.rollDice({
+      gameId: this.gameId,
+      wishedNumberOfDices: 1,
+      playerId: target.controlledByPlayerId,
+      kind: "fight",
+    });
     if (!diceResult.success || !diceResult.results) {
       throw new Error(diceResult.error || "Failed to roll fight dice");
     }

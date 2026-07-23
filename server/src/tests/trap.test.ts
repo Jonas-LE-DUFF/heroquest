@@ -1,5 +1,6 @@
 import { GameState } from "../POO/classes/GameState";
 import { Position } from "../POO/classes/Position/Position";
+import { Game } from "../POO/classes/Server/Game";
 import { TileType } from "../POO/enums/Board/TileType";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
@@ -47,7 +48,7 @@ afterEach(() => {
 });
 
 describe("traps", () => {
-  it("should trigger the trap effect when a hero steps on a trap tile", async () => {
+  it("should trigger the trap effect when a hero steps on a trap tile", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -62,7 +63,7 @@ describe("traps", () => {
       TrapType.PIT_TRAP,
     );
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The pit trap should deal 1 damage to the hero
     expect(hero.stats.health).toBe(4);
@@ -72,7 +73,7 @@ describe("traps", () => {
     ).toBe(true);
   });
 
-  it("should not trigger the trap effect when a monster steps on a trap tile", async () => {
+  it("should not trigger the trap effect when a monster steps on a trap tile", () => {
     const gameState = new GameState();
     const monster = createTestMonster({
       stats: createTestStats({ health: 5 }),
@@ -87,7 +88,7 @@ describe("traps", () => {
       TrapType.PIT_TRAP,
     );
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, monster);
+    moveUnit(gameState.board, pos, Direction.DOWN, monster);
 
     // The pit trap should not affect the monster
     expect(monster.stats.health).toBe(5);
@@ -98,7 +99,7 @@ describe("traps", () => {
   });
 
   describe("pit trap", () => {
-    it("pit trap should reduce attack and defense dice by one", async () => {
+    it("pit trap should reduce attack and defense dice by one", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -113,7 +114,7 @@ describe("traps", () => {
         TrapType.PIT_TRAP,
       );
 
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
       // The pit trap should deal 1 damage but not reduce attack dice
       expect(hero.stats.health).toBe(4);
@@ -121,7 +122,7 @@ describe("traps", () => {
       expect(hero.getDefenseDiceCount()).toBe(1); // base defense dice is 2
     });
 
-    it("pit trap should not reduce attack or defense dice below 1", async () => {
+    it("pit trap should not reduce attack or defense dice below 1", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5, nbDefenseDice: 1 }),
@@ -137,7 +138,7 @@ describe("traps", () => {
         TrapType.PIT_TRAP,
       );
 
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
       // The pit trap should deal 1 damage but not reduce attack dice below 1
       expect(hero.stats.health).toBe(4);
@@ -145,7 +146,7 @@ describe("traps", () => {
       expect(hero.getDefenseDiceCount()).toBe(1); // should not go below 1
     });
 
-    it("leaving pit trap should remove the pit trap effect", async () => {
+    it("leaving pit trap should remove the pit trap effect", () => {
       const gameState = new GameState();
       const hero = createTestHero({
         stats: createTestStats({ health: 5 }),
@@ -159,12 +160,12 @@ describe("traps", () => {
         pos.afterMove(Direction.DOWN),
         TrapType.PIT_TRAP,
       );
-      await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+      moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
       // test may failed after making traps end the player's turn
 
       // Move back up to leave the trap tile
-      await moveUnit(
+      moveUnit(
         gameState.board,
         pos.afterMove(Direction.DOWN),
         Direction.UP,
@@ -179,7 +180,7 @@ describe("traps", () => {
 });
 
 describe("jump above traps", () => {
-  it("should allow jumping over a trap tile and not trigger the trap", async () => {
+  it("should allow jumping over a trap tile and not trigger the trap", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -198,15 +199,15 @@ describe("jump above traps", () => {
     )!.trap!.isRevealed = true;
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn().mockResolvedValue({
+      rollDice: jest.fn(() => ({
         success: true,
         results: [FightDiceFaces.WhiteShield],
-      }),
-      rollRedDice: jest.fn().mockResolvedValue({ success: true, results: [1] }),
+      })),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the jump to succeed
 
     // Attempt to jump over the trap tile
-    const result = await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    const result = moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     expect(result.success).toBe(true);
     expect(
@@ -222,7 +223,7 @@ describe("jump above traps", () => {
 });
 
 describe("rock trap", () => {
-  it("rock trap should place a wall on the trap tile after triggering", async () => {
+  it("rock trap should place a wall on the trap tile after triggering", () => {
     const gameState = new GameState();
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
@@ -243,20 +244,20 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn().mockResolvedValueOnce({
-        success: true,
-        results: [
-          FightDiceFaces.Hit,
-          FightDiceFaces.BlackShield,
-          FightDiceFaces.Hit,
-        ],
+      rollDice: jest.fn(() => {
+        return {
+          success: true,
+          results: [
+            FightDiceFaces.Hit,
+            FightDiceFaces.BlackShield,
+            FightDiceFaces.Hit,
+          ],
+        };
       }),
-      rollRedDice: jest
-        .fn()
-        .mockResolvedValueOnce({ success: true, results: [1] }),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The rock trap should place a wall on the tile after the trap in the direction the hero came from
     expect(
@@ -265,8 +266,10 @@ describe("rock trap", () => {
     expect(hero.stats.health).toBe(3); // health should be reduced by 2 from the rock trap
   });
 
-  it("rock trap killing player should not throw an error", async () => {
+  it("rock trap killing player should not throw an error", () => {
+    const game = new Game("test-game");
     const gameState = new GameState();
+    game.gameState = gameState;
     const hero = createTestHero({
       stats: createTestStats({ health: 3 }),
     });
@@ -275,7 +278,7 @@ describe("rock trap", () => {
     const server = ServerHeroQuest.getServerInstance() as unknown as {
       getGame: jest.Mock;
     };
-    server.getGame.mockReturnValue({ gameState });
+    server.getGame.mockReturnValue(game);
 
     gameState.addUnit(hero);
     gameState.board.placeUnitAt(hero, pos);
@@ -286,33 +289,32 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollFightDice: jest.fn().mockResolvedValueOnce({
-        success: true,
-        results: [
-          FightDiceFaces.Hit,
-          FightDiceFaces.Hit,
-          FightDiceFaces.Hit,
-        ],
+      rollDice: jest.fn(() => {
+        return {
+          success: true,
+          results: [FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit],
+        };
       }),
-      rollRedDice: jest
-        .fn()
-        .mockResolvedValueOnce({ success: true, results: [1] }),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The rock trap should place a wall on the tile after the trap in the direction the hero came from
     expect(
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.type,
     ).toBe(TileType.WALL);
-    expect(gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap).toBeNull(); // trap should be removed after triggering
+    expect(
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,
+    ).toBeNull(); // trap should be removed after triggering
   });
 });
 
-
 describe("spear trap", () => {
-  it("spear trap should disapear after triggering", async () => {
+  it("spear trap should disapear after triggering", () => {
+    const game = new Game("test-game");
     const gameState = new GameState();
+    game.gameState = gameState;
     const hero = createTestHero({
       stats: createTestStats({ health: 5 }),
     });
@@ -320,7 +322,7 @@ describe("spear trap", () => {
     const server = ServerHeroQuest.getServerInstance() as unknown as {
       getGame: jest.Mock;
     };
-    server.getGame.mockReturnValue({ gameState });
+    server.getGame.mockReturnValue(game);
     const pos = new Position(4, 4);
 
     gameState.addUnit(hero);
@@ -330,8 +332,17 @@ describe("spear trap", () => {
       pos.afterMove(Direction.DOWN),
       TrapType.SPEAR_TRAP,
     );
+    DiceServiceRegistry.override({
+      rollDice: jest.fn(() => {
+        return {
+          success: true,
+          results: [FightDiceFaces.Hit],
+        };
+      }),
+      resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
+    });
 
-    await moveUnit(gameState.board, pos, Direction.DOWN, hero);
+    moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     expect(
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,

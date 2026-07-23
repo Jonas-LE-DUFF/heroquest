@@ -1,4 +1,4 @@
-import { GameState } from "../../POO/classes/GameState";
+import { Game } from "../../POO/classes/Server/Game";
 import { Unit } from "../../POO/classes/Units/Unit";
 import { HeroCategory } from "../../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
@@ -19,12 +19,11 @@ export function checkUnitDefeat(
     console.log(target.stats?.health, "HP remaining. Target not defeated.");
     return false;
   }
-  const gameState: GameState | undefined =
-    GameService.getGame(gameId)?.gameState;
-  if (!gameState) {
-    console.error("GameState not found for gameId:", gameId);
+  const game: Game | null = GameService.getGame(gameId);
+  if (!game) {
+    console.error("game not found for gameId:", gameId);
     return false;
   }
-  gameState.removeUnit(target);
+  game.killUnit(target);
   return true;
 }

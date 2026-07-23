@@ -9,7 +9,7 @@ import { HeroAsJson } from "../ClassAsJson/Unit/HeroAsJson";
 
 // Événements Socket.io
 interface ServerToClientEvents {
-  "session": (data: { sessionToken: string }) => void;
+  session: (data: { sessionToken: string }) => void;
 
   // connection responses
   "join-success": (data: { playerId: string; game: GameAsJson }) => void;
@@ -22,12 +22,10 @@ interface ServerToClientEvents {
   "dice-update": (data: {
     listResults: FightDiceFaces[];
     role: PlayerRole;
+    vector: { x: number; y: number; z: number; boost: number };
+    kind: "fight" | "red";
   }) => void;
-
-  "red-dice-update": (data: {
-    listResults: number[];
-    role: PlayerRole;
-  }) => void;
+  "request-dice-vector": (data: { typeOfDices: "fight" | "red" }) => void;
 
   //lobby actions
   "game-start": (data: { game: GameAsJson }) => void;

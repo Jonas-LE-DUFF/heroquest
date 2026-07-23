@@ -24,7 +24,7 @@ import {
 function registerMovementHandlers(socket: Socket) {
   socket.on(
     "move-unit-one-step",
-    withValidation(socket, moveUnitOneStepSchema, async (socket, data, callback) => {
+    withValidation(socket, moveUnitOneStepSchema, (socket, data, callback) => {
       const { gameId, playerId, unitId, direction } = data;
 
       if (!requireGameExists(gameId)) {
@@ -60,7 +60,7 @@ function registerMovementHandlers(socket: Socket) {
 
       const board: Board = game!.gameState.board;
 
-      const movementMessage = await moveUnit(board, position, direction, unitMoved);
+      const movementMessage = moveUnit(board, position, direction, unitMoved);
       if (!movementMessage.success) {
         return callback(
           errorResponse(

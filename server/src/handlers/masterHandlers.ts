@@ -21,6 +21,7 @@ import {
 import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { Stats } from "../POO/classes/Units/Stats";
+import { checkUnitDefeat } from "../shared/death/death";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -90,7 +91,7 @@ export function registerMasterHandlers(socket: Socket) {
           }
           const result = placeSpawnPoint(position, game);
           if (!result.success) {
-            if (existingSpawnPoint){
+            if (existingSpawnPoint) {
               placeSpawnPoint(existingSpawnPoint, game); // placing back the spawn point that was removed
             }
             return callback(errorResponse(result.error!));
@@ -100,7 +101,9 @@ export function registerMasterHandlers(socket: Socket) {
         const result = handleTilePlacement(gameId, position, tileType);
 
         return callback(
-          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
+          result.success
+            ? successResponse(board.toJson(true))
+            : errorResponse(result.error!),
         );
       }
 
@@ -108,7 +111,9 @@ export function registerMasterHandlers(socket: Socket) {
         const monsterType = selectedType as MonsterCategory;
         const result = handleMonsterPlacement(gameId, position, monsterType);
         return callback(
-          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
+          result.success
+            ? successResponse(board.toJson(true))
+            : errorResponse(result.error!),
         );
       }
 
@@ -117,7 +122,9 @@ export function registerMasterHandlers(socket: Socket) {
         const trapType = selectedType as TrapType;
         const result = handleTrapPlacement(gameId, position, trapType);
         return callback(
-          result.success ? successResponse(board.toJson(true)) : errorResponse(result.error!),
+          result.success
+            ? successResponse(board.toJson(true))
+            : errorResponse(result.error!),
         );
       }
 
@@ -146,7 +153,7 @@ export function registerMasterHandlers(socket: Socket) {
         return callback(errorResponse("Unit not found"));
       }
 
-      const adaptedStats : Stats = {
+      const adaptedStats: Stats = {
         health: newStats.health,
         maxHealth: newStats.maxHealth,
         nbDefenseDice: newStats.defense,
@@ -154,14 +161,17 @@ export function registerMasterHandlers(socket: Socket) {
         spirit: newStats.spirit,
       };
       unit.stats = adaptedStats;
+      const io = ServerHeroQuest.getServerInstance().getIo();
 
       if (unit.stats.health <= 0) {
-        game?.gameState.removeUnit(unit);
+        const defeated = checkUnitDefeat(game!.id, unit);
+        if (defeated) {
+          emitGameStateUpdate(io, gameId, game!);
+          return callback(successResponse());
+        }
       }
 
       //TODO : handle effects
-
-      const io = ServerHeroQuest.getServerInstance().getIo();
 
       io.to(gameId).emit("stats-updated", {
         entityId: unitId,
@@ -181,7 +191,11 @@ function handleDoorPlacement(
   const game = GameService.getGame(gameId);
   const io = ServerHeroQuest.getServerInstance().getIo();
   const newDoor = game!.gameState.board.placeDoor(position, direction);
-  if (!newDoor.success || !newDoor.doorPlace?.position || !newDoor.doorPlace?.verticalOrHorizontal) {
+  if (
+    !newDoor.success ||
+    !newDoor.doorPlace?.position ||
+    !newDoor.doorPlace?.verticalOrHorizontal
+  ) {
     return {
       success: false,
       error: newDoor.error || "Failed to place door",
@@ -250,7 +264,12 @@ function handleTrapPlacement(
       error: (error as Error).message || "Failed to place trap",
     };
   }
- console.debug("placed trap", trapType, "resulting game state:", game?.gameState.board.getTileAtPosition(position));
+  console.debug(
+    "placed trap",
+    trapType,
+    "resulting game state:",
+    game?.gameState.board.getTileAtPosition(position),
+  );
   emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }

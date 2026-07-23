@@ -1,15 +1,23 @@
 import { FightDiceFaces } from "../../enums/Dices/FightDiceFaces";
-import { PlayerRole } from "../../enums/PlayerRole";
+
+export type RollProps = {
+  gameId: string;
+  wishedNumberOfDices: number;
+  playerId: string;
+  kind: "fight" | "red";
+};
 
 export interface IDiceService {
-  rollRedDice(
+  rollDice(rollProps: RollProps): {
+    success: boolean;
+    results?: FightDiceFaces[];
+    error?: string;
+  };
+  resolveWithVector(
     gameId: string,
-    numberOfDices: number,
-    playerRole: PlayerRole,
-  ): Promise<{ success: boolean; results?: number[]; error?: string}>;
-  rollFightDice(
-    gameId: string,
-    numberOfDices: number,
-    playerRole: PlayerRole,
-  ): Promise<{ success: boolean; results?: FightDiceFaces[]; error?: string}>;
+    vector: { x: number; y: number; z: number; boost: number },
+  ): {
+    success: boolean;
+    error?: string;
+  };
 }

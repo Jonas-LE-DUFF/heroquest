@@ -16,11 +16,13 @@ import { LocationState } from "../../POO/types/LocationType";
 import { getHeroToPlay } from "../../shared/serverUtils";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
-export default function SearchMenu(
-  socket: Socket,
-  hero: HeroAsJson,
-  game: GameAsJson,
-) {
+interface SearchMenuProps {
+  socket: Socket;
+  hero: HeroAsJson;
+  game: GameAsJson;
+}
+
+export default function SearchMenu({ socket, hero, game }: SearchMenuProps) {
   const state = useLocation().state as LocationState;
   const { playerId } = state;
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);

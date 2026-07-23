@@ -2,69 +2,108 @@ import { Game } from "../POO/classes/Server/Game";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { SpecialAuthorizedHero } from "../POO/interfaces/SpecialAuthorizedHero";
-import { PlayerRole } from "../POO/enums/PlayerRole";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
-import { IDiceService } from "../POO/interfaces/IClass/IDiceService";
-import { setTimeout } from "timers";
-
-const sleep = (ms: number) => {
-  return new Promise((r) => setTimeout(r, ms));
-};
+import { IDiceService, RollProps } from "../POO/interfaces/IClass/IDiceService";
+import { Socket } from "socket.io";
 
 export class DiceService implements IDiceService {
-  async rollFightDice(
-    gameId: string,
-    wishedNumberOfDices: number,
-    playerRole: PlayerRole,
-  ): Promise<{ success: boolean; results?: FightDiceFaces[]; error?: string }> {
-    const io = ServerHeroQuest.getServerInstance().getIo();
+  private pendingRolls = new Map<
+    string,
+    {
+      results: number[];
+      diceType: "fight" | "red";
+      playerId: string;
+      expiresAt: number; // pour éviter les fuites mémoire
+    }
+  >();
 
-    let results: FightDiceFaces[] = [];
-    for (let j = 0; j < 15; j++) {
+  rollDice(rollProps: RollProps): {
+    success: boolean;
+    results?: FightDiceFaces[];
+    error?: string;
+  } {
+    const { gameId, wishedNumberOfDices, playerId, kind } = rollProps;
+    const socket = findSocketByPlayerId(gameId, playerId);
+    if (!socket) {
+      console.error("No socket found for player:", playerId);
+      return { success: false, error: "No socket found for player" };
+    }
+    let results: FightDiceFaces[] | number[] = [];
+    if (kind === "fight") {
       results = [];
       for (let i = 0; i < wishedNumberOfDices; i++) {
         const randomNumber = Math.floor(Math.random() * 6 + 1);
         let face: FightDiceFaces = FightDiceFaces.Hit;
         if (randomNumber === 1) {
           face = FightDiceFaces.BlackShield;
-        } else if (randomNumber < 3) {
+        } else if (randomNumber <= 3) {
           face = FightDiceFaces.WhiteShield;
         } else {
           face = FightDiceFaces.Hit;
         }
         results.push(face);
       }
-      io.to(gameId).emit("dice-update", {
-        listResults: results,
-        role: playerRole,
-      });
-
-      await sleep(75);
-    }
-    return { success: true, results: results };
-  }
-
-  async rollRedDice(
-    gameId: string,
-    numberOfDices: number,
-    playerRole: PlayerRole,
-  ): Promise<{ success: boolean; results?: number[]; error?: string }> {
-    const io = ServerHeroQuest.getServerInstance().getIo();
-
-    let results: number[] = [];
-    for (let j = 0; j < 15; j++) {
-      results = [];
-      for (let i = 0; i < numberOfDices; i++) {
+    } else /*if (kind === "red")*/ {
+      for (let i = 0; i < wishedNumberOfDices; i++) {
         const randomNumber = Math.floor(Math.random() * 6 + 1);
         results.push(randomNumber);
       }
-      io.to(gameId).emit("red-dice-update", {
-        listResults: results,
-        role: playerRole,
-      });
-      await sleep(75);
     }
+
+    this.pendingRolls.set(gameId, {
+      results,
+      diceType: kind,
+      playerId: playerId,
+      expiresAt: Date.now() + 30_000, // expire après 30s
+    });
+
+    socket.emit("request-dice-vector", {
+      typeOfDices: kind,
+    });
+
     return { success: true, results: results };
+  }
+
+  resolveWithVector(
+    gameId: string,
+    vector: { x: number; y: number; z: number; boost: number },
+  ): { success: boolean; error?: string } {
+    console.log("resolveWithVector called with:", { gameId, vector });
+    const io = ServerHeroQuest.getServerInstance().getIo();
+    const pending = this.pendingRolls.get(gameId);
+
+    if (!pending) {
+      console.error("No pending roll for game", gameId);
+      return { success: false, error: "No pending roll for game" };
+    }
+
+    // Expire ?
+    if (Date.now() > pending.expiresAt) {
+      this.pendingRolls.delete(gameId);
+      // Génère un vecteur aléatoire si le joueur a mis trop longtemps
+      vector = {
+        x: Math.random() * 2 - 1,
+        y: Math.random() * 2 - 1,
+        z: Math.random() * 2 - 1,
+        boost: Math.random() * 500 + 300,
+      };
+    }
+
+    this.pendingRolls.delete(gameId);
+
+    const playerRole = ServerHeroQuest.getServerInstance()
+      .getGame(gameId)!
+      .getPlayer(pending.playerId)!.role;
+
+    console.log("Emitting dice-update with results:", pending.results);
+    io.to(gameId).emit("dice-update", {
+      listResults: pending.results,
+      role: playerRole,
+      vector,
+      kind: pending.diceType,
+    });
+
+    return { success: true };
   }
 }
 
@@ -98,6 +137,15 @@ export function grantSpecialRollAuthorization(
   };
   game.gameState.setSpecialAuthorizedHero(specialAuthorizedHero);
 
+  console.log(
+    "grantSpecialRollAuthorization: emitting special-authorization for hero:",
+    {
+      heroId: hero.id,
+      numberOfDices,
+      typeOfDices,
+    },
+  );
+
   io.to(game.id).emit("special-authorization", {
     playerId: hero.controlledByPlayerId,
     amountOfDices: numberOfDices,
@@ -105,4 +153,14 @@ export function grantSpecialRollAuthorization(
   });
 
   return { success: true };
+}
+
+function findSocketByPlayerId(
+  gameId: string,
+  playerId: string,
+): Socket | undefined {
+  const server = ServerHeroQuest.getServerInstance();
+  const io = server.getIo();
+  const socketId = server.getGame(gameId)?.getPlayer(playerId)?.socketId;
+  return socketId ? io.sockets.sockets.get(socketId) : undefined;
 }

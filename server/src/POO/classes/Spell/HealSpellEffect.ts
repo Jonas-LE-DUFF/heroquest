@@ -4,22 +4,25 @@ import { Unit } from "../Units/Unit";
 import { SpellEffect } from "./SpellEffect";
 
 class HealSpellEffect extends SpellEffect {
-    healAmount: number;
-    
-    constructor(healAmount: number) {
-        super("healing");
-        this.healAmount = healAmount;
-    }
+  healAmount: number;
 
-    applyEffect(target: Unit<MonsterCategory | HeroCategory>): Promise<void> {
-        if (target.stats.health !== undefined && target.stats.maxHealth !== undefined) {
-            target.stats.health = Math.min(
-                target.stats.health + this.healAmount,
-                target.stats.maxHealth
-            );
-        }
-        return Promise.resolve()
+  constructor(healAmount: number) {
+    super("healing");
+    this.healAmount = healAmount;
+  }
+
+  applyEffect(target: Unit<MonsterCategory | HeroCategory>): void {
+    if (
+      target.stats.health !== undefined &&
+      target.stats.maxHealth !== undefined
+    ) {
+      target.stats.health = Math.min(
+        target.stats.health + this.healAmount,
+        target.stats.maxHealth,
+      );
     }
+    return;
+  }
 }
 
 export { HealSpellEffect };

@@ -37,7 +37,7 @@ const canMove = (
     return { success: false, error: "wall in the way" };
   }
 
-  if(toTile.isImpassable() && !canPhaseThroughWalls) {
+  if (toTile.isImpassable() && !canPhaseThroughWalls) {
     console.error("Tile is impassable");
     return { success: false, error: "Tile is impassable" };
   }
@@ -51,12 +51,12 @@ const canMove = (
   return { success: true };
 };
 
-export async function moveUnit(
+export function moveUnit(
   board: Board,
   from: Position,
   direction: Direction,
   unitMoved: Unit<HeroCategory | MonsterCategory>,
-): Promise<{ success: boolean; error?: string; }> {
+): { success: boolean; error?: string } {
   const moveCheck = canMove(board, from, direction, unitMoved);
   if (!moveCheck.success) {
     return moveCheck;
@@ -72,7 +72,7 @@ export async function moveUnit(
   board.placeUnitAt(unitMoved, to);
 
   if (newTile.trap) {
-    await newTile.trap?.walkOnTrap(unitMoved);
+    newTile.trap?.walkOnTrap(unitMoved);
   }
 
   if (

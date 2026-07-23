@@ -11,13 +11,9 @@ import SpellsPopUp from "../components/Card/Spells/SpellPopUp";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
-import {
-  getPositionByUnitId,
-  getTileByPosition,
-  removeUnitFromBoardById,
-} from "../shared/boardUtils";
+import { getPositionByUnitId, getTileByPosition } from "../shared/boardUtils";
 import { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { getHeroesByPlayerId, getPlayerByHero } from "../shared/serverUtils";
+import { getHeroesByPlayerId } from "../shared/serverUtils";
 import { setDoorAtPosition } from "../shared/doorUtils";
 import { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
@@ -93,8 +89,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }
     const hero = getHeroesByPlayerId(player?.id ?? "", game)?.[0] || null;
     if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
-      console.error("Couldn't find a hero for the current player");
-      return;
+      console.log(
+        "Player is spectating, no hero found for player:",
+        player?.id,
+      );
     }
     setHero(hero);
   }, [game, player?.id, role]);
@@ -102,34 +100,11 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   // Handle stats update separately to ensure proper re-render
   const handleStatsUpdate = useCallback(
     (data: { entityId: string; newStats: StatsAsJson }) => {
-      const isDead =
-        data.newStats.health !== undefined && data.newStats.health <= 0;
-
       setGame((prev) => {
         if (!prev) return prev;
         const unit = prev.gameState.Units.find((u) => u.id === data.entityId);
         if (!unit) return prev;
         unit.stats = data.newStats;
-
-        if (isHero(unit)) {
-          const player = getPlayerByHero(unit, prev.players);
-          if (!player) {
-            console.error("Player not found for hero with id:", data.entityId);
-            return prev;
-          }
-          if (isDead) {
-            prev.players = prev.players.filter((p) => p.id !== player.id);
-          }
-        }
-
-        if (isDead) {
-          prev.gameState.Units = prev.gameState.Units.filter(
-            (u) => u.id !== data.entityId,
-          );
-          removeUnitFromBoardById(data.entityId, prev.gameState.board);
-        } else {
-          unit.stats = data.newStats;
-        }
 
         return { ...prev } as GameAsJson;
       });
@@ -279,7 +254,10 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   });
 
   if ((!hero || !isHero(hero)) && role !== PlayerRole.GAME_MASTER) {
-    setHero(getHeroesByPlayerId(socket.id!, game)?.[0] || null);
+    const playerHeroes = getHeroesByPlayerId(player?.id ?? "", game);
+    if (playerHeroes && playerHeroes.length !== 0) {
+      setHero(playerHeroes?.[0] || null);
+    }
   }
 
   return (
@@ -309,7 +287,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
           closeSpellPage={() => setSpellPageVisible(false)}
         />
       </Dialog>
-      <Grid className="game-page" container>
+      <Grid className={"game-page"} container>
         <Grid className="Navbar">
           <Navbar
             socket={socket}
