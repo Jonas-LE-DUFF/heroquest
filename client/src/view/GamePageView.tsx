@@ -63,15 +63,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }));
   };
 
-  const setTargetMode = (value: boolean) => {
-    setInteraction((prev) => ({
-      ...prev,
-      targeting: value
-        ? { mode: "attack" }
-        : getPlacementTargetingState(prev.selectedType),
-    }));
-  };
-
   const [game, setGame] = useState<GameAsJson>(state.game);
   const [boardKey, setBoardKey] = useState(0); // Force re-render key
   const [hero, setHero] = useState<HeroAsJson | null>(
@@ -315,7 +306,6 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
                   },
                 } as HeroAsJson;
               });
-              setTargetMode(true);
             }}
             selectedWeapon={selectedWeapon}
           />

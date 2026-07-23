@@ -85,7 +85,6 @@ export function GenericDiceRoller<K extends DiceKind>({
       if (data.role !== diceOwner || kind !== data.kind) return;
       setRollData(data);
       setCurrentNumberOfDices(data.listResults.length);
-      setCurrentDiceFaces(data.listResults);
       openPopupOnce();
     };
 
@@ -170,6 +169,7 @@ export function GenericDiceRoller<K extends DiceKind>({
           gameId={game.id}
           rollData={rollData}
           setRollData={setRollData}
+          setCurrentDiceFaces={setCurrentDiceFaces}
         />
       </Dialog>
     </>

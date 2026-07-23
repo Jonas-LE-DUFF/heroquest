@@ -15,6 +15,7 @@ export interface IDiceService {
   };
   resolveWithVector(
     gameId: string,
+    playerId: string,
     vector: { x: number; y: number; z: number; boost: number },
   ): {
     success: boolean;

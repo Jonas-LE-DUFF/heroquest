@@ -13,6 +13,7 @@ interface DiceRollerProps<K extends DiceKind> {
   rollData: RollData | null;
   setRollData: (data: RollData | null) => void;
   kind: K;
+  setCurrentDiceFaces: (value: number[] | FightDiceFaces[] | null) => void;
 }
 
 export function Generic3DDiceRoller<K extends DiceKind>({
@@ -21,6 +22,7 @@ export function Generic3DDiceRoller<K extends DiceKind>({
   rollData,
   setRollData,
   kind,
+  setCurrentDiceFaces,
 }: DiceRollerProps<K>) {
   const location = useLocation().state as {
     playerId: string;
@@ -62,10 +64,10 @@ export function Generic3DDiceRoller<K extends DiceKind>({
   // Réagit aux nouveaux rollData (Dialog déjà ouvert)
   useEffect(() => {
     if (rollData && diceBoxRef.current) {
-      triggerRoll(diceBoxRef.current, rollData, kind);
+      triggerRoll(diceBoxRef.current, rollData, kind, setCurrentDiceFaces);
       setRollData(null);
     }
-  }, [rollData, setRollData, kind]);
+  }, [rollData, setRollData, kind, setCurrentDiceFaces]);
 
   // Gère le mode "swipe requis"
   useEffect(() => {
@@ -81,7 +83,7 @@ export function Generic3DDiceRoller<K extends DiceKind>({
       unbindSwipeRef.current = null;
       socket.emit(
         "provide-roll-vector",
-        { gameId, vector: { x, y, z }, boost },
+        { gameId, playerId: location.playerId, vector: { x, y, z }, boost },
         (response: { success: boolean; error?: string }) => {
           if (!response.success) {
             console.error("Erreur envoi vecteur:", response.error);
@@ -94,12 +96,7 @@ export function Generic3DDiceRoller<K extends DiceKind>({
       unbindSwipeRef.current?.();
       unbindSwipeRef.current = null;
     };
-  }, [socket, gameId]);
-
-  console.log(
-    "Generic3DDiceRoller mounted with props:",
-    rollDataRoleRef.current,
-  );
+  }, [socket, gameId, location.playerId]);
 
   return (
     <div
@@ -120,6 +117,7 @@ function triggerRoll(
     vector: { x: number; y: number; z: number; boost: number };
   },
   kind: DiceKind,
+  setCurrentDiceFaces: (value: number[] | FightDiceFaces[] | null) => void,
 ) {
   let results = rollData.listResults;
   if (kind === "fight") {
@@ -140,7 +138,7 @@ function triggerRoll(
     rollData.vector,
     rollData.vector.boost,
     rollData.listResults.length,
-    () => {},
+    () => setCurrentDiceFaces(rollData.listResults),
     results,
   );
 }

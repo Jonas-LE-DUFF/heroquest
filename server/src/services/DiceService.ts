@@ -6,16 +6,15 @@ import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { IDiceService, RollProps } from "../POO/interfaces/IClass/IDiceService";
 import { Socket } from "socket.io";
 
+type PendingRollEntry = {
+  results: number[];
+  diceType: "fight" | "red";
+  expiresAt: number; // pour éviter les fuites mémoire
+};
+type PendingRoll = Map<string, PendingRollEntry>; // clé: playerId, valeur: PendingRollEntry
+
 export class DiceService implements IDiceService {
-  private pendingRolls = new Map<
-    string,
-    {
-      results: number[];
-      diceType: "fight" | "red";
-      playerId: string;
-      expiresAt: number; // pour éviter les fuites mémoire
-    }
-  >();
+  private pendingRollsGames = new Map<string, PendingRoll>();
 
   rollDice(rollProps: RollProps): {
     success: boolean;
@@ -50,12 +49,14 @@ export class DiceService implements IDiceService {
       }
     }
 
-    this.pendingRolls.set(gameId, {
+    const pendingRolls =
+      this.pendingRollsGames.get(gameId) || new Map<string, PendingRollEntry>();
+    pendingRolls.set(playerId, {
       results,
       diceType: kind,
-      playerId: playerId,
       expiresAt: Date.now() + 30_000, // expire après 30s
     });
+    this.pendingRollsGames.set(gameId, pendingRolls);
 
     socket.emit("request-dice-vector", {
       typeOfDices: kind,
@@ -66,11 +67,12 @@ export class DiceService implements IDiceService {
 
   resolveWithVector(
     gameId: string,
+    playerId: string,
     vector: { x: number; y: number; z: number; boost: number },
   ): { success: boolean; error?: string } {
-    console.log("resolveWithVector called with:", { gameId, vector });
     const io = ServerHeroQuest.getServerInstance().getIo();
-    const pending = this.pendingRolls.get(gameId);
+    const pendingRolls = this.pendingRollsGames.get(gameId);
+    const pending = pendingRolls?.get(playerId);
 
     if (!pending) {
       console.error("No pending roll for game", gameId);
@@ -79,7 +81,7 @@ export class DiceService implements IDiceService {
 
     // Expire ?
     if (Date.now() > pending.expiresAt) {
-      this.pendingRolls.delete(gameId);
+      pendingRolls?.delete(playerId);
       // Génère un vecteur aléatoire si le joueur a mis trop longtemps
       vector = {
         x: Math.random() * 2 - 1,
@@ -89,11 +91,11 @@ export class DiceService implements IDiceService {
       };
     }
 
-    this.pendingRolls.delete(gameId);
+    pendingRolls?.delete(playerId);
 
     const playerRole = ServerHeroQuest.getServerInstance()
       .getGame(gameId)!
-      .getPlayer(pending.playerId)!.role;
+      .getPlayer(playerId)!.role;
 
     console.log("Emitting dice-update with results:", pending.results);
     io.to(gameId).emit("dice-update", {

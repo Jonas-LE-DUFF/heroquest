@@ -17,6 +17,7 @@ import {
   attackSchema,
   drinkPotionSchema,
   heroActionSchema,
+  selectWeaponSchema,
 } from "../validation";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { requireGameMaster } from "../guards/requireGameMaster";
@@ -75,16 +76,64 @@ export function registerGameActionsHandlers(socket: Socket) {
   );
 
   socket.on(
+    "select-weapon",
+    withValidation(socket, selectWeaponSchema, (socket, data, callback) => {
+      const { gameId, heroId, weaponId } = data;
+
+      if (!requireGameExists(gameId)) {
+        return callback(
+          errorResponse("game couldn't be found in select-weapon"),
+        );
+      }
+
+      const game = GameService.getGame(gameId);
+
+      const hero = game!.gameState.getHeroById(heroId);
+      if (!hero) {
+        return callback(
+          errorResponse("hero couldn't be found in select-weapon"),
+        );
+      }
+
+      const player = game!.getPlayer(hero.controlledByPlayerId);
+      if (!player) {
+        return callback(
+          errorResponse(
+            "player couldn't be found in select-weapon or doesn't control the hero",
+          ),
+        );
+      }
+
+      if (!hero.equipment.hasEquipment(weaponId)) {
+        return callback(
+          errorResponse(
+            "hero doesn't have the specified weapon in select-weapon",
+          ),
+        );
+      }
+      hero.equipment.setSelectedWeaponIndex(
+        hero.equipment.weapons.findIndex((w) => w.reference === weaponId),
+      );
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game!);
+    }),
+  );
+
+  socket.on(
     "attack",
     withValidation(socket, attackSchema, (socket, data, callback) => {
-      const { gameId, playerId, attackerId, targetId, wishedNumberOfDices } =
-        data;
+      const { gameId, playerId, attackerId, targetId } = data;
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("game couldn't be found in attack"));
       }
 
       const game = GameService.getGame(gameId);
+
+      if (!requirePlayerTurn(playerId, game!)) {
+        return callback(errorResponse("it's not your turn to play in attack"));
+      }
 
       const attacker = game!.getGameState().getUnitById(attackerId);
       const defender = game!.getGameState().getUnitById(targetId);
@@ -95,7 +144,17 @@ export function registerGameActionsHandlers(socket: Socket) {
         );
       }
 
-      fight(playerId, game!, attacker, defender, wishedNumberOfDices);
+      if (attacker.controlledByPlayerId !== playerId) {
+        return callback(
+          errorResponse(
+            "unit attacking does not belong to the player in attack",
+          ),
+        );
+      }
+
+      fight(game!, attacker, defender);
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game!);
       callback(successResponse());
     }),
   );
