@@ -3,6 +3,9 @@ import { DiceBox } from "./dicePhysics";
 import { Socket } from "socket.io-client";
 import { FightDiceFaces } from "../../POO/enums/Dices/FightDiceFaces";
 import { DiceKind, getDiceLabels, RollData } from "./diceHelper";
+import { PlayerRole } from "../../POO/enums/PlayerRole";
+import { useLocation } from "react-router-dom";
+import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
 interface DiceRollerProps<K extends DiceKind> {
   socket: Socket;
@@ -19,9 +22,24 @@ export function Generic3DDiceRoller<K extends DiceKind>({
   setRollData,
   kind,
 }: DiceRollerProps<K>) {
+  const location = useLocation().state as {
+    playerId: string;
+    game: GameAsJson;
+  };
+  const playerRole = location.game.players.find(
+    (p) => p.id === location.playerId,
+  )?.role;
   const diceBoxRef = useRef<DiceBox | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const unbindSwipeRef = useRef<(() => void) | null>(null);
+  const rollDataRoleRef = useRef<PlayerRole | null>(
+    rollData?.role ?? playerRole ?? null,
+  );
+
+  useEffect(() => {
+    if (rollData?.role === null || rollData?.role === undefined) return;
+    rollDataRoleRef.current = rollData.role;
+  }, [rollData]);
 
   // Création de la DiceBox — une seule fois au montage
   useEffect(() => {
@@ -78,8 +96,18 @@ export function Generic3DDiceRoller<K extends DiceKind>({
     };
   }, [socket, gameId]);
 
+  console.log(
+    "Generic3DDiceRoller mounted with props:",
+    rollDataRoleRef.current,
+  );
+
   return (
-    <div className="dice-roller">
+    <div
+      className={
+        "dice-roller " +
+        (rollDataRoleRef.current === PlayerRole.HERO ? "hero" : "game-master")
+      }
+    >
       <div ref={containerRef} style={{ width: "1200px", height: "800px" }} />
     </div>
   );
