@@ -14,6 +14,7 @@ interface DiceRollerProps<K extends DiceKind> {
   setRollData: (data: RollData | null) => void;
   kind: K;
   setCurrentDiceFaces: (value: number[] | FightDiceFaces[] | null) => void;
+  setIsRolling: (value: boolean) => void;
 }
 
 export function Generic3DDiceRoller<K extends DiceKind>({
@@ -23,6 +24,7 @@ export function Generic3DDiceRoller<K extends DiceKind>({
   setRollData,
   kind,
   setCurrentDiceFaces,
+  setIsRolling,
 }: DiceRollerProps<K>) {
   const location = useLocation().state as {
     playerId: string;
@@ -64,10 +66,16 @@ export function Generic3DDiceRoller<K extends DiceKind>({
   // Réagit aux nouveaux rollData (Dialog déjà ouvert)
   useEffect(() => {
     if (rollData && diceBoxRef.current) {
-      triggerRoll(diceBoxRef.current, rollData, kind, setCurrentDiceFaces);
+      triggerRoll(
+        diceBoxRef.current,
+        rollData,
+        kind,
+        setCurrentDiceFaces,
+        setIsRolling,
+      );
       setRollData(null);
     }
-  }, [rollData, setRollData, kind, setCurrentDiceFaces]);
+  }, [rollData, setRollData, kind, setCurrentDiceFaces, setIsRolling]);
 
   // Gère le mode "swipe requis"
   useEffect(() => {
@@ -118,6 +126,7 @@ function triggerRoll(
   },
   kind: DiceKind,
   setCurrentDiceFaces: (value: number[] | FightDiceFaces[] | null) => void,
+  setIsRolling: (value: boolean) => void,
 ) {
   let results = rollData.listResults;
   if (kind === "fight") {
@@ -134,11 +143,15 @@ function triggerRoll(
       }
     });
   }
+  setIsRolling(true);
   diceBox.rollWithVector(
     rollData.vector,
     rollData.vector.boost,
     rollData.listResults.length,
-    () => setCurrentDiceFaces(rollData.listResults),
+    () => {
+      setCurrentDiceFaces(rollData.listResults);
+      setIsRolling(false);
+    },
     results,
   );
 }
