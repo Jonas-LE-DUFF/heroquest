@@ -1,10 +1,9 @@
 import treasure from "../../../shared/game_cards/treasure.json";
 import { Hero } from "../Units/Hero";
 
-import { TreasureCard } from "./TreasureCard";
+import { TreasureCard, TreasureCardEffectName } from "./TreasureCard";
 
 class TreasureCardDeck {
-
   gameId: string;
   cards: TreasureCard[] = [];
   constructor(gameId: string) {
@@ -24,7 +23,7 @@ class TreasureCardDeck {
             card.image_path,
             card.copies,
             card.is_put_back,
-            card.effect.name,
+            card.effect.name as TreasureCardEffectName | undefined,
             cardEffect,
           ),
         );
@@ -70,7 +69,6 @@ class TreasureCardDeckHandler {
   static removeDeck(gameId: string): void {
     this.decks.delete(gameId);
   }
-
 }
 
 export { TreasureCardDeckHandler };

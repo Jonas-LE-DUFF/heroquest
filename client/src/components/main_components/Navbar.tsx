@@ -251,7 +251,7 @@ const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
             {/*attack button*/}
-            {hero && (
+            {(selectedUnit || hero) && (
               <div className="nav-elem">
                 <Tooltip title="Attaquer" arrow>
                   <button
@@ -261,7 +261,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         targeting: { mode: "attack" },
                       }));
                     }}
-                    disabled={!isHeroTurn}
+                    disabled={!isHeroTurn && !(game.isMonsterTurn && role === PlayerRole.GAME_MASTER)}
                   >
                     <img
                       src={swordsIcon}
