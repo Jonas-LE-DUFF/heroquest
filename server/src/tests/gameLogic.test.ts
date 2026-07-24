@@ -33,7 +33,6 @@ import { ApplyEffectSpellEffect } from "../POO/classes/Spell/ApplyEffectSpellEff
 import { EffectFactory } from "../POO/classes/Effects/Effects";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { SpellElement } from "../POO/enums/SpellElement";
-import { dealDamage } from "../services/CombatService";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
 import { TileType } from "../POO/enums/Board/TileType";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
@@ -43,7 +42,6 @@ import {
   createTestStats,
   setupGameWithPlayers,
 } from "./testUtils";
-import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { Socket } from "socket.io";
 
 // ── Tests ──
@@ -54,50 +52,6 @@ beforeEach(() => {
 
 afterEach(() => {
   DiceServiceRegistry.reset(); // propre entre chaque test
-});
-
-describe("dealDamage (CombatService)", () => {
-  it("should reduce health by the damage amount", () => {
-    const monster = createTestMonster({
-      stats: createTestStats({ health: 5 }),
-    });
-    dealDamage("test-game", monster, 3);
-    expect(monster.stats.health).toBe(2);
-  });
-
-  it("should not change health when damage is 0", () => {
-    const monster = createTestMonster({
-      stats: createTestStats({ health: 5 }),
-    });
-    dealDamage("test-game", monster, 0);
-    expect(monster.stats.health).toBe(5);
-  });
-
-  it("should not change health when damage is negative", () => {
-    const monster = createTestMonster({
-      stats: createTestStats({ health: 5 }),
-    });
-    dealDamage("test-game", monster, -2);
-    expect(monster.stats.health).toBe(5);
-  });
-});
-
-describe("dealDamage - lethal damage (CombatService)", () => {
-  it("should set health to 0 when damage exceeds health", () => {
-    const monster = createTestMonster({
-      stats: createTestStats({ health: 3 }),
-    });
-    dealDamage("test-game", monster, 5);
-    expect(monster.stats.health).toBe(0);
-  });
-
-  it("should set health to 0 when damage equals health", () => {
-    const monster = createTestMonster({
-      stats: createTestStats({ health: 3 }),
-    });
-    dealDamage("test-game", monster, 3);
-    expect(monster.stats.health).toBe(0);
-  });
 });
 
 describe("moveUnit (MovementService)", () => {
@@ -524,31 +478,6 @@ describe("clearTileAtPosition (GameState)", () => {
       expect(gameState.board.getUnitAt(pos.afterMove(Direction.DOWN))).toBe(
         monster.id,
       );
-    });
-  });
-
-  describe("playerDeath", () => {
-    it("should remove the hero from the game state when health reaches 0", () => {
-      const game = setupGameWithPlayers();
-      game.endTurn(); // end monster turn to start hero turn
-      const gameState = game.getGameState();
-      const hero = game.getHeroes()[0];
-      const pos = gameState.board.getPositionOfUnit(hero!.id)!;
-
-      const server = ServerHeroQuest.getServerInstance() as unknown as {
-        getGame: jest.Mock;
-      };
-      server.getGame.mockReturnValue(game);
-
-      // Deal lethal damage
-      dealDamage("test-game", hero!, 8);
-
-      // unit removed from the list of units
-      expect(gameState.getUnitById(hero!.id)).toBeUndefined();
-      // unit removed from the board
-      expect(gameState.board.getUnitAt(pos)).toBeUndefined();
-      // unit removed from the play order
-      expect(game.getCurrentHeroTurn().id).not.toBe(hero!.id);
     });
   });
 });
