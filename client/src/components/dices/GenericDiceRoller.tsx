@@ -29,6 +29,7 @@ export function GenericDiceRoller<K extends DiceKind>({
   const state = useLocation().state as LocationState;
   const { playerId, game } = state;
   const playerRole = game.players.find((p) => p.id === playerId)?.role;
+  const [isRolling, setIsRolling] = useState(false);
 
   const [currentDiceFaces, setCurrentDiceFaces] = useState<
     number[] | FightDiceFaces[] | null
@@ -50,10 +51,11 @@ export function GenericDiceRoller<K extends DiceKind>({
   }, [canOpen]);
 
   const closePopup = useCallback(() => {
+    if (isRolling) return;
     popupOpenedRef.current = false;
     setInternalOpen(false);
     onClose?.();
-  }, [onClose]);
+  }, [onClose, isRolling]);
 
   useEffect(() => {
     if (!canOpen) return;
@@ -85,7 +87,6 @@ export function GenericDiceRoller<K extends DiceKind>({
       if (data.role !== diceOwner || kind !== data.kind) return;
       setRollData(data);
       setCurrentNumberOfDices(data.listResults.length);
-      setCurrentDiceFaces(data.listResults);
       openPopupOnce();
     };
 
@@ -170,6 +171,8 @@ export function GenericDiceRoller<K extends DiceKind>({
           gameId={game.id}
           rollData={rollData}
           setRollData={setRollData}
+          setCurrentDiceFaces={setCurrentDiceFaces}
+          setIsRolling={setIsRolling}
         />
       </Dialog>
     </>

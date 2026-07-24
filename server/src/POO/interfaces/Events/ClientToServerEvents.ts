@@ -45,7 +45,11 @@ interface ClientToServerEvents {
   ) => void;
 
   // in-game actions
-  "attack-monster": (
+  "select-weapon": (
+    data: { gameId: string; playerId: string },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+  attack: (
     data: { gameId: string; monsterId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;

@@ -4,13 +4,19 @@ import { TreasurePotionFactory } from "../Equipment/Items/Potions";
 import { CardAsJson } from "../../interfaces/ClassAsJson/CardAsJson";
 import treasures from "../../../shared/game_cards/treasure.json";
 
+export type TreasureCardEffectName =
+  | "Deal damage and end turn"
+  | "Spawns a monster that attacks"
+  | "Gain gold"
+  | "Gain potion";
+
 class TreasureCard {
   id: string;
   name: string;
   isPutBack: boolean;
   imgPath: string;
   originalAmountInDeck: number;
-  effectName?: string | undefined;
+  effectName?: TreasureCardEffectName | undefined;
   effectInfo?:
     | {
         amountOfDamage?: number;
@@ -27,7 +33,7 @@ class TreasureCard {
     imgPath: string,
     originalAmountInDeck: number,
     isPutBack?: boolean,
-    effectName?: string,
+    effectName?: TreasureCardEffectName,
     effectInfo?: {
       amountOfDamage?: number;
       amountOfGold?: number;
@@ -47,19 +53,20 @@ class TreasureCard {
     gameId: string,
     cardDrawer: Hero,
   ): { success: boolean; error?: string } {
-    if (this.effectName?.includes("deal damage")) {
+    console.log("effectName", this.effectName);
+    if (this.effectName === "Deal damage and end turn") {
       dealDamage(gameId, cardDrawer, this.effectInfo?.amountOfDamage ?? 0);
       return { success: true };
     }
-    if (this.effectName?.includes("spawns a monster that attacks")) {
+    if (this.effectName === "Spawns a monster that attacks") {
       // TODO : implement this effect
       return { success: true };
     }
-    if (this.effectName?.includes("gain gold")) {
+    if (this.effectName === "Gain gold") {
       cardDrawer.equipment.gold += this.effectInfo?.amountOfGold ?? 0;
       return { success: true };
     }
-    if (this.effectName?.includes("gain potion")) {
+    if (this.effectName === "Gain potion") {
       const factory = new TreasurePotionFactory();
       cardDrawer.equipment.addPotion(
         factory.createPotionFromReference(

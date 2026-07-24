@@ -74,12 +74,17 @@ export const castSpellSchema = z.object({
   position: positionSchema,
 });
 
+export const selectWeaponSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+  weaponId: z.string().min(1, "L'ID de l'arme est requis"),
+});
+
 export const attackSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
   playerId: z.string().min(1, "L'ID du joueur est requis"),
   attackerId: z.string().min(1, "L'ID de l'attaquant est requis"),
   targetId: z.string().min(1, "L'ID de la cible est requis"),
-  wishedNumberOfDices: z.number().int().min(1),
 });
 
 export const drinkPotionSchema = z.object({
@@ -128,6 +133,7 @@ export const rollDiceSchema = z.object({
 
 export const provideRollVectorSchema = z.object({
   gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
   vector: z.object({
     x: z.number(),
     y: z.number(),

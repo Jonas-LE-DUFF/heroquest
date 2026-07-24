@@ -10,18 +10,12 @@ import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { DiceServiceRegistry } from "./DiceServiceRegistry";
 
 function fight(
-  playerId: string,
   game: Game,
   attacker: Unit<MonsterCategory | HeroCategory>,
   defender: Unit<MonsterCategory | HeroCategory>,
-  wishedNumberOfDices: number,
 ) {
-  const isGameMaster = playerId === game.getGameMaster()?.id;
-
   const defenderDiceAmount = defender.getDefenseDiceCount();
-  const attackDiceAmount = isGameMaster
-    ? wishedNumberOfDices
-    : attacker.getAttackDiceCount();
+  const attackDiceAmount = attacker.getAttackDiceCount();
 
   const dice = DiceServiceRegistry.get();
   const attackerRoll = dice.rollDice({
@@ -33,6 +27,8 @@ function fight(
   if (!attackerRoll.success || !attackerRoll.results) {
     throw new Error("Failed to roll fight dice for Djinn DIE spell.");
   }
+
+  // wait for attacker
 
   const defenderRoll = dice.rollDice({
     gameId: game.id,

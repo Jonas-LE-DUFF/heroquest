@@ -22,6 +22,7 @@ import { PlayerRole } from "../../POO/enums/PlayerRole";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getHeroesByPlayerId, getHeroToPlay } from "../../shared/serverUtils";
 import magicStaffIcon from "/assets/images/icons/navbar/magic-staff.svg";
+import swordsIcon from "/assets/images/icons/navbar/crossed-swords.svg";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/search-treasure.svg";
 import lockpicks from "/assets/images/icons/navbar/disarm-traps.svg";
@@ -243,6 +244,28 @@ const Navbar: React.FC<NavbarProps> = ({
                     <img
                       src={magicStaffIcon}
                       alt="magicStaff"
+                      className="img-nav icon-nav"
+                    />
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+            {/*attack button*/}
+            {(selectedUnit || hero) && (
+              <div className="nav-elem">
+                <Tooltip title="Attaquer" arrow>
+                  <button
+                    onClick={() => {
+                      setInteraction((prev: InteractionState) => ({
+                        ...prev,
+                        targeting: { mode: "attack" },
+                      }));
+                    }}
+                    disabled={!isHeroTurn && !(game.isMonsterTurn && role === PlayerRole.GAME_MASTER)}
+                  >
+                    <img
+                      src={swordsIcon}
+                      alt="Attack"
                       className="img-nav icon-nav"
                     />
                   </button>

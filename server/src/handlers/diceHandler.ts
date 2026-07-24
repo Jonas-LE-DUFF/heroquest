@@ -146,12 +146,15 @@ function handleProvideRollVector(socket: Socket) {
       socket,
       provideRollVectorSchema,
       (socket, data, callback) => {
-        const { gameId, vector, boost } = data;
+        const { gameId, playerId, vector, boost } = data;
         const dice = DiceServiceRegistry.get();
         const vectorWithBoost = { ...vector, boost };
-        console.log("Received roll vector from client:", vectorWithBoost);
-        dice.resolveWithVector(gameId, vectorWithBoost);
-        callback({ success: true });
+        const result = dice.resolveWithVector(
+          gameId,
+          playerId,
+          vectorWithBoost,
+        );
+        callback(result);
       },
     ),
   );
