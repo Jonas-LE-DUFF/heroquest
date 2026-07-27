@@ -6,6 +6,7 @@ import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { StatType } from "../../../enums/Effects/StatType";
 import treasures from "../../../../shared/game_cards/treasure.json";
 import equipments from "../../../../shared/game_cards/equipments.json";
+import artifacts from "../../../../shared/game_cards/artifacts.json";
 import { Hero } from "../../Units/Hero";
 import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
 import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
@@ -202,7 +203,31 @@ class HeroismPotion extends Potion {
   }
 }
 
-class TreasurePotionFactory {
+class LifeElixirPotion extends Potion {
+  constructor(equipementData: equipmentData) {
+    super(
+      equipementData.id,
+      equipementData.name,
+      0,
+      equipementData.image_path,
+      null,
+    );
+  }
+
+  applyEffect(): { success: boolean; error?: string } {
+    return {
+      success: false,
+      error:
+        "Veuillez demander au game master d'appliquer cette potion manuellement",
+    };
+  }
+}
+
+abstract class PotionFactory {
+  abstract createPotionFromReference(reference: string): Potion;
+}
+
+class TreasurePotionFactory extends PotionFactory {
   createPotionFromReference(reference: string): Potion {
     const treasureData = treasures.deck.find(
       (treasure) => treasure.id === reference,
@@ -230,7 +255,7 @@ class TreasurePotionFactory {
   }
 }
 
-class EquipmentPotionFactory {
+class EquipmentPotionFactory extends PotionFactory {
   createPotionFromReference(reference: string): Potion {
     const equipmentData = equipments.deck.find(
       (equipment) => equipment.id === reference,
@@ -254,4 +279,27 @@ class EquipmentPotionFactory {
   }
 }
 
-export { Potion, TreasurePotionFactory, EquipmentPotionFactory };
+class ArtifactPotionFactory extends PotionFactory {
+  createPotionFromReference(reference: string): Potion {
+    const artifactData = artifacts.deck.find(
+      (artifact) => artifact.id === reference,
+    );
+    if (!artifactData)
+      throw Error("unknown reference for potion : " + reference);
+    const cleanArtifactData: equipmentData = {
+      id: artifactData.id,
+      name: artifactData.name,
+      cost: 0,
+      image_path: artifactData.image_path,
+    };
+    return new LifeElixirPotion(cleanArtifactData);
+  }
+}
+
+export {
+  Potion,
+  TreasurePotionFactory,
+  EquipmentPotionFactory,
+  ArtifactPotionFactory,
+  PotionFactory,
+};

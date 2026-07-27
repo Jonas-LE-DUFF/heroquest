@@ -3,6 +3,8 @@ import {
   Potion,
   EquipmentPotionFactory,
   TreasurePotionFactory,
+  PotionFactory,
+  ArtifactPotionFactory,
 } from "./Items/Potions";
 import { Weapon } from "./Items/Weapon";
 
@@ -128,32 +130,37 @@ class Equipment {
     ) as EquipmentData;
     const treasureData = treasuresJson.deck.find((t) => t.id === equipmentId);
     let artifactData = artifactsJson.deck.find((a) => a.id === equipmentId);
+    let potionFactory: PotionFactory | undefined = new EquipmentPotionFactory();
+    if (!equipmentData && !artifactData && !treasureData) {
+      throw new Error(`Item with id ${equipmentId} not found.`);
+    }
     if (treasureData) {
       if (!treasureData.effect.potion_gained) {
         throw new Error(
           `Treasure with id ${equipmentId} does not grant a potion.`,
         );
       }
-      const factory = new TreasurePotionFactory();
-      const potion: Potion = factory.createPotionFromReference(
-        treasureData.effect.potion_gained,
-      );
-      this.addPotion(potion);
-      return potion;
+      potionFactory = new TreasurePotionFactory();
+      equipmentData = {
+        id: treasureData.id,
+        name: treasureData.name,
+        cost: 0,
+        image_path: treasureData.image_path,
+        type: "Potion",
+        modifiers: {},
+      };
     }
-    if (!equipmentData && !artifactData) {
-      throw new Error(
-        `Equipment or artifact with id ${equipmentId} not found.`,
-      );
-    }
-
-    if (!equipmentData && artifactData) {
+    if (artifactData) {
       equipmentData = { ...artifactData, cost: 0 } as EquipmentData;
+      potionFactory = new ArtifactPotionFactory();
     }
-    this.addEquipment(equipmentData);
+    this.addEquipment(equipmentData, potionFactory);
   }
 
-  private addEquipment(equipmentData: EquipmentData) {
+  private addEquipment(
+    equipmentData: EquipmentData,
+    potionFactory: PotionFactory,
+  ) {
     switch (equipmentData.type) {
       case "Weapon": {
         const weapon = new Weapon(
@@ -183,8 +190,7 @@ class Equipment {
         return armor;
       }
       case "Potion": {
-        const factory = new EquipmentPotionFactory();
-        const potion: Potion = factory.createPotionFromReference(
+        const potion: Potion = potionFactory.createPotionFromReference(
           equipmentData.id,
         );
         this.addPotion(potion);
