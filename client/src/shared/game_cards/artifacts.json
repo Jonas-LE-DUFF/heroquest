@@ -1,0 +1,186 @@
+{
+    "backImg": "/assets/images/cards/artifacts/back.png",
+    "deck": [
+        {
+          "id": "borinArmor",
+          "name": "Armure de Borin",
+          "image_path": "/assets/images/cards/artifacts/borinArmor.png",
+          "type": "Armor",
+          "unique_usage": false,
+          "cleric_bearable": false,
+          "modifiers": {
+            "defense": 2
+          },
+          "range": "none",
+          "equipments_preventing_use": ["chainmail", "plate_armor"]
+        },
+        {
+            "id": "clericCloak",
+            "name": "Cape de l'enchanteur",
+            "image_path": "/assets/images/cards/artifacts/clericCloak.png",
+            "type": "Armor",
+            "unique_usage": false,
+            "cleric_bearable": "ONLY",
+            "modifiers": {
+                "defense": 1
+            },
+            "range": "none",
+            "equipments_preventing_use": ["chainmail", "plate_armor"]
+        },
+        {
+            "id": "clericStaff",
+            "name": "Bâton de l'enchanteur",
+            "image_path": "/assets/images/cards/artifacts/clericStaff.png",
+            "type": "Weapon",
+            "unique_usage": false,
+            "cleric_bearable": "ONLY",
+            "modifiers": {
+                "damage": 2
+            },
+            "range": "long_melee",
+            "equipments_preventing_use": []
+        },
+        {
+            "id": "fortuneLongSword",
+            "name": "Épée longue de la fortune",
+            "image_path": "/assets/images/cards/artifacts/fortuneLongSword.png",
+            "type": "Weapon",
+            "unique_usage": false,
+            "cleric_bearable": false,
+            "modifiers": {
+                "damage": 3
+            },
+            "range": "long_melee",
+            "equipments_preventing_use": [],
+            "special_effect": "une fois par quête, vous pouvez relancer un dé d'attaque"
+        },
+        {
+            "id": "icantationRing",
+            "name": "Anneau d'incantation",
+            "image_path": "/assets/images/cards/artifacts/icantationRing.png",
+            "type": "Ring",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": null,
+            "range": "none",
+            "equipments_preventing_use": [],
+            "special_effect": "doublez le sort de votre choix au début de la quête"
+        },
+        {
+            "id": "knowledgeTalisman",
+            "name": "Talisman de la connaissance",
+            "image_path": "/assets/images/cards/artifacts/knowledgeTalisman.png",
+            "type": "Artifact",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": {
+                "spirit": 1
+            },
+            "range": "none",
+            "equipments_preventing_use": []
+        },
+        {
+            "id": "lifeElixir",
+            "name": "Élixir de vie",
+            "image_path": "/assets/images/cards/artifacts/lifeElixir.png",
+            "type": "Potion",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": null,
+            "range": "none",
+            "equipments_preventing_use": [],
+            "special_effect": "ressucitez un héro mort"
+        },
+        {
+            "id": "magicWand",
+            "name": "Baguette magique",
+            "image_path": "/assets/images/cards/artifacts/magicWand.png",
+            "type": "Artifact",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": null,
+            "range": "none",
+            "equipments_preventing_use": [],
+            "special_effect": "permet de lancer deux sorts au lieu d'un en un tour"
+        },
+        {
+            "id": "mysticalSword",
+            "name": "Épée mystique",
+            "image_path": "/assets/images/cards/artifacts/mysticalSword.png",
+            "type": "Weapon",
+            "unique_usage": false,
+            "cleric_bearable": false,
+            "modifiers": {
+                "damage": 3
+            },
+            "range": "melee",
+            "equipments_preventing_use": [],
+            "special_effect": "donne 1 dé d'attaque supplémentaire contre les morts-vivants"
+        },
+        {
+            "id": "orcSlayer",
+            "name": "Pourfendeuse d'orcs",
+            "image_path": "/assets/images/cards/artifacts/orcSlayer.png",
+            "type": "Weapon",
+            "unique_usage": false,
+            "cleric_bearable": false,
+            "modifiers": {
+                "damage": 2
+            },
+            "range": "melee",
+            "equipments_preventing_use": [],
+            "special_effect": "Si la première attaque est contre un orc, permet de refaire une attaque"
+        },
+        {
+            "id": "returnRing",
+            "name": "Anneau du retour",
+            "image_path": "/assets/images/cards/artifacts/returnRing.png",
+            "type": "Ring",
+            "unique_usage": true,
+            "cleric_bearable": true,
+            "modifiers": null,
+            "range": "none",
+            "equipments_preventing_use": [],
+            "special_effect": "permet de téléporter tous les héros visibles au point de départ de la quête (détruit l'anneau après usage)"
+        },
+        {
+            "id": "robustnessRing",
+            "name": "Anneau de robustesse",
+            "image_path": "/assets/images/cards/artifacts/robustnessRing.png",
+            "type": "Ring",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": {
+                "maxHealth": 1
+            },
+            "range": "none",
+            "equipments_preventing_use": []
+        },
+        {
+            "id": "spectralDagger",
+            "name": "Poignard spectral",
+            "image_path": "/assets/images/cards/artifacts/spectralDagger.png",
+            "type": "Weapon",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": {
+                "damage": 1
+            },
+            "range": "melee",
+            "equipments_preventing_use": [],
+            "special_effect": "une fois par quête, empêche un monstre de se défendre contre cette attaque"
+        },
+        {
+            "id": "telekinesisScepter",
+            "name": "Sceptre de télékinésie",
+            "image_path": "/assets/images/cards/artifacts/telekinesisScepter.png",
+            "type": "Artifact",
+            "unique_usage": false,
+            "cleric_bearable": true,
+            "modifiers": null,
+            "range": "none",
+            "equipments_preventing_use": [],
+            "special_effect": "Fait qu'un monstre passe son prochain tour, (le monstre résiste s'il fait au moins un six pour chacun de ses points d'esprit) (une fois par quête)"
+        }
+    ]
+}
