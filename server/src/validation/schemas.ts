@@ -166,6 +166,13 @@ export const updateEquipmentSchema = z.object({
   gold: z.number().int().min(0, "L'or ne peut pas être négatif"),
 });
 
+export const grantSpellSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
+  heroId: z.string().min(1, "L'ID du héros est requis"),
+  spellId: z.string().min(1, "L'ID du sort est requis"),
+});
+
 // --- Movement Events ---
 
 export const moveUnitOneStepSchema = z.object({

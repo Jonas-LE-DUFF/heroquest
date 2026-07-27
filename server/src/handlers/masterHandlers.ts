@@ -17,6 +17,7 @@ import {
   toPosition,
   placeElementSchema,
   updateStatsUnitSchema,
+  grantSpellSchema,
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
@@ -177,6 +178,37 @@ export function registerMasterHandlers(socket: Socket) {
         entityId: unitId,
         newStats: newStats,
       });
+
+      callback(successResponse());
+    }),
+  );
+
+  socket.on(
+    "grant-back-spell",
+    withValidation(socket, grantSpellSchema, (socket, data, callback) => {
+      const { gameId, playerId, heroId, spellId } = data;
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Game not found"));
+      }
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
+        return callback(errorResponse("You are not the game master"));
+      }
+
+      const game = GameService.getGame(gameId)!;
+      const hero = game.getHeroes().find((h) => h.id === heroId);
+      if (!hero) {
+        return callback(errorResponse("Hero not found"));
+      }
+
+      const spell = hero.usedSpells.find((spell) => spell.id === spellId);
+      if (!spell) {
+        return callback(errorResponse("Spell not found in hero used spells"));
+      }
+
+      hero.unuseSpell(spell);
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game);
 
       callback(successResponse());
     }),

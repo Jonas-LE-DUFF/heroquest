@@ -9,7 +9,8 @@ import { GameAsJson } from "../ClassAsJson/Server/GameAsJson";
 import { StatsAsJson } from "../ClassAsJson/Unit/StatsAsJson";
 
 interface ClientToServerEvents {
-  //login actions
+  // ############ LOBBY ACTIONS ################
+  // GAME MASTER & HEROES ACTIONS
   "join-game": (
     data: {
       gameName: string;
@@ -18,13 +19,12 @@ interface ClientToServerEvents {
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
-
-  // ############ hero actions ################
-  // lobby actions
   "leave-game": (
     data: { gameId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
+
+  // HERO ONLY ACTIONS
   "choose-character": (
     data: {
       gameId: string;
@@ -38,19 +38,59 @@ interface ClientToServerEvents {
       gameState?: GameAsJson;
     }) => void,
   ) => void;
-
   "unselect-character": (
     data: { gameId: string; heroId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 
-  // in-game actions
-  "select-weapon": (
+  // GAME MASTER ONLY ACTIONS
+  "start-game": (
     data: { gameId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
+  // also placing element (spawn point)
+
+  // ############ IN-GAME ACTIONS ################
+
+  // GAME MASTER & HEROES ACTIONS
   attack: (
     data: { gameId: string; monsterId: string; playerId: string },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+  "move-unit-one-step": (
+    data: {
+      gameId: string;
+      unitId: string;
+      direction: Direction;
+      playerId: string;
+    },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+  "roll-dice": (
+    data: {
+      gameId: string;
+      playerId: string;
+      numberOfDice: number;
+      kind: "red" | "fight";
+    },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+  "provide-roll-vector": (
+    data: {
+      gameId: string;
+      vector: { x: number; y: number; z: number };
+      boost: number;
+    },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+  "end-turn": (
+    data: { gameId: string; playerId: string },
+    callback: (response: { success: boolean; error?: string }) => void,
+  ) => void;
+
+  // HERO ONLY ACTIONS
+  "select-weapon": (
+    data: { gameId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
   "cast-spell": (
@@ -83,23 +123,7 @@ interface ClientToServerEvents {
     playerId: string;
   }) => void;
 
-  // ############################ game master actions ############################
-  // lobby actions
-  "start-game": (
-    data: { gameId: string; playerId: string },
-    callback: (response: { success: boolean; error?: string }) => void,
-  ) => void;
-  // in-turn actions
-  "move-unit-one-step": (
-    data: {
-      gameId: string;
-      unitId: string;
-      direction: Direction;
-      playerId: string;
-    },
-    callback: (response: { success: boolean; error?: string }) => void,
-  ) => void;
-
+  // GAME MASTER ONLY ACTIONS
   "place-element": (
     data: {
       gameId: string;
@@ -109,7 +133,6 @@ interface ClientToServerEvents {
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
-
   "authorize-special-throw-dices": (
     data: {
       gameId: string;
@@ -120,7 +143,6 @@ interface ClientToServerEvents {
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
-
   "update-stats-unit": (
     data: {
       gameId: string;
@@ -130,28 +152,13 @@ interface ClientToServerEvents {
     },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
-
-  "roll-dice": (
+  "grant-back-spell": (
     data: {
       gameId: string;
       playerId: string;
-      numberOfDice: number;
-      kind: "red" | "fight";
+      heroId: string;
+      spellId: string;
     },
-    callback: (response: { success: boolean; error?: string }) => void,
-  ) => void;
-
-  "provide-roll-vector": (
-    data: {
-      gameId: string;
-      vector: { x: number; y: number; z: number };
-      boost: number;
-    },
-    callback: (response: { success: boolean; error?: string }) => void,
-  ) => void;
-
-  "end-turn": (
-    data: { gameId: string; playerId: string },
     callback: (response: { success: boolean; error?: string }) => void,
   ) => void;
 }

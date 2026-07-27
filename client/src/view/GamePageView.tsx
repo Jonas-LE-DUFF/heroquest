@@ -251,6 +251,33 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     }
   }
 
+  const selectedUnit = getSelectedUnit(selectedPosition, game.gameState.board);
+  const onSpellClick = (selectedSpell: string) => {
+    if (role === PlayerRole.GAME_MASTER) {
+      socket.emit(
+        "grant-back-spell",
+        {
+          gameId: game.id,
+          playerId: player?.id ?? "",
+          heroId: selectedUnit?.id ?? "",
+          spellId: selectedSpell,
+        },
+        (response: { success: boolean; error?: string }) => {
+          if (response.success) {
+            toast.success("Sort rendu avec succès !");
+          } else {
+            toast.error("Erreur lors du rendu du sort : " + response.error);
+          }
+        },
+      );
+    } else {
+      setInteraction((prev) => ({
+        ...prev,
+        targeting: { mode: "spell", spellId: selectedSpell },
+      }));
+    }
+  };
+
   return (
     <>
       <Dialog
@@ -267,14 +294,14 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
         }}
       >
         <SpellsPopUp
-          spellSchools={hero?.spellElements}
+          spellSchools={
+            hero?.spellElements ??
+            (selectedUnit && isHero(selectedUnit)
+              ? (selectedUnit?.spellElements ?? [])
+              : [])
+          }
           spellAlreadyUsed={hero?.usedSpells.map((spell) => spell.id) ?? []}
-          onSpellClick={(selectedSpell: string) => {
-            setInteraction((prev) => ({
-              ...prev,
-              targeting: { mode: "spell", spellId: selectedSpell },
-            }));
-          }}
+          onSpellClick={onSpellClick}
           closeSpellPage={() => setSpellPageVisible(false)}
         />
       </Dialog>
