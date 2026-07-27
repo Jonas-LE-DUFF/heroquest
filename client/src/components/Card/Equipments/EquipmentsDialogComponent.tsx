@@ -12,7 +12,11 @@ import {
   flattenEquipment,
   getAllEquipmentsAsCards,
 } from "../../../shared/equipments";
-import { getAllTreasuresItems, getItemAsCard } from "../cardUtils";
+import {
+  getAllArtifactsItems,
+  getAllTreasuresItems,
+  getItemAsCard,
+} from "../cardUtils";
 import { ItemAsJson } from "../../../POO/interfaces/ClassAsJson/Equipment/ItemAsJson";
 import { toast } from "react-toastify";
 import RotatableCard3D from "../../small_components/RotatableCard3D";
@@ -188,6 +192,7 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const [openAddEquipmentDialog, setOpenAddEquipmentDialog] = useState(false);
   const [openAddTreasureDialog, setOpenAddTreasureDialog] = useState(false);
+  const [openAddArtifactDialog, setOpenAddArtifactDialog] = useState(false);
 
   const openAddEquipmentMenu = () => {
     setOpenAddEquipmentDialog(true);
@@ -204,6 +209,15 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
 
   const closeAddTreasureMenu = () => {
     setOpenAddTreasureDialog(false);
+    saveEditions();
+  };
+
+  const openAddArtifactMenu = () => {
+    setOpenAddArtifactDialog(true);
+  };
+
+  const closeAddArtifactMenu = () => {
+    setOpenAddArtifactDialog(false);
     saveEditions();
   };
 
@@ -257,6 +271,12 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           >
             Ajouter un trésor
           </button>
+          <button
+            className="classic-button"
+            onClick={() => openAddArtifactMenu()}
+          >
+            Ajouter un artéfact
+          </button>
         </>
       )}
       <Dialog open={openAddEquipmentDialog} onClose={closeAddEquipmentMenu}>
@@ -275,6 +295,17 @@ const EquipmentsDialogComponent = (props: EquipmentsDialogComponentProps) => {
           <CardSelectionComponent
             selectedCards={equipmentAsCards}
             cards={getAllTreasuresItems()}
+            onCardsChange={(newSelectedCards) => {
+              setEquipmentAsCards(newSelectedCards);
+            }}
+          />
+        </div>
+      </Dialog>
+      <Dialog open={openAddArtifactDialog} onClose={closeAddArtifactMenu}>
+        <div className="equipments-dialog">
+          <CardSelectionComponent
+            selectedCards={equipmentAsCards}
+            cards={getAllArtifactsItems()}
             onCardsChange={(newSelectedCards) => {
               setEquipmentAsCards(newSelectedCards);
             }}

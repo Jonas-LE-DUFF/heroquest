@@ -50,7 +50,7 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
             selectedCards.some((card) => card.id === centerCard.id)
           }
         >
-          Ajouter equipement : {centerCard?.name || "Aucune carte sélectionnée"}
+          Ajouter
         </button>
         <button className="warning-button" onClick={handleClearCards}>
           Retirer tout les équipements
