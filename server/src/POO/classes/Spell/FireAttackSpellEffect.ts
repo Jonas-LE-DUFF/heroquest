@@ -19,7 +19,7 @@ class FireAttackSpellEffect extends SpellEffect {
     const dice = DiceServiceRegistry.get();
     const result = dice.rollDice({
       gameId: this.gameId,
-      wishedNumberOfDices: 1,
+      wishedNumberOfDices: this.damageAmount,
       playerId: target.controlledByPlayerId,
       kind: "red",
     });
