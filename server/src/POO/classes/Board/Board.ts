@@ -163,7 +163,7 @@ class Board {
   ): string | null {
     const position = this.getPositionOfUnit(unit.id);
     if (!position) {
-      logger.error("Unit not found on board:", unit.id);
+      logger.warn("Unit not found on board:", unit.id);
       return null;
     }
     const tile = this.getTileAtPosition(position);

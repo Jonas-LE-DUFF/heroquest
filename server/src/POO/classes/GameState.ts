@@ -50,11 +50,13 @@ class GameState {
    * clears tile at position from the board and removes the unit from the game state if found
    * @param position the position of the tile to clear
    */
-  clearTileAtPosition(position: Position): void {
+  clearTileAtPosition(position: Position): string | null {
     const unitId = this.board.clearTileAtPosition(position);
     if (unitId) {
-      this.Units = this.Units.filter((u) => u.id !== unitId);
+      this.removeUnit(this.getUnitById(unitId)!);
+      return unitId;
     }
+    return null;
   }
 
   getUnitById(id: string): Unit<HeroCategory | MonsterCategory> | undefined {

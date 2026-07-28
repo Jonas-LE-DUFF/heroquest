@@ -18,12 +18,15 @@ import {
   placeElementSchema,
   updateStatsUnitSchema,
   grantSpellSchema,
+  placeBackHeroSchema,
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { Stats } from "../POO/classes/Units/Stats";
 import { checkUnitDefeat } from "../shared/death/death";
 import { logger } from "../utils/logger";
+import { HeroFactory } from "../POO/classes/Factories/HeroFactory";
+import { Hero } from "../POO/classes/Units/Hero";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -65,6 +68,18 @@ export function registerMasterHandlers(socket: Socket) {
       }
 
       if (selectedType === TileType.FLOOR) {
+        const unit = game.gameState.getUnitById(
+          board.getUnitAt(position) || "",
+        );
+        if (unit) {
+          game.killUnit(unit);
+        }
+        const transientUnit = game.gameState.getUnitById(
+          board.getUnitAt(position) || "",
+        );
+        if (transientUnit) {
+          game.killUnit(transientUnit);
+        }
         game?.gameState.clearTileAtPosition(position);
 
         const io = ServerHeroQuest.getServerInstance().getIo();
@@ -214,6 +229,55 @@ export function registerMasterHandlers(socket: Socket) {
       callback(successResponse());
     }),
   );
+
+  socket.on(
+    "place-back-hero",
+    withValidation(socket, placeBackHeroSchema, (socket, data, callback) => {
+      const {
+        gameId,
+        playerId,
+        heroCreationWish,
+        ownerId,
+        position: posData,
+      } = data;
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Game not found"));
+      }
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
+        return callback(errorResponse("You are not the game master"));
+      }
+      const position = toPosition(posData);
+
+      const game = GameService.getGame(gameId)!;
+      const board = game.gameState.board;
+      if (
+        !position.isValid(board.BOARD_WIDTH, board.BOARD_HEIGHT) ||
+        board.getTileAtPosition(position)?.isOccupied()
+      ) {
+        return callback(errorResponse("Invalid position"));
+      }
+
+      const heroFactory = new HeroFactory();
+      let hero: Hero | null = null;
+      try {
+        hero = heroFactory.createHero(gameId, heroCreationWish);
+      } catch (error) {
+        logger.error("Error creating hero:", error);
+        return callback(
+          errorResponse("Error creating hero: " + (error as Error).message),
+        );
+      }
+      hero!.controlledByPlayerId = ownerId;
+
+      game.playOrder.push(hero!.category);
+      game.gameState.addUnit(hero!);
+      game.gameState.board.placeUnitAt(hero!, position);
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game);
+      return callback(successResponse());
+    }),
+  );
 }
 
 function handleDoorPlacement(
@@ -307,32 +371,19 @@ function handleTrapPlacement(
   return { success: true };
 }
 
-function checkPositionFree(position: Position, game: Game): boolean {
-  const tile = game.gameState.board.getTileAtPosition(position);
-  if (!tile) {
-    logger.error("Tile not found at position:", position);
-    return false;
-  }
-  if (tile.isOccupied()) {
-    logger.error("Tile is occupied at position:", position);
-    return false;
-  }
-  if (tile.type !== TileType.FLOOR) {
-    logger.error("Tile is not a floor at position:", position);
-    return false;
-  }
-  return true;
+function getPositionsForSpawnPoint(position: Position): Position[] {
+  return [
+    position,
+    position.afterMove(Direction.DOWN),
+    position.afterMove(Direction.RIGHT),
+    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
+  ];
 }
 function checkSpawnPointPlacement(position: Position, game: Game): boolean {
   //checking if the tile for the spawn point and for 3 other tiles around it are free
-  const tile1 = checkPositionFree(position, game);
-  const tile2 = checkPositionFree(position.afterMove(Direction.DOWN), game);
-  const tile3 = checkPositionFree(position.afterMove(Direction.RIGHT), game);
-  const tile4 = checkPositionFree(
-    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
-    game,
-  );
-  return tile1 && tile2 && tile3 && tile4;
+  return !getPositionsForSpawnPoint(position).some((pos) => {
+    return !Tile.isFree(pos, game);
+  });
 }
 function placeSpawnPoint(
   position: Position,
@@ -341,36 +392,15 @@ function placeSpawnPoint(
   if (!checkSpawnPointPlacement(position, game)) {
     return { success: false, error: "Spawn point placement is not valid" };
   }
-  const tile1 = game.gameState.board.getTileAtPosition(position);
-  const tile2 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN),
-  );
-  const tile3 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.RIGHT),
-  );
-  const tile4 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
-  );
-  tile1!.type = TileType.SPAWN_POINT;
-  tile2!.type = TileType.SPAWN_POINT;
-  tile3!.type = TileType.SPAWN_POINT;
-  tile4!.type = TileType.SPAWN_POINT;
+  getPositionsForSpawnPoint(position).forEach((pos) => {
+    const tile = game.gameState.board.getTileAtPosition(pos);
+    tile!.type = TileType.SPAWN_POINT;
+  });
   return { success: true };
 }
-
 function removeSpawnPoint(position: Position, game: Game): void {
-  const tile1 = game.gameState.board.getTileAtPosition(position);
-  const tile2 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN),
-  );
-  const tile3 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.RIGHT),
-  );
-  const tile4 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
-  );
-  tile1!.type = TileType.FLOOR;
-  tile2!.type = TileType.FLOOR;
-  tile3!.type = TileType.FLOOR;
-  tile4!.type = TileType.FLOOR;
+  getPositionsForSpawnPoint(position).forEach((pos) => {
+    const tile = game.gameState.board.getTileAtPosition(pos);
+    tile!.type = TileType.FLOOR;
+  });
 }

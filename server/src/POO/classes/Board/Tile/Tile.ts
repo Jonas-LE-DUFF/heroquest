@@ -3,6 +3,8 @@ import { TrapType } from "../../../enums/Board/TrapType";
 import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/TileAsJson";
 import { PitTrap, RockTrap, SpearTrap, Trap } from "./Trap";
 import { logger } from "../../../../utils/logger";
+import { Position } from "../../Position/Position";
+import { Game } from "../../Server/Game";
 
 class Tile {
   unitId: string | null;
@@ -22,8 +24,9 @@ class Tile {
    */
   eraseTile(): string | null {
     this.type = TileType.FLOOR;
-    const unitRemovedId = this.unitId;
+    const unitRemovedId = this.unitId || this.transientUnitId;
     this.unitId = null;
+    this.transientUnitId = null;
     return unitRemovedId;
   }
 
@@ -42,6 +45,23 @@ class Tile {
         this.type !== TileType.TRAP) ||
       this.unitId !== null
     );
+  }
+
+  static isFree(position: Position, game: Game): boolean {
+    const tile = game.gameState.board.getTileAtPosition(position);
+    if (!tile) {
+      logger.error("Tile not found at position:", position);
+      return false;
+    }
+    if (tile.isOccupied()) {
+      logger.error("Tile is occupied at position:", position);
+      return false;
+    }
+    if (tile.type !== TileType.FLOOR) {
+      logger.error("Tile is not a floor at position:", position);
+      return false;
+    }
+    return true;
   }
 
   placeTrap(gameId: string, trap: TrapType): void {

@@ -134,6 +134,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
       }
 
       setGame(data.game);
+      state.game = data.game; // Update the state with the new game data
       // Also increment board key on full game state updates
       // TODO : try to remove this setTimeout
       setBoardKey((k) => k + 1);
@@ -209,6 +210,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
     handleStatsUpdate,
     game,
     player?.name,
+    state,
   ]);
 
   const setSelectedUnit = (unit: HeroAsJson | MonsterAsJson | null) => {
@@ -335,6 +337,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
               });
             }}
             selectedWeapon={selectedWeapon}
+            selectedPosition={selectedPosition}
           />
         </Grid>
         <Grid className="LeftMenu">

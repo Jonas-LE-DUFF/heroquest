@@ -39,6 +39,8 @@ import { LocationState } from "../../POO/types/LocationType";
 import logoImage from "/assets/images/icons/heroquestlogo.png";
 import { findEquipmentName } from "../../shared/equipments";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { AddHero } from "../small_components/AddHero";
+import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
 
 interface NavbarProps {
   socket: Socket;
@@ -53,6 +55,7 @@ interface NavbarProps {
   setInteraction: Dispatch<SetStateAction<InteractionState>>;
   setSelectedWeapon: (weaponId: string | null) => void;
   selectedWeapon: string | null;
+  selectedPosition: PositionAsJson | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -68,6 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({
   setInteraction,
   setSelectedWeapon,
   selectedWeapon,
+  selectedPosition,
 }) => {
   const state = useLocation().state as LocationState;
   const navigate = useNavigate();
@@ -261,7 +265,10 @@ const Navbar: React.FC<NavbarProps> = ({
                         targeting: { mode: "attack" },
                       }));
                     }}
-                    disabled={!isHeroTurn && !(game.isMonsterTurn && role === PlayerRole.GAME_MASTER)}
+                    disabled={
+                      !isHeroTurn &&
+                      !(game.isMonsterTurn && role === PlayerRole.GAME_MASTER)
+                    }
                   >
                     <img
                       src={swordsIcon}
@@ -360,6 +367,10 @@ const Navbar: React.FC<NavbarProps> = ({
                   </p>
                 </div>
               )
+            )}
+            {/*bring back hero from the dead*/}
+            {role === PlayerRole.GAME_MASTER && (
+              <AddHero socket={socket} position={selectedPosition} />
             )}
           </>
         )}

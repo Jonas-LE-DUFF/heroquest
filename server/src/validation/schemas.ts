@@ -38,6 +38,15 @@ export const StatSchema = z.object({
   effects: z.array(z.string()),
 });
 
+export const HeroCreationWishSchema = z.object({
+  name: z.string().min(1, "Le nom du héros est requis"),
+  heroCategory: z.enum(HeroCategory),
+  gold: z.number().int().min(0, "L'or ne peut pas être négatif"),
+  spellElements: z.array(z.enum(SpellElement)),
+  equipments: z.array(z.string()),
+  modifiedHeroId: z.string().optional(),
+});
+
 // --- Lobby Events ---
 
 export const joinGameSchema = z.object({
@@ -49,14 +58,7 @@ export const joinGameSchema = z.object({
 export const chooseCharacterSchema = z.object({
   playerId: z.string().min(1, "L'ID du joueur est requis"),
   gameId: z.string().min(1, "L'ID de la partie est requis"),
-  heroCreationWish: z.object({
-    name: z.string().min(1, "Le nom du héros est requis"),
-    heroCategory: z.enum(HeroCategory),
-    gold: z.number().int().min(0, "L'or ne peut pas être négatif"),
-    spellElements: z.array(z.enum(SpellElement)),
-    equipments: z.array(z.string()),
-    modifiedHeroId: z.string().optional(),
-  }),
+  heroCreationWish: HeroCreationWishSchema,
 });
 
 export const unselectCharacterSchema = z.object({
@@ -171,6 +173,14 @@ export const grantSpellSchema = z.object({
   playerId: z.string().min(1, "L'ID du joueur est requis"),
   heroId: z.string().min(1, "L'ID du héros est requis"),
   spellId: z.string().min(1, "L'ID du sort est requis"),
+});
+
+export const placeBackHeroSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
+  heroCreationWish: HeroCreationWishSchema,
+  ownerId: z.string().min(1, "L'ID du propriétaire est requis"),
+  position: positionSchema,
 });
 
 // --- Movement Events ---

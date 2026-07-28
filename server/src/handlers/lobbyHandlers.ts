@@ -152,31 +152,13 @@ export function registerLobbyHandlers(socket: Socket) {
         return callback(errorResponse("Game not found."));
       }
 
-      const game = GameService.getGame(gameId);
+      const game = GameService.getGame(gameId) as Game;
 
-      const player = game!.getPlayer(playerId);
+      const player = game.getPlayer(playerId);
       if (!player) {
         logger.error("Player not found with id:", playerId);
         return callback(errorResponse("Player not found."));
       }
-
-      const heroFactory = new HeroFactory();
-      const hero: Hero | null = heroFactory.createHero(
-        gameId,
-        heroCreationWish,
-      );
-      if (!hero) {
-        return callback(errorResponse("Failed to create hero."));
-      }
-
-      hero.controlledByPlayerId = playerId;
-
-      // Validate stats
-      const isValid = hero.validateStats();
-      if (!isValid.success) {
-        return callback(errorResponse(isValid.error!));
-      }
-      hero.stats.movements = 2; // default movement value for heroes
 
       // Ensure game is in the lobby state
       if (game?.gameState.status !== "lobby") {
@@ -185,33 +167,10 @@ export function registerLobbyHandlers(socket: Socket) {
         );
       }
 
+      // remove the existing hero if the player is modifying an existing hero
       const modifiedHero = heroCreationWish.modifiedHeroId
         ? game.gameState.getHeroById(heroCreationWish.modifiedHeroId)
         : null;
-
-      // Check if the hero class is already selected
-      if (
-        game.gameState.isHeroCategoryTaken(hero.category) &&
-        modifiedHero?.category !== hero.category
-      ) {
-        return callback(
-          errorResponse("Class already selected by another player."),
-        );
-      }
-
-      // Validate spells
-      const spellsTaken = game.gameState.getSpellsTaken(hero.spells);
-      if (
-        spellsTaken.length > 0 &&
-        !spellsTaken.every((spell) => modifiedHero?.spells.includes(spell))
-      ) {
-        return callback(
-          errorResponse(
-            `The spells ${spellsTaken.map((spell) => spell.name).join(", ")} are already selected by another player.`,
-          ),
-        );
-      }
-
       if (heroCreationWish.modifiedHeroId) {
         const existingHero = game.gameState.getHeroById(
           heroCreationWish.modifiedHeroId,
@@ -225,11 +184,25 @@ export function registerLobbyHandlers(socket: Socket) {
         }
       }
 
-      game?.gameState.addUnit(hero);
+      const heroFactory = new HeroFactory();
+      let hero: Hero | null = null;
+      try {
+        hero = heroFactory.createHero(gameId, heroCreationWish);
+      } catch (error) {
+        if (modifiedHero) game?.gameState.addUnit(modifiedHero);
+        logger.error("Error creating hero:", error);
+        return callback(
+          errorResponse("Error creating hero: " + (error as Error).message),
+        );
+      }
+
+      hero!.controlledByPlayerId = playerId;
+
+      game?.gameState.addUnit(hero!);
 
       player.isReady = true;
-      const io = ServerHeroQuest.getServerInstance().getIo();
 
+      const io = ServerHeroQuest.getServerInstance().getIo();
       emitGameStateUpdate(io, gameId, game);
       callback(successResponse(game.toJson()));
     }),
