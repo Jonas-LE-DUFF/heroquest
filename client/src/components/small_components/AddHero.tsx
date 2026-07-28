@@ -8,6 +8,7 @@ import { useLocation } from "react-router-dom";
 import { LocationState } from "../../POO/types/LocationType";
 import { PositionAsJson } from "../../POO/interfaces/ClassAsJson/PositionAsJson";
 import { toast } from "react-toastify";
+import addHeroIcon from "/assets/images/icons/navbar/raise-skeleton.svg";
 
 interface AddHeroProps {
   socket: Socket;
@@ -53,7 +54,9 @@ export const AddHero: React.FC<AddHeroProps> = ({ socket, position }) => {
 
   return (
     <>
-      <button onClick={() => setOpenDialog(true)}>Add Hero</button>
+      <button onClick={() => setOpenDialog(true)} className="nav-element">
+        <img src={addHeroIcon} alt="Add Hero" className="img-nav icon-nav" />
+      </button>
       <Dialog
         open={openDialog}
         onClose={onCancelClick}
