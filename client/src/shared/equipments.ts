@@ -19,7 +19,7 @@ export interface Equipment {
   amountOfCopies: number;
   type: "Weapon" | "Armor" | "Potion" | "Tool";
   unique_usage: boolean;
-  cleric_bearable: boolean;
+  cleric_bearable: "true" | "false" | "only";
   modifiers: EquipmentModifiers;
   range: "melee" | "ranged" | "throwable" | "long_melee" | "none";
   equipments_preventing_use: string[];

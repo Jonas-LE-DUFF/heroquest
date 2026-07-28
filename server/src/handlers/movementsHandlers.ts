@@ -20,6 +20,7 @@ import {
   errorResponse,
   moveUnitOneStepSchema,
 } from "../validation";
+import { logger } from "../utils/logger";
 
 function registerMovementHandlers(socket: Socket) {
   socket.on(
@@ -50,7 +51,7 @@ function registerMovementHandlers(socket: Socket) {
       );
 
       if (!position) {
-        console.error(
+        logger.error(
           "position of unit couldn't be found in move-unit-one-step",
         );
         return callback(
@@ -62,11 +63,7 @@ function registerMovementHandlers(socket: Socket) {
 
       const movementMessage = moveUnit(board, position, direction, unitMoved);
       if (!movementMessage.success) {
-        return callback(
-          errorResponse(
-            `Impossible de déplacer l'unité : ${movementMessage.error}`,
-          ),
-        );
+        return callback(errorResponse(`${movementMessage.error}`));
       }
 
       handleDoorOpening(board, position, direction);

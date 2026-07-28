@@ -1,16 +1,24 @@
 import { randomUUID } from "crypto";
 import { ItemAsJson } from "../../../interfaces/ClassAsJson/Equipment/ItemAsJson";
 
+export type CarryOptions = "true" | "false" | "only";
+
 abstract class Item {
-  id: string;        // a unique identifier for this specific item instance, generated when the item is created
+  id: string; // a unique identifier for this specific item instance, generated when the item is created
   reference: string; // the name of the item in the json file
   abstract type: string;
   name: string;
   cost: number;
   image: string;
-  canClericCarry: boolean = true;
+  canClericCarry: CarryOptions = "true";
 
-  constructor(reference: string, name: string, cost: number, image: string, canClericCarry: boolean = true) {
+  constructor(
+    reference: string,
+    name: string,
+    cost: number,
+    image: string,
+    canClericCarry: CarryOptions = "true",
+  ) {
     this.id = randomUUID();
     this.reference = reference;
     this.name = name;

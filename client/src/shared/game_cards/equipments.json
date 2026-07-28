@@ -9,7 +9,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "damage": 3
       },
@@ -24,7 +24,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "damage": 3
       },
@@ -39,7 +39,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "damage": 4
       },
@@ -54,7 +54,7 @@
       "amountOfCopies": 1,
       "type": "Armor",
       "unique_usage": false,
-      "cleric_bearable": true,
+      "cleric_bearable": "true",
       "modifiers": {
         "defense": 1,
         "type": "chestPiece"
@@ -70,7 +70,7 @@
       "amountOfCopies": 1,
       "type": "Armor",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "defense": 1,
         "type": "chestPiece"
@@ -86,7 +86,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": true,
+      "cleric_bearable": "true",
       "modifiers": {
         "damage": 1
       },
@@ -101,7 +101,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "damage": 2
       },
@@ -116,7 +116,7 @@
       "amountOfCopies": 1,
       "type": "Armor",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "type": "helmet",
         "defense": 1
@@ -132,7 +132,7 @@
       "amountOfCopies": 1,
       "type": "Potion",
       "unique_usage": true,
-      "cleric_bearable": true,
+      "cleric_bearable": "true",
       "modifiers": {},
       "range": "none",
       "equipments_preventing_use": []
@@ -145,7 +145,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "damage": 3
       },
@@ -160,7 +160,7 @@
       "amountOfCopies": 1,
       "type": "Armor",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "type": "chestPiece",
         "defense": 2,
@@ -177,7 +177,7 @@
       "amountOfCopies": 1,
       "type": "Armor",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "type": "shield",
         "defense": 1
@@ -193,7 +193,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": false,
+      "cleric_bearable": "false",
       "modifiers": {
         "damage": 2
       },
@@ -208,7 +208,7 @@
       "amountOfCopies": 1,
       "type": "Potion",
       "unique_usage": true,
-      "cleric_bearable": true,
+      "cleric_bearable": "true",
       "modifiers": {
         "stat": "movement",
         "amount": 2,
@@ -225,7 +225,7 @@
       "amountOfCopies": 1,
       "type": "Weapon",
       "unique_usage": false,
-      "cleric_bearable": true,
+      "cleric_bearable": "true",
       "modifiers": {
         "damage": 1
       },
@@ -240,7 +240,7 @@
       "amountOfCopies": 1,
       "type": "Tool",
       "unique_usage": true,
-      "cleric_bearable": true,
+      "cleric_bearable": "true",
       "modifiers": {},
       "range": "none",
       "equipments_preventing_use": []

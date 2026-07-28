@@ -8,6 +8,7 @@ import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { GameService } from "./GameService";
 import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { DiceServiceRegistry } from "./DiceServiceRegistry";
+import { logger } from "../utils/logger";
 
 function fight(
   game: Game,
@@ -58,7 +59,7 @@ function dealDamage(
   }
   const defeated = checkUnitDefeat(gameId, target);
   if (defeated) {
-    console.log(
+    logger.info(
       `Unit ${target.id} has been defeated and removed from the game.`,
     );
     const io = ServerHeroQuest.getServerInstance().getIo();
@@ -66,7 +67,7 @@ function dealDamage(
     if (game) {
       emitGameStateUpdate(io, gameId, game);
     } else {
-      console.error("Game not found for gameId:", gameId);
+      logger.error("Game not found for gameId:", gameId);
     }
   }
 }

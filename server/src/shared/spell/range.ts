@@ -1,34 +1,35 @@
 import { Position } from "../../POO/classes/Position/Position";
+import { logger } from "../../utils/logger";
 
 export function isInRange(
   playerPosition: Position,
   targetPosition: Position,
-  range: string
+  range: string,
 ): boolean {
   switch (range) {
     case "visible":
       if (!isPositionVisible(playerPosition, targetPosition)) {
-        console.log("Position not visible");
+        logger.info("Position not visible");
         return false;
       }
       return true;
     case "any":
       return true;
     default:
-      console.error("Unknown range type:", range);
+      logger.error("Unknown range type:", range);
       return true;
   }
 }
 
 export function isPositionVisible(
   playerPosition: Position,
-  targetedPosition: Position
+  targetedPosition: Position,
 ): boolean {
-  console.log(
+  logger.info(
     "Checking visibility from",
     playerPosition,
     "to",
-    targetedPosition
+    targetedPosition,
   );
   //   const xDifference = playerPosition.x - targetedPosition.x;
   //   const yDifference = playerPosition.y - targetedPosition.y;

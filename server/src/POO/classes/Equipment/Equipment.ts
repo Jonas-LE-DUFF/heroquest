@@ -3,16 +3,37 @@ import {
   Potion,
   EquipmentPotionFactory,
   TreasurePotionFactory,
+  PotionFactory,
+  ArtifactPotionFactory,
 } from "./Items/Potions";
 import { Weapon } from "./Items/Weapon";
 
 import equipmentJson from "../../../shared/game_cards/equipments.json";
 import treasuresJson from "../../../shared/game_cards/treasure.json";
+import artifactsJson from "../../../shared/game_cards/artifacts.json";
 import { EquipmentAsJson } from "../../interfaces/ClassAsJson/Equipment/EquipmentAsJson";
 import { WeaponRange } from "../../enums/WeaponRange";
 import { ArmorType } from "../../enums/ArmorType";
 import { Tool } from "./Items/Tool";
-import { Item } from "./Items/Item";
+import { CarryOptions, Item } from "./Items/Item";
+
+interface ItemData {
+  id: string;
+  name: string;
+  image_path: string;
+  type: "Weapon" | "Armor" | "Potion" | "Tool" | "Artifact" | "Ring";
+  cleric_bearable?: CarryOptions;
+}
+
+interface EquipmentData extends ItemData {
+  cost: number;
+  modifiers: {
+    damage?: number;
+    defense?: number;
+    movementDebuff?: number;
+  };
+  range?: WeaponRange;
+}
 
 class Equipment {
   gold: number;
@@ -88,40 +109,58 @@ class Equipment {
   }
 
   private mergeEquipment(): Item[] {
-    return ([...this.weapons, ...this.armors, ...this.potions, ...this.tools] as Item[]).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    return (
+      [
+        ...this.weapons,
+        ...this.armors,
+        ...this.potions,
+        ...this.tools,
+      ] as Item[]
+    ).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   removeClericUncarryableEquipment() {
-    this.armors = this.armors.filter(
-      (armor) => armor.canClericCarry,
-    );
-    this.weapons = this.weapons.filter(
-      (weapon) => weapon.canClericCarry,
-    );
+    this.armors = this.armors.filter((armor) => armor.canClericCarry);
+    this.weapons = this.weapons.filter((weapon) => weapon.canClericCarry);
   }
 
   addEquipmentById(equipmentId: string) {
-    const equipmentData = equipmentJson.deck.find((e) => e.id === equipmentId);
+    let equipmentData: EquipmentData | undefined = equipmentJson.deck.find(
+      (e) => e.id === equipmentId,
+    ) as EquipmentData;
     const treasureData = treasuresJson.deck.find((t) => t.id === equipmentId);
+    let artifactData = artifactsJson.deck.find((a) => a.id === equipmentId);
+    let potionFactory: PotionFactory | undefined = new EquipmentPotionFactory();
+    if (!equipmentData && !artifactData && !treasureData) {
+      throw new Error(`Item with id ${equipmentId} not found.`);
+    }
     if (treasureData) {
       if (!treasureData.effect.potion_gained) {
         throw new Error(
           `Treasure with id ${equipmentId} does not grant a potion.`,
         );
       }
-      const factory = new TreasurePotionFactory();
-      const potion: Potion = factory.createPotionFromReference(
-        treasureData.effect.potion_gained,
-      );
-      this.addPotion(potion);
-      return potion;
+      potionFactory = new TreasurePotionFactory();
+      equipmentData = {
+        id: treasureData.id,
+        name: treasureData.name,
+        cost: 0,
+        image_path: treasureData.image_path,
+        type: "Potion",
+        modifiers: {},
+      };
     }
-    if (!equipmentData) {
-      throw new Error(`Equipment with id ${equipmentId} not found.`);
+    if (artifactData) {
+      equipmentData = { ...artifactData, cost: 0 } as EquipmentData;
+      potionFactory = new ArtifactPotionFactory();
     }
+    this.addEquipment(equipmentData, potionFactory);
+  }
 
+  private addEquipment(
+    equipmentData: EquipmentData,
+    potionFactory: PotionFactory,
+  ) {
     switch (equipmentData.type) {
       case "Weapon": {
         const weapon = new Weapon(
@@ -129,7 +168,7 @@ class Equipment {
           equipmentData.name,
           equipmentData.cost,
           equipmentData.image_path,
-          equipmentData.cleric_bearable ?? true,
+          equipmentData.cleric_bearable ?? "true",
           equipmentData.modifiers.damage || 0,
           (equipmentData.range || "melee") as WeaponRange,
         );
@@ -142,7 +181,7 @@ class Equipment {
           equipmentData.name,
           equipmentData.cost,
           equipmentData.image_path,
-          equipmentData.cleric_bearable ?? true,
+          equipmentData.cleric_bearable ?? "true",
           equipmentData.modifiers.defense || 0,
           equipmentData.modifiers.movementDebuff || 0,
           equipmentData.type as ArmorType,
@@ -151,8 +190,7 @@ class Equipment {
         return armor;
       }
       case "Potion": {
-        const factory = new EquipmentPotionFactory();
-        const potion: Potion = factory.createPotionFromReference(
+        const potion: Potion = potionFactory.createPotionFromReference(
           equipmentData.id,
         );
         this.addPotion(potion);

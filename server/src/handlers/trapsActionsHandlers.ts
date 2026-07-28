@@ -21,6 +21,7 @@ import { dealDamage } from "../services/CombatService";
 import { Position } from "../POO/classes/Position/Position";
 import { requireGameMaster } from "../guards/requireGameMaster";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
+import { logger } from "../utils/logger";
 
 function registerTrapsActionsHandlers(socket: Socket) {
   checkForTraps(socket);
@@ -33,7 +34,7 @@ function checkForTraps(socket: Socket) {
     "check-for-traps",
     withValidation(socket, heroActionSchema, (socket, data, callback) => {
       const { gameId, playerId, heroId } = data;
-      console.log(`Checking for traps in game ${gameId} for hero ${heroId}`);
+      logger.info(`Checking for traps in game ${gameId} for hero ${heroId}`);
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("La partie n'existe plus."));
       }
@@ -141,7 +142,7 @@ function disarmTrap(socket: Socket) {
         }
       }
 
-      console.log(
+      logger.info(
         `Hero ${hero.name} attempted to disarm trap at position (${position.x}, ${position.y}) with roll result: ${result}`,
       );
 
@@ -158,7 +159,7 @@ function revealTrap(socket: Socket) {
   socket.on(
     "reveal-trap",
     withValidation(socket, revealTrapSchema, (socket, data, callback) => {
-      console.log("Received reveal trap request with data:", data);
+      logger.info("Received reveal trap request with data:", data);
       const { gameId, playerId, position } = data;
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("La partie n'existe plus."));
@@ -190,7 +191,7 @@ function revealTrap(socket: Socket) {
       }
 
       tile.trap.isRevealed = true;
-      console.log(
+      logger.info(
         `Trap at position (${position.x}, ${position.y}) revealed by game master.`,
       );
 

@@ -3,6 +3,7 @@ import { Hero } from "../Units/Hero";
 import { TreasurePotionFactory } from "../Equipment/Items/Potions";
 import { CardAsJson } from "../../interfaces/ClassAsJson/CardAsJson";
 import treasures from "../../../shared/game_cards/treasure.json";
+import { logger } from "../../../utils/logger";
 
 export type TreasureCardEffectName =
   | "Deal damage and end turn"
@@ -53,7 +54,7 @@ class TreasureCard {
     gameId: string,
     cardDrawer: Hero,
   ): { success: boolean; error?: string } {
-    console.log("effectName", this.effectName);
+    logger.info("effectName", this.effectName);
     if (this.effectName === "Deal damage and end turn") {
       dealDamage(gameId, cardDrawer, this.effectInfo?.amountOfDamage ?? 0);
       return { success: true };

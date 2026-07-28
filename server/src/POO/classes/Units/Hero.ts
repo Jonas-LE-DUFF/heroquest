@@ -122,7 +122,7 @@ class Hero extends Unit<HeroCategory> {
   drinkPotion(gameId: string, potion: Potion): void {
     const response = potion.applyEffect(gameId, this);
     if (!response.success) {
-      throw new Error(`Failed to apply potion effect: ${response.error}`);
+      throw new Error(`${response.error}`);
     }
     this.equipment.removePotion(potion.id);
   }

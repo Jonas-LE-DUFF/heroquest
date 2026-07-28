@@ -1,0 +1,11 @@
+.add-hero-dialog {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    height: auto;
+    width: auto;
+    background-color: var(--vanilla-custard);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}

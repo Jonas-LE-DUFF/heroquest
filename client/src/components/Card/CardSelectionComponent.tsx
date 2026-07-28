@@ -32,7 +32,14 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
 
   return (
     <div style={{ width: "100%" }}>
-      <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+      <div
+        style={{
+          width: "100%",
+          textAlign: "center",
+          fontWeight: "bold",
+          marginBottom: "8px",
+        }}
+      >
         Équipements : {selectedCards.map((card) => card.name).join(", ")}
       </div>
       <CardCarouselComponent
@@ -41,7 +48,9 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
           setCenterCard(cards.find((card) => card.id === id))
         }
       />
-      <div>
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "8px" }}
+      >
         <button
           className="positive-button"
           onClick={handleAddCard}
@@ -50,7 +59,7 @@ export const CardSelectionComponent: React.FC<CardSelectionComponentProps> = ({
             selectedCards.some((card) => card.id === centerCard.id)
           }
         >
-          Ajouter equipement : {centerCard?.name || "Aucune carte sélectionnée"}
+          Ajouter
         </button>
         <button className="warning-button" onClick={handleClearCards}>
           Retirer tout les équipements

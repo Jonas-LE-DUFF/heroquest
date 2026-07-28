@@ -21,6 +21,7 @@ import {
 } from "../validation";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { requireGameMaster } from "../guards/requireGameMaster";
+import { logger } from "../utils/logger";
 
 export function registerGameActionsHandlers(socket: Socket) {
   ///** common player and game master actions **///
@@ -29,27 +30,24 @@ export function registerGameActionsHandlers(socket: Socket) {
   socket.on(
     "cast-spell",
     withValidation(socket, castSpellSchema, (socket, data, callback) => {
-      console.debug("casting spell", data);
+      logger.debug("casting spell", data);
       const { gameId, playerId, spellId, position } = data;
       const game = GameService.getGame(gameId);
 
       if (!requireGameExists(gameId)) {
-        return callback(errorResponse("game couldn't be found in cast-spell"));
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
       }
 
       if (!requirePlayerTurn(playerId, game!)) {
-        return callback(
-          errorResponse("it's not your turn to play in cast-spell"),
-        );
+        return callback(errorResponse("Ce n'est pas votre tour de jouer"));
       }
 
       try {
-        const castingPlayer = game!.getCurrentPlayerTurn();
-        console.debug("spell cast by player", castingPlayer?.name);
+        game!.getCurrentPlayerTurn();
       } catch (error) {
         return callback(
           errorResponse(
-            "player casting spell couldn't be found : " +
+            "Le joueur lançant le sort n'a pas été trouvé : " +
               (error as Error).message,
           ),
         );
@@ -62,7 +60,9 @@ export function registerGameActionsHandlers(socket: Socket) {
         .getUnitByPosition(toPosition(position));
 
       if (!spellToCast || !targetUnit) {
-        return callback(errorResponse("spell or target unit not found"));
+        return callback(
+          errorResponse("Le sort ou la cible n'ont pas été trouvés"),
+        );
       }
 
       heroCaster.castSpell(spellToCast, targetUnit);
@@ -81,34 +81,28 @@ export function registerGameActionsHandlers(socket: Socket) {
       const { gameId, heroId, weaponId } = data;
 
       if (!requireGameExists(gameId)) {
-        return callback(
-          errorResponse("game couldn't be found in select-weapon"),
-        );
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
       }
 
       const game = GameService.getGame(gameId);
 
       const hero = game!.gameState.getHeroById(heroId);
       if (!hero) {
-        return callback(
-          errorResponse("hero couldn't be found in select-weapon"),
-        );
+        return callback(errorResponse("Le héros n'a pas été trouvé"));
       }
 
       const player = game!.getPlayer(hero.controlledByPlayerId);
       if (!player) {
         return callback(
           errorResponse(
-            "player couldn't be found in select-weapon or doesn't control the hero",
+            "Le joueur n'a pas été trouvé ou ne contrôle pas le héros",
           ),
         );
       }
 
       if (!hero.equipment.hasEquipment(weaponId)) {
         return callback(
-          errorResponse(
-            "hero doesn't have the specified weapon in select-weapon",
-          ),
+          errorResponse("Le héros ne possède pas l'arme spécifiée"),
         );
       }
       hero.equipment.setSelectedWeaponIndex(
@@ -126,13 +120,13 @@ export function registerGameActionsHandlers(socket: Socket) {
       const { gameId, playerId, attackerId, targetId } = data;
 
       if (!requireGameExists(gameId)) {
-        return callback(errorResponse("game couldn't be found in attack"));
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
       }
 
       const game = GameService.getGame(gameId);
 
       if (!requirePlayerTurn(playerId, game!)) {
-        return callback(errorResponse("it's not your turn to play in attack"));
+        return callback(errorResponse("Ce n'est pas votre tour de jouer"));
       }
 
       const attacker = game!.getGameState().getUnitById(attackerId);
@@ -140,15 +134,13 @@ export function registerGameActionsHandlers(socket: Socket) {
 
       if (!attacker || !defender) {
         return callback(
-          errorResponse("attacker or defender not found in attack"),
+          errorResponse("L'attaqueur ou la cible n'a pas été trouvé"),
         );
       }
 
       if (attacker.controlledByPlayerId !== playerId) {
         return callback(
-          errorResponse(
-            "unit attacking does not belong to the player in attack",
-          ),
+          errorResponse("L'unité attaquante n'est pas contrôlée par le joueur"),
         );
       }
 
@@ -166,27 +158,19 @@ export function registerGameActionsHandlers(socket: Socket) {
       const game = GameService.getGame(gameId);
 
       if (!requireGameExists(gameId)) {
-        return callback(
-          errorResponse("game couldn't be found in drink-potion"),
-        );
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
       }
 
       if (!requirePlayerTurn(playerId, game!)) {
-        return callback(
-          errorResponse("it's not your turn to play in drink-potion"),
-        );
+        return callback(errorResponse("Ce n'est pas votre tour de jouer"));
       }
 
       const hero = game!.getCurrentHeroTurn();
       if (!hero) {
-        return callback(errorResponse("hero not found in drink-potion"));
+        return callback(errorResponse("Le héros n'a pas été trouvé"));
       }
       if (hero.id !== heroId) {
-        return callback(
-          errorResponse(
-            "the hero trying to drink the potion is not the current hero turn in drink-potion",
-          ),
-        );
+        return callback(errorResponse("Ce n'est pas au tour du héros"));
       }
 
       const potion = hero.equipment.potions.find(
@@ -195,7 +179,7 @@ export function registerGameActionsHandlers(socket: Socket) {
       if (!potion) {
         return callback(
           errorResponse(
-            "potion not found in drink-potion, maybe the hero doesn't have it?",
+            "La potion n'a pas été trouvée dans l'équipement du héros",
           ),
         );
       }
@@ -203,14 +187,12 @@ export function registerGameActionsHandlers(socket: Socket) {
         hero.drinkPotion(gameId, potion);
       } catch (error) {
         if (error instanceof Error) {
-          return callback(
-            errorResponse(
-              `the drinking encountered an error : ${error.message}`,
-            ),
-          );
+          return callback(errorResponse(`${error.message}`));
         }
         return callback(
-          errorResponse(`the drinking encountered an unexpected error`),
+          errorResponse(
+            `Erreur inattendue lors de la tentative de boire la potion`,
+          ),
         );
       }
 
@@ -227,24 +209,13 @@ export function registerGameActionsHandlers(socket: Socket) {
     withValidation(socket, heroActionSchema, (socket, data, callback) => {
       const { gameId, playerId, heroId } = data;
 
-      console.debug(
-        "checking for treasures for hero",
-        heroId,
-        "in game",
-        gameId,
-      );
-
       if (!requireGameExists(gameId)) {
-        return callback(
-          errorResponse("game couldn't be found in check-for-treasures"),
-        );
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
       }
       const game = GameService.getGame(gameId);
 
       if (!requirePlayerTurn(playerId, game!)) {
-        return callback(
-          errorResponse("it's not your turn to play in check-for-treasures"),
-        );
+        return callback(errorResponse("Ce n'est pas votre tour de jouer"));
       }
 
       // player may find a special treasure if the room he is in has one
@@ -262,7 +233,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         });
         return callback(
           successResponse({
-            message: `The request has been sent to the game master so that he may respond to it`,
+            message: `La demande a été envoyée au maître du jeu pour qu'il puisse y répondre`,
           }),
         );
       }
@@ -270,24 +241,31 @@ export function registerGameActionsHandlers(socket: Socket) {
       const hero = game!.getGameState().getHeroById(heroId);
       if (!hero) {
         return callback(
-          errorResponse("hero couldn't be found in check-for-treasures"),
+          errorResponse(
+            "Le héros n'a pas été trouvé lors de la recherche de trésors",
+          ),
         );
       }
 
-      const treasureCard =
-        TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
+      let treasureCard;
+      try {
+        treasureCard = TreasureCardDeckHandler.getDeck(gameId).pickCard(hero);
+      } catch (error) {
+        if (error instanceof Error) {
+          return callback(errorResponse(`${error.message}`));
+        } else {
+          return callback(
+            errorResponse(
+              "Erreur inattendue lors de la tentative de tirage d'une carte trésor",
+            ),
+          );
+        }
+      }
 
       io.to(gameId).emit("card-drawn", {
         hero: hero.toJson(),
         card: treasureCard.toJson(),
       });
-
-      console.debug(
-        "treasure card drawn for hero",
-        hero.name,
-        "card",
-        treasureCard.name,
-      );
 
       return callback(successResponse({ treasureCardId: treasureCard.id }));
     }),
@@ -298,24 +276,13 @@ export function registerGameActionsHandlers(socket: Socket) {
     withValidation(socket, heroActionSchema, (socket, data, callback) => {
       const { gameId, playerId, heroId } = data;
 
-      console.debug(
-        "checking for secret doors for hero",
-        heroId,
-        "in game",
-        gameId,
-      );
-
       if (!requireGameExists(gameId)) {
-        return callback(
-          errorResponse("game couldn't be found in check-secret-doors"),
-        );
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
       }
       const game = GameService.getGame(gameId);
 
       if (!requirePlayerTurn(playerId, game!)) {
-        return callback(
-          errorResponse("it's not your turn to play in check-secret-doors"),
-        );
+        return callback(errorResponse("Ce n'est pas votre tour de jouer"));
       }
 
       const io = ServerHeroQuest.getServerInstance().getIo();
@@ -329,7 +296,7 @@ export function registerGameActionsHandlers(socket: Socket) {
         });
         return callback(
           successResponse({
-            message: `request sent to game master`,
+            message: `La demande a été envoyée au maître du jeu pour qu'il puisse y répondre`,
           }),
         );
       }
@@ -337,7 +304,9 @@ export function registerGameActionsHandlers(socket: Socket) {
       const hero = game!.getGameState().getHeroById(heroId);
       if (!hero) {
         return callback(
-          errorResponse("hero couldn't be found in check-secret-doors"),
+          errorResponse(
+            "Le Héros n'a pas été trouvé lors de la vérification des portes secrètes",
+          ),
         );
       }
 

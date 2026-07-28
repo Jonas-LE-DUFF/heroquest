@@ -5,6 +5,7 @@ import { Monster } from "../Units/Monster";
 import monsterStats from "../../../shared/game_cards/monsters.json";
 import { Stats } from "../Units/Stats";
 import { MonsterType } from "../../enums/MonsterType";
+import { logger } from "../../../utils/logger";
 
 class MonsterFactory {
   gameId: string;
@@ -46,10 +47,10 @@ function getMonsterStats(monsterType: MonsterCategory): {
   monsterType: MonsterType;
 } {
   const monster = monsterStats.find((monster) => {
-    return monster.id === monsterType as number;
+    return monster.id === (monsterType as number);
   });
   if (!monster) {
-    console.error(
+    logger.error(
       `Monster stats not found for type: ${MonsterCategory[monsterType]}`,
     );
     throw new Error("Monster stats not found");

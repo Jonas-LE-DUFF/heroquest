@@ -5,6 +5,7 @@ import { SpecialAuthorizedHero } from "../POO/interfaces/SpecialAuthorizedHero";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { IDiceService, RollProps } from "../POO/interfaces/IClass/IDiceService";
 import { Socket } from "socket.io";
+import { logger } from "../utils/logger";
 
 type PendingRollEntry = {
   results: number[];
@@ -24,7 +25,7 @@ export class DiceService implements IDiceService {
     const { gameId, wishedNumberOfDices, playerId, kind } = rollProps;
     const socket = findSocketByPlayerId(gameId, playerId);
     if (!socket) {
-      console.error("No socket found for player:", playerId);
+      logger.error("No socket found for player:", playerId);
       return { success: false, error: "No socket found for player" };
     }
     let results: FightDiceFaces[] | number[] = [];
@@ -75,7 +76,7 @@ export class DiceService implements IDiceService {
     const pending = pendingRolls?.get(playerId);
 
     if (!pending) {
-      console.error("No pending roll for game", gameId);
+      logger.error("No pending roll for game", gameId);
       return { success: false, error: "No pending roll for game" };
     }
 
@@ -97,7 +98,7 @@ export class DiceService implements IDiceService {
       .getGame(gameId)!
       .getPlayer(playerId)!.role;
 
-    console.log("Emitting dice-update with results:", pending.results);
+    logger.info("Emitting dice-update with results:", pending.results);
     io.to(gameId).emit("dice-update", {
       listResults: pending.results,
       role: playerRole,
@@ -124,7 +125,7 @@ export function grantSpecialRollAuthorization(
   }
 
   if (!hero) {
-    console.error("hero couldn't be found for special dice authorization");
+    logger.error("hero couldn't be found for special dice authorization");
     return {
       success: false,
       error:
@@ -139,7 +140,7 @@ export function grantSpecialRollAuthorization(
   };
   game.gameState.setSpecialAuthorizedHero(specialAuthorizedHero);
 
-  console.log(
+  logger.info(
     "grantSpecialRollAuthorization: emitting special-authorization for hero:",
     {
       heroId: hero.id,

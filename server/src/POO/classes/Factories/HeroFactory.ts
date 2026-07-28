@@ -7,9 +7,24 @@ import { Equipment } from "../Equipment/Equipment";
 import { randomUUID } from "crypto";
 import { HeroCreationWish } from "../FromClient/HeroCreationWish";
 import { getSpellsForElements } from "../../../services/SpellService";
+import { GameService } from "../../../services/GameService";
 
 class HeroFactory {
   createHero(gameId: string, heroCreationWish: HeroCreationWish): Hero | null {
+    const game = GameService.getGame(gameId);
+    const spells = getSpellsForElements(gameId, heroCreationWish.spellElements);
+    const spellsTaken = game?.gameState.getSpellsTaken(spells) || [];
+    if (spellsTaken.length > 0) {
+      throw new Error(
+        `The spells ${spellsTaken.map((spell) => spell.name).join(", ")} are already selected by another player.`,
+      );
+    }
+    if (game?.gameState.isHeroCategoryTaken(heroCreationWish.heroCategory)) {
+      throw new Error(
+        `Hero of category ${heroCreationWish.heroCategory} already exists in the game.`,
+      );
+    }
+
     const id: string = randomUUID();
 
     const heroCategory: HeroCategory = heroCreationWish.heroCategory;
@@ -17,18 +32,16 @@ class HeroFactory {
     const stats: Stats = getHeroBaseStats(heroCategory);
 
     const equipment: Equipment = getHeroStartingEquipment(heroCategory);
-    
+
     for (const equipmentId of heroCreationWish.equipments) {
       if (!equipment.hasEquipment(equipmentId)) {
         equipment.addEquipmentById(equipmentId);
       }
     }
 
-    if (heroCategory === HeroCategory.Cleric){
+    if (heroCategory === HeroCategory.Cleric) {
       equipment.removeClericUncarryableEquipment();
     }
-
-    const spells = getSpellsForElements(gameId, heroCreationWish.spellElements);
 
     const hero = new Hero(
       id,
@@ -38,12 +51,18 @@ class HeroFactory {
       equipment,
     );
     hero.spells = spells;
+
+    const validateStatsResult = hero.validateStats();
+    if (!validateStatsResult.success) {
+      throw new Error(`${validateStatsResult.error}`);
+    }
+
     return hero;
   }
 }
 
 function getHeroBaseStats(heroType: HeroCategory): Stats {
-  const heroData = heroStats.find((hero) => hero.id === heroType as number);
+  const heroData = heroStats.find((hero) => hero.id === (heroType as number));
   if (!heroData) {
     throw new Error(`Hero data not found for heroType: ${heroType}`);
   }
@@ -57,7 +76,7 @@ function getHeroBaseStats(heroType: HeroCategory): Stats {
 }
 
 function getHeroStartingEquipment(heroType: HeroCategory): Equipment {
-  const heroData = heroStats.find((hero) => hero.id === heroType as number);
+  const heroData = heroStats.find((hero) => hero.id === (heroType as number));
   if (!heroData) {
     throw new Error(`Hero data not found for heroType: ${heroType}`);
   }

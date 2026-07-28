@@ -1,6 +1,6 @@
 import { ArmorType } from "../../../enums/ArmorType";
 import { ArmorAsJson } from "../../../interfaces/ClassAsJson/Equipment/ArmorAsJson";
-import { Item } from "./Item";
+import { CarryOptions, Item } from "./Item";
 
 class Armor extends Item {
   defenseValue: number;
@@ -13,7 +13,7 @@ class Armor extends Item {
     name: string,
     cost: number,
     image: string,
-    canClericCarry: boolean = true,
+    canClericCarry: CarryOptions = "true",
     defenseValue: number,
     movementDebuff: number,
     armorType: ArmorType,

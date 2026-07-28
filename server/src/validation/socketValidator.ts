@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Socket } from "socket.io";
 import { Position } from "../POO/classes/Position/Position";
 import { PositionData } from "./schemas";
+import { logger } from "../utils/logger";
 
 // Type générique pour un schéma Zod (remplace ZodSchema déprécié)
 type ZodType<T = unknown> = z.ZodType<T>;
@@ -14,30 +15,34 @@ export interface SocketResponse<T = unknown> {
 }
 
 // Type pour un callback Socket.IO optionnel
-type SocketCallback<T = unknown> = ((response: SocketResponse<T>) => void) | undefined;
+type SocketCallback<T = unknown> =
+  | ((response: SocketResponse<T>) => void)
+  | undefined;
 
 // Type pour un handler validé
 type ValidatedHandler<TSchema extends ZodType, TResponse = unknown> = (
   socket: Socket,
   data: z.infer<TSchema>,
-  callback: (response: SocketResponse<TResponse>) => void
+  callback: (response: SocketResponse<TResponse>) => void,
 ) => void | Promise<void>;
 
 /**
  * Formate les erreurs Zod en message lisible
  */
 function formatZodError(error: z.ZodError): string {
-  return error.issues.map(issue => `${issue.path.join(".")}: ${issue.message}`).join(", ");
+  return error.issues
+    .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+    .join(", ");
 }
 
 /**
  * Crée un handler Socket.IO avec validation automatique des données
- * 
+ *
  * @param socket - Le socket courant (capturé dans la closure)
  * @param schema - Le schéma Zod pour valider les données entrantes
  * @param handler - Le handler qui sera appelé avec les données validées
  * @returns Une fonction qui prend un socket et retourne un handler Socket.IO validé
- * 
+ *
  * @example
  * ```typescript
  * socket.on("join-game", withValidation(socket, joinGameSchema, async (socket, data, callback) => {
@@ -51,7 +56,7 @@ function formatZodError(error: z.ZodError): string {
 export function withValidation<TSchema extends ZodType, TResponse = unknown>(
   socket: Socket,
   schema: TSchema,
-  handler: ValidatedHandler<TSchema, TResponse>
+  handler: ValidatedHandler<TSchema, TResponse>,
 ) {
   return async (rawData: unknown, callback?: SocketCallback<TResponse>) => {
     // Wrapper pour gérer les callbacks optionnels
@@ -61,7 +66,9 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
       } else {
         // Log si pas de callback (pour debugging)
         if (!response.success) {
-          console.warn(`[Socket ${socket.id}] Pas de callback fourni. Erreur non envoyée: ${response.error}`);
+          logger.warn(
+            `[Socket ${socket.id}] Pas de callback fourni. Erreur non envoyée: ${response.error}`,
+          );
         }
       }
     };
@@ -72,17 +79,22 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
 
       if (!result.success) {
         const errorMessages = formatZodError(result.error);
-        console.warn(`[Socket ${socket.id}] Validation échouée: ${errorMessages}`);
-        safeCallback({ success: false, error: `Données invalides: ${errorMessages}` });
+        logger.warn(
+          `[Socket ${socket.id}] Validation échouée: ${errorMessages}`,
+        );
+        safeCallback({
+          success: false,
+          error: `Données invalides: ${errorMessages}`,
+        });
         return;
       }
 
       // Appel du handler avec les données validées
       await handler(socket, result.data, safeCallback);
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erreur interne du serveur";
-      console.error(`[Socket ${socket.id}] Erreur dans le handler:`, error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erreur interne du serveur";
+      logger.error(`[Socket ${socket.id}] Erreur dans le handler:`, error);
       safeCallback({ success: false, error: errorMessage });
     }
   };
@@ -90,14 +102,17 @@ export function withValidation<TSchema extends ZodType, TResponse = unknown>(
 
 /**
  * Crée un handler Socket.IO sans validation (pour les événements sans données)
- * 
+ *
  * @param socket - Le socket courant (capturé dans la closure)
  * @param handler - Le handler qui sera appelé
  * @returns Un handler Socket.IO avec gestion d'erreurs et callback optionnel
  */
 export function withErrorHandling<TResponse = unknown>(
   socket: Socket,
-  handler: (socket: Socket, callback: (response: SocketResponse<TResponse>) => void) => void | Promise<void>
+  handler: (
+    socket: Socket,
+    callback: (response: SocketResponse<TResponse>) => void,
+  ) => void | Promise<void>,
 ) {
   return async (callback?: SocketCallback<TResponse>) => {
     const safeCallback = (response: SocketResponse<TResponse>) => {
@@ -109,8 +124,9 @@ export function withErrorHandling<TResponse = unknown>(
     try {
       await handler(socket, safeCallback);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erreur interne du serveur";
-      console.error(`[Socket ${socket.id}] Erreur dans le handler:`, error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Erreur interne du serveur";
+      logger.error(`[Socket ${socket.id}] Erreur dans le handler:`, error);
       safeCallback({ success: false, error: errorMessage });
     }
   };

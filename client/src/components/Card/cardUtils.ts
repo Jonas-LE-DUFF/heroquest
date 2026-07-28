@@ -1,5 +1,6 @@
 import equipments from "../../shared/game_cards/equipments.json";
 import treasures from "../../shared/game_cards/treasure.json";
+import artifacts from "../../shared/game_cards/artifacts.json";
 import spells from "../../shared/game_cards/spells.json";
 import spellELements from "../../shared/game_cards/spell_elements_back.json";
 import { getElementName } from "../../shared/utils";
@@ -12,7 +13,7 @@ import {
 type JsonFile = {
   deck: Card[];
   backImg?: string;
-}
+};
 
 type Card = {
   id: string;
@@ -46,7 +47,9 @@ export function getSpellEllementAsCard(element: SpellElement): CardAsJson {
 }
 
 export function getSpellAsCard(spellId: string): CardAsJson {
-  const spell : SpellCard | undefined = spells.deck.find((s) => s.id === spellId);
+  const spell: SpellCard | undefined = spells.deck.find(
+    (s) => s.id === spellId,
+  );
   if (!spell) {
     console.error(`Spell with id ${spellId} not found`);
     throw new Error(`Spell with id ${spellId} not found`);
@@ -63,19 +66,25 @@ export function getSpellAsCard(spellId: string): CardAsJson {
 export function getItemAsCard(id: string): CardAsJson {
   const item = equipments.deck.find((eq) => eq.id === id);
   const treasure = treasures.deck.find((t) => t.id === id);
-  const cardItem = item || treasure;
+  const artifact = artifacts.deck.find((a) => a.id === id);
+  const cardItem = item || treasure || artifact;
   if (!cardItem) {
     console.error(`Item with id ${id} not found`);
     throw new Error(`Item with id ${id} not found`);
   }
-  
-  const card =  {
+
+  const card = {
     id: cardItem.id,
     name: cardItem.name,
     imgPath:
-      getCardImagePath(cardItem.id, item ? "equipment" : "treasure") || "",
+      getCardImagePath(
+        cardItem.id,
+        item ? "equipment" : treasure ? "treasure" : "artifact",
+      ) || "",
     backImgPath:
-      getBackImagePath(item ? "equipment" : "treasure") || "",
+      getBackImagePath(
+        item ? "equipment" : treasure ? "treasure" : "artifact",
+      ) || "",
     type: CardType.Item,
   };
   return card;
@@ -126,6 +135,9 @@ function getBackImagePath(
     case "treasure":
       jsonFile = treasures;
       break;
+    case "artifact":
+      jsonFile = artifacts;
+      break;
     case "spell_element":
       jsonFile = spellELements;
       if (!elementName) {
@@ -138,7 +150,7 @@ function getBackImagePath(
       return undefined;
   }
 
-  const backImgPath : string = (jsonFile as JsonFile).backImg || "";
+  const backImgPath: string = (jsonFile as JsonFile).backImg || "";
   return backImgPath;
 }
 
@@ -155,6 +167,9 @@ function getCardImagePath(id: string, cardType: string): string | undefined {
     case "treasure":
       jsonFile = treasures;
       break;
+    case "artifact":
+      jsonFile = artifacts;
+      break;
     default:
       return undefined;
   }
@@ -164,27 +179,26 @@ function getCardImagePath(id: string, cardType: string): string | undefined {
   return image_path;
 }
 
-function getCardName(id: string, cardType: string): string | undefined {
-  let jsonFile;
-  switch (cardType) {
-    case "equipment":
-      jsonFile = equipments;
-      break;
-    default:
-      return undefined;
-  }
-  const eq = (jsonFile.deck as Card[]).find((e) => e.id === id);
-  return eq ? eq.name : undefined;
+export function getAllTreasuresItems(): CardAsJson[] {
+  return treasures.deck
+    .filter((treasure) => !!treasure.effect.potion_gained)
+    .map((treasure) => ({
+      id: treasure.id,
+      name: treasure.name,
+      type: CardType.Item,
+      imgPath: treasure.image_path || "",
+      backImgPath: treasures.backImg || "",
+    }));
 }
 
-export function getAllTreasuresItems(): CardAsJson[] {
-  return treasures.deck.filter((treasure) => !!treasure.effect.potion_gained).map((treasure) => ({
-    id: treasure.id,
-    name: treasure.name,
+export function getAllArtifactsItems(): CardAsJson[] {
+  return artifacts.deck.map((artifact) => ({
+    id: artifact.id,
+    name: artifact.name,
     type: CardType.Item,
-    imgPath: treasure.image_path || "",
-    backImgPath: treasures.backImg || "",
+    imgPath: artifact.image_path || "",
+    backImgPath: artifacts.backImg || "",
   }));
 }
 
-export { getSpellListForSchool, getCardImagePath, getCardName };
+export { getSpellListForSchool, getCardImagePath };

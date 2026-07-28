@@ -17,11 +17,16 @@ import {
   toPosition,
   placeElementSchema,
   updateStatsUnitSchema,
+  grantSpellSchema,
+  placeBackHeroSchema,
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { Stats } from "../POO/classes/Units/Stats";
 import { checkUnitDefeat } from "../shared/death/death";
+import { logger } from "../utils/logger";
+import { HeroFactory } from "../POO/classes/Factories/HeroFactory";
+import { Hero } from "../POO/classes/Units/Hero";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -44,12 +49,12 @@ export function registerMasterHandlers(socket: Socket) {
         return callback(errorResponse("Selected type is required"));
       }
 
-      console.debug("placing element", data);
+      logger.debug("placing element", data);
       const game = GameService.getGame(gameId);
 
       const board = game?.gameState.board;
       if (!board) {
-        console.error("Board not found in game state");
+        logger.error("Board not found in game state");
         return callback(errorResponse("Board not found"));
       }
 
@@ -63,6 +68,18 @@ export function registerMasterHandlers(socket: Socket) {
       }
 
       if (selectedType === TileType.FLOOR) {
+        const unit = game.gameState.getUnitById(
+          board.getUnitAt(position) || "",
+        );
+        if (unit) {
+          game.killUnit(unit);
+        }
+        const transientUnit = game.gameState.getUnitById(
+          board.getUnitAt(position) || "",
+        );
+        if (transientUnit) {
+          game.killUnit(transientUnit);
+        }
         game?.gameState.clearTileAtPosition(position);
 
         const io = ServerHeroQuest.getServerInstance().getIo();
@@ -72,12 +89,12 @@ export function registerMasterHandlers(socket: Socket) {
 
       const tile: Tile | undefined = board?.getTileAtPosition(position);
       if (tile === undefined) {
-        console.error("tile couldn't be found on the board");
+        logger.error("tile couldn't be found on the board");
         return callback(errorResponse("Tile not found on board"));
       }
 
       if (tile.isOccupied()) {
-        console.error("tile is occupied");
+        logger.error("tile is occupied");
         return callback(errorResponse("Tile is occupied"));
       }
 
@@ -118,7 +135,7 @@ export function registerMasterHandlers(socket: Socket) {
       }
 
       if (selectedType in TrapType) {
-        console.debug("placing trap", selectedType, "at position", position);
+        logger.debug("placing trap", selectedType, "at position", position);
         const trapType = selectedType as TrapType;
         const result = handleTrapPlacement(gameId, position, trapType);
         return callback(
@@ -149,7 +166,7 @@ export function registerMasterHandlers(socket: Socket) {
 
       const unit = game?.gameState.getUnitById(unitId);
       if (!unit) {
-        console.error("Unit not found with id:", unitId);
+        logger.error("Unit not found with id:", unitId);
         return callback(errorResponse("Unit not found"));
       }
 
@@ -179,6 +196,86 @@ export function registerMasterHandlers(socket: Socket) {
       });
 
       callback(successResponse());
+    }),
+  );
+
+  socket.on(
+    "grant-back-spell",
+    withValidation(socket, grantSpellSchema, (socket, data, callback) => {
+      const { gameId, playerId, heroId, spellId } = data;
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Game not found"));
+      }
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
+        return callback(errorResponse("You are not the game master"));
+      }
+
+      const game = GameService.getGame(gameId)!;
+      const hero = game.getHeroes().find((h) => h.id === heroId);
+      if (!hero) {
+        return callback(errorResponse("Hero not found"));
+      }
+
+      const spell = hero.usedSpells.find((spell) => spell.id === spellId);
+      if (!spell) {
+        return callback(errorResponse("Spell not found in hero used spells"));
+      }
+
+      hero.unuseSpell(spell);
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game);
+
+      callback(successResponse());
+    }),
+  );
+
+  socket.on(
+    "place-back-hero",
+    withValidation(socket, placeBackHeroSchema, (socket, data, callback) => {
+      const {
+        gameId,
+        playerId,
+        heroCreationWish,
+        ownerId,
+        position: posData,
+      } = data;
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Game not found"));
+      }
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
+        return callback(errorResponse("You are not the game master"));
+      }
+      const position = toPosition(posData);
+
+      const game = GameService.getGame(gameId)!;
+      const board = game.gameState.board;
+      if (
+        !position.isValid(board.BOARD_WIDTH, board.BOARD_HEIGHT) ||
+        board.getTileAtPosition(position)?.isOccupied()
+      ) {
+        return callback(errorResponse("Invalid position"));
+      }
+
+      const heroFactory = new HeroFactory();
+      let hero: Hero | null = null;
+      try {
+        hero = heroFactory.createHero(gameId, heroCreationWish);
+      } catch (error) {
+        logger.error("Error creating hero:", error);
+        return callback(
+          errorResponse("Error creating hero: " + (error as Error).message),
+        );
+      }
+      hero!.controlledByPlayerId = ownerId;
+
+      game.playOrder.push(hero!.category);
+      game.gameState.addUnit(hero!);
+      game.gameState.board.placeUnitAt(hero!, position);
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game);
+      return callback(successResponse());
     }),
   );
 }
@@ -215,12 +312,12 @@ function handleTilePlacement(
   position: Position,
   TileType: TileType,
 ): { success: boolean; error?: string } {
-  console.debug("placing tile", TileType, "at position", position);
+  logger.debug("placing tile", TileType, "at position", position);
   const game = GameService.getGame(gameId);
   const io = ServerHeroQuest.getServerInstance().getIo();
   const tile = game?.gameState?.board?.getTileAtPosition(position);
   if (!tile) {
-    console.error("tile couldn't be found on the board");
+    logger.error("tile couldn't be found on the board");
     return {
       success: false,
       error: "Tile not found on board",
@@ -264,7 +361,7 @@ function handleTrapPlacement(
       error: (error as Error).message || "Failed to place trap",
     };
   }
-  console.debug(
+  logger.debug(
     "placed trap",
     trapType,
     "resulting game state:",
@@ -274,32 +371,19 @@ function handleTrapPlacement(
   return { success: true };
 }
 
-function checkPositionFree(position: Position, game: Game): boolean {
-  const tile = game.gameState.board.getTileAtPosition(position);
-  if (!tile) {
-    console.error("Tile not found at position:", position);
-    return false;
-  }
-  if (tile.isOccupied()) {
-    console.error("Tile is occupied at position:", position);
-    return false;
-  }
-  if (tile.type !== TileType.FLOOR) {
-    console.error("Tile is not a floor at position:", position);
-    return false;
-  }
-  return true;
+function getPositionsForSpawnPoint(position: Position): Position[] {
+  return [
+    position,
+    position.afterMove(Direction.DOWN),
+    position.afterMove(Direction.RIGHT),
+    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
+  ];
 }
 function checkSpawnPointPlacement(position: Position, game: Game): boolean {
   //checking if the tile for the spawn point and for 3 other tiles around it are free
-  const tile1 = checkPositionFree(position, game);
-  const tile2 = checkPositionFree(position.afterMove(Direction.DOWN), game);
-  const tile3 = checkPositionFree(position.afterMove(Direction.RIGHT), game);
-  const tile4 = checkPositionFree(
-    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
-    game,
-  );
-  return tile1 && tile2 && tile3 && tile4;
+  return !getPositionsForSpawnPoint(position).some((pos) => {
+    return !Tile.isFree(pos, game);
+  });
 }
 function placeSpawnPoint(
   position: Position,
@@ -308,36 +392,15 @@ function placeSpawnPoint(
   if (!checkSpawnPointPlacement(position, game)) {
     return { success: false, error: "Spawn point placement is not valid" };
   }
-  const tile1 = game.gameState.board.getTileAtPosition(position);
-  const tile2 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN),
-  );
-  const tile3 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.RIGHT),
-  );
-  const tile4 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
-  );
-  tile1!.type = TileType.SPAWN_POINT;
-  tile2!.type = TileType.SPAWN_POINT;
-  tile3!.type = TileType.SPAWN_POINT;
-  tile4!.type = TileType.SPAWN_POINT;
+  getPositionsForSpawnPoint(position).forEach((pos) => {
+    const tile = game.gameState.board.getTileAtPosition(pos);
+    tile!.type = TileType.SPAWN_POINT;
+  });
   return { success: true };
 }
-
 function removeSpawnPoint(position: Position, game: Game): void {
-  const tile1 = game.gameState.board.getTileAtPosition(position);
-  const tile2 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN),
-  );
-  const tile3 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.RIGHT),
-  );
-  const tile4 = game.gameState.board.getTileAtPosition(
-    position.afterMove(Direction.DOWN).afterMove(Direction.RIGHT),
-  );
-  tile1!.type = TileType.FLOOR;
-  tile2!.type = TileType.FLOOR;
-  tile3!.type = TileType.FLOOR;
-  tile4!.type = TileType.FLOOR;
+  getPositionsForSpawnPoint(position).forEach((pos) => {
+    const tile = game.gameState.board.getTileAtPosition(pos);
+    tile!.type = TileType.FLOOR;
+  });
 }
