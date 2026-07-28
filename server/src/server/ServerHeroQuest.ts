@@ -8,6 +8,7 @@ import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEve
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
 import { registerSocketHandlers } from "../socket/SocketRouter";
 import { SessionStore } from "./SessionStore";
+import { logger } from "../utils/logger";
 
 class ServerHeroQuest {
   private static serverInstance: ServerHeroQuest | undefined = undefined;
@@ -32,7 +33,7 @@ class ServerHeroQuest {
     this.app.use(express.static(path.join(__dirname, "../../client/build")));
     const PORT = process.env.PORT || 5000;
     this.httpServer.listen(PORT, () => {
-      console.log(`Serveur démarré sur le port ${PORT}`);
+      logger.info(`Serveur démarré sur le port ${PORT}`);
     });
     registerSocketHandlers(this);
   }
@@ -80,7 +81,7 @@ class ServerHeroQuest {
         modifiedGames.push(game);
       }
       if (game.getAmountOfPlayers() === 0) {
-        console.log(`Removing game ${game.name} as it has no more players.`);
+        logger.info(`Removing game ${game.name} as it has no more players.`);
         this.removeGame(game.id);
       }
     });

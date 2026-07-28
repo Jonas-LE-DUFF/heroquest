@@ -6,6 +6,7 @@ import { HeroCategory } from "../POO/enums/Categories/HeroCategory";
 import { MonsterCategory } from "../POO/enums/Categories/MonsterCategory";
 import { Direction } from "../POO/enums/Direction";
 import { TrapType } from "../POO/enums/Board/TrapType";
+import { logger } from "../utils/logger";
 
 const canMove = (
   board: Board,
@@ -18,13 +19,13 @@ const canMove = (
   const to = from.afterMove(direction);
 
   if (!to.isValid(board.BOARD_WIDTH, board.BOARD_HEIGHT)) {
-    console.error("move out of bounds");
+    logger.error("move out of bounds");
     return { success: false, error: "move out of bounds" };
   }
 
   const toTile = board.getTileAtPosition(to);
   if (!toTile) {
-    console.error("destination tile not found");
+    logger.error("destination tile not found");
     return { success: false, error: "destination tile not found" };
   }
 
@@ -33,19 +34,19 @@ const canMove = (
     !board.hasDoorAt(from, direction) &&
     !canPhaseThroughWalls // A monster can't open doors
   ) {
-    console.error("wall in the way");
+    logger.error("wall in the way");
     return { success: false, error: "wall in the way" };
   }
 
   if (toTile.isImpassable() && !canPhaseThroughWalls) {
-    console.error("Tile is impassable");
+    logger.error("Tile is impassable");
     return { success: false, error: "Tile is impassable" };
   }
 
   const unit = board.getUnitAt(to);
 
   if (unit && !canPhaseThroughMonsters) {
-    console.error("tile is occupied");
+    logger.error("tile is occupied");
     return { success: false, error: "tile is occupied" };
   }
   return { success: true };
@@ -106,7 +107,7 @@ export function getUnitToMove(
     try {
       unitMoved = game?.getCurrentHeroTurn();
     } catch {
-      console.error("couldn't get current hero turn");
+      logger.error("couldn't get current hero turn");
       return null;
     }
   }

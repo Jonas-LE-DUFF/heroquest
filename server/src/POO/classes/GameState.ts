@@ -10,6 +10,7 @@ import { Hero } from "./Units/Hero";
 import { Monster } from "./Units/Monster";
 import { Stats } from "./Units/Stats";
 import { Unit } from "./Units/Unit";
+import { logger } from "../../utils/logger";
 
 class GameState {
   Units: Unit<HeroCategory | MonsterCategory>[];
@@ -87,7 +88,7 @@ class GameState {
       | Hero
       | undefined;
     if (!hero) {
-      console.error("Hero not found for category:", category);
+      logger.error("Hero not found for category:", category);
       throw new Error("Hero not found");
     }
     return hero;
@@ -171,7 +172,7 @@ class GameState {
     if (unit?.stats) {
       unit.stats = statsClass;
     } else {
-      console.error("Unit to update not found or mismatch in ID/category");
+      logger.error("Unit to update not found or mismatch in ID/category");
       throw new Error("Unit to update not found or mismatch in ID/category");
     }
   }

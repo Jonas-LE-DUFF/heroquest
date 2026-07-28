@@ -12,6 +12,7 @@ import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
 import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
 import { HeroCategory } from "../../../enums/Categories/HeroCategory";
 import { Unit } from "../../Units/Unit";
+import { logger } from "../../../../utils/logger";
 
 abstract class Potion extends Item {
   effect: Effect | null;
@@ -129,7 +130,7 @@ class HealthPotion extends Potion {
       kind: "red",
     });
     if (!diceResult.success) {
-      console.error("Failed to roll dice for Health Potion:");
+      logger.error("Failed to roll dice for Health Potion:");
       return { success: false, error: "Failed to roll dice for Health Potion" };
     }
 

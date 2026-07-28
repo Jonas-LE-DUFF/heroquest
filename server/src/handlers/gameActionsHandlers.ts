@@ -21,6 +21,7 @@ import {
 } from "../validation";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { requireGameMaster } from "../guards/requireGameMaster";
+import { logger } from "../utils/logger";
 
 export function registerGameActionsHandlers(socket: Socket) {
   ///** common player and game master actions **///
@@ -29,7 +30,7 @@ export function registerGameActionsHandlers(socket: Socket) {
   socket.on(
     "cast-spell",
     withValidation(socket, castSpellSchema, (socket, data, callback) => {
-      console.debug("casting spell", data);
+      logger.debug("casting spell", data);
       const { gameId, playerId, spellId, position } = data;
       const game = GameService.getGame(gameId);
 

@@ -10,6 +10,7 @@ import { BoardInitializer } from "./BoardInitializer";
 import { DoorGrid } from "./DoorGrid";
 import { WallGrid } from "./WallGrid";
 import { TrapType } from "../../enums/Board/TrapType";
+import { logger } from "../../../utils/logger";
 
 class Board {
   BOARD_WIDTH = 19;
@@ -162,12 +163,12 @@ class Board {
   ): string | null {
     const position = this.getPositionOfUnit(unit.id);
     if (!position) {
-      console.error("Unit not found on board:", unit.id);
+      logger.error("Unit not found on board:", unit.id);
       return null;
     }
     const tile = this.getTileAtPosition(position);
     if (!tile) {
-      console.error("Tile not found at position:", position);
+      logger.error("Tile not found at position:", position);
       return null;
     }
     return tile.removeDesignatedUnit(unit.id);

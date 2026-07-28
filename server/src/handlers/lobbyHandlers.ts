@@ -18,18 +18,15 @@ import {
 import { HeroFactory } from "../POO/classes/Factories/HeroFactory";
 import { Hero } from "../POO/classes/Units/Hero";
 import { PlayerRole } from "../POO/enums/PlayerRole";
+import { logger } from "../utils/logger";
 
 export function registerLobbyHandlers(socket: Socket) {
   socket.on(
     "join-game",
     withValidation(socket, joinGameSchema, async (socket, data, callback) => {
       const { gameName, playerName, role } = data;
-      console.log(
-        playerName,
-        " tente de rejoindre la partie :",
-        gameName,
-        " avec le rôle :",
-        role,
+      logger.info(
+        `${playerName} tente de rejoindre la partie : ${gameName} avec le rôle : ${role}`,
       );
 
       const isThereGame: boolean = GameService.hasGame(gameName);
@@ -46,10 +43,10 @@ export function registerLobbyHandlers(socket: Socket) {
           game.addPlayer(newPlayer);
         } catch (error) {
           if (error instanceof Error) {
-            console.error("Error adding player to game:", error);
+            logger.error("Error adding player to game:", error);
             return callback(errorResponse(`Erreur : ${error}`));
           }
-          console.error("Unexpected error adding player to game.");
+          logger.error("Unexpected error adding player to game.");
           return callback(errorResponse(`Erreur inattendue.`));
         }
       }
@@ -72,7 +69,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
       emitGameStateUpdate(io, game.id, game);
 
-      console.log(`${playerName} a rejoint la partie ${game.id}`);
+      logger.info(`${playerName} a rejoint la partie ${game.id}`);
 
       callback(successResponse());
     }),
@@ -82,11 +79,8 @@ export function registerLobbyHandlers(socket: Socket) {
     "leave-game",
     withValidation(socket, gameIdSchema, async (socket, data, callback) => {
       const { gameId, playerId } = data;
-      console.log(
-        "Demande de sortie de la partie :",
-        gameId,
-        " Joueur :",
-        playerId,
+      logger.info(
+        `Demande de sortie de la partie : ${gameId} | Joueur : ${playerId}`,
       );
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Partie non trouvée"));
@@ -102,7 +96,7 @@ export function registerLobbyHandlers(socket: Socket) {
       game.removePlayer(playerId);
 
       if (game.getAmountOfPlayers() === 0) {
-        console.log("Suppression de la partie vide avec l'id :", game.id);
+        logger.warn("Suppression de la partie vide avec l'id :", game.id);
         GameService.removeGame(game.id);
       }
       const io = ServerHeroQuest.getServerInstance().getIo();
@@ -115,7 +109,7 @@ export function registerLobbyHandlers(socket: Socket) {
     "start-game",
     withValidation(socket, gameIdSchema, (socket, data, callback) => {
       const { gameId, playerId } = data;
-      console.log("Demande de démarrage pour la partie:", gameId);
+      logger.info(`Demande de démarrage pour la partie: ${gameId}`);
 
       if (!requireGameExists(gameId)) {
         return callback(errorResponse("Partie non trouvée"));
@@ -131,14 +125,14 @@ export function registerLobbyHandlers(socket: Socket) {
         game!.launchGame();
       } catch (error) {
         if (error instanceof Error) {
-          console.error("Error launching game:", error.message);
+          logger.error("Error launching game:", error.message);
           return callback(errorResponse(`Erreur : ${error.message}`));
         }
-        console.error("Erreur inattendue.");
+        logger.error("Erreur inattendue.");
         return callback(errorResponse(`Erreur inattendue.`));
       }
 
-      console.log("Conditions remplies, lancement de la partie...");
+      logger.info("Conditions remplies, lancement de la partie...");
       const io = ServerHeroQuest.getServerInstance().getIo();
 
       const gameAsJson = game!.toJson();
@@ -162,7 +156,7 @@ export function registerLobbyHandlers(socket: Socket) {
 
       const player = game!.getPlayer(playerId);
       if (!player) {
-        console.error("Player not found with id:", playerId);
+        logger.error("Player not found with id:", playerId);
         return callback(errorResponse("Player not found."));
       }
 
@@ -257,7 +251,7 @@ export function registerLobbyHandlers(socket: Socket) {
         const game = GameService.getGame(gameId);
         const player = game?.getPlayer(playerId);
         if (!game || !player) {
-          console.error("Player not found with id:", playerId);
+          logger.error("Player not found with id:", playerId);
           return callback(errorResponse("Player not found."));
         }
 

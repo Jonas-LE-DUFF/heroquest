@@ -1,6 +1,6 @@
 import treasure from "../../../shared/game_cards/treasure.json";
 import { Hero } from "../Units/Hero";
-
+import { logger } from "../../../utils/logger";
 import { TreasureCard, TreasureCardEffectName } from "./TreasureCard";
 
 class TreasureCardDeck {
@@ -36,8 +36,8 @@ class TreasureCardDeck {
     const card = this.cards.pop() as TreasureCard;
     const result = card.applyEffect(this.gameId, cardPicker);
     if (!result.success) {
-      console.error(`Failed to apply card effect: ${result.error}`);
-      throw new Error(`Failed to apply card effect: ${result.error}`);
+      logger.error(`Failed to apply card effect: ${result.error}`);
+      throw new Error(`${result.error}`);
     }
     if (card.isPutBack) {
       this.cards.unshift(card);

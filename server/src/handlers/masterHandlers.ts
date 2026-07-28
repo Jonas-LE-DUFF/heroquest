@@ -23,6 +23,7 @@ import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { Stats } from "../POO/classes/Units/Stats";
 import { checkUnitDefeat } from "../shared/death/death";
+import { logger } from "../utils/logger";
 
 export function registerMasterHandlers(socket: Socket) {
   ///** game master actions **///
@@ -45,12 +46,12 @@ export function registerMasterHandlers(socket: Socket) {
         return callback(errorResponse("Selected type is required"));
       }
 
-      console.debug("placing element", data);
+      logger.debug("placing element", data);
       const game = GameService.getGame(gameId);
 
       const board = game?.gameState.board;
       if (!board) {
-        console.error("Board not found in game state");
+        logger.error("Board not found in game state");
         return callback(errorResponse("Board not found"));
       }
 
@@ -73,12 +74,12 @@ export function registerMasterHandlers(socket: Socket) {
 
       const tile: Tile | undefined = board?.getTileAtPosition(position);
       if (tile === undefined) {
-        console.error("tile couldn't be found on the board");
+        logger.error("tile couldn't be found on the board");
         return callback(errorResponse("Tile not found on board"));
       }
 
       if (tile.isOccupied()) {
-        console.error("tile is occupied");
+        logger.error("tile is occupied");
         return callback(errorResponse("Tile is occupied"));
       }
 
@@ -119,7 +120,7 @@ export function registerMasterHandlers(socket: Socket) {
       }
 
       if (selectedType in TrapType) {
-        console.debug("placing trap", selectedType, "at position", position);
+        logger.debug("placing trap", selectedType, "at position", position);
         const trapType = selectedType as TrapType;
         const result = handleTrapPlacement(gameId, position, trapType);
         return callback(
@@ -150,7 +151,7 @@ export function registerMasterHandlers(socket: Socket) {
 
       const unit = game?.gameState.getUnitById(unitId);
       if (!unit) {
-        console.error("Unit not found with id:", unitId);
+        logger.error("Unit not found with id:", unitId);
         return callback(errorResponse("Unit not found"));
       }
 
@@ -247,12 +248,12 @@ function handleTilePlacement(
   position: Position,
   TileType: TileType,
 ): { success: boolean; error?: string } {
-  console.debug("placing tile", TileType, "at position", position);
+  logger.debug("placing tile", TileType, "at position", position);
   const game = GameService.getGame(gameId);
   const io = ServerHeroQuest.getServerInstance().getIo();
   const tile = game?.gameState?.board?.getTileAtPosition(position);
   if (!tile) {
-    console.error("tile couldn't be found on the board");
+    logger.error("tile couldn't be found on the board");
     return {
       success: false,
       error: "Tile not found on board",
@@ -296,7 +297,7 @@ function handleTrapPlacement(
       error: (error as Error).message || "Failed to place trap",
     };
   }
-  console.debug(
+  logger.debug(
     "placed trap",
     trapType,
     "resulting game state:",
@@ -309,15 +310,15 @@ function handleTrapPlacement(
 function checkPositionFree(position: Position, game: Game): boolean {
   const tile = game.gameState.board.getTileAtPosition(position);
   if (!tile) {
-    console.error("Tile not found at position:", position);
+    logger.error("Tile not found at position:", position);
     return false;
   }
   if (tile.isOccupied()) {
-    console.error("Tile is occupied at position:", position);
+    logger.error("Tile is occupied at position:", position);
     return false;
   }
   if (tile.type !== TileType.FLOOR) {
-    console.error("Tile is not a floor at position:", position);
+    logger.error("Tile is not a floor at position:", position);
     return false;
   }
   return true;

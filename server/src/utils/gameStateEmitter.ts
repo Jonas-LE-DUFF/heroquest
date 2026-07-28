@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { Game } from "../POO/classes/Server/Game";
 import { ServerToClientEvents } from "../POO/interfaces/Events/ServerToClientEvents";
 import { ClientToServerEvents } from "../POO/interfaces/Events/ClientToServerEvents";
+import { logger } from "./logger";
 
 /**
  * Emits the game state to all players in a game.
@@ -20,7 +21,7 @@ export function emitGameStateUpdate(
   const room = io.sockets.adapter.rooms.get(gameId);
 
   if (!room) {
-    console.warn(
+    logger.warn(
       `No sockets found in room ${gameId} when trying to emit game state update`,
     );
     return;
@@ -47,7 +48,7 @@ export function getGameMasterSocket(
   const room = io.sockets.adapter.rooms.get(game.id);
 
   if (!room) {
-    console.warn(
+    logger.warn(
       `No sockets found in room ${game.id} when trying to get game master socket`,
     );
     return null;
@@ -63,6 +64,6 @@ export function getGameMasterSocket(
     }
   }
 
-  console.warn(`No game master found in game ${game.id}`);
+  logger.warn(`No game master found in game ${game.id}`);
   return null;
 }

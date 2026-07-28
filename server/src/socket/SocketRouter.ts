@@ -11,22 +11,23 @@ import { Socket } from "socket.io";
 import { emitGameStateUpdate } from "../utils/gameStateEmitter";
 import { registerTrapsActionsHandlers } from "../handlers/trapsActionsHandlers";
 import { randomUUID } from "crypto";
+import { logger } from "../utils/logger";
 
 async function restoreSession(socket: Socket, sessionToken: string) {
   const server = ServerHeroQuest.getServerInstance();
   const io = server.getIo();
   const sessionStore = server.getSessionStore();
 
-  console.log("Attempting to restore session for token:", sessionToken);
+  logger.info("Attempting to restore session for token:", sessionToken);
 
   const existingSession = sessionStore.findByToken(sessionToken);
 
   if (existingSession) {
-    console.log(
+    logger.info(
       `Restoring session for player ${existingSession.playerId} in game ${existingSession.gameId}`,
     );
     if (!existingSession.gameId || !existingSession.playerId) {
-      console.error(
+      logger.error(
         `Invalid session data for token ${sessionToken}: missing gameId or playerId`,
       );
       return;
@@ -38,11 +39,11 @@ async function restoreSession(socket: Socket, sessionToken: string) {
     if (game && player) {
       player.socketId = socket.id; // Update player ID to the new socket ID
       await socket.join(existingSession.gameId);
-      console.log(`Player ${player.name} reconnected to game ${game.name}`);
+      logger.info(`Player ${player.name} reconnected to game ${game.name}`);
       emitGameStateUpdate(io, game.id, game);
       return;
     }
-    console.error(
+    logger.error(
       `Failed to restore session: game or player not found for session token ${sessionToken}`,
     );
   }
@@ -63,7 +64,7 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
 
     socket.emit("session", { sessionToken });
     sessionStore.save({ sessionToken, playerId: null, gameId: null }); // Save session with null values until player joins a game
-    console.log("Connected:", socket.id);
+    logger.info("Connected:", socket.id);
     socket.handshake.auth.sessionToken = sessionToken;
 
     // Register all handlers
@@ -80,7 +81,7 @@ export function registerSocketHandlers(server: ServerHeroQuest) {
       modifiedGames.forEach((game) => {
         emitGameStateUpdate(io, game.id, game);
       });
-      console.log(
+      logger.info(
         `Disconnected player: ${socket.id} from games ${modifiedGames.map((g) => g.name).join(", ")}`,
       );
     });

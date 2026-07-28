@@ -2,44 +2,44 @@ import { Game } from "../POO/classes/Server/Game";
 import { Player } from "../POO/classes/Server/Player";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
+import { logger } from "../utils/logger";
 
 export class GameService {
+  static createGame(gameName: string, player: Player): Game {
+    const serverHeroQuest = ServerHeroQuest.getServerInstance();
+    const newGame = serverHeroQuest.createGame(gameName);
+    newGame.addPlayer(player);
 
-    static createGame(gameName: string, player: Player): Game {
-        const serverHeroQuest = ServerHeroQuest.getServerInstance();
-        const newGame = serverHeroQuest.createGame(gameName);
-        newGame.addPlayer(player);
+    logger.info(
+      `New game created with ID : ${newGame.id} and name: ${gameName}`,
+    );
 
-        console.log(
-            `New game created with ID : ${newGame.id} and name: ${gameName}`,
-        );
+    return newGame;
+  }
 
-        return newGame;
-    }
+  static getGame(gameId: string): Game | null {
+    const serverHeroQuest = ServerHeroQuest.getServerInstance();
+    return serverHeroQuest.getGame(gameId);
+  }
 
-    static getGame(gameId: string): Game | null {
-        const serverHeroQuest = ServerHeroQuest.getServerInstance();
-        return serverHeroQuest.getGame(gameId);
-    }
+  static getGameByName(gameName: string): Game | null {
+    const serverHeroQuest = ServerHeroQuest.getServerInstance();
+    return serverHeroQuest.getGameByName(gameName);
+  }
 
-    static getGameByName(gameName: string): Game | null {
-        const serverHeroQuest = ServerHeroQuest.getServerInstance();
-        return serverHeroQuest.getGameByName(gameName);
-    }
+  static hasGame(gameName: string): boolean {
+    const serverHeroQuest = ServerHeroQuest.getServerInstance();
+    return serverHeroQuest.getGameByName(gameName) !== null;
+  }
 
-    static hasGame(gameName: string): boolean {
-        const serverHeroQuest = ServerHeroQuest.getServerInstance();
-        return serverHeroQuest.getGameByName(gameName) !== null;
-    }
-    
-    static removePlayerFromAllGames(playerId: string): Game[] {
-        const serverHeroQuest = ServerHeroQuest.getServerInstance();
-        return serverHeroQuest.removePlayerFromAllGames(playerId);
-    }
+  static removePlayerFromAllGames(playerId: string): Game[] {
+    const serverHeroQuest = ServerHeroQuest.getServerInstance();
+    return serverHeroQuest.removePlayerFromAllGames(playerId);
+  }
 
-    static removeGame(gameId: string): void {
-        const serverHeroQuest = ServerHeroQuest.getServerInstance();
-        TreasureCardDeckHandler.removeDeck(gameId);
-        serverHeroQuest.removeGame(gameId);
-    }
+  static removeGame(gameId: string): void {
+    const serverHeroQuest = ServerHeroQuest.getServerInstance();
+    TreasureCardDeckHandler.removeDeck(gameId);
+    serverHeroQuest.removeGame(gameId);
+  }
 }

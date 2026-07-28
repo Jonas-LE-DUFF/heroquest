@@ -13,6 +13,7 @@ import {
 } from "../validation";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
 import { grantSpecialRollAuthorization } from "../services/DiceService";
+import { logger } from "../utils/logger";
 
 export function registerDiceHandlers(socket: Socket) {
   handleSpecialRollAuthorization(socket);
@@ -73,7 +74,7 @@ function handleRollDice(socket: Socket) {
 
       const player = game!.getPlayer(playerId);
       if (!player) {
-        console.error("no player found for rolling dice");
+        logger.error("no player found for rolling dice");
         return callback(
           errorResponse("le joueur lançant les dés n'a pas pu être trouvé"),
         );
@@ -112,13 +113,13 @@ function handleRollDice(socket: Socket) {
           }
         } catch (error) {
           if (error instanceof Error) {
-            console.error(
+            logger.error(
               "error while getting current hero turn:",
               error.message,
             );
             return callback(errorResponse(error.message || "erreur interne"));
           }
-          console.error("unexpected error while getting current hero turn");
+          logger.error("unexpected error while getting current hero turn");
           return callback(
             errorResponse("unexpected error while getting current hero turn"),
           );

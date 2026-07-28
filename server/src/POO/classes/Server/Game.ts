@@ -10,6 +10,7 @@ import { Position } from "../Position/Position";
 import { Direction } from "../../enums/Direction";
 import { Unit } from "../Units/Unit";
 import { MonsterCategory } from "../../enums/Categories/MonsterCategory";
+import { logger } from "../../../utils/logger";
 
 class Game {
   id: string;
@@ -85,11 +86,11 @@ class Game {
 
   public killUnit(unit: Unit<HeroCategory | MonsterCategory>): void {
     if (unit.getCategory() in HeroCategory) {
-      console.log("play order before removing unit:", this.playOrder);
+      logger.info("play order before removing unit:", this.playOrder);
       this.playOrder = this.playOrder.filter(
         (category) => category !== unit.category,
       );
-      console.log("play order after removing unit:", this.playOrder);
+      logger.info("play order after removing unit:", this.playOrder);
     }
     this.gameState.removeUnit(unit);
   }
@@ -158,11 +159,11 @@ class Game {
           this.gameState.board.BOARD_HEIGHT,
         )
       ) {
-        console.error("Invalid starting position for hero:", position);
+        logger.error("Invalid starting position for hero:", position);
         throw new Error("Invalid starting position for hero.");
       }
       if (!hero) {
-        console.error(`Hero not found for category: ${this.playOrder[i]}`);
+        logger.error(`Hero not found for category: ${this.playOrder[i]}`);
         throw new Error(`Hero not found for category: ${this.playOrder[i]}`);
       }
       this.gameState.board.placeUnitAt(hero, position);

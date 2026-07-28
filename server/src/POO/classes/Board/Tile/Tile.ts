@@ -2,6 +2,7 @@ import { TileType } from "../../../enums/Board/TileType";
 import { TrapType } from "../../../enums/Board/TrapType";
 import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/TileAsJson";
 import { PitTrap, RockTrap, SpearTrap, Trap } from "./Trap";
+import { logger } from "../../../../utils/logger";
 
 class Tile {
   unitId: string | null;
@@ -66,7 +67,7 @@ class Tile {
     }
     if (!this.transientUnitId) {
       this.transientUnitId = unitId;
-      console.warn(
+      logger.warn(
         "A unit is already present on the tile, placing the new unit in transient state",
       );
       return;
