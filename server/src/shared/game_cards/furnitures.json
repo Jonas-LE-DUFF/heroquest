@@ -1,0 +1,79 @@
+[
+  {
+    "furnitureId": "alchemistbench",
+    "furnitureName": "table de l'alchimiste",
+    "imagePath": "assets/images/icons/Tiles/furniture/alchemistbench.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "bookcase",
+    "furnitureName": "étagère",
+    "imagePath": "assets/images/icons/Tiles/furniture/bookcase.png",
+    "length": 3,
+    "width": 1
+  },
+  {
+    "furnitureId": "chest",
+    "furnitureName": "coffre",
+    "imagePath": "assets/images/icons/Tiles/furniture/chest.png",
+    "length": 1,
+    "width": 1
+  },
+  {
+    "furnitureId": "cupboard",
+    "furnitureName": "placard",
+    "imagePath": "assets/images/icons/Tiles/furniture/cupboard.png",
+    "length": 3,
+    "width": 1
+  },
+  {
+    "furnitureId": "fireplace",
+    "furnitureName": "cheminée",
+    "imagePath": "assets/images/icons/Tiles/furniture/fireplace.png",
+    "length": 3,
+    "width": 1
+  },
+  {
+    "furnitureId": "rack",
+    "furnitureName": "table de torture",
+    "imagePath": "assets/images/icons/Tiles/furniture/rack.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "sorcererstable",
+    "furnitureName": "table du sorcier",
+    "imagePath": "assets/images/icons/Tiles/furniture/table.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "table",
+    "furnitureName": "table",
+    "imagePath": "assets/images/icons/Tiles/furniture/table.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "throne",
+    "furnitureName": "trône",
+    "imagePath": "assets/images/icons/Tiles/furniture/throne.png",
+    "length": 1,
+    "width": 1
+  },
+  {
+    "furnitureId": "tomb",
+    "furnitureName": "tombe",
+    "imagePath": "assets/images/icons/Tiles/furniture/tomb.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "weaponsrack",
+    "furnitureName": "rangement d'armes",
+    "imagePath": "assets/images/icons/Tiles/furniture/weaponsrack.png",
+    "length": 3,
+    "width": 1
+  }
+]
