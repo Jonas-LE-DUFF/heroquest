@@ -1,14 +1,15 @@
-import { DoorGridAsJson } from "./Grid/DoorGridAsJson";
-import { WallGridAsJson } from "./Grid/WallGridAsJson";
-import { TileAsJson } from "./TileAsJson";
+import { TileAsJson } from "./Tile/TileAsJson";
+import { GridAsJson } from "./Grid/GridAsJson";
+import { FurnitureAsJson } from "./Furniture/FurnitureAsJson";
 
 interface BoardAsJson {
-    width: number;
-    height: number;
+  width: number;
+  height: number;
 
-    tiles: TileAsJson[][];
-    doors: DoorGridAsJson;
-    walls: WallGridAsJson;
+  tiles: TileAsJson[][];
+  doors: GridAsJson;
+  walls: GridAsJson;
+  furnitures: FurnitureAsJson[];
 }
 
 export type { BoardAsJson };

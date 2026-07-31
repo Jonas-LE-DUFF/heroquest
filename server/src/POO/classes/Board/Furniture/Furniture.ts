@@ -1,11 +1,12 @@
 import { Direction } from "../../../enums/Direction";
+import { FurnitureAsJson } from "../../../interfaces/ClassAsJson/Board/Furniture/FurnitureAsJson";
 import { Position } from "../../Position/Position";
 
-abstract class Furniture {
+class Furniture {
   private direction: Direction;
   private length: number; // length in the direction given by the direction property
   private width: number; // width perpendicular to the direction property (clockwise)
-  private FurnitureType: string;
+  public readonly FurnitureType: string;
 
   constructor(
     direction: Direction,
@@ -34,12 +35,22 @@ abstract class Furniture {
 
     return positions;
   }
-}
 
-class Table extends Furniture {
-  constructor(direction: Direction) {
-    super(direction, 3, 2, "Table"); // Table occupies 3 tiles in length and 2 tiles in width
+  toJson(pos: Position): FurnitureAsJson {
+    let width = this.width;
+    let length = this.length;
+    if (this.direction === Direction.UP || this.direction === Direction.DOWN) {
+      // Swap width and length for horizontal furniture
+      [width, length] = [length, width];
+    }
+    return {
+      direction: this.direction,
+      length: this.length,
+      width: this.width,
+      furnitureType: this.FurnitureType,
+      position: { x: pos.x, y: pos.y },
+    };
   }
 }
 
-export { Furniture, Table };
+export { Furniture };

@@ -1,4 +1,4 @@
-import { TileType } from "../../../enums/Board/TileType";
+import { TileType } from "../../../../enums/Board/TileType";
 import { TrapAsJson } from "./TrapAsJson";
 
 interface TileAsJson {

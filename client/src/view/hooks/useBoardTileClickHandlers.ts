@@ -8,6 +8,7 @@ import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { PlayerService } from "../../POO/PlayerService";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { Socket } from "socket.io-client";
+import { Direction } from "../../POO/enums/Direction";
 
 export type TargetingState =
   | { mode: "none" }
@@ -15,7 +16,8 @@ export type TargetingState =
   | { mode: "attack" }
   | { mode: "spell"; spellId: string }
   | { mode: "disarmTrap" }
-  | { mode: "revealTrap" };
+  | { mode: "revealTrap" }
+  | { mode: "placeFurniture"; furnitureType: string; direction: Direction };
 
 export interface InteractionState {
   selectedType: SelectType;
@@ -63,9 +65,9 @@ const useBoardTileClickHandlers = ({
         "cast-spell",
         {
           gameId: game.id,
-          playerId: playerId,
+          playerId,
           spellId: interaction.targeting.spellId,
-          position: position,
+          position,
         },
         (response: { success: boolean; error?: string }) => {
           if (!response.success) {
@@ -73,6 +75,7 @@ const useBoardTileClickHandlers = ({
           }
         },
       );
+
       setInteraction((prev) => ({
         ...prev,
         targeting: getDefaultTargetingState(),
@@ -102,14 +105,15 @@ const useBoardTileClickHandlers = ({
         }));
         return;
       }
+
       const attackerId = hero?.id || interaction.selectedEntityId;
 
       socket.emit(
         "attack",
         {
           gameId: game.id,
-          playerId: playerId,
-          attackerId: attackerId,
+          playerId,
+          attackerId,
           targetId: target.id,
           weaponId: PlayerService.getHeroSelectedWeapon(hero) ?? undefined,
         },
@@ -121,6 +125,7 @@ const useBoardTileClickHandlers = ({
           }
         },
       );
+
       setInteraction((prev) => ({
         ...prev,
         targeting: getDefaultTargetingState(),
@@ -158,6 +163,7 @@ const useBoardTileClickHandlers = ({
         if (!idAtPos) {
           setStatsVisible(false);
         }
+
         setInteraction((prev) => ({
           ...prev,
           selectedPosition: position,
@@ -187,7 +193,7 @@ const useBoardTileClickHandlers = ({
         "place-element",
         {
           gameId: game.id,
-          playerId: playerId,
+          playerId,
           position,
           selectedType,
         },
@@ -224,7 +230,7 @@ const useBoardTileClickHandlers = ({
         "disarm-trap",
         {
           gameId: game.id,
-          playerId: playerId,
+          playerId,
           heroId: hero?.id,
           position,
         },
@@ -234,6 +240,7 @@ const useBoardTileClickHandlers = ({
           }
         },
       );
+
       setInteraction((prev) => ({
         ...prev,
         targeting: getDefaultTargetingState(),
@@ -249,7 +256,7 @@ const useBoardTileClickHandlers = ({
         "reveal-trap",
         {
           gameId: game.id,
-          playerId: playerId,
+          playerId,
           position,
         },
         (response: { success: boolean; error?: string }) => {
@@ -260,12 +267,50 @@ const useBoardTileClickHandlers = ({
           }
         },
       );
+
       setInteraction((prev) => ({
         ...prev,
         targeting: getDefaultTargetingState(),
       }));
     },
     [game.id, socket, playerId, setInteraction, getDefaultTargetingState],
+  );
+
+  const handlePlaceFurniture = useCallback(
+    (position: PositionAsJson) => {
+      if (interaction.targeting.mode !== "placeFurniture") {
+        return;
+      }
+
+      const selectedType = interaction.targeting.furnitureType;
+      const direction = interaction.targeting.direction;
+
+      console.log(
+        "Attempting to place furniture:",
+        selectedType,
+        "at position:",
+        position,
+        "with direction:",
+        direction,
+      );
+
+      socket.emit(
+        "place-furniture",
+        {
+          gameId: game.id,
+          playerId,
+          position,
+          furnitureType: selectedType,
+          direction,
+        },
+        (response: { success: boolean; error?: string; data: BoardAsJson }) => {
+          if (!response.success) {
+            toast.error("Failed to place furniture: " + response.error);
+          }
+        },
+      );
+    },
+    [game.id, interaction.targeting, playerId, socket],
   );
 
   const handleTileClick = useCallback(
@@ -277,6 +322,7 @@ const useBoardTileClickHandlers = ({
         spell: () => handleSpellTileClick(position),
         disarmTrap: () => handleDisarmTrapTileClick(position),
         revealTrap: () => handleRevealTrapTileClick(position),
+        placeFurniture: () => handlePlaceFurniture(position),
       };
 
       handlersByMode[interaction.targeting.mode]();
@@ -289,6 +335,7 @@ const useBoardTileClickHandlers = ({
       handlePlaceSelectedTypeTileClick,
       handleDisarmTrapTileClick,
       handleRevealTrapTileClick,
+      handlePlaceFurniture,
     ],
   );
 

@@ -1,6 +1,6 @@
 import { TileType } from "../POO/enums/Board/TileType";
 import { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
-import { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/TileAsJson";
+import { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/Tile/TileAsJson";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 
 function getTileByPosition(

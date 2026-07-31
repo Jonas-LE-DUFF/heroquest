@@ -1,6 +1,6 @@
 import { TileType } from "../../../enums/Board/TileType";
 import { TrapType } from "../../../enums/Board/TrapType";
-import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/TileAsJson";
+import { TileAsJson } from "../../../interfaces/ClassAsJson/Board/Tile/TileAsJson";
 import { PitTrap, RockTrap, SpearTrap, Trap } from "./Trap";
 import { logger } from "../../../../utils/logger";
 import { Position } from "../../Position/Position";
@@ -30,21 +30,8 @@ class Tile {
     return unitRemovedId;
   }
 
-  isImpassable(): boolean {
-    return (
-      this.type === TileType.WALL ||
-      this.type === TileType.FURNITURE ||
-      this.type === TileType.TREASURE
-    );
-  }
-
   isOccupied(): boolean {
-    return (
-      (this.type !== TileType.FLOOR &&
-        this.type !== TileType.SPAWN_POINT &&
-        this.type !== TileType.TRAP) ||
-      this.unitId !== null
-    );
+    return this.unitId !== null;
   }
 
   static isFree(position: Position, game: Game): boolean {

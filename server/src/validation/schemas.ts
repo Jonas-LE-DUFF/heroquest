@@ -192,6 +192,14 @@ export const moveUnitOneStepSchema = z.object({
   direction: z.enum(Direction),
 });
 
+export const placeFurnitureSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
+  position: positionSchema,
+  furnitureType: z.string().min(1, "Le type de mobilier est requis"),
+  direction: z.enum(Direction),
+});
+
 // --- Types inférés ---
 
 export type JoinGameData = z.infer<typeof joinGameSchema>;

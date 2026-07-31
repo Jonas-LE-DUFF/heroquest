@@ -1,8 +1,8 @@
 [
   {
-    "furnitureId": "alchemistbench",
+    "furnitureId": "alchemistsbench",
     "furnitureName": "table de l'alchimiste",
-    "imagePath": "assets/images/icons/Tiles/furniture/alchemistbench.png",
+    "imagePath": "assets/images/icons/Tiles/furniture/alchemistsbench.png",
     "length": 3,
     "width": 2
   },
@@ -44,7 +44,7 @@
   {
     "furnitureId": "sorcererstable",
     "furnitureName": "table du sorcier",
-    "imagePath": "assets/images/icons/Tiles/furniture/table.png",
+    "imagePath": "assets/images/icons/Tiles/furniture/sorcererstable.png",
     "length": 3,
     "width": 2
   },

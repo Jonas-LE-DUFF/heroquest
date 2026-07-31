@@ -19,6 +19,7 @@ import {
   updateStatsUnitSchema,
   grantSpellSchema,
   placeBackHeroSchema,
+  placeFurnitureSchema,
 } from "../validation";
 import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
@@ -98,30 +99,19 @@ export function registerMasterHandlers(socket: Socket) {
         return callback(errorResponse("Tile is occupied"));
       }
 
-      if (selectedType in TileType) {
-        const tileType = selectedType as TileType;
-
-        if (tileType === TileType.SPAWN_POINT) {
-          const existingSpawnPoint = board.getSpawnPointPosition();
-          if (existingSpawnPoint) {
-            removeSpawnPoint(existingSpawnPoint, game);
-          }
-          const result = placeSpawnPoint(position, game);
-          if (!result.success) {
-            if (existingSpawnPoint) {
-              placeSpawnPoint(existingSpawnPoint, game); // placing back the spawn point that was removed
-            }
-            return callback(errorResponse(result.error!));
-          }
-          return callback(successResponse(board.toJson(true)));
+      if (selectedType === TileType.SPAWN_POINT) {
+        const existingSpawnPoint = board.getSpawnPointPosition();
+        if (existingSpawnPoint) {
+          removeSpawnPoint(existingSpawnPoint, game);
         }
-        const result = handleTilePlacement(gameId, position, tileType);
-
-        return callback(
-          result.success
-            ? successResponse(board.toJson(true))
-            : errorResponse(result.error!),
-        );
+        const result = placeSpawnPoint(position, game);
+        if (!result.success) {
+          if (existingSpawnPoint) {
+            placeSpawnPoint(existingSpawnPoint, game); // placing back the spawn point that was removed
+          }
+          return callback(errorResponse(result.error!));
+        }
+        return callback(successResponse(board.toJson(true)));
       }
 
       if (selectedType in MonsterCategory) {
@@ -278,6 +268,36 @@ export function registerMasterHandlers(socket: Socket) {
       return callback(successResponse());
     }),
   );
+
+  socket.on(
+    "place-furniture",
+    withValidation(socket, placeFurnitureSchema, (socket, data, callback) => {
+      const {
+        gameId,
+        playerId,
+        position: posData,
+        furnitureType,
+        direction,
+      } = data;
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Game not found"));
+      }
+      if (!requireGameMaster(playerId, GameService.getGame(gameId)!)) {
+        return callback(errorResponse("You are not the game master"));
+      }
+      const position = toPosition(posData);
+
+      const game = GameService.getGame(gameId)!;
+      const board = game.gameState.board;
+      const success = board.placeFurniture(furnitureType, position, direction);
+      if (!success) {
+        return callback(errorResponse("Failed to place furniture"));
+      }
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game);
+      return callback(successResponse());
+    }),
+  );
 }
 
 function handleDoorPlacement(
@@ -287,46 +307,15 @@ function handleDoorPlacement(
 ): { success: boolean; error?: string } {
   const game = GameService.getGame(gameId);
   const io = ServerHeroQuest.getServerInstance().getIo();
-  const newDoor = game!.gameState.board.placeDoor(position, direction);
-  if (
-    !newDoor.success ||
-    !newDoor.doorPlace?.position ||
-    !newDoor.doorPlace?.verticalOrHorizontal
-  ) {
-    return {
-      success: false,
-      error: newDoor.error || "Failed to place door",
-    };
+  const success = game!.gameState.board.placeDoor(position, direction);
+  if (!success) {
+    return { success: false, error: "Échec lors du placement de la porte" };
   }
-  io.to(gameId).emit("door-placed", {
-    position: newDoor.doorPlace.position,
-    verticalOrHorizontal: newDoor.doorPlace.verticalOrHorizontal,
-  });
+  emitGameStateUpdate(io, gameId, game!);
   return { success: true };
 }
 
 //TODO : refactor all the following functions and put them in a dedicated service, the GameService is not the right place for them
-
-function handleTilePlacement(
-  gameId: string,
-  position: Position,
-  TileType: TileType,
-): { success: boolean; error?: string } {
-  logger.debug("placing tile", TileType, "at position", position);
-  const game = GameService.getGame(gameId);
-  const io = ServerHeroQuest.getServerInstance().getIo();
-  const tile = game?.gameState?.board?.getTileAtPosition(position);
-  if (!tile) {
-    logger.error("tile couldn't be found on the board");
-    return {
-      success: false,
-      error: "Tile not found on board",
-    };
-  }
-  tile.type = TileType;
-  emitGameStateUpdate(io, gameId, game!);
-  return { success: true };
-}
 
 function handleMonsterPlacement(
   gameId: string,

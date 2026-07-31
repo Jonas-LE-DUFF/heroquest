@@ -6,24 +6,51 @@ import { BoardAsJson } from "../../interfaces/ClassAsJson/Board/BoardAsJson";
 import { Position } from "../Position/Position";
 import { Tile } from "./Tile/Tile";
 import { Unit } from "../Units/Unit";
-import { BoardInitializer } from "./BoardInitializer";
-import { DoorGrid } from "./DoorGrid";
-import { WallGrid } from "./WallGrid";
+import { BoardInitializer } from "./Grids/BoardInitializer";
 import { TrapType } from "../../enums/Board/TrapType";
 import { logger } from "../../../utils/logger";
+import { FurnitureRegistry } from "./Furniture/FurnitureRegistery";
+import { Grid } from "./Grids/Grid";
 
 class Board {
   BOARD_WIDTH = 19;
   BOARD_HEIGHT = 26;
 
   private Map: Tile[][];
-  private Walls: WallGrid;
-  private Doors: DoorGrid;
+  private Walls: Grid;
+  private Doors: Grid;
+  private Furnitures: FurnitureRegistry;
 
   constructor() {
     this.Map = BoardInitializer.initializeBoard();
     this.Walls = BoardInitializer.initializeWalls();
     this.Doors = BoardInitializer.initializeDoors();
+    this.Furnitures = new FurnitureRegistry();
+  }
+
+  placeFurniture(
+    furniture: string,
+    startPosition: Position,
+    direction: Direction,
+  ): boolean {
+    const newFurniture = this.Furnitures.createFurnitureFromReference(
+      furniture,
+      direction,
+    );
+    if (!newFurniture) {
+      return false;
+    }
+    const positions = newFurniture.getOccupiedPositions(startPosition);
+    const canPlace = positions.every(
+      (pos) =>
+        pos.isValid(this.BOARD_WIDTH, this.BOARD_HEIGHT) &&
+        !this.Furnitures.isPositionOccupied(pos),
+    );
+
+    if (canPlace) {
+      return this.Furnitures.placeFurniture(newFurniture, startPosition);
+    }
+    return false;
   }
 
   getTileAtPosition(position: Position): Tile | undefined {
@@ -66,88 +93,35 @@ class Board {
   }
 
   hasWallAt(position: Position, direction: Direction): boolean {
-    const positionAfterMove = position.doorPosition(direction);
-    const isCrossingHorizontal = this.isCrossingHorizontal(direction);
-    if (isCrossingHorizontal) {
-      return this.Walls.horizontal[positionAfterMove.x]![positionAfterMove.y]!;
-    } else {
-      return this.Walls.vertical[positionAfterMove.x]![positionAfterMove.y]!;
-    }
+    return this.Walls.hasElemAt(position, direction);
   }
 
   hasDoorAt(position: Position, direction: Direction): boolean {
-    const positionAfterMove = position.doorPosition(direction);
-    const isCrossingHorizontal = this.isCrossingHorizontal(direction);
-    if (isCrossingHorizontal) {
-      return this.Doors.horizontal[positionAfterMove.x]![positionAfterMove.y]!;
-    } else {
-      return this.Doors.vertical[positionAfterMove.x]![positionAfterMove.y]!;
-    }
-  }
-
-  isCrossingHorizontal(direction: Direction): boolean {
-    return direction === Direction.UP || direction === Direction.DOWN;
+    return this.Doors.hasElemAt(position, direction);
   }
 
   private setDoorStateAt(
     position: Position,
     direction: Direction,
     isClosed: boolean,
-  ): {
-    success: boolean;
-    error?: string;
-    doorPlace?: {
-      position: Position;
-      verticalOrHorizontal: "vertical" | "horizontal";
-    };
-  } {
+  ): boolean {
     const doorPosition = position.doorPosition(direction);
     if (
       !position.isValid(this.BOARD_WIDTH, this.BOARD_HEIGHT) ||
       !doorPosition.isValid(this.BOARD_WIDTH, this.BOARD_HEIGHT)
     ) {
-      return { success: false, error: "Invalid door position" };
+      return false;
     }
-    const isCrossingHorizontal = this.isCrossingHorizontal(direction);
-
-    if (isCrossingHorizontal) {
-      this.Doors.horizontal[doorPosition.x]![doorPosition.y] = isClosed;
-      this.Walls.horizontal[doorPosition.x]![doorPosition.y] = isClosed;
-      return {
-        success: true,
-        doorPlace: {
-          position: doorPosition,
-          verticalOrHorizontal: "horizontal",
-        },
-      };
-    } else {
-      this.Doors.vertical[doorPosition.x]![doorPosition.y] = isClosed;
-      this.Walls.vertical[doorPosition.x]![doorPosition.y] = isClosed;
-      return {
-        success: true,
-        doorPlace: {
-          position: doorPosition,
-          verticalOrHorizontal: "vertical",
-        },
-      };
-    }
+    this.Doors.placeStateAt(doorPosition, direction, isClosed);
+    this.Walls.placeStateAt(doorPosition, direction, isClosed);
+    return true;
   }
 
   openDoor(position: Position, direction: Direction): void {
     this.setDoorStateAt(position, direction, false);
   }
 
-  placeDoor(
-    position: Position,
-    direction: Direction,
-  ): {
-    success: boolean;
-    doorPlace?: {
-      position: Position;
-      verticalOrHorizontal: "vertical" | "horizontal";
-    };
-    error?: string;
-  } {
+  placeDoor(position: Position, direction: Direction): boolean {
     return this.setDoorStateAt(position, direction, true);
   }
 
@@ -177,6 +151,7 @@ class Board {
   clearTileAtPosition(position: Position): string | null {
     const tile = this.getTileAtPosition(position);
     if (tile) {
+      this.Furnitures.removeFurniture(position);
       return tile.eraseTile();
     }
     return null;
@@ -196,12 +171,20 @@ class Board {
 
   placeThinWall(position: Position, direction: Direction) {
     const positionAfterMove = position.doorPosition(direction);
-    const isCrossingHorizontal = this.isCrossingHorizontal(direction);
-    if (isCrossingHorizontal) {
-      this.Walls.horizontal[positionAfterMove.x]![positionAfterMove.y] = true;
-    } else {
-      this.Walls.vertical[positionAfterMove.x]![positionAfterMove.y] = true;
+    this.Walls.placeStateAt(positionAfterMove, direction, true);
+  }
+
+  isPositionOccupied(position: Position): boolean {
+    const tile = this.getTileAtPosition(position);
+    if (!tile) {
+      logger.error("Tile not found at position:", position);
+      return true;
     }
+    return tile?.isOccupied();
+  }
+
+  isImpassable(position: Position): boolean {
+    return this.Furnitures.isPositionOccupied(position);
   }
 
   toJson(gameMaster: boolean): BoardAsJson {
@@ -209,14 +192,9 @@ class Board {
       width: this.BOARD_WIDTH,
       height: this.BOARD_HEIGHT,
       tiles: this.Map.map((row) => row.map((tile) => tile.toJson(gameMaster))),
-      doors: {
-        horizontalDoors: this.Doors.horizontal,
-        verticalDoors: this.Doors.vertical,
-      },
-      walls: {
-        horizontalWalls: this.Walls.horizontal,
-        verticalWalls: this.Walls.vertical,
-      },
+      doors: this.Doors.toJson(),
+      walls: this.Walls.toJson(),
+      furnitures: this.Furnitures.toJson(),
     };
   }
 }

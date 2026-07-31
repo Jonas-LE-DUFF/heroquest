@@ -1,6 +1,6 @@
-import { TileType } from "../../enums/Board/TileType";
-import { Tile } from "./Tile/Tile";
-import { WallGrid } from "./WallGrid";
+import { TileType } from "../../../enums/Board/TileType";
+import { Tile } from "../Tile/Tile";
+import { Grid } from "./Grid";
 
 class BoardInitializer {
   static rows = 19;
@@ -19,7 +19,7 @@ class BoardInitializer {
     return board;
   }
 
-  static initializeWalls(): WallGrid {
+  static initializeWalls(): Grid {
     // build old arrays exactly as before
     const horizontal: boolean[][] = [];
     for (let i = 0; i < 20; i++) {
@@ -87,20 +87,20 @@ class BoardInitializer {
       vertical.push(row);
     }
 
-    const walls: WallGrid = { horizontal: horizontal, vertical: vertical };
+    const walls: Grid = new Grid(horizontal, vertical);
 
     return walls;
   }
 
-  static initializeDoors(): WallGrid {
-    return {
-      horizontal: Array(20)
+  static initializeDoors(): Grid {
+    return new Grid(
+      Array(20)
         .fill(null)
         .map(() => Array(26).fill(undefined) as boolean[]),
-      vertical: Array(19)
+      Array(19)
         .fill(null)
         .map(() => Array(27).fill(undefined) as boolean[]),
-    };
+    );
   }
 }
 

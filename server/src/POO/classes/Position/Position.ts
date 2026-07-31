@@ -41,6 +41,10 @@ class Position {
     }
   }
 
+  toString(): string {
+    return `${this.x},${this.y}`;
+  }
+
   /**
    *
    * @param direction
