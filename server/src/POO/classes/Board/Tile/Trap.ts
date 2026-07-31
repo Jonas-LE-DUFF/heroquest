@@ -151,7 +151,7 @@ class RockTrap extends Trap {
     if (!position) {
       throw new Error("Position not found for unit in rock trap trigger");
     }
-    game.gameState.board.placeFurniture("rock", position, Direction.UP); // placing a wall on the tile of the trap before dealing damage triggering it
+    game.gameState.board.placeFurniture("cobbleStone", position, Direction.UP); // placing a wall on the tile of the trap before dealing damage triggering it
 
     // dealing damage after placing the wall to make sure that if the trap kills the hero, we still place the wall on the tile
     dealDamage(this.gameId, target, numberOfHits);

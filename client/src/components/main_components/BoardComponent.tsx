@@ -117,7 +117,6 @@ const Board = ({
             : furniture.direction === Direction.LEFT
               ? 180
               : 270;
-
       if (!furnitureData) {
         console.error(
           `Furniture data not found for ID: ${furniture.furnitureType}`,
@@ -127,11 +126,12 @@ const Board = ({
       elements.push(
         <img
           style={{
-            transform: `rotate(${rotation}deg)`,
+            transform: `rotate(${rotation}deg) translate(2px, 2px)`,
             transformOrigin: "20px 20px",
             width: `${furnitureData.length * 40 - 4}px`,
             height: `${furnitureData.width * 40 - 4}px`,
             position: "absolute",
+            display: "block",
             top: "0",
             left: "0",
             zIndex: 1,
@@ -144,7 +144,7 @@ const Board = ({
 
     if (unit) {
       let className = "boardImg";
-      if (tile.type !== TileType.FLOOR) {
+      if (tile.type !== TileType.FLOOR || furniture) {
         className += " onTopImage";
       }
       if (tile.trap && !isInPitTrap(unit)) {

@@ -416,7 +416,6 @@ const GameControls = ({
                     alt="Révéler"
                     className="icon"
                   />
-                  {/* TODO : Trouver un manière de rendre ce bouton selectable */}
                 </button>
               </div>
             </div>
@@ -440,7 +439,7 @@ export { GameControls };
 function getFurnituresAsMenuItems() {
   return furnitures.map((furniture) => (
     <MenuItem key={furniture.furnitureId} value={furniture.furnitureId}>
-      <img src={furniture.imagePath} alt={furniture.furnitureName} />
+      <img style={{ width: "auto", height: "auto", maxHeight: "100px", maxWidth: "100px" }} src={furniture.imagePath} alt={furniture.furnitureName} />
     </MenuItem>
   ));
 }

@@ -259,7 +259,12 @@ describe("rock trap", () => {
     moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The rock trap should place a wall on the tile after the trap in the direction the hero came from
-    //TODO : Check if the wall is placed correctly on the tile after the trap
+    expect(gameState.board.isImpassable(pos.afterMove(Direction.DOWN))).toBe(
+      true,
+    );
+    expect(
+      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,
+    ).toBeNull(); // trap should be removed after triggering
     expect(hero.stats.health).toBe(3); // health should be reduced by 2 from the rock trap
   });
 
@@ -298,7 +303,9 @@ describe("rock trap", () => {
     moveUnit(gameState.board, pos, Direction.DOWN, hero);
 
     // The rock trap should place a wall on the tile after the trap in the direction the hero came from
-    //TODO : Check if the wall is placed correctly on the tile after the trap
+    expect(gameState.board.isImpassable(pos.afterMove(Direction.DOWN))).toBe(
+      true,
+    ); // should not throw an error even if the hero is dead
     expect(
       gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))?.trap,
     ).toBeNull(); // trap should be removed after triggering
