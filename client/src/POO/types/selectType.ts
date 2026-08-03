@@ -3,4 +3,10 @@ import { TrapType } from "../enums/Board/TrapType";
 import { MonsterCategory } from "../enums/Categories/MonsterCategory";
 import { Direction } from "../enums/Direction";
 
-export type SelectType = TileType | TrapType | MonsterCategory | Direction | null;
+export type SelectType =
+  | TileType
+  | TrapType
+  | MonsterCategory
+  | Direction
+  | string
+  | null;

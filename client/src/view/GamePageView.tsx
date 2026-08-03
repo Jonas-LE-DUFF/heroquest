@@ -51,6 +51,13 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
   const selectedPosition = interaction.selectedPosition;
   const selectedEntityId = interaction.selectedEntityId;
   const targetMode = interaction.targeting.mode !== "none";
+  const furniturePreview =
+    interaction.targeting.mode === "placeFurniture"
+      ? {
+          furnitureType: interaction.targeting.furnitureType,
+          direction: interaction.targeting.direction,
+        }
+      : null;
 
   const getPlacementTargetingState = (type: SelectType): TargetingState =>
     type ? { mode: "placingSelectedType" } : { mode: "none" };
@@ -358,6 +365,7 @@ const GamePage: React.FC<GamePageProps> = ({ socket }) => {
             onTileClick={handleTileClick}
             selectedPosition={selectedPosition}
             selectedType={selectedType}
+            furniturePreview={furniturePreview}
           />
         </Grid>
         <Grid className="RightMenu">

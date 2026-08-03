@@ -30,6 +30,8 @@ import ArrowCursorIcon from "/assets/images/icons/actions/arrow-cursor.svg";
 import CancelIcon from "/assets/images/icons/actions/cancel.svg";
 import MagnifingGlassIcon from "/assets/images/icons/actions/magnifying-glass.svg";
 
+import furnitures from "../../shared/game_cards/furnitures.json";
+
 interface GameControlsProps {
   socket: Socket;
   currentGameState: GameAsJson;
@@ -63,8 +65,11 @@ const GameControls = ({
   const [selectedMonster, setSelectedMonster] = useState<MonsterCategory>(
     MonsterCategory.Goblin,
   );
-  const [selectedFurniture, setSelectedFurniture] = useState<TileType>(
-    TileType.FURNITURE,
+  const [selectedFurniture, setSelectedFurniture] = useState<string>(
+    furnitures[0]?.furnitureId || "",
+  );
+  const [furnitureDirection, setFurnitureDirection] = useState<Direction>(
+    Direction.RIGHT,
   );
   const [selectedDoor, setSelectedDoor] = useState<Direction>(Direction.UP);
   const [selectedTrap, setSelectedTrap] = useState<TrapType>(TrapType.PIT_TRAP);
@@ -118,6 +123,57 @@ const GameControls = ({
     },
     [currentGameState.id, playerId, role, selectedUnit, socket],
   );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const directionInClockwiseOrder: Direction[] = [
+        Direction.UP,
+        Direction.RIGHT,
+        Direction.DOWN,
+        Direction.LEFT,
+      ];
+      if (
+        event.key === "r" ||
+        (event.key === "R" && selectedType === selectedFurniture)
+      ) {
+        console.log("Rotating furniture direction");
+        event.preventDefault();
+        const newDirection = (() => {
+          const currentIndex =
+            directionInClockwiseOrder.indexOf(furnitureDirection);
+          const nextIndex =
+            (currentIndex + 1) % directionInClockwiseOrder.length;
+          return directionInClockwiseOrder[nextIndex];
+        })();
+        console.log(`New furniture direction: ${newDirection}`);
+        setFurnitureDirection(newDirection);
+        setInteraction((prev) => ({
+          ...prev,
+          targeting: {
+            mode: "placeFurniture",
+            furnitureType: selectedFurniture,
+            direction: newDirection,
+          },
+        }));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [furnitureDirection, selectedType, selectedFurniture, setInteraction]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -262,9 +318,8 @@ const GameControls = ({
               <Grid size={1}>
                 <Radio
                   checked={
-                    selectedType !== null &&
-                    selectedType !== TileType.FLOOR &&
-                    selectedType in TileType
+                    selectedFurniture !== null &&
+                    selectedType === selectedFurniture
                   }
                   onChange={() => setSelectedType(selectedFurniture)}
                   name="selectedType"
@@ -277,12 +332,20 @@ const GameControls = ({
                 <Select
                   value={selectedFurniture}
                   onChange={(e) => {
-                    setSelectedFurniture(e.target.value as TileType);
-                    setSelectedType(e.target.value as TileType);
+                    const furnitureType = e.target.value;
+                    setSelectedFurniture(furnitureType);
+                    setSelectedType(furnitureType);
+                    setInteraction((prev) => ({
+                      ...prev,
+                      targeting: {
+                        mode: "placeFurniture",
+                        furnitureType,
+                        direction: furnitureDirection,
+                      },
+                    }));
                   }}
                 >
-                  <MenuItem value={TileType.WALL}>Mur</MenuItem>
-                  <MenuItem value={TileType.FURNITURE}>Meuble</MenuItem>
+                  {getFurnituresAsMenuItems()}
                 </Select>
               </Grid>
               <Grid size={1}>
@@ -353,7 +416,6 @@ const GameControls = ({
                     alt="Révéler"
                     className="icon"
                   />
-                  {/* TODO : Trouver un manière de rendre ce bouton selectable */}
                 </button>
               </div>
             </div>
@@ -373,3 +435,11 @@ const GameControls = ({
   );
 };
 export { GameControls };
+
+function getFurnituresAsMenuItems() {
+  return furnitures.map((furniture) => (
+    <MenuItem key={furniture.furnitureId} value={furniture.furnitureId}>
+      <img style={{ width: "auto", height: "auto", maxHeight: "100px", maxWidth: "100px" }} src={furniture.imagePath} alt={furniture.furnitureName} />
+    </MenuItem>
+  ));
+}

@@ -1,0 +1,100 @@
+[
+  {
+    "furnitureId": "alchemistsbench",
+    "furnitureName": "table de l'alchimiste",
+    "imagePath": "assets/images/icons/Tiles/furniture/alchemistsbench.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "blockedwall_single",
+    "furnitureName": "mur bloqué",
+    "imagePath": "assets/images/icons/Tiles/furniture/blockedwall_single.png",
+    "length": 1,
+    "width": 1
+  },
+  {
+    "furnitureId": "blockedwall_double",
+    "furnitureName": "mur bloqué",
+    "imagePath": "assets/images/icons/Tiles/furniture/blockedwall_double.png",
+    "length": 2,
+    "width": 1
+  },
+  {
+    "furnitureId": "bookcase",
+    "furnitureName": "étagère",
+    "imagePath": "assets/images/icons/Tiles/furniture/bookcase.png",
+    "length": 3,
+    "width": 1
+  },
+  {
+    "furnitureId": "chest",
+    "furnitureName": "coffre",
+    "imagePath": "assets/images/icons/Tiles/furniture/chest.png",
+    "length": 1,
+    "width": 1
+  },
+  {
+    "furnitureId": "cobbleStone",
+    "furnitureName": "roche",
+    "imagePath": "assets/images/icons/Tiles/furniture/cobbleStone.jpeg",
+    "length": 1,
+    "width": 1
+  },
+  {
+    "furnitureId": "cupboard",
+    "furnitureName": "placard",
+    "imagePath": "assets/images/icons/Tiles/furniture/cupboard.png",
+    "length": 3,
+    "width": 1
+  },
+  {
+    "furnitureId": "fireplace",
+    "furnitureName": "cheminée",
+    "imagePath": "assets/images/icons/Tiles/furniture/fireplace.png",
+    "length": 3,
+    "width": 1
+  },
+  {
+    "furnitureId": "rack",
+    "furnitureName": "table de torture",
+    "imagePath": "assets/images/icons/Tiles/furniture/rack.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "sorcererstable",
+    "furnitureName": "table du sorcier",
+    "imagePath": "assets/images/icons/Tiles/furniture/sorcererstable.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "table",
+    "furnitureName": "table",
+    "imagePath": "assets/images/icons/Tiles/furniture/table.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "throne",
+    "furnitureName": "trône",
+    "imagePath": "assets/images/icons/Tiles/furniture/throne.png",
+    "length": 1,
+    "width": 1
+  },
+  {
+    "furnitureId": "tomb",
+    "furnitureName": "tombe",
+    "imagePath": "assets/images/icons/Tiles/furniture/tomb.png",
+    "length": 3,
+    "width": 2
+  },
+  {
+    "furnitureId": "weaponsrack",
+    "furnitureName": "rangement d'armes",
+    "imagePath": "assets/images/icons/Tiles/furniture/weaponsrack.png",
+    "length": 3,
+    "width": 1
+  }
+]

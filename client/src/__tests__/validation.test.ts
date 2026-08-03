@@ -12,7 +12,7 @@ import type { HeroAsJson } from "../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import type { MonsterAsJson } from "../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import type { StatsAsJson } from "../POO/interfaces/ClassAsJson/Unit/StatsAsJson";
 import type { BoardAsJson } from "../POO/interfaces/ClassAsJson/Board/BoardAsJson";
-import type { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/TileAsJson";
+import type { TileAsJson } from "../POO/interfaces/ClassAsJson/Board/Tile/TileAsJson";
 import {
   getHeroes,
   getHeroesByPlayerId,
@@ -25,7 +25,6 @@ import {
   getTileByUnitId,
   getPositionByUnitId,
   removeUnitFromBoardById,
-  setTileTypeAtPosition,
 } from "../shared/boardUtils";
 
 // ── Test data builders ──
@@ -108,25 +107,26 @@ function createEmptyBoard(
     height,
     tiles,
     doors: {
-      horizontalDoors: Array.from(
+      horizontal: Array.from(
         { length: width + 1 },
         () => Array(height).fill(false) as boolean[],
       ),
-      verticalDoors: Array.from(
+      vertical: Array.from(
         { length: width },
         () => Array(height + 1).fill(false) as boolean[],
       ),
     },
     walls: {
-      horizontalWalls: Array.from(
+      horizontal: Array.from(
         { length: width + 1 },
         () => Array(height).fill(false) as boolean[],
       ),
-      verticalWalls: Array.from(
+      vertical: Array.from(
         { length: width },
         () => Array(height + 1).fill(false) as boolean[],
       ),
     },
+    furnitures: [],
   };
 }
 
@@ -790,14 +790,6 @@ describe("boardUtils validation", () => {
     expect(getTileByPosition({ x: -1, y: 0 }, board)).toBeNull();
     expect(getTileByPosition({ x: 0, y: -1 }, board)).toBeNull();
     expect(getTileByPosition({ x: 100, y: 0 }, board)).toBeNull();
-  });
-
-  it("setTileTypeAtPosition should update tile type", () => {
-    const board = createEmptyBoard();
-    setTileTypeAtPosition({ x: 5, y: 5 }, TileType.TREASURE, board);
-
-    const tile = getTileByPosition({ x: 5, y: 5 }, board);
-    expect(tile!.type).toBe(TileType.TREASURE);
   });
 
   it("getPositionByUnitId should find unit position", () => {

@@ -38,12 +38,12 @@ const canMove = (
     return { success: false, error: "wall in the way" };
   }
 
-  if (toTile.isImpassable() && !canPhaseThroughWalls) {
+  if (board.isImpassable(to) && !canPhaseThroughWalls) {
     logger.error("Tile is impassable");
     return { success: false, error: "Tile is impassable" };
   }
 
-  const unit = board.getUnitAt(to);
+  const unit = board.isPositionOccupied(to);
 
   if (unit && !canPhaseThroughMonsters) {
     logger.error("tile is occupied");

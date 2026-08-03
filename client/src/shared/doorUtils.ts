@@ -9,14 +9,14 @@ function setDoorAtPosition(
   const { x, y } = position;
 
   if (verticalOrHorizontal === "horizontal") {
-    const row = board.doors.horizontalDoors[x] ?? [];
+    const row = board.doors.horizontal[x] ?? [];
     row[y] = true;
-    board.doors.horizontalDoors[x] = row;
+    board.doors.horizontal[x] = row;
     return board;
   } else if (verticalOrHorizontal === "vertical") {
-    const row = board.doors.verticalDoors[x] ?? [];
+    const row = board.doors.vertical[x] ?? [];
     row[y] = true;
-    board.doors.verticalDoors[x] = row;
+    board.doors.vertical[x] = row;
     return board;
   }
   throw new Error("Invalid door orientation");

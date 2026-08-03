@@ -34,7 +34,6 @@ import { EffectFactory } from "../POO/classes/Effects/Effects";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { SpellElement } from "../POO/enums/SpellElement";
 import { moveUnit, handleDoorOpening } from "../services/MovementService";
-import { TileType } from "../POO/enums/Board/TileType";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
 import {
   createTestMonster,
@@ -95,10 +94,7 @@ describe("moveUnit (MovementService)", () => {
     const board = new Board();
     const hero = createTestHero();
     board.placeUnitAt(hero, new Position(5, 5));
-
-    board.getTileAtPosition(
-      new Position(5, 5).afterMove(Direction.DOWN),
-    )!.type = TileType.WALL;
+    board.placeFurniture("table", new Position(6, 5), Direction.RIGHT); // Place a wall at the destination tile
 
     const result = moveUnit(board, new Position(5, 5), Direction.DOWN, hero);
     expect(result.success).toBe(false);
@@ -156,7 +152,7 @@ describe("placeDoor (Board)", () => {
     const board = new Board();
     const result = board.placeDoor(new Position(5, 5), Direction.RIGHT);
 
-    expect(result.success).toBe(true);
+    expect(result).toBe(true);
     expect(board.hasDoorAt(new Position(5, 5), Direction.RIGHT)).toBe(true);
   });
 
@@ -415,8 +411,7 @@ describe("clearTileAtPosition (GameState)", () => {
       gameState.addUnit(hero);
       gameState.board.placeUnitAt(hero, pos);
       hero.effects.push(moveThroughWallsEffect);
-      gameState.board.getTileAtPosition(pos.afterMove(Direction.DOWN))!.type =
-        TileType.WALL;
+      gameState.board.placeThinWall(pos, Direction.DOWN); // Place a wall at the destination tile
 
       const result = moveUnit(gameState.board, pos, Direction.DOWN, hero);
       expect(result.success).toBe(true);

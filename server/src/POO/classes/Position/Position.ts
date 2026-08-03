@@ -15,16 +15,16 @@ class Position {
     );
   }
 
-  afterMove(direction: Direction): Position {
+  afterMove(direction: Direction, distance: number = 1): Position {
     switch (direction) {
       case Direction.UP:
-        return new Position(this.x - 1, this.y);
+        return new Position(this.x - distance, this.y);
       case Direction.DOWN:
-        return new Position(this.x + 1, this.y);
+        return new Position(this.x + distance, this.y);
       case Direction.LEFT:
-        return new Position(this.x, this.y - 1);
+        return new Position(this.x, this.y - distance);
       case Direction.RIGHT:
-        return new Position(this.x, this.y + 1);
+        return new Position(this.x, this.y + distance);
     }
   }
 
@@ -38,6 +38,28 @@ class Position {
         return new Position(this.x, this.y);
       case Direction.RIGHT:
         return new Position(this.x, this.y + 1);
+    }
+  }
+
+  toString(): string {
+    return `${this.x},${this.y}`;
+  }
+
+  /**
+   *
+   * @param direction
+   * @returns the direction that is perpendicular to the given direction, in a clockwise manner
+   */
+  static getPerpendicularDirection(direction: Direction): Direction {
+    switch (direction) {
+      case Direction.UP:
+        return Direction.RIGHT;
+      case Direction.DOWN:
+        return Direction.LEFT;
+      case Direction.LEFT:
+        return Direction.UP;
+      case Direction.RIGHT:
+        return Direction.DOWN;
     }
   }
 }

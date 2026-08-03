@@ -8,4 +8,5 @@ export type SelectType =
   | TrapType
   | MonsterCategory
   | Direction
+  | string
   | null;

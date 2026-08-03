@@ -11,9 +11,9 @@ import { EffectType } from "../../../enums/Effects/EffectType";
 import { Effect } from "../../Effects/Effects";
 import { EffectDuration } from "../../../enums/Effects/EffectDuration";
 import { GameService } from "../../../../services/GameService";
-import { TileType } from "../../../enums/Board/TileType";
-import { TrapAsJson } from "../../../interfaces/ClassAsJson/Board/TrapAsJson";
+import { TrapAsJson } from "../../../interfaces/ClassAsJson/Board/Tile/TrapAsJson";
 import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
+import { Direction } from "../../../enums/Direction";
 
 abstract class Trap {
   protected readonly gameId: string;
@@ -151,11 +151,7 @@ class RockTrap extends Trap {
     if (!position) {
       throw new Error("Position not found for unit in rock trap trigger");
     }
-    const tile = game.gameState.board.getTileAtPosition(position);
-    if (!tile) {
-      throw new Error("Tile not found on board in rock trap trigger");
-    }
-    tile.type = TileType.WALL;
+    game.gameState.board.placeFurniture("cobbleStone", position, Direction.UP); // placing a wall on the tile of the trap before dealing damage triggering it
 
     // dealing damage after placing the wall to make sure that if the trap kills the hero, we still place the wall on the tile
     dealDamage(this.gameId, target, numberOfHits);

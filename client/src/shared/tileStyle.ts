@@ -1,8 +1,6 @@
 import { Direction } from "../POO/enums/Direction";
-import { TileType } from "../POO/enums/Board/TileType";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
 import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
-import { getTileByPosition } from "./boardUtils";
 
 const TILESIZE = "40px";
 
@@ -30,12 +28,7 @@ export const getTileStyle = (
   gameState: GameStateAsJson,
   selection: PositionAsJson | null,
 ) => {
-  const tile = getTileByPosition({ x, y }, gameState.board);
-
   const isSelected = x === selection?.x && y === selection?.y;
-
-  const isFurniture = tile?.type === TileType.FURNITURE;
-  const isWall = tile?.type === TileType.WALL;
 
   const borderDirectionSet: Direction[] = [];
 
@@ -65,56 +58,56 @@ export const getTileStyle = (
 
   const doors = gameState.board.doors;
   // top door -> horizontal[x][y]
-  if (doors?.horizontalDoors?.[x]?.[y]) {
+  if (doors?.horizontal?.[x]?.[y]) {
     setBorderTop(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
   }
   // bottom door -> horizontal[x+1][y]
-  if (doors?.horizontalDoors?.[x + 1]?.[y]) {
+  if (doors?.horizontal?.[x + 1]?.[y]) {
     setBorderBottom(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
   }
   // left door -> vertical[x][y]
-  if (doors?.verticalDoors?.[x]?.[y]) {
+  if (doors?.vertical?.[x]?.[y]) {
     setBorderLeft(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
   }
   // right door -> vertical[x][y+1]
-  if (doors?.verticalDoors?.[x]?.[y + 1]) {
+  if (doors?.vertical?.[x]?.[y + 1]) {
     setBorderRight(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
   }
 
-  if (doors?.horizontalDoors?.[x]?.[y] === false) {
+  if (doors?.horizontal?.[x]?.[y] === false) {
     setAngleTopLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
   }
 
-  if (doors?.horizontalDoors?.[x + 1]?.[y] === false) {
+  if (doors?.horizontal?.[x + 1]?.[y] === false) {
     setAngleBottomLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
   }
 
-  if (doors?.verticalDoors?.[x]?.[y] === false) {
+  if (doors?.vertical?.[x]?.[y] === false) {
     setAngleTopLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomLeft(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
   }
 
-  if (doors?.verticalDoors?.[x]?.[y + 1] === false) {
+  if (doors?.vertical?.[x]?.[y + 1] === false) {
     setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
   }
   const walls = gameState.board.walls;
   // top wall -> horizontal[x][y]
-  if (walls?.horizontalWalls?.[x]?.[y]) {
+  if (walls?.horizontal?.[x]?.[y]) {
     setBorderTop();
   }
   // bottom wall -> horizontal[x+1][y]
-  if (walls?.horizontalWalls?.[x + 1]?.[y]) {
+  if (walls?.horizontal?.[x + 1]?.[y]) {
     setBorderBottom();
   }
   // left wall -> vertical[x][y]
-  if (walls?.verticalWalls?.[x]?.[y]) {
+  if (walls?.vertical?.[x]?.[y]) {
     setBorderLeft();
   }
   // right wall -> vertical[x][y+1]
-  if (walls?.verticalWalls?.[x]?.[y + 1]) {
+  if (walls?.vertical?.[x]?.[y + 1]) {
     setBorderRight();
   }
 
@@ -127,20 +120,6 @@ export const getTileStyle = (
     };
   }
 
-  if (isWall) {
-    setBorderAllSides("#464241ff");
-    style = {
-      ...style,
-      backgroundColor: "#4e4e4e93",
-    };
-  }
-  if (isFurniture) {
-    setBorderAllSides("#3e2723ff");
-    style = {
-      ...style,
-      backgroundColor: "#583423ff",
-    };
-  }
   if (isSelected) {
     style = {
       ...style,
