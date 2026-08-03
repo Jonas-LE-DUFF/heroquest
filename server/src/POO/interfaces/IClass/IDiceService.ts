@@ -5,12 +5,12 @@ export type RollProps = {
   wishedNumberOfDices: number;
   playerId: string;
   kind: "fight" | "red";
+  callback: (results: FightDiceFaces[] | number[]) => void;
 };
 
 export interface IDiceService {
   rollDice(rollProps: RollProps): {
     success: boolean;
-    results?: FightDiceFaces[];
     error?: string;
   };
   resolveWithVector(

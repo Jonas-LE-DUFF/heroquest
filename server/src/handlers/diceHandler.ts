@@ -84,13 +84,15 @@ function handleRollDice(socket: Socket) {
       if (player.role === PlayerRole.GAME_MASTER) {
         wishedNumberOfDices = numberOfDice;
         const dice = DiceServiceRegistry.get();
-        const result = dice.rollDice({
+        dice.rollDice({
           gameId,
           wishedNumberOfDices,
           playerId,
           kind,
+          callback: (results) => {
+            callback(successResponse(results));
+          },
         });
-        return callback(result);
       }
 
       const authorizedHero = game?.gameState.getHeroById(
@@ -129,13 +131,15 @@ function handleRollDice(socket: Socket) {
       }
 
       const dice = DiceServiceRegistry.get();
-      const result = dice.rollDice({
+      dice.rollDice({
         gameId,
         wishedNumberOfDices,
         playerId,
         kind,
+        callback: (results) => {
+          callback(successResponse(results));
+        },
       });
-      callback(result);
     }),
   );
 }

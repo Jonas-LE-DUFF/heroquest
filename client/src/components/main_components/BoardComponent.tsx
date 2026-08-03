@@ -100,12 +100,6 @@ const Board = ({
     }
 
     if (furniture) {
-      console.log(
-        "Rendering furniture:",
-        furniture.furnitureType,
-        "at position:",
-        furniture.position,
-      );
       const furnitureData = furnituresJson.find(
         (f) => f.furnitureId === furniture.furnitureType,
       );

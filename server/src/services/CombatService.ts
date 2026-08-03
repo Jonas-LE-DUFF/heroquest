@@ -15,7 +15,6 @@ function fight(
   attacker: Unit<MonsterCategory | HeroCategory>,
   defender: Unit<MonsterCategory | HeroCategory>,
 ) {
-  const defenderDiceAmount = defender.getDefenseDiceCount();
   const attackDiceAmount = attacker.getAttackDiceCount();
 
   const dice = DiceServiceRegistry.get();
@@ -24,29 +23,38 @@ function fight(
     wishedNumberOfDices: attackDiceAmount,
     playerId: attacker.controlledByPlayerId,
     kind: "fight",
+    callback: (result) => defend(game, defender, result),
   });
-  if (!attackerRoll.success || !attackerRoll.results) {
-    throw new Error("Failed to roll fight dice for Djinn DIE spell.");
+  if (!attackerRoll.success) {
+    throw new Error("Failed to roll fight dice.");
   }
 
-  // wait for attacker
+  // wait for attacker to roll dice
+}
 
-  const defenderRoll = dice.rollDice({
+function defend(
+  game: Game,
+  defender: Unit<MonsterCategory | HeroCategory>,
+  attackResults: FightDiceFaces[] | number[],
+): FightDiceFaces[] | number[] {
+  const dice = DiceServiceRegistry.get();
+  const defenderDiceAmount = defender.getDefenseDiceCount();
+  dice.rollDice({
     gameId: game.id,
     wishedNumberOfDices: defenderDiceAmount,
     playerId: defender.controlledByPlayerId,
     kind: "fight",
-  });
-  if (!defenderRoll.success || !defenderRoll.results) {
-    throw new Error("Failed to roll fight dice for Djinn DIE spell monster.");
-  }
-  const defenderThrow = defenderRoll.results;
-  const attackerThrow = attackerRoll.results;
-  const damageDealt =
-    attackerThrow.filter((d) => d == FightDiceFaces.Hit).length -
-    defenderThrow.filter((d) => d == FightDiceFaces.BlackShield).length;
+    callback: (defenderResults) => {
+      const defenderThrow = defenderResults as FightDiceFaces[];
+      const attackerThrow = attackResults as FightDiceFaces[];
+      const damageDealt =
+        attackerThrow.filter((d) => d == FightDiceFaces.Hit).length -
+        defenderThrow.filter((d) => d == FightDiceFaces.BlackShield).length;
 
-  dealDamage(game.id, defender, damageDealt);
+      dealDamage(game.id, defender, damageDealt);
+    },
+  });
+  return attackResults; // For now, just return the attack results as-is.
 }
 
 function dealDamage(

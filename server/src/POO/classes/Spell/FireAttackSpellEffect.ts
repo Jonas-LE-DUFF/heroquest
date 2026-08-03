@@ -17,21 +17,20 @@ class FireAttackSpellEffect extends SpellEffect {
 
   applyEffect(target: Unit<HeroCategory | MonsterCategory>): void {
     const dice = DiceServiceRegistry.get();
-    const result = dice.rollDice({
+    dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: this.damageAmount,
       playerId: target.controlledByPlayerId,
       kind: "red",
+      callback: (result) => {
+        const redDiceRoll = result.filter((value) => {
+          const val = value;
+          return val === 5 || val === 6;
+        });
+        const totalDamage = this.damageAmount - redDiceRoll.length;
+        dealDamage(this.gameId, target, totalDamage);
+      },
     });
-    const redDiceRoll = result.results?.filter((value) => {
-      const val = value as number;
-      return val === 5 || val === 6;
-    });
-    if (!redDiceRoll) {
-      throw new Error("Error rolling red dice for Fire Attack Spell Effect.");
-    }
-    const totalDamage = this.damageAmount - redDiceRoll.length;
-    dealDamage(this.gameId, target, totalDamage);
   }
 }
 
