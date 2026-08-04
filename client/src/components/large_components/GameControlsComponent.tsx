@@ -31,6 +31,7 @@ import CancelIcon from "/assets/images/icons/actions/cancel.svg";
 import MagnifingGlassIcon from "/assets/images/icons/actions/magnifying-glass.svg";
 
 import furnitures from "../../shared/game_cards/furnitures.json";
+import { getFurnituresAsMenuItems } from "../../shared/furnitureUtils";
 
 interface GameControlsProps {
   socket: Socket;
@@ -127,13 +128,7 @@ const GameControls = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.isContentEditable)
-      ) {
+      if (!target) {
         return;
       }
 
@@ -143,9 +138,10 @@ const GameControls = ({
         Direction.DOWN,
         Direction.LEFT,
       ];
+
       if (
-        event.key === "r" ||
-        (event.key === "R" && selectedType === selectedFurniture)
+        (event.key === "r" || event.key === "R") &&
+        selectedType === selectedFurniture
       ) {
         console.log("Rotating furniture direction");
         event.preventDefault();
@@ -321,7 +317,17 @@ const GameControls = ({
                     selectedFurniture !== null &&
                     selectedType === selectedFurniture
                   }
-                  onChange={() => setSelectedType(selectedFurniture)}
+                  onChange={() => {
+                    setSelectedType(selectedFurniture);
+                    setInteraction((prev) => ({
+                      ...prev,
+                      targeting: {
+                        mode: "placeFurniture",
+                        furnitureType: selectedFurniture,
+                        direction: furnitureDirection,
+                      },
+                    }));
+                  }}
                   name="selectedType"
                 />
               </Grid>
@@ -435,11 +441,3 @@ const GameControls = ({
   );
 };
 export { GameControls };
-
-function getFurnituresAsMenuItems() {
-  return furnitures.map((furniture) => (
-    <MenuItem key={furniture.furnitureId} value={furniture.furnitureId}>
-      <img style={{ width: "auto", height: "auto", maxHeight: "100px", maxWidth: "100px" }} src={furniture.imagePath} alt={furniture.furnitureName} />
-    </MenuItem>
-  ));
-}
