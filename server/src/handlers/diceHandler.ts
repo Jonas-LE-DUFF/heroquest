@@ -14,6 +14,8 @@ import {
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
 import { grantSpecialRollAuthorization } from "../services/DiceService";
 import { logger } from "../utils/logger";
+import { emitGameStateUpdate } from "../utils/gameStateEmitter";
+import { ServerHeroQuest } from "../server/ServerHeroQuest";
 
 export function registerDiceHandlers(socket: Socket) {
   handleSpecialRollAuthorization(socket);
@@ -30,23 +32,25 @@ function handleSpecialRollAuthorization(socket: Socket) {
       (socket, data, callback) => {
         const { gameId, playerId, numberOfDices, typeOfDices, playerClass } =
           data;
-        const gameState = GameService.getGame(gameId);
+        const game = GameService.getGame(gameId);
 
         if (!requireGameExists(gameId)) {
           return callback(errorResponse("Partie non trouvée"));
         }
 
-        if (!requireGameMaster(playerId, gameState!)) {
+        if (!requireGameMaster(playerId, game!)) {
           return callback(errorResponse("Vous n'êtes pas le maître du jeu"));
         }
 
         grantSpecialRollAuthorization(
-          gameState!,
+          game!,
           numberOfDices,
           typeOfDices,
           playerClass,
         );
 
+        const io = ServerHeroQuest.getServerInstance().getIo();
+        emitGameStateUpdate(io, gameId, game!);
         callback(successResponse());
       },
     ),
@@ -152,6 +156,12 @@ function handleProvideRollVector(socket: Socket) {
       provideRollVectorSchema,
       (socket, data, callback) => {
         const { gameId, playerId, vector, boost } = data;
+
+        if (!requireGameExists(gameId)) {
+          return callback(errorResponse("Partie non trouvée"));
+        }
+        const game = GameService.getGame(gameId);
+
         const dice = DiceServiceRegistry.get();
         const vectorWithBoost = { ...vector, boost };
         const result = dice.resolveWithVector(
@@ -159,6 +169,8 @@ function handleProvideRollVector(socket: Socket) {
           playerId,
           vectorWithBoost,
         );
+        const io = ServerHeroQuest.getServerInstance().getIo();
+        emitGameStateUpdate(io, gameId, game!);
         callback(result);
       },
     ),

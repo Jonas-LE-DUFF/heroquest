@@ -14,8 +14,6 @@ import { GameService } from "../../../../services/GameService";
 import { TrapAsJson } from "../../../interfaces/ClassAsJson/Board/Tile/TrapAsJson";
 import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
 import { Direction } from "../../../enums/Direction";
-import { emitGameStateUpdate } from "../../../../utils/gameStateEmitter";
-import { ServerHeroQuest } from "../../../../server/ServerHeroQuest";
 
 abstract class Trap {
   protected readonly gameId: string;
@@ -118,11 +116,6 @@ class PitTrap extends Trap {
         { stat: StatType.DEFENSE, value: -1 },
       ),
     );
-    emitGameStateUpdate(
-      ServerHeroQuest.getServerInstance().getIo(),
-      this.gameId,
-      GameService.getGame(this.gameId)!,
-    );
     return; // if the hero already has the pit trap effect, we don't apply it again
   }
 
@@ -165,11 +158,6 @@ class RockTrap extends Trap {
 
         // dealing damage after placing the wall to make sure that if the trap kills the hero, we still place the wall on the tile
         dealDamage(this.gameId, target, numberOfHits);
-        emitGameStateUpdate(
-          ServerHeroQuest.getServerInstance().getIo(),
-          this.gameId,
-          game,
-        );
       },
     });
   }
@@ -195,15 +183,6 @@ class SpearTrap extends Trap {
           (face) => face === FightDiceFaces.Hit,
         ).length;
         dealDamage(this.gameId, target, numberOfHits);
-        const game = GameService.getGame(this.gameId);
-        if (!game) {
-          throw new Error("Game not found in spear trap trigger");
-        }
-        emitGameStateUpdate(
-          ServerHeroQuest.getServerInstance().getIo(),
-          this.gameId,
-          game,
-        );
       },
     });
   }
