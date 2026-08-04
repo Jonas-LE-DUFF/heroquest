@@ -9,10 +9,7 @@ export type RollProps = {
 };
 
 export interface IDiceService {
-  rollDice(rollProps: RollProps): {
-    success: boolean;
-    error?: string;
-  };
+  rollDice(rollProps: RollProps): void;
   resolveWithVector(
     gameId: string,
     playerId: string,

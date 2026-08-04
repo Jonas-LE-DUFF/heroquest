@@ -5,7 +5,6 @@ import { Game } from "../POO/classes/Server/Game";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { checkUnitDefeat } from "../shared/death/death";
 import { DiceServiceRegistry } from "./DiceServiceRegistry";
-import { logger } from "../utils/logger";
 
 function fight(
   game: Game,
@@ -15,16 +14,13 @@ function fight(
   const attackDiceAmount = attacker.getAttackDiceCount();
 
   const dice = DiceServiceRegistry.get();
-  const attackerRoll = dice.rollDice({
+  dice.rollDice({
     gameId: game.id,
     wishedNumberOfDices: attackDiceAmount,
     playerId: attacker.controlledByPlayerId,
     kind: "fight",
     callback: (result) => defend(game, defender, result),
   });
-  if (!attackerRoll.success) {
-    throw new Error("Failed to roll fight dice.");
-  }
 
   // wait for attacker to roll dice
 }
@@ -33,7 +29,7 @@ function defend(
   game: Game,
   defender: Unit<MonsterCategory | HeroCategory>,
   attackResults: FightDiceFaces[] | number[],
-): FightDiceFaces[] | number[] {
+): void {
   const dice = DiceServiceRegistry.get();
   const defenderDiceAmount = defender.getDefenseDiceCount();
   dice.rollDice({
@@ -51,7 +47,6 @@ function defend(
       dealDamage(game.id, defender, damageDealt);
     },
   });
-  return attackResults; // For now, just return the attack results as-is.
 }
 
 function dealDamage(
