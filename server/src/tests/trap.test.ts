@@ -4,6 +4,7 @@ import { Game } from "../POO/classes/Server/Game";
 import { TrapType } from "../POO/enums/Board/TrapType";
 import { FightDiceFaces } from "../POO/enums/Dices/FightDiceFaces";
 import { Direction } from "../POO/enums/Direction";
+import { RollProps } from "../POO/interfaces/IClass/IDiceService";
 import { ServerHeroQuest } from "../server/ServerHeroQuest";
 import { DiceServiceRegistry } from "../services/DiceServiceRegistry";
 import { moveUnit } from "../services/MovementService";
@@ -198,10 +199,12 @@ describe("jump above traps", () => {
     )!.trap!.isRevealed = true;
 
     DiceServiceRegistry.override({
-      rollDice: jest.fn(() => ({
-        success: true,
-        results: [FightDiceFaces.WhiteShield],
-      })),
+      rollDice: jest.fn((rollProps: RollProps) => {
+        rollProps.callback([FightDiceFaces.WhiteShield]); // simulate a successful jump
+        return {
+          success: true,
+        };
+      }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the jump to succeed
 
@@ -243,15 +246,13 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollDice: jest.fn(() => {
-        return {
-          success: true,
-          results: [
-            FightDiceFaces.Hit,
-            FightDiceFaces.BlackShield,
-            FightDiceFaces.Hit,
-          ],
-        };
+      rollDice: jest.fn((rollProps: RollProps) => {
+        rollProps.callback([
+          FightDiceFaces.Hit,
+          FightDiceFaces.BlackShield,
+          FightDiceFaces.Hit,
+        ]);
+        return { success: true };
       }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
@@ -291,11 +292,9 @@ describe("rock trap", () => {
     );
 
     DiceServiceRegistry.override({
-      rollDice: jest.fn(() => {
-        return {
-          success: true,
-          results: [FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit],
-        };
+      rollDice: jest.fn((rollProps: RollProps) => {
+        rollProps.callback([FightDiceFaces.Hit, FightDiceFaces.Hit, FightDiceFaces.Hit]);
+        return { success: true };
       }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     }); // Force the rock trap to deal 2 damage
@@ -335,11 +334,9 @@ describe("spear trap", () => {
       TrapType.SPEAR_TRAP,
     );
     DiceServiceRegistry.override({
-      rollDice: jest.fn(() => {
-        return {
-          success: true,
-          results: [FightDiceFaces.Hit],
-        };
+      rollDice: jest.fn((rollProps: RollProps) => {
+        rollProps.callback([FightDiceFaces.Hit]);
+        return { success: true };
       }),
       resolveWithVector: jest.fn().mockResolvedValue({ success: true }),
     });
