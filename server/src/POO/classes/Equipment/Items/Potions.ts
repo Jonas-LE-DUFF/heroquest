@@ -12,7 +12,6 @@ import { DiceServiceRegistry } from "../../../../services/DiceServiceRegistry";
 import { MonsterCategory } from "../../../enums/Categories/MonsterCategory";
 import { HeroCategory } from "../../../enums/Categories/HeroCategory";
 import { Unit } from "../../Units/Unit";
-import { logger } from "../../../../utils/logger";
 
 abstract class Potion extends Item {
   effect: Effect | null;
@@ -123,33 +122,32 @@ class HealthPotion extends Potion {
     target: Hero,
   ): { success: boolean; error?: string } {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollDice({
+    dice.rollDice({
       gameId,
       wishedNumberOfDices: 1,
       playerId: target.controlledByPlayerId,
       kind: "red",
+      callback: (results) => {
+        const heal = results?.[0];
+        if (
+          target.stats.health === undefined ||
+          target.stats.maxHealth === undefined ||
+          heal === undefined
+        ) {
+          return {
+            success: false,
+            error:
+              "Failed to apply health potion effect, values were undefined",
+          };
+        }
+
+        target.stats.health = Math.min(
+          target.stats.maxHealth,
+          target.stats.health + heal,
+        );
+        return { success: true };
+      },
     });
-    if (!diceResult.success) {
-      logger.error("Failed to roll dice for Health Potion:");
-      return { success: false, error: "Failed to roll dice for Health Potion" };
-    }
-
-    const heal = diceResult.results?.[0];
-    if (
-      target.stats.health === undefined ||
-      target.stats.maxHealth === undefined ||
-      heal === undefined
-    ) {
-      return {
-        success: false,
-        error: "Failed to apply health potion effect, values were undefined",
-      };
-    }
-
-    target.stats.health = Math.min(
-      target.stats.maxHealth,
-      target.stats.health + heal,
-    );
     return { success: true };
   }
 }

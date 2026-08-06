@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
-import { GameControls } from "../large_components/GameControlsComponent";
+import { GameControls } from "../large_components/GameControls/GameControlsComponent";
 import { Socket } from "socket.io-client";
 import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";

@@ -116,41 +116,37 @@ function disarmTrap(socket: Socket) {
       }
 
       const dice = DiceServiceRegistry.get();
-      const roll = dice.rollDice({
+      dice.rollDice({
         gameId,
         wishedNumberOfDices: 1,
         playerId: hero.id,
         kind: "fight",
+        callback: (results) => {
+          const result = results[0];
+          if (hero.getCategory() !== HeroCategory.Dwarf) {
+            if (result === FightDiceFaces.Hit) {
+              dealDamage(gameId, hero, 1);
+            } else {
+              tile.trap = null;
+            }
+          } else {
+            if (result === FightDiceFaces.BlackShield) {
+              dealDamage(gameId, hero, 1);
+            } else {
+              tile.trap = null;
+            }
+          }
+          logger.info(
+            `Hero ${hero.name} attempted to disarm trap at position (${position.x}, ${position.y}) with roll result: ${result}`,
+          );
+
+          const io = ServerHeroQuest.getServerInstance().getIo();
+
+          emitGameStateUpdate(io, gameId, game!);
+
+          return callback(successResponse());
+        },
       });
-      if (!roll.success) {
-        return callback(
-          errorResponse("Une erreur est survenue lors du lancer de dés."),
-        );
-      }
-      const result = roll.results![0];
-      if (hero.getCategory() !== HeroCategory.Dwarf) {
-        if (result === FightDiceFaces.Hit) {
-          dealDamage(gameId, hero, 1);
-        } else {
-          tile.trap = null;
-        }
-      } else {
-        if (result === FightDiceFaces.BlackShield) {
-          dealDamage(gameId, hero, 1);
-        } else {
-          tile.trap = null;
-        }
-      }
-
-      logger.info(
-        `Hero ${hero.name} attempted to disarm trap at position (${position.x}, ${position.y}) with roll result: ${result}`,
-      );
-
-      const io = ServerHeroQuest.getServerInstance().getIo();
-
-      emitGameStateUpdate(io, gameId, game!);
-
-      return callback(successResponse());
     }),
   );
 }

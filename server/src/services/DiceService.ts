@@ -11,6 +11,7 @@ type PendingRollEntry = {
   results: number[];
   diceType: "fight" | "red";
   expiresAt: number; // pour éviter les fuites mémoire
+  callback: (results: FightDiceFaces[] | number[]) => void;
 };
 type PendingRoll = Map<string, PendingRollEntry>; // clé: playerId, valeur: PendingRollEntry
 
@@ -22,7 +23,7 @@ export class DiceService implements IDiceService {
     results?: FightDiceFaces[];
     error?: string;
   } {
-    const { gameId, wishedNumberOfDices, playerId, kind } = rollProps;
+    const { gameId, wishedNumberOfDices, playerId, kind, callback } = rollProps;
     const socket = findSocketByPlayerId(gameId, playerId);
     if (!socket) {
       logger.error("No socket found for player:", playerId);
@@ -56,6 +57,7 @@ export class DiceService implements IDiceService {
       results,
       diceType: kind,
       expiresAt: Date.now() + 30_000, // expire après 30s
+      callback,
     });
     this.pendingRollsGames.set(gameId, pendingRolls);
 
@@ -63,7 +65,7 @@ export class DiceService implements IDiceService {
       typeOfDices: kind,
     });
 
-    return { success: true, results: results };
+    return { success: true };
   }
 
   resolveWithVector(
@@ -90,6 +92,8 @@ export class DiceService implements IDiceService {
         z: Math.random() * 2 - 1,
         boost: Math.random() * 500 + 300,
       };
+    } else {
+      pending.callback(pending.results);
     }
 
     pendingRolls?.delete(playerId);

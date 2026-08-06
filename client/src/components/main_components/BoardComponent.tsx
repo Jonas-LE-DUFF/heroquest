@@ -26,8 +26,9 @@ import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJs
 import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import furnituresJson from "../../shared/game_cards/furnitures.json";
 import { Direction } from "../../POO/enums/Direction";
+import { isFurniturePlacementValid } from "../../shared/furnitureUtils";
 
-interface FurniturePreview {
+export interface FurniturePreview {
   furnitureType: string;
   direction: Direction;
 }
@@ -100,12 +101,6 @@ const Board = ({
     }
 
     if (furniture) {
-      console.log(
-        "Rendering furniture:",
-        furniture.furnitureType,
-        "at position:",
-        furniture.position,
-      );
       const furnitureData = furnituresJson.find(
         (f) => f.furnitureId === furniture.furnitureType,
       );
@@ -198,6 +193,21 @@ const Board = ({
     );
 
     if (!furnitureData) {
+      return null;
+    }
+
+    const boardWidth = game.gameState.board.tiles.length;
+    const boardHeight = game.gameState.board.tiles[0].length;
+
+    if (
+      !isFurniturePlacementValid(
+        hoveredTile,
+        furnitureData,
+        furniturePreview,
+        boardWidth,
+        boardHeight,
+      )
+    ) {
       return null;
     }
 

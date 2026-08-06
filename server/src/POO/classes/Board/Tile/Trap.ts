@@ -29,16 +29,20 @@ abstract class Trap {
 
   public walkOnTrap(target: Unit<HeroCategory | MonsterCategory>): void {
     if (this.isRevealed && target.getRole() === PlayerRole.HERO) {
-      if (this.jumpAboveTrap(target as Hero)) {
-        return;
-      }
+      this.jumpAboveTrap(target as Hero);
+      return;
     }
     if (!(target instanceof Hero)) {
       //monster don't trigger traps, only heroes do
       return;
     }
+    this.preTriggeringEffects(target);
+    this.trigger(target);
+  }
 
-    //doing this before triggering the trap to make sure that if the trap kills the hero, we still remove the trap from the tile if it can't be triggered multiple times
+  private preTriggeringEffects(
+    target: Unit<HeroCategory | MonsterCategory>,
+  ): void {
     if (!this.canBeTriggeredMultipleTimes) {
       const game = GameService.getGame(this.gameId);
       if (!game) {
@@ -54,27 +58,24 @@ abstract class Trap {
       }
       tile.trap = null; // removing the trap from the tile after it's been triggered if it can't be triggered multiple times
     }
-
-    this.trigger(target);
     this.hasBeenTriggered = true;
     this.isRevealed = true;
   }
 
-  private jumpAboveTrap(target: Hero): boolean {
+  private jumpAboveTrap(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const result = dice.rollDice({
+    dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: 1,
       playerId: target.controlledByPlayerId,
       kind: "fight",
+      callback: (results) => {
+        if (results[0] === FightDiceFaces.Hit) {
+          this.preTriggeringEffects(target);
+          this.trigger(target);
+        }
+      },
     });
-    if (!result.success || !result.results) {
-      throw new Error(result.error || "Failed to roll fight dice");
-    }
-    if (result.results[0] === FightDiceFaces.Hit) {
-      return false;
-    }
-    return true;
   }
   abstract trigger(target: Hero): void;
 
@@ -128,33 +129,37 @@ class RockTrap extends Trap {
 
   trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollDice({
+
+    dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: 3,
       playerId: target.controlledByPlayerId,
       kind: "fight",
+      callback: (results) => {
+        const fightResults = results as FightDiceFaces[];
+        const numberOfHits = fightResults.filter(
+          (face) => face === FightDiceFaces.Hit,
+        ).length;
+
+        // placing a wall on the tile of the trap before dealing damage triggering it
+        const game = GameService.getGame(this.gameId);
+        if (!game) {
+          throw new Error("Game not found in rock trap trigger");
+        }
+        const position = game.gameState.board.getPositionOfUnit(target.id);
+        if (!position) {
+          throw new Error("Position not found for unit in rock trap trigger");
+        }
+        game.gameState.board.placeFurniture(
+          "cobbleStone",
+          position,
+          Direction.UP,
+        ); // placing a wall on the tile of the trap before dealing damage triggering it
+
+        // dealing damage after placing the wall to make sure that if the trap kills the hero, we still place the wall on the tile
+        dealDamage(this.gameId, target, numberOfHits);
+      },
     });
-
-    if (!diceResult.success || !diceResult.results) {
-      throw new Error(diceResult.error || "Failed to roll fight dice");
-    }
-    const numberOfHits = diceResult.results.filter(
-      (face) => face === FightDiceFaces.Hit,
-    ).length;
-
-    // placing a wall on the tile of the trap before dealing damage triggering it
-    const game = GameService.getGame(this.gameId);
-    if (!game) {
-      throw new Error("Game not found in rock trap trigger");
-    }
-    const position = game.gameState.board.getPositionOfUnit(target.id);
-    if (!position) {
-      throw new Error("Position not found for unit in rock trap trigger");
-    }
-    game.gameState.board.placeFurniture("cobbleStone", position, Direction.UP); // placing a wall on the tile of the trap before dealing damage triggering it
-
-    // dealing damage after placing the wall to make sure that if the trap kills the hero, we still place the wall on the tile
-    dealDamage(this.gameId, target, numberOfHits);
   }
 
   getTrapType() {
@@ -167,19 +172,19 @@ class SpearTrap extends Trap {
 
   trigger(target: Hero): void {
     const dice = DiceServiceRegistry.get();
-    const diceResult = dice.rollDice({
+    dice.rollDice({
       gameId: this.gameId,
       wishedNumberOfDices: 1,
       playerId: target.controlledByPlayerId,
       kind: "fight",
+      callback: (results) => {
+        const fightResults = results as FightDiceFaces[];
+        const numberOfHits = fightResults.filter(
+          (face) => face === FightDiceFaces.Hit,
+        ).length;
+        dealDamage(this.gameId, target, numberOfHits);
+      },
     });
-    if (!diceResult.success || !diceResult.results) {
-      throw new Error(diceResult.error || "Failed to roll fight dice");
-    }
-    const numberOfHits = diceResult.results.filter(
-      (face) => face === FightDiceFaces.Hit,
-    ).length;
-    dealDamage(this.gameId, target, numberOfHits);
   }
 
   getTrapType() {
