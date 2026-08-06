@@ -1,8 +1,13 @@
 import { Direction } from "../POO/enums/Direction";
 import { PositionAsJson } from "../POO/interfaces/ClassAsJson/PositionAsJson";
-import { GameStateAsJson } from "../POO/interfaces/ClassAsJson/Server/GameStateAsJson";
+import { GameAsJson } from "../POO/interfaces/ClassAsJson/Server/GameAsJson";
 
 const TILESIZE = "40px";
+const FIRST_PLAYER_COLOR = "#3f7a41ff";
+const SECOND_PLAYER_COLOR = "#7a3f3fff";
+const THIRD_PLAYER_COLOR = "#3f3f7aff";
+const FOURTH_PLAYER_COLOR = "#7a7a3fff";
+const FIFTH_PLAYER_COLOR = "#7a3f7aff";
 
 interface TileStyle {
   alignItems: string;
@@ -25,10 +30,18 @@ interface TileStyle {
 export const getTileStyle = (
   x: number,
   y: number,
-  gameState: GameStateAsJson,
+  game: GameAsJson,
   selection: PositionAsJson | null,
 ) => {
   const isSelected = x === selection?.x && y === selection?.y;
+
+  const markedByPlayers: number[] = [];
+  for (let i = 0; i < game.players.length; i++) {
+    const markedPosition = game.players[i].markedPosition;
+    if (markedPosition?.x === x && markedPosition?.y === y) {
+      markedByPlayers.push(i + 1);
+    }
+  }
 
   const borderDirectionSet: Direction[] = [];
 
@@ -56,7 +69,7 @@ export const getTileStyle = (
     overflow: "visible",
   };
 
-  const doors = gameState.board.doors;
+  const doors = game.gameState.board.doors;
   // top door -> horizontal[x][y]
   if (doors?.horizontal?.[x]?.[y]) {
     setBorderTop(DOOR_BORDER_COLOR, DOOR_BORDER_WIDTH);
@@ -93,7 +106,7 @@ export const getTileStyle = (
     setAngleTopRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
     setAngleBottomRight(DOOR_BORDER_COLOR, DOOR_CORNER_WIDTH);
   }
-  const walls = gameState.board.walls;
+  const walls = game.gameState.board.walls;
   // top wall -> horizontal[x][y]
   if (walls?.horizontal?.[x]?.[y]) {
     setBorderTop();
@@ -120,12 +133,35 @@ export const getTileStyle = (
     };
   }
 
-  if (isSelected) {
-    style = {
-      ...style,
-      backgroundColor: "#4CAF50",
-    };
+  if (markedByPlayers.length > 0) {
+    markedByPlayers.map((playerIndex) => {
+      switch (playerIndex) {
+        case 1:
+          setBorderAllSides(FIRST_PLAYER_COLOR);
+          style.backgroundColor = FIRST_PLAYER_COLOR;
+          return FIRST_PLAYER_COLOR;
+        case 2:
+          setBorderAllSides(SECOND_PLAYER_COLOR);
+          style.backgroundColor = SECOND_PLAYER_COLOR;
+          return SECOND_PLAYER_COLOR;
+        case 3:
+          setBorderAllSides(THIRD_PLAYER_COLOR);
+          style.backgroundColor = THIRD_PLAYER_COLOR;
+          return THIRD_PLAYER_COLOR;
+        case 4:
+          setBorderAllSides(FOURTH_PLAYER_COLOR);
+          style.backgroundColor = FOURTH_PLAYER_COLOR;
+          return FOURTH_PLAYER_COLOR;
+        case 5:
+          setBorderAllSides(FIFTH_PLAYER_COLOR);
+          style.backgroundColor = FIFTH_PLAYER_COLOR;
+          return FIFTH_PLAYER_COLOR;
+        default:
+          return "transparent";
+      }
+    });
   }
+
   setMissingBorders("rgba(153, 143, 143, 0.51)");
 
   style.backgroundImage = images.join(", ");

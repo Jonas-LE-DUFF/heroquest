@@ -96,6 +96,12 @@ export const drinkPotionSchema = z.object({
   potionId: z.string().min(1, "L'ID de la potion est requis"),
 });
 
+export const placeMarkerSchema = z.object({
+  gameId: z.string().min(1, "L'ID de la partie est requis"),
+  playerId: z.string().min(1, "L'ID du joueur est requis"),
+  position: positionSchema,
+});
+
 // --- Trap Events ---
 
 export const disarmTrapSchema = z.object({

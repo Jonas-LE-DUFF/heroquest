@@ -18,6 +18,7 @@ import {
   drinkPotionSchema,
   heroActionSchema,
   selectWeaponSchema,
+  placeMarkerSchema,
 } from "../validation";
 import { TreasureCardDeckHandler } from "../POO/classes/Treasures/TreasureCardDeck";
 import { requireGameMaster } from "../guards/requireGameMaster";
@@ -313,6 +314,29 @@ export function registerGameActionsHandlers(socket: Socket) {
       // Implementation for checking secret doors would go here
       // For now, we'll just return a success response
       return callback(successResponse());
+    }),
+  );
+
+  socket.on(
+    "place-marker",
+    withValidation(socket, placeMarkerSchema, (socket, data, callback) => {
+      const { gameId, playerId, position } = data;
+
+      logger.debug("Placing marker", data);
+
+      if (!requireGameExists(gameId)) {
+        return callback(errorResponse("Le jeu n'a pas été trouvé"));
+      }
+
+      const game = GameService.getGame(gameId);
+      const player = game!.getPlayer(playerId);
+      if (!player) {
+        return callback(errorResponse("Le joueur n'a pas été trouvé"));
+      }
+      player.markedPosition = toPosition(position);
+
+      const io = ServerHeroQuest.getServerInstance().getIo();
+      emitGameStateUpdate(io, gameId, game!);
     }),
   );
 }

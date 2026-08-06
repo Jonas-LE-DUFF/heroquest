@@ -244,7 +244,7 @@ const Board = ({
         <TableCell
           key={col}
           className="tile"
-          sx={getTileStyle(row, col, game.gameState, selectedPosition)}
+          sx={getTileStyle(row, col, game, selectedPosition)}
           onClick={() => handleTileClick({ x: row, y: col }, selectedType)}
           onMouseEnter={() => setHoveredTile({ x: row, y: col })}
           onMouseLeave={() => {

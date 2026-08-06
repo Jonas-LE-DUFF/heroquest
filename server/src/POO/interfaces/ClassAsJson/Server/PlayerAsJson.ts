@@ -1,4 +1,5 @@
 import { PlayerRole } from "../../../enums/PlayerRole";
+import { PositionAsJson } from "../PositionAsJson";
 
 interface PlayerAsJson {
   id: string;
@@ -6,6 +7,7 @@ interface PlayerAsJson {
   role: PlayerRole;
   isReady: boolean;
   socketId: string | null;
+  markedPosition?: PositionAsJson | undefined;
 }
 
 export type { PlayerAsJson };

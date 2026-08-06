@@ -1,4 +1,5 @@
 import { Direction } from "../../enums/Direction";
+import { PositionAsJson } from "../../interfaces/ClassAsJson/PositionAsJson";
 
 class Position {
   x: number;
@@ -61,6 +62,10 @@ class Position {
       case Direction.RIGHT:
         return Direction.DOWN;
     }
+  }
+
+  toJson(): PositionAsJson {
+    return { x: this.x, y: this.y };
   }
 }
 

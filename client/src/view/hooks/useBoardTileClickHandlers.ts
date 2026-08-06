@@ -17,7 +17,8 @@ export type TargetingState =
   | { mode: "spell"; spellId: string }
   | { mode: "disarmTrap" }
   | { mode: "revealTrap" }
-  | { mode: "placeFurniture"; furnitureType: string; direction: Direction };
+  | { mode: "placeFurniture"; furnitureType: string; direction: Direction }
+  | { mode: "markPosition" };
 
 export interface InteractionState {
   selectedType: SelectType;
@@ -313,6 +314,18 @@ const useBoardTileClickHandlers = ({
     [game.id, interaction.targeting, playerId, socket],
   );
 
+  const handleMarkPositionTileClick = useCallback(
+    (position: PositionAsJson) => {
+      console.log("Attempting to mark position:", position);
+      socket.emit("place-marker", {
+        gameId: game.id,
+        playerId,
+        position,
+      });
+    },
+    [game.id, playerId, socket],
+  );
+
   const handleTileClick = useCallback(
     (position: PositionAsJson) => {
       const handlersByMode: Record<TargetingState["mode"], () => void> = {
@@ -323,6 +336,7 @@ const useBoardTileClickHandlers = ({
         disarmTrap: () => handleDisarmTrapTileClick(position),
         revealTrap: () => handleRevealTrapTileClick(position),
         placeFurniture: () => handlePlaceFurniture(position),
+        markPosition: () => handleMarkPositionTileClick(position),
       };
 
       handlersByMode[interaction.targeting.mode]();
@@ -336,6 +350,7 @@ const useBoardTileClickHandlers = ({
       handleDisarmTrapTileClick,
       handleRevealTrapTileClick,
       handlePlaceFurniture,
+      handleMarkPositionTileClick,
     ],
   );
 

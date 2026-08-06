@@ -26,6 +26,7 @@ import swordsIcon from "/assets/images/icons/navbar/crossed-swords.svg";
 import backpackIcon from "/assets/images/icons/navbar/backpack.png";
 import drawCardIcon from "/assets/images/icons/navbar/search-treasure.svg";
 import lockpicks from "/assets/images/icons/navbar/disarm-traps.svg";
+import flagIcon from "/assets/images/icons/navbar/flying-flag.svg";
 import exitIcon from "/assets/images/icons/navbar/exit.svg";
 import React, { Dispatch, SetStateAction, useState } from "react";
 import EquipmentsDialogComponent from "../Card/Equipments/EquipmentsDialogComponent";
@@ -372,6 +373,18 @@ const Navbar: React.FC<NavbarProps> = ({
             {role === PlayerRole.GAME_MASTER && (
               <AddHero socket={socket} position={selectedPosition} />
             )}
+            <div className="nav-elem">
+              <button
+                onClick={() => {
+                  setInteraction((prev) => ({
+                    ...prev,
+                    targeting: { mode: "markPosition" },
+                  }));
+                }}
+              >
+                <img src={flagIcon} alt="Marquer" className="img-nav" />
+              </button>
+            </div>
           </>
         )}
         <button
