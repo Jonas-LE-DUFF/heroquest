@@ -1,17 +1,15 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { useLocation } from "react-router-dom";
 import "./GameControlsComponent.css";
-import { Grid, MenuItem, Radio, Select } from "@mui/material";
+import { Grid } from "@mui/material";
 import MasterControls from "../MasterControlsComponent";
 import { TileType } from "../../../POO/enums/Board/TileType";
-import { Direction } from "../../../POO/enums/Direction";
 import { HeroAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
 import { MonsterAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
 import { GameAsJson } from "../../../POO/interfaces/ClassAsJson/Server/GameAsJson";
 import { getPlayerIdToPlay } from "../../../shared/serverUtils";
 import { PlayerRole } from "../../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
-import { TrapType } from "../../../POO/enums/Board/TrapType";
 import { SelectType } from "../../../POO/types/selectType";
 import { InteractionState } from "../../../view/hooks/useBoardTileClickHandlers";
 import { Socket } from "socket.io-client";
@@ -20,11 +18,11 @@ import ArrowCursorIcon from "/assets/images/icons/actions/arrow-cursor.svg";
 import CancelIcon from "/assets/images/icons/actions/cancel.svg";
 import MagnifingGlassIcon from "/assets/images/icons/actions/magnifying-glass.svg";
 
-import furnitures from "../../../shared/game_cards/furnitures.json";
-import { getFurnituresAsMenuItems } from "../../../shared/furnitureUtils";
-import { MonsterSelector } from "./MonsterSelector";
+import { MonsterSelector } from "./Selectors/MonsterSelector";
+import { FurnitureSelector } from "./Selectors/FurnitureSelector";
 import { useUnitMovement } from "../../../view/hooks/useUnitMovement";
-import { useFurnitureRotation } from "../../../view/hooks/useFurnitureRotation";
+import { DoorSelector } from "./Selectors/DoorSelector";
+import { TrapSelector } from "./Selectors/TrapSelector";
 
 interface GameControlsProps {
   socket: Socket;
@@ -52,23 +50,6 @@ const GameControls = ({
     PlayerRole.HERO;
 
   const isPlayerTurn = getPlayerIdToPlay(currentGameState) === playerId;
-
-  const [selectedFurniture, setSelectedFurniture] = useState<string>(
-    furnitures[0]?.furnitureId || "",
-  );
-  const [furnitureDirection, setFurnitureDirection] = useState<Direction>(
-    Direction.RIGHT,
-  );
-  const [selectedDoor, setSelectedDoor] = useState<Direction>(Direction.UP);
-  const [selectedTrap, setSelectedTrap] = useState<TrapType>(TrapType.PIT_TRAP);
-
-  useFurnitureRotation(
-    furnitureDirection,
-    selectedType,
-    selectedFurniture,
-    setFurnitureDirection,
-    setInteraction,
-  );
 
   useUnitMovement(
     hero,
@@ -131,96 +112,19 @@ const GameControls = ({
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
               />
-              <Grid size={1}>
-                <Radio
-                  checked={
-                    selectedFurniture !== null &&
-                    selectedType === selectedFurniture
-                  }
-                  onChange={() => {
-                    setSelectedType(selectedFurniture);
-                    setInteraction((prev) => ({
-                      ...prev,
-                      targeting: {
-                        mode: "placeFurniture",
-                        furnitureType: selectedFurniture,
-                        direction: furnitureDirection,
-                      },
-                    }));
-                  }}
-                  name="selectedType"
-                />
-              </Grid>
-              <Grid size={3}>
-                <h5>Meubles</h5>
-              </Grid>
-              <Grid size={8}>
-                <Select
-                  value={selectedFurniture}
-                  onChange={(e) => {
-                    const furnitureType = e.target.value;
-                    setSelectedFurniture(furnitureType);
-                    setSelectedType(furnitureType);
-                    setInteraction((prev) => ({
-                      ...prev,
-                      targeting: {
-                        mode: "placeFurniture",
-                        furnitureType,
-                        direction: furnitureDirection,
-                      },
-                    }));
-                  }}
-                >
-                  {getFurnituresAsMenuItems()}
-                </Select>
-              </Grid>
-              <Grid size={1}>
-                <Radio
-                  checked={selectedType !== null && selectedType in Direction}
-                  onChange={() => setSelectedType(selectedDoor)}
-                  name="selectedType"
-                />
-              </Grid>
-              <Grid size={3}>
-                <h5>Portes</h5>
-              </Grid>
-              <Grid size={8}>
-                <Select
-                  value={selectedDoor}
-                  onChange={(e) => {
-                    setSelectedDoor(e.target.value as Direction);
-                    setSelectedType(e.target.value as Direction);
-                  }}
-                >
-                  <MenuItem value={Direction.UP}>Porte Haut</MenuItem>
-                  <MenuItem value={Direction.DOWN}>Porte Bas</MenuItem>
-                  <MenuItem value={Direction.LEFT}>Porte Gauche</MenuItem>
-                  <MenuItem value={Direction.RIGHT}>Porte Droite</MenuItem>
-                </Select>
-              </Grid>
-              <Grid size={1}>
-                <Radio
-                  checked={selectedType !== null && selectedType in TrapType}
-                  onChange={() => setSelectedType(selectedTrap)}
-                  name="selectedType"
-                />
-              </Grid>
-              <Grid size={3}>
-                <h5>Pièges</h5>
-              </Grid>
-              <Grid size={8}>
-                <Select
-                  value={selectedTrap}
-                  onChange={(e) => {
-                    setSelectedTrap(e.target.value as TrapType);
-                    setSelectedType(e.target.value as TrapType);
-                  }}
-                >
-                  <MenuItem value={TrapType.PIT_TRAP}>Oubliettes</MenuItem>
-                  <MenuItem value={TrapType.ROCK_TRAP}>Éboulement</MenuItem>
-                  <MenuItem value={TrapType.SPEAR_TRAP}>Piège à lance</MenuItem>
-                </Select>
-              </Grid>
+              <FurnitureSelector
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                setInteraction={setInteraction}
+              />
+              <DoorSelector
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+              />
+              <TrapSelector
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+              />
             </Grid>
             <div>
               <div className="buttons-container">

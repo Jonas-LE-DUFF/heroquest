@@ -1,5 +1,5 @@
 import { Grid, Radio, Select } from "@mui/material";
-import { SelectType } from "../../../POO/types/selectType";
+import { SelectType } from "../../../../POO/types/selectType";
 import { ChangeEvent, JSX } from "react";
 
 interface SelectorProps {

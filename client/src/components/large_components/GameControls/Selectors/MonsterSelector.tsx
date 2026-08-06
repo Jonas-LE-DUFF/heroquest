@@ -1,9 +1,9 @@
 import { JSX, useState } from "react";
-import { MonsterCategory } from "../../../POO/enums/Categories/MonsterCategory";
-import { getMonsterIconPath } from "../../../shared/utils";
-import { monsterClassFr } from "../../../shared/languages/frenchEnums";
+import { MonsterCategory } from "../../../../POO/enums/Categories/MonsterCategory";
+import { getMonsterIconPath } from "../../../../shared/utils";
+import { monsterClassFr } from "../../../../shared/languages/frenchEnums";
 import { MenuItem } from "@mui/material";
-import { SelectType } from "../../../POO/types/selectType";
+import { SelectType } from "../../../../POO/types/selectType";
 import { Selector } from "./Selector";
 
 interface MonsterSelectorProps {
