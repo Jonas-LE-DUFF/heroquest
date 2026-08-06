@@ -1,37 +1,30 @@
-import {
-  Dispatch,
-  SetStateAction,
-  JSX,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./GameControlsComponent.css";
 import { Grid, MenuItem, Radio, Select } from "@mui/material";
-import { getMonsterIconPath } from "../../shared/utils";
-import { monsterClassFr } from "../../shared/languages/frenchEnums";
-import MasterControls from "./MasterControlsComponent";
-import { TileType } from "../../POO/enums/Board/TileType";
-import { MonsterCategory } from "../../POO/enums/Categories/MonsterCategory";
-import { Direction } from "../../POO/enums/Direction";
-import { HeroAsJson } from "../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
-import { MonsterAsJson } from "../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
-import { GameAsJson } from "../../POO/interfaces/ClassAsJson/Server/GameAsJson";
-import { getPlayerIdToPlay } from "../../shared/serverUtils";
-import { PlayerRole } from "../../POO/enums/PlayerRole";
+import MasterControls from "../MasterControlsComponent";
+import { TileType } from "../../../POO/enums/Board/TileType";
+import { Direction } from "../../../POO/enums/Direction";
+import { HeroAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/HeroAsJson";
+import { MonsterAsJson } from "../../../POO/interfaces/ClassAsJson/Unit/MonsterAsJson";
+import { GameAsJson } from "../../../POO/interfaces/ClassAsJson/Server/GameAsJson";
+import { getPlayerIdToPlay } from "../../../shared/serverUtils";
+import { PlayerRole } from "../../../POO/enums/PlayerRole";
 import { toast } from "react-toastify";
-import { TrapType } from "../../POO/enums/Board/TrapType";
-import { SelectType } from "../../POO/types/selectType";
-import { InteractionState } from "../../view/hooks/useBoardTileClickHandlers";
+import { TrapType } from "../../../POO/enums/Board/TrapType";
+import { SelectType } from "../../../POO/types/selectType";
+import { InteractionState } from "../../../view/hooks/useBoardTileClickHandlers";
 import { Socket } from "socket.io-client";
-import { LocationState } from "../../POO/types/LocationType";
+import { LocationState } from "../../../POO/types/LocationType";
 import ArrowCursorIcon from "/assets/images/icons/actions/arrow-cursor.svg";
 import CancelIcon from "/assets/images/icons/actions/cancel.svg";
 import MagnifingGlassIcon from "/assets/images/icons/actions/magnifying-glass.svg";
 
-import furnitures from "../../shared/game_cards/furnitures.json";
-import { getFurnituresAsMenuItems } from "../../shared/furnitureUtils";
+import furnitures from "../../../shared/game_cards/furnitures.json";
+import { getFurnituresAsMenuItems } from "../../../shared/furnitureUtils";
+import { MonsterSelector } from "./MonsterSelector";
+import { useUnitMovement } from "../../../view/hooks/useUnitMovement";
+import { useFurnitureRotation } from "../../../view/hooks/useFurnitureRotation";
 
 interface GameControlsProps {
   socket: Socket;
@@ -58,14 +51,8 @@ const GameControls = ({
     currentGameState.players.find((p) => p.id === playerId)?.role ??
     PlayerRole.HERO;
 
-  const isElementsShown: Map<string, boolean> = new Map();
-  isElementsShown.set("masterControls", false);
-
   const isPlayerTurn = getPlayerIdToPlay(currentGameState) === playerId;
 
-  const [selectedMonster, setSelectedMonster] = useState<MonsterCategory>(
-    MonsterCategory.Goblin,
-  );
   const [selectedFurniture, setSelectedFurniture] = useState<string>(
     furnitures[0]?.furnitureId || "",
   );
@@ -75,144 +62,23 @@ const GameControls = ({
   const [selectedDoor, setSelectedDoor] = useState<Direction>(Direction.UP);
   const [selectedTrap, setSelectedTrap] = useState<TrapType>(TrapType.PIT_TRAP);
 
-  const movePlayer = useCallback(
-    (direction: Direction) => {
-      if (!hero) {
-        console.error("No hero found for the current player");
-        return;
-      }
-
-      socket.emit(
-        "move-unit-one-step",
-        {
-          gameId: currentGameState.id,
-          playerId,
-          unitId: hero.id,
-          direction: direction,
-        },
-        (response: { success: boolean; error?: string }) => {
-          if (!response.success) {
-            toast.error(`Erreur de déplacement du joueur: ${response.error}`);
-          }
-        },
-      );
-    },
-    [currentGameState.id, hero, playerId, socket],
+  useFurnitureRotation(
+    furnitureDirection,
+    selectedType,
+    selectedFurniture,
+    setFurnitureDirection,
+    setInteraction,
   );
 
-  const moveMonster = useCallback(
-    (direction: Direction) => {
-      if (!selectedUnit || role !== PlayerRole.GAME_MASTER) {
-        console.error("No unit selected for movement");
-        return;
-      }
-
-      socket.emit(
-        "move-unit-one-step",
-        {
-          gameId: currentGameState.id,
-          playerId,
-          unitId: selectedUnit.id,
-          direction: direction,
-        },
-        (response: { success: boolean; error?: string }) => {
-          if (!response.success) {
-            toast.error(`Erreur de déplacement du monstre: ${response.error}`);
-          }
-        },
-      );
-    },
-    [currentGameState.id, playerId, role, selectedUnit, socket],
+  useUnitMovement(
+    hero,
+    selectedUnit,
+    role,
+    isPlayerTurn,
+    currentGameState,
+    playerId,
+    socket,
   );
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target) {
-        return;
-      }
-
-      const directionInClockwiseOrder: Direction[] = [
-        Direction.UP,
-        Direction.RIGHT,
-        Direction.DOWN,
-        Direction.LEFT,
-      ];
-
-      if (
-        (event.key === "r" || event.key === "R") &&
-        selectedType === selectedFurniture
-      ) {
-        console.log("Rotating furniture direction");
-        event.preventDefault();
-        const newDirection = (() => {
-          const currentIndex =
-            directionInClockwiseOrder.indexOf(furnitureDirection);
-          const nextIndex =
-            (currentIndex + 1) % directionInClockwiseOrder.length;
-          return directionInClockwiseOrder[nextIndex];
-        })();
-        console.log(`New furniture direction: ${newDirection}`);
-        setFurnitureDirection(newDirection);
-        setInteraction((prev) => ({
-          ...prev,
-          targeting: {
-            mode: "placeFurniture",
-            furnitureType: selectedFurniture,
-            direction: newDirection,
-          },
-        }));
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [furnitureDirection, selectedType, selectedFurniture, setInteraction]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
-      const directionByKey: Record<string, Direction> = {
-        ArrowUp: Direction.UP,
-        ArrowDown: Direction.DOWN,
-        ArrowLeft: Direction.LEFT,
-        ArrowRight: Direction.RIGHT,
-      };
-
-      const direction = directionByKey[event.key];
-      if (!direction) {
-        return;
-      }
-
-      event.preventDefault();
-
-      if (role === PlayerRole.HERO && isPlayerTurn) {
-        movePlayer(direction);
-        return;
-      }
-
-      if (role === PlayerRole.GAME_MASTER && selectedUnit) {
-        moveMonster(direction);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isPlayerTurn, moveMonster, movePlayer, role, selectedUnit]);
 
   const unSelect = () => {
     setSelectedType(null);
@@ -232,33 +98,6 @@ const GameControls = ({
         }
       },
     );
-  };
-
-  // module-scope helper: list numeric enum values for MonsterCategory
-  const MONSTER_TYPES: MonsterCategory[] = Object.values(
-    MonsterCategory,
-  ).filter((v) => typeof v === "number") as MonsterCategory[];
-
-  const renderMonsterButtons = () => {
-    if (MONSTER_TYPES.length === 0) {
-      return null;
-    }
-
-    const buttons: JSX.Element[] = [];
-    for (const mType of MONSTER_TYPES) {
-      const img = getMonsterIconPath(mType);
-      const name = monsterClassFr[mType];
-      buttons.push(
-        <MenuItem
-          value={mType}
-          className={`monster-item ${selectedType === mType ? "selected" : ""}`}
-        >
-          <img src={img} alt={name} className="monster-img" />
-          {name}
-        </MenuItem>,
-      );
-    }
-    return buttons;
   };
 
   function revealTrap(): void {
@@ -288,29 +127,10 @@ const GameControls = ({
           <h3>Actions</h3>
           <>
             <Grid container alignItems="center">
-              <Grid size={1}>
-                <Radio
-                  checked={
-                    selectedType != null && selectedType in MonsterCategory
-                  }
-                  onChange={() => setSelectedType(selectedMonster)}
-                  name="selectedType"
-                />
-              </Grid>
-              <Grid size={3}>
-                <h5>Monstres</h5>
-              </Grid>
-              <Grid size={8}>
-                <Select
-                  value={selectedMonster}
-                  onChange={(e) => {
-                    setSelectedMonster(e.target.value as MonsterCategory);
-                    setSelectedType(e.target.value as MonsterCategory);
-                  }}
-                >
-                  {renderMonsterButtons()}
-                </Select>
-              </Grid>
+              <MonsterSelector
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+              />
               <Grid size={1}>
                 <Radio
                   checked={
